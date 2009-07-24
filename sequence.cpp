@@ -54,9 +54,15 @@ bool PycList::isEqual(PycRef<PycObject> obj) const
 /* PycDict */
 void PycDict::load(PycData* stream, PycModule* mod)
 {
-    m_size = stream->get32();
-    for (int i=0; i<m_size; i++)
-        m_values.push_back(LoadObject(stream, mod));
+    PycRef<PycObject> key, val;
+    for (;;) {
+        key = LoadObject(stream, mod);
+        if (key == Pyc_NULL)
+            break;
+        val = LoadObject(stream, mod);
+        m_keys.push_back(key);
+        m_values.push_back(val);
+    }
 }
 
 bool PycDict::isEqual(PycRef<PycObject> obj) const

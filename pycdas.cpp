@@ -87,6 +87,20 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent, "]\n");
         }
         break;
+    case PycObject::TYPE_DICT:
+        {
+            iprintf(indent, "{\n");
+            PycDict::key_t keys = obj.cast<PycDict>()->keys();
+            PycDict::value_t values = obj.cast<PycDict>()->values();
+            PycDict::key_t::iterator ki = keys.begin();
+            PycDict::value_t::iterator vi = values.begin();
+            while (ki != keys.end()) {
+                output_object(*ki, mod, indent + 1);
+                output_object(*vi, mod, indent + 2);
+            }
+            iprintf(indent, "}\n");
+        }
+        break;
     case PycObject::TYPE_NONE:
         iprintf(indent, "None\n");
         break;

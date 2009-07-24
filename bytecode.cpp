@@ -271,6 +271,28 @@ static void print_const(PycRef<PycObject> obj)
             printf("]");
         }
         break;
+    case PycObject::TYPE_DICT:
+        {
+            printf("{");
+            PycDict::key_t keys = obj.cast<PycDict>()->keys();
+            PycDict::value_t values = obj.cast<PycDict>()->values();
+            PycDict::key_t::iterator ki = keys.begin();
+            PycDict::value_t::iterator vi = values.begin();
+            if (ki != keys.end()) {
+                print_const(*ki);
+                printf(": ");
+                print_const(*vi);
+                while (++ki != keys.end()) {
+                    ++vi;
+                    printf(", ");
+                    print_const(*ki);
+                    printf(": ");
+                    print_const(*vi);
+                }
+            }
+            printf("}");
+        }
+        break;
     case PycObject::TYPE_NONE:
         printf("None");
         break;
