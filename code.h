@@ -31,6 +31,21 @@ public:
     int firstLine() const { return m_firstLine; }
     PycRef<PycString> lnTable() const { return m_lnTable; }
 
+    PycRef<PycObject> getConst(int idx) const
+    { return m_consts->values()[idx]; }
+
+    PycRef<PycString> getName(int idx) const
+    { return m_names->values()[idx].cast<PycString>(); }
+
+    PycRef<PycString> getVarName(int idx) const
+    { return m_varNames->values()[idx].cast<PycString>(); }
+
+    PycRef<PycObject> getCellVar(int idx) const
+    {
+        return (idx > m_cellVars->size()) ? m_freeVars->values()[idx - m_cellVars->size()]
+                                          : m_cellVars->values()[idx];
+    }
+
 private:
     int m_argCount, m_kwOnlyArgCount, m_numLocals, m_stackSize, m_flags;
     PycRef<PycString> m_code;

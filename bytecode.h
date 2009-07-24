@@ -35,6 +35,11 @@ enum Opcodes {
 
 extern const char* OpcodeNames[256];
 
+bool IsConstArg(int opcode);
+bool IsNameArg(int opcode);
+bool IsVarNameArg(int opcode);
+bool IsCellArg(int opcode);
+
 }
 
 namespace Py2k {
@@ -75,6 +80,11 @@ enum Opcodes {
 
 extern const char* OpcodeNames[256];
 
+bool IsConstArg(int opcode);
+bool IsNameArg(int opcode);
+bool IsVarNameArg(int opcode);
+bool IsCellArg(int opcode);
+
 }
 
 namespace Py3k {
@@ -82,7 +92,7 @@ namespace Py3k {
 enum Opcodes {
     STOP_CODE = 0, POP_TOP, ROT_TWO, ROT_THREE, DUP_TOP, ROT_FOUR,
     NOP = 9, UNARY_POSITIVE, UNARY_NEGATIVE, UNARY_NOT,
-    UNARY_INVERT = 15, SET_ADD2 = 17, LIST_APPEND2,
+    UNARY_INVERT = 15, SET_ADD = 17, LIST_APPEND,
     BINARY_POWER = 19, BINARY_MULTIPLY, BINARY_MODULO = 22,
     BINARY_ADD, BINARY_SUBTRACT, BINARY_SUBSCR, BINARY_FLOOR_DIVIDE,
     BINARY_TRUE_DIVIDE, INPLACE_FLOOR_DIVIDE, INPLACE_TRUE_DIVIDE,
@@ -108,10 +118,15 @@ enum Opcodes {
     MAKE_CLOSURE, LOAD_CLOSURE, LOAD_DEREF, STORE_DEREF,
     CALL_FUNCTION_VAR = 140, CALL_FUNCTION_KW, CALL_FUNCTION_VAR_KW,
     EXTENDED_ARG,
-    LIST_APPEND = 145, SET_ADD, MAP_ADD,
+    LIST_APPEND_A = 145, SET_ADD_A, MAP_ADD_A,
 };
 
 extern const char* OpcodeNames[256];
+
+bool IsConstArg(int opcode);
+bool IsNameArg(int opcode);
+bool IsVarNameArg(int opcode);
+bool IsCellArg(int opcode);
 
 }
 

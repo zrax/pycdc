@@ -1,5 +1,6 @@
 #include "bytecode.h"
 #include "data.h"
+#include "numeric.h"
 
 const char* Py1k::OpcodeNames[256] = {
     "STOP_CODE", "POP_TOP", "ROT_TWO", "ROT_THREE", "DUP_TOP",
@@ -149,21 +150,172 @@ const char* Py3k::OpcodeNames[256] = {
     "<248>", "<249>", "<250>", "<251>", "<252>", "<253>", "<254>", "<255>",
 };
 
+bool Py1k::IsConstArg(int opcode)
+{
+    return (opcode == Py1k::LOAD_CONST) || (opcode == Py1k::RESERVE_FAST);
+}
+
+bool Py1k::IsNameArg(int opcode)
+{
+    return (opcode == Py1k::DELETE_ATTR) || (opcode == Py1k::DELETE_GLOBAL) ||
+           (opcode == Py1k::DELETE_NAME) || (opcode == Py1k::IMPORT_FROM) ||
+           (opcode == Py1k::IMPORT_NAME) || (opcode == Py1k::LOAD_ATTR) ||
+           (opcode == Py1k::LOAD_GLOBAL) || (opcode == Py1k::LOAD_LOCAL) ||
+           (opcode == Py1k::LOAD_NAME) || (opcode == Py1k::STORE_ATTR) ||
+           (opcode == Py1k::STORE_GLOBAL) || (opcode == Py1k::STORE_NAME);
+}
+
+bool Py1k::IsVarNameArg(int opcode)
+{
+    return (opcode == Py1k::DELETE_FAST) || (opcode == Py1k::LOAD_FAST) ||
+           (opcode == Py1k::STORE_FAST);
+}
+
+bool Py1k::IsCellArg(int opcode)
+{
+    return false;
+}
+
+bool Py2k::IsConstArg(int opcode)
+{
+    return (opcode == Py2k::LOAD_CONST);
+}
+
+bool Py2k::IsNameArg(int opcode)
+{
+    return (opcode == Py2k::DELETE_ATTR) || (opcode == Py2k::DELETE_GLOBAL) ||
+           (opcode == Py2k::DELETE_NAME) || (opcode == Py2k::IMPORT_FROM) ||
+           (opcode == Py2k::IMPORT_NAME) || (opcode == Py2k::LOAD_ATTR) ||
+           (opcode == Py2k::LOAD_GLOBAL) || (opcode == Py2k::LOAD_NAME) ||
+           (opcode == Py2k::STORE_ATTR) || (opcode == Py2k::STORE_GLOBAL) ||
+           (opcode == Py2k::STORE_NAME);
+}
+
+bool Py2k::IsVarNameArg(int opcode)
+{
+    return (opcode == Py2k::DELETE_FAST) || (opcode == Py2k::LOAD_FAST) ||
+           (opcode == Py2k::STORE_FAST);
+}
+
+bool Py2k::IsCellArg(int opcode)
+{
+    return (opcode == Py2k::LOAD_CLOSURE) || (opcode == Py2k::LOAD_DEREF) ||
+           (opcode == Py2k::STORE_DEREF);
+}
+
+bool Py3k::IsConstArg(int opcode)
+{
+    return (opcode == Py3k::LOAD_CONST);
+}
+
+bool Py3k::IsNameArg(int opcode)
+{
+    return (opcode == Py3k::DELETE_ATTR) || (opcode == Py3k::DELETE_GLOBAL) ||
+           (opcode == Py3k::DELETE_NAME) || (opcode == Py3k::IMPORT_FROM) ||
+           (opcode == Py3k::IMPORT_NAME) || (opcode == Py3k::LOAD_ATTR) ||
+           (opcode == Py3k::LOAD_GLOBAL) || (opcode == Py3k::LOAD_NAME) ||
+           (opcode == Py3k::STORE_ATTR) || (opcode == Py3k::STORE_GLOBAL) ||
+           (opcode == Py3k::STORE_NAME);
+}
+
+bool Py3k::IsVarNameArg(int opcode)
+{
+    return (opcode == Py3k::DELETE_FAST) || (opcode == Py3k::LOAD_FAST) ||
+           (opcode == Py3k::STORE_FAST);
+}
+
+bool Py3k::IsCellArg(int opcode)
+{
+    return (opcode == Py3k::LOAD_CLOSURE) || (opcode == Py3k::LOAD_DEREF) ||
+           (opcode == Py3k::STORE_DEREF);
+}
+
+
+static void print_const(PycRef<PycObject> obj)
+{
+    switch (obj->type()) {
+    case PycObject::TYPE_STRING:
+    case PycObject::TYPE_STRINGREF:
+    case PycObject::TYPE_INTERNED:
+        printf("\"");
+        OutputString(obj.cast<PycString>(), QS_Double);
+        printf("\"");
+        break;
+    case PycObject::TYPE_TUPLE:
+        {
+            printf("(");
+            PycTuple::value_t values = obj.cast<PycTuple>()->values();
+            PycTuple::value_t::iterator it = values.begin();
+            if (it != values.end()) {
+                print_const(*it);
+                while (++it != values.end()) {
+                    printf(", ");
+                    print_const(*it);
+                }
+            }
+            printf(")");
+        }
+        break;
+    case PycObject::TYPE_LIST:
+        {
+            printf("[");
+            PycList::value_t values = obj.cast<PycList>()->values();
+            PycList::value_t::iterator it = values.begin();
+            if (it != values.end()) {
+                print_const(*it);
+                while (++it != values.end()) {
+                    printf(", ");
+                    print_const(*it);
+                }
+            }
+            printf("]");
+        }
+        break;
+    case PycObject::TYPE_NONE:
+        printf("None");
+        break;
+    case PycObject::TYPE_TRUE:
+        printf("True");
+        break;
+    case PycObject::TYPE_FALSE:
+        printf("False");
+        break;
+    case PycObject::TYPE_INT:
+        printf("%d", obj.cast<PycInt>()->value());
+        break;
+    case PycObject::TYPE_FLOAT:
+        printf("%s", obj.cast<PycFloat>()->value());
+        break;
+    case PycObject::TYPE_CODE:
+        printf("<CODE> %s", obj.cast<PycCode>()->name()->value());
+        break;
+    }
+}
+
 void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
 
-    int operand = 0;
     while (!source.atEof()) {
         int opcode = source.getByte();
-        bool extArg = false;
+        int operand = 0;
+        bool haveExtArg = false;
         if ((mod->majorVer() == 2 && opcode == Py2k::EXTENDED_ARG) ||
             (mod->majorVer() == 3 && opcode == Py3k::EXTENDED_ARG)) {
-            extArg = true;
+            operand = source.get16() << 16;
             opcode = source.getByte();
+            haveExtArg = true;
         }
-        if (opcode >= HAVE_ARG)
-            operand = extArg ? source.get32() : source.get16();
+        if (opcode >= HAVE_ARG) {
+            // If we have an extended arg, we want to OR the lower part,
+            // else we want the whole thing (in case it's negative).  We use
+            // the bool so that values between 0x8000 and 0xFFFF can be stored
+            // without becoming negative
+            if (haveExtArg)
+                operand |= (source.get16() & 0xFFFF);
+            else
+                operand = source.get16();
+        }
 
         for (int i=0; i<indent; i++)
             printf("    ");
@@ -174,9 +326,29 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
         } else if (mod->majorVer() == 3) {
             printf("%-24s", Py3k::OpcodeNames[opcode]);
         }
-        if (opcode >= HAVE_ARG)
-            printf("%d\n", operand);
-        else
-            printf("\n");
+        if (opcode >= HAVE_ARG) {
+            if ((mod->majorVer() == 1 && Py1k::IsConstArg(opcode)) ||
+                (mod->majorVer() == 2 && Py2k::IsConstArg(opcode)) ||
+                (mod->majorVer() == 3 && Py3k::IsConstArg(opcode))) {
+                printf("%d: ", operand);
+                print_const(code->getConst(operand));
+            } else if ((mod->majorVer() == 1 && Py1k::IsNameArg(opcode)) ||
+                       (mod->majorVer() == 2 && Py2k::IsNameArg(opcode)) ||
+                       (mod->majorVer() == 3 && Py3k::IsNameArg(opcode))) {
+                printf("%d: %s", operand, code->getName(operand)->value());
+            } else if ((mod->majorVer() == 1 && Py1k::IsVarNameArg(opcode)) ||
+                       (mod->majorVer() == 2 && Py2k::IsVarNameArg(opcode)) ||
+                       (mod->majorVer() == 3 && Py3k::IsVarNameArg(opcode))) {
+                printf("%d: %s", operand, code->getVarName(operand)->value());
+            } else if ((mod->majorVer() == 1 && Py1k::IsCellArg(opcode)) ||
+                       (mod->majorVer() == 2 && Py2k::IsCellArg(opcode)) ||
+                       (mod->majorVer() == 3 && Py3k::IsCellArg(opcode))) {
+                printf("%d: ", operand);
+                print_const(code->getConst(operand));
+            } else {
+                printf("%d", operand);
+            }
+        }
+        printf("\n");
     }
 }

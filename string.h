@@ -2,6 +2,11 @@
 #define _PYC_STRING_H
 
 #include "object.h"
+#include <cstdio>
+
+enum QuoteStyle {
+    QS_Single, QS_Double, QS_BlockSingle, QS_BlockDouble
+};
 
 class PycString : public PycObject {
 public:
@@ -25,5 +30,7 @@ private:
     char* m_value;
     int m_length;
 };
+
+void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F = stdout);
 
 #endif

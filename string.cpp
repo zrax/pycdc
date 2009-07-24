@@ -32,3 +32,37 @@ void PycString::load(PycData* stream, PycModule* mod)
             mod->intern(this);
     }
 }
+
+
+void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
+{
+    const char* ch = str->value();
+    if (ch == 0)
+        return;
+    while (*ch != 0) {
+        if (*ch < 0x20) {
+            if (*ch == '\r') {
+                fprintf(F, "\\r");
+            } else if (*ch == '\n') {
+                if (style == QS_BlockSingle || style == QS_BlockDouble)
+                    fputc('\n', F);
+                else
+                    fprintf(F, "\\n");
+            } else if (*ch == '\t') {
+                fprintf(F, "\\t");
+            } else {
+                fprintf(F, "\\x%x", *ch);
+            }
+        } else if (*ch >= 0x7F) {
+            fprintf(F, "\\x%x", *ch);
+        } else {
+            if (style == QS_Single && *ch == '\'')
+                fprintf(F, "\\'");
+            else if (style == QS_Double && *ch == '"')
+                fprintf(F, "\\\"");
+            else
+                fputc(*ch, F);
+        }
+        ch++;
+    }
+}

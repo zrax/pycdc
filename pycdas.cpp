@@ -65,7 +65,9 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
-        iprintf(indent, "\"%s\"\n", obj.cast<PycString>()->value());
+        iprintf(indent, "\"");
+        OutputString(obj.cast<PycString>(), QS_Double);
+        printf("\"\n");
         break;
     case PycObject::TYPE_TUPLE:
         {
