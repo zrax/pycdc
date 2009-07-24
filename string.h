@@ -21,6 +21,8 @@ public:
                (type == TYPE_STRINGREF) || PycObject::isType(type);
     }
 
+    bool isEqual(PycRef<PycObject> obj) const;
+
     void load(class PycData* stream, class PycModule* mod);
 
     int length() const { return m_length; }

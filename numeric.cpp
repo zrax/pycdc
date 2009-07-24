@@ -1,9 +1,7 @@
 #include "numeric.h"
 #include "data.h"
 #include "module.h"
-
-PycObjRef Pyc_False = new PycObject(PycObject::TYPE_FALSE);
-PycObjRef Pyc_True = new PycObject(PycObject::TYPE_TRUE);
+#include <cstring>
 
 /* PycInt */
 void PycInt::load(PycData* stream, PycModule*)
@@ -21,6 +19,21 @@ void PycLong::load(PycData* stream, PycModule*)
         m_value.push_back(stream->get16());
 }
 
+bool PycLong::isEqual(PycRef<PycObject> obj) const
+{
+    PycRef<PycLong> longObj = obj.cast<PycLong>();
+    if (m_size != longObj->m_size)
+        return false;
+    std::list<int>::const_iterator it1 = m_value.begin();
+    std::list<int>::const_iterator it2 = longObj->m_value.begin();
+    while (it1 != m_value.end()) {
+        if (*it1 != *it2)
+            return false;
+        ++it1, ++it2;
+    }
+    return true;
+}
+
 
 /* PycFloat */
 void PycFloat::load(PycData* stream, PycModule*)
@@ -34,4 +47,12 @@ void PycFloat::load(PycData* stream, PycModule*)
     } else {
         m_value = 0;
     }
+}
+
+bool PycFloat::isEqual(PycRef<PycObject> obj) const
+{
+    PycRef<PycFloat> floatObj = obj.cast<PycFloat>();
+    if (m_value == floatObj->m_value)
+        return true;
+    return (strcmp(m_value, floatObj->m_value) == 0);
 }

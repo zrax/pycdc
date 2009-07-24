@@ -12,6 +12,9 @@ public:
     bool isType(int type) const
     { return (type == TYPE_INT) || PycObject::isType(type); }
 
+    bool isEqual(PycRef<PycObject> obj) const
+    { return m_value == obj.cast<PycInt>()->m_value; }
+
     void load(class PycData* stream, class PycModule* mod);
 
     int value() const { return m_value; }
@@ -27,6 +30,8 @@ public:
 
     bool isType(int type) const
     { return (type == TYPE_LONG) || PycObject::isType(type); }
+
+    bool isEqual(PycRef<PycObject> obj) const;
 
     void load(class PycData* stream, class PycModule* mod);
 
@@ -48,6 +53,8 @@ public:
     bool isType(int type) const
     { return (type == TYPE_FLOAT) || PycObject::isType(type); }
 
+    bool isEqual(PycRef<PycObject> obj) const;
+
     void load(class PycData* stream, class PycModule* mod);
 
     const char* value() const { return m_value; }
@@ -55,9 +62,5 @@ public:
 private:
     char* m_value;  // Floats are stored as strings
 };
-
-/* Static Singleton objects */
-extern PycObjRef Pyc_False;
-extern PycObjRef Pyc_True;
 
 #endif

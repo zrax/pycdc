@@ -33,6 +33,14 @@ void PycString::load(PycData* stream, PycModule* mod)
     }
 }
 
+bool PycString::isEqual(PycRef<PycObject> obj) const
+{
+    PycRef<PycString> strObj = obj.cast<PycString>();
+    if (m_value == strObj->m_value)
+        return true;
+    return (strcmp(m_value, strObj->m_value) == 0);
+}
+
 
 void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
 {

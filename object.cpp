@@ -6,12 +6,14 @@
 #include "numeric.h"
 #include "code.h"
 
-PycObjRef Pyc_NULL = (PycObject*)0;
-PycObjRef Pyc_None = new PycObject(PycObject::TYPE_NONE);
-PycObjRef Pyc_Ellipsis = new PycObject(PycObject::TYPE_ELLIPSIS);
-PycObjRef Pyc_StopIteration = new PycObject(PycObject::TYPE_STOPITER);
+PycRef<PycObject> Pyc_NULL = (PycObject*)0;
+PycRef<PycObject> Pyc_None = new PycObject(PycObject::TYPE_NONE);
+PycRef<PycObject> Pyc_Ellipsis = new PycObject(PycObject::TYPE_ELLIPSIS);
+PycRef<PycObject> Pyc_StopIteration = new PycObject(PycObject::TYPE_STOPITER);
+PycRef<PycObject> Pyc_False = new PycObject(PycObject::TYPE_FALSE);
+PycRef<PycObject> Pyc_True = new PycObject(PycObject::TYPE_TRUE);
 
-PycObjRef CreateObject(int type)
+PycRef<PycObject> CreateObject(int type)
 {
     switch (type) {
     case PycObject::TYPE_NULL:
@@ -50,8 +52,8 @@ PycObjRef CreateObject(int type)
         return new PycTuple();
     case PycObject::TYPE_LIST:
         return new PycList();
-    //case PycObject::TYPE_DICT:
-    //    ...
+    case PycObject::TYPE_DICT:
+        return new PycDict();
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
         return new PycCode();
@@ -67,9 +69,9 @@ PycObjRef CreateObject(int type)
     }
 }
 
-PycObjRef LoadObject(PycData* stream, PycModule* mod)
+PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod)
 {
-    PycObjRef obj = CreateObject(stream->getByte());
+    PycRef<PycObject> obj = CreateObject(stream->getByte());
     if (obj != Pyc_NULL)
         obj->load(stream, mod);
     return obj;
