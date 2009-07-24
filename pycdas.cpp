@@ -33,25 +33,35 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent + 1, "Stack Size: %d\n", codeObj->stackSize());
             iprintf(indent + 1, "Flags: 0x%08X\n", codeObj->flags());
 
-            iprintf(indent + 1, "[Names]\n");
-            for (int i=0; i<codeObj->names()->size(); i++)
-                output_object(codeObj->names()->get(i), mod, indent + 2);
+            if (codeObj->names() != Pyc_NULL) {
+                iprintf(indent + 1, "[Names]\n");
+                for (int i=0; i<codeObj->names()->size(); i++)
+                    output_object(codeObj->names()->get(i), mod, indent + 2);
+            }
 
-            iprintf(indent + 1, "[Var Names]\n");
-            for (int i=0; i<codeObj->varNames()->size(); i++)
-                output_object(codeObj->varNames()->get(i), mod, indent + 2);
+            if (codeObj->varNames() != Pyc_NULL) {
+                iprintf(indent + 1, "[Var Names]\n");
+                for (int i=0; i<codeObj->varNames()->size(); i++)
+                    output_object(codeObj->varNames()->get(i), mod, indent + 2);
+            }
 
-            iprintf(indent + 1, "[Free Vars]\n");
-            for (int i=0; i<codeObj->freeVars()->size(); i++)
-                output_object(codeObj->freeVars()->get(i), mod, indent + 2);
+            if (codeObj->freeVars() != Pyc_NULL) {
+                iprintf(indent + 1, "[Free Vars]\n");
+                for (int i=0; i<codeObj->freeVars()->size(); i++)
+                    output_object(codeObj->freeVars()->get(i), mod, indent + 2);
+            }
 
-            iprintf(indent + 1, "[Cell Vars]\n");
-            for (int i=0; i<codeObj->cellVars()->size(); i++)
-                output_object(codeObj->cellVars()->get(i), mod, indent + 2);
+            if (codeObj->cellVars() != Pyc_NULL) {
+                iprintf(indent + 1, "[Cell Vars]\n");
+                for (int i=0; i<codeObj->cellVars()->size(); i++)
+                    output_object(codeObj->cellVars()->get(i), mod, indent + 2);
+            }
 
-            iprintf(indent + 1, "[Constants]\n");
-            for (int i=0; i<codeObj->consts()->size(); i++)
-                output_object(codeObj->consts()->get(i), mod, indent + 2);
+            if (codeObj->consts() != Pyc_NULL) {
+                iprintf(indent + 1, "[Constants]\n");
+                for (int i=0; i<codeObj->consts()->size(); i++)
+                    output_object(codeObj->consts()->get(i), mod, indent + 2);
+            }
 
             iprintf(indent + 1, "[Disassembly]\n");
             bc_disasm(codeObj, mod, indent + 2);
