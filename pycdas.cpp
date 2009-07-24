@@ -34,29 +34,24 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent + 1, "Flags: 0x%08X\n", codeObj->flags());
 
             iprintf(indent + 1, "[Names]\n");
-            PycTuple::value_t names = codeObj->names()->values();
-            for (PycTuple::value_t::iterator i = names.begin(); i != names.end(); i++)
-                output_object(*i, mod, indent + 2);
+            for (int i=0; i<codeObj->names()->size(); i++)
+                output_object(codeObj->names()->get(i), mod, indent + 2);
 
             iprintf(indent + 1, "[Var Names]\n");
-            names = codeObj->varNames()->values();
-            for (PycTuple::value_t::iterator i = names.begin(); i != names.end(); i++)
-                output_object(*i, mod, indent + 2);
+            for (int i=0; i<codeObj->varNames()->size(); i++)
+                output_object(codeObj->varNames()->get(i), mod, indent + 2);
 
             iprintf(indent + 1, "[Free Vars]\n");
-            names = codeObj->freeVars()->values();
-            for (PycTuple::value_t::iterator i = names.begin(); i != names.end(); i++)
-                output_object(*i, mod, indent + 2);
+            for (int i=0; i<codeObj->freeVars()->size(); i++)
+                output_object(codeObj->freeVars()->get(i), mod, indent + 2);
 
             iprintf(indent + 1, "[Cell Vars]\n");
-            names = codeObj->cellVars()->values();
-            for (PycTuple::value_t::iterator i = names.begin(); i != names.end(); i++)
-                output_object(*i, mod, indent + 2);
+            for (int i=0; i<codeObj->cellVars()->size(); i++)
+                output_object(codeObj->cellVars()->get(i), mod, indent + 2);
 
             iprintf(indent + 1, "[Constants]\n");
-            PycTuple::value_t consts = codeObj->consts()->values();
-            for (PycTuple::value_t::iterator i = consts.begin(); i != consts.end(); i++)
-                output_object(*i, mod, indent + 2);
+            for (int i=0; i<codeObj->consts()->size(); i++)
+                output_object(codeObj->consts()->get(i), mod, indent + 2);
 
             iprintf(indent + 1, "[Disassembly]\n");
             bc_disasm(codeObj, mod, indent + 2);

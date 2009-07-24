@@ -5,12 +5,22 @@
 #include <vector>
 #include <list>
 
-class PycTuple : public PycObject {
+class PycSequence : public PycObject {
+public:
+    PycSequence(int type) : PycObject(type), m_size(0) { }
+
+    int size() const { return m_size; }
+    virtual PycRef<PycObject> get(int idx) const = 0;
+
+protected:
+    int m_size;
+};
+
+class PycTuple : public PycSequence {
 public:
     typedef std::vector<PycRef<PycObject> > value_t;
 
-    PycTuple(int type = TYPE_TUPLE)
-        : PycObject(type), m_size(0) { }
+    PycTuple(int type = TYPE_TUPLE) : PycSequence(type) { }
 
     bool isType(int type) const
     { return (type == TYPE_TUPLE) || PycObject::isType(type); }
@@ -19,20 +29,18 @@ public:
 
     void load(class PycData* stream, class PycModule* mod);
 
-    int size() const { return m_size; }
     value_t values() const { return m_values; }
+    PycRef<PycObject> get(int idx) const { return m_values[idx]; }
 
 private:
-    int m_size;
     value_t m_values;
 };
 
-class PycList : public PycObject {
+class PycList : public PycSequence {
 public:
     typedef std::list<PycRef<PycObject> > value_t;
 
-    PycList(int type = TYPE_LIST)
-        : PycObject(type), m_size(0) { }
+    PycList(int type = TYPE_LIST) : PycSequence(type) { }
 
     bool isType(int type) const
     { return (type == TYPE_LIST) || PycObject::isType(type); }
@@ -41,21 +49,24 @@ public:
 
     void load(class PycData* stream, class PycModule* mod);
 
-    int size() const { return m_size; }
     value_t values() const { return m_values; }
+    PycRef<PycObject> get(int idx) const
+    {
+        value_t::const_iterator it = m_values.begin();
+        for (int i=0; i<idx; i++) ++it;
+        return *it;
+    }
 
 private:
-    int m_size;
     value_t m_values;
 };
 
-class PycDict : public PycObject {
+class PycDict : public PycSequence {
 public:
     typedef std::list<PycRef<PycObject> > key_t;
     typedef std::list<PycRef<PycObject> > value_t;
 
-    PycDict(int type = TYPE_DICT)
-        : PycObject(type), m_size(0) { }
+    PycDict(int type = TYPE_DICT) : PycSequence(type) { }
 
     bool isType(int type) const
     { return (type == TYPE_DICT) || PycObject::isType(type); }
@@ -64,13 +75,18 @@ public:
 
     void load(class PycData* stream, class PycModule* mod);
 
-    int size() const { return m_size; }
     PycRef<PycObject> get(PycRef<PycObject> key) const;
     key_t keys() const { return m_keys; }
     value_t values() const { return m_values; }
 
+    PycRef<PycObject> get(int idx) const
+    {
+        value_t::const_iterator it = m_values.begin();
+        for (int i=0; i<idx; i++) ++it;
+        return *it;
+    }
+
 private:
-    int m_size;
     key_t m_keys;
     value_t m_values;
 };
