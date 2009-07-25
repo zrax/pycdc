@@ -17,13 +17,13 @@ PycRef<PycObject> CreateObject(int type)
 {
     switch (type) {
     case PycObject::TYPE_NULL:
-        return (PycObject*)0;
+        return Pyc_NULL;
     case PycObject::TYPE_NONE:
         return Pyc_None;
     case PycObject::TYPE_FALSE:
-        return Pyc_False.cast<PycObject>();
+        return Pyc_False;
     case PycObject::TYPE_TRUE:
-        return Pyc_True.cast<PycObject>();
+        return Pyc_True;
     case PycObject::TYPE_STOPITER:
         return Pyc_StopIteration;
     case PycObject::TYPE_ELLIPSIS:

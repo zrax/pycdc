@@ -23,6 +23,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
 {
     switch (obj->type()) {
     case PycObject::TYPE_CODE:
+    case PycObject::TYPE_CODE2:
         {
             PycRef<PycCode> codeObj = obj.cast<PycCode>();
             iprintf(indent, "[Code]\n");

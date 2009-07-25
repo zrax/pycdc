@@ -312,6 +312,7 @@ static void print_const(PycRef<PycObject> obj, PycModule* mod)
         printf("%s", obj.cast<PycFloat>()->value());
         break;
     case PycObject::TYPE_CODE:
+    case PycObject::TYPE_CODE2:
         printf("<CODE> %s", obj.cast<PycCode>()->name()->value());
         break;
     }
