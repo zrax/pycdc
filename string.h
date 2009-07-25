@@ -33,6 +33,16 @@ private:
     int m_length;
 };
 
+class PycUnicode : public PycString {
+public:
+    PycUnicode(int type = TYPE_UNICODE) : PycString(type) { }
+
+    bool isType(int type) const
+    {
+        return (type == TYPE_UNICODE) || PycString::isType(type);
+    }
+};
+
 void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F = stdout);
 
 #endif

@@ -171,11 +171,6 @@ bool Py1k::IsVarNameArg(int opcode)
            (opcode == Py1k::STORE_FAST);
 }
 
-bool Py1k::IsCellArg(int opcode)
-{
-    return false;
-}
-
 bool Py2k::IsConstArg(int opcode)
 {
     return (opcode == Py2k::LOAD_CONST);
@@ -231,7 +226,7 @@ bool Py3k::IsCellArg(int opcode)
 }
 
 
-static void print_const(PycRef<PycObject> obj)
+static void print_const(PycRef<PycObject> obj, PycModule* mod)
 {
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
@@ -241,16 +236,24 @@ static void print_const(PycRef<PycObject> obj)
         OutputString(obj.cast<PycString>(), QS_Double);
         printf("\"");
         break;
+    case PycObject::TYPE_UNICODE:
+        if (mod->majorVer() == 3)
+            printf("\"");
+        else
+            printf("u\"");
+        OutputString(obj.cast<PycString>(), QS_Double);
+        printf("\"");
+        break;
     case PycObject::TYPE_TUPLE:
         {
             printf("(");
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
             PycTuple::value_t::iterator it = values.begin();
             if (it != values.end()) {
-                print_const(*it);
+                print_const(*it, mod);
                 while (++it != values.end()) {
                     printf(", ");
-                    print_const(*it);
+                    print_const(*it, mod);
                 }
             }
             printf(")");
@@ -262,10 +265,10 @@ static void print_const(PycRef<PycObject> obj)
             PycList::value_t values = obj.cast<PycList>()->values();
             PycList::value_t::iterator it = values.begin();
             if (it != values.end()) {
-                print_const(*it);
+                print_const(*it, mod);
                 while (++it != values.end()) {
                     printf(", ");
-                    print_const(*it);
+                    print_const(*it, mod);
                 }
             }
             printf("]");
@@ -279,15 +282,15 @@ static void print_const(PycRef<PycObject> obj)
             PycDict::key_t::iterator ki = keys.begin();
             PycDict::value_t::iterator vi = values.begin();
             if (ki != keys.end()) {
-                print_const(*ki);
+                print_const(*ki, mod);
                 printf(": ");
-                print_const(*vi);
+                print_const(*vi, mod);
                 while (++ki != keys.end()) {
                     ++vi;
                     printf(", ");
-                    print_const(*ki);
+                    print_const(*ki, mod);
                     printf(": ");
-                    print_const(*vi);
+                    print_const(*vi, mod);
                 }
             }
             printf("}");
@@ -353,8 +356,9 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 (mod->majorVer() == 2 && Py2k::IsConstArg(opcode)) ||
                 (mod->majorVer() == 3 && Py3k::IsConstArg(opcode))) {
                 printf("%d: ", operand);
-                print_const(code->getConst(operand));
+                print_const(code->getConst(operand), mod);
             } else if ((mod->majorVer() == 1 && Py1k::IsNameArg(opcode)) ||
+                       (mod->majorVer() == 1 && mod->minorVer() < 4 && Py1k::IsVarNameArg(opcode)) ||
                        (mod->majorVer() == 2 && Py2k::IsNameArg(opcode)) ||
                        (mod->majorVer() == 3 && Py3k::IsNameArg(opcode))) {
                 printf("%d: %s", operand, code->getName(operand)->value());
@@ -362,11 +366,10 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                        (mod->majorVer() == 2 && Py2k::IsVarNameArg(opcode)) ||
                        (mod->majorVer() == 3 && Py3k::IsVarNameArg(opcode))) {
                 printf("%d: %s", operand, code->getVarName(operand)->value());
-            } else if ((mod->majorVer() == 1 && Py1k::IsCellArg(opcode)) ||
-                       (mod->majorVer() == 2 && Py2k::IsCellArg(opcode)) ||
+            } else if ((mod->majorVer() == 2 && Py2k::IsCellArg(opcode)) ||
                        (mod->majorVer() == 3 && Py3k::IsCellArg(opcode))) {
                 printf("%d: ", operand);
-                print_const(code->getConst(operand));
+                print_const(code->getConst(operand), mod);
             } else {
                 printf("%d", operand);
             }

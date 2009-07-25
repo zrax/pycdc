@@ -57,8 +57,8 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
         return new PycCode();
-    //case PycObject::TYPE_UNICODE:
-    //    ...
+    case PycObject::TYPE_UNICODE:
+        return new PycUnicode();
     //case PycObject::TYPE_SET:
     //    ...
     //case PycObject::TYPE_FROZENSET:

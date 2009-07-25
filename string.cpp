@@ -45,10 +45,11 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
 void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
 {
     const char* ch = str->value();
+    int len = str->length();
     if (ch == 0)
         return;
-    while (*ch != 0) {
-        if (*ch < 0x20) {
+    while (len--) {
+        if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
                 fprintf(F, "\\r");
             } else if (*ch == '\n') {
@@ -61,8 +62,13 @@ void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
             } else {
                 fprintf(F, "\\x%x", *ch);
             }
-        } else if (*ch >= 0x7F) {
-            fprintf(F, "\\x%x", *ch);
+        } else if (*ch >= 0x80) {
+            if (str->type() == PycObject::TYPE_UNICODE) {
+                // Unicode stored as UTF-8...  Let the stream interpret it
+                fputc(*ch, F);
+            } else {
+                fprintf(F, "\\x%x", *ch);
+            }
         } else {
             if (style == QS_Single && *ch == '\'')
                 fprintf(F, "\\'");

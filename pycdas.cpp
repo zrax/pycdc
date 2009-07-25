@@ -74,6 +74,14 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         OutputString(obj.cast<PycString>(), QS_Double);
         printf("\"\n");
         break;
+    case PycObject::TYPE_UNICODE:
+        if (mod->majorVer() == 3)
+            iprintf(indent, "\"");
+        else
+            iprintf(indent, "u\"");
+        OutputString(obj.cast<PycString>(), QS_Double);
+        printf("\"\n");
+        break;
     case PycObject::TYPE_TUPLE:
         {
             iprintf(indent, "(\n");
@@ -102,12 +110,19 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             while (ki != keys.end()) {
                 output_object(*ki, mod, indent + 1);
                 output_object(*vi, mod, indent + 2);
+                ++ki, ++vi;
             }
             iprintf(indent, "}\n");
         }
         break;
     case PycObject::TYPE_NONE:
         iprintf(indent, "None\n");
+        break;
+    case PycObject::TYPE_FALSE:
+        iprintf(indent, "False\n");
+        break;
+    case PycObject::TYPE_TRUE:
+        iprintf(indent, "True\n");
         break;
     case PycObject::TYPE_INT:
         iprintf(indent, "%d\n", obj.cast<PycInt>()->value());

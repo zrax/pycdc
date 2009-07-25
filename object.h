@@ -1,7 +1,6 @@
 #ifndef _PYC_OBJECT_H
 #define _PYC_OBJECT_H
 
-
 template <class _Obj>
 class PycRef {
 public:
