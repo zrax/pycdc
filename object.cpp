@@ -30,16 +30,16 @@ PycRef<PycObject> CreateObject(int type)
         return Pyc_Ellipsis;
     case PycObject::TYPE_INT:
         return new PycInt();
-    //case PycObject::TYPE_INT64:
-    //    ...
+    case PycObject::TYPE_INT64:
+        return new PycLong(PycObject::TYPE_INT64);
     case PycObject::TYPE_FLOAT:
         return new PycFloat();
-    //case PycObject::TYPE_BINARY_FLOAT:
-    //    ...
-    //case PycObject::TYPE_COMPLEX:
-    //    ...
-    //case PycObject::TYPE_BINARY_COMPLEX:
-    //    ...
+    case PycObject::TYPE_BINARY_FLOAT:
+        return new PycCFloat();
+    case PycObject::TYPE_COMPLEX:
+        return new PycComplex();
+    case PycObject::TYPE_BINARY_COMPLEX:
+        return new PycCComplex();
     case PycObject::TYPE_LONG:
         return new PycLong();
     case PycObject::TYPE_STRING:
@@ -58,11 +58,11 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_CODE2:
         return new PycCode();
     case PycObject::TYPE_UNICODE:
-        return new PycUnicode();
-    //case PycObject::TYPE_SET:
-    //    ...
-    //case PycObject::TYPE_FROZENSET:
-    //    ...
+        return new PycString(PycObject::TYPE_UNICODE);
+    case PycObject::TYPE_SET:
+        return new PycSet();
+    case PycObject::TYPE_FROZENSET:
+        return new PycSet(PycObject::TYPE_FROZENSET);
     default:
         fprintf(stderr, "CreateObject: Got unsupported type 0x%X\n", type);
         return (PycObject*)0;

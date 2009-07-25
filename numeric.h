@@ -9,11 +9,11 @@ public:
     PycInt(int value = 0, int type = TYPE_INT)
         : PycObject(type), m_value(value) { }
 
-    bool isType(int type) const
-    { return (type == TYPE_INT) || PycObject::isType(type); }
-
     bool isEqual(PycRef<PycObject> obj) const
-    { return m_value == obj.cast<PycInt>()->m_value; }
+    {
+        return (type() == obj->type()) &&
+               (m_value == obj.cast<PycInt>()->m_value);
+    }
 
     void load(class PycData* stream, class PycModule* mod);
 
@@ -27,9 +27,6 @@ class PycLong : public PycObject {
 public:
     PycLong(int type = TYPE_LONG)
         : PycObject(type), m_size(0) { }
-
-    bool isType(int type) const
-    { return (type == TYPE_LONG) || PycObject::isType(type); }
 
     bool isEqual(PycRef<PycObject> obj) const;
 
@@ -50,9 +47,6 @@ public:
 
     ~PycFloat() { if (m_value) delete[] m_value; }
 
-    bool isType(int type) const
-    { return (type == TYPE_FLOAT) || PycObject::isType(type); }
-
     bool isEqual(PycRef<PycObject> obj) const;
 
     void load(class PycData* stream, class PycModule* mod);
@@ -61,6 +55,61 @@ public:
 
 private:
     char* m_value;  // Floats are stored as strings
+};
+
+class PycComplex : public PycFloat {
+public:
+    PycComplex(int type = TYPE_COMPLEX)
+        : PycFloat(type), m_imag(0) { }
+
+    ~PycComplex() { if (m_imag) delete[] m_imag; }
+
+    bool isEqual(PycRef<PycObject> obj) const;
+
+    void load(class PycData* stream, class PycModule* mod);
+
+    const char* imag() const { return m_imag; }
+
+private:
+    char* m_imag;
+};
+
+class PycCFloat : public PycObject {
+public:
+    PycCFloat(int type = TYPE_BINARY_FLOAT)
+        : PycObject(type), m_value(0.0) { }
+
+    bool isEqual(PycRef<PycObject> obj) const
+    {
+        return (type() == obj->type()) &&
+               (m_value == obj.cast<PycCFloat>()->m_value);
+    }
+
+    void load(class PycData* stream, class PycModule* mod);
+
+    double value() const { return m_value; }
+
+private:
+    double m_value;
+};
+
+class PycCComplex : public PycCFloat {
+public:
+    PycCComplex(int type = TYPE_BINARY_COMPLEX)
+        : PycCFloat(type), m_imag(0.0) { }
+
+    bool isEqual(PycRef<PycObject> obj) const
+    {
+        return (PycCFloat::isEqual(obj)) &&
+               (m_imag == obj.cast<PycCComplex>()->m_imag);
+    }
+
+    void load(class PycData* stream, class PycModule* mod);
+
+    double imag() const { return m_imag; }
+
+private:
+    double m_imag;
 };
 
 #endif

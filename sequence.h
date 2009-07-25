@@ -4,6 +4,7 @@
 #include "object.h"
 #include <vector>
 #include <list>
+#include <set>
 
 class PycSequence : public PycObject {
 public:
@@ -22,9 +23,6 @@ public:
 
     PycTuple(int type = TYPE_TUPLE) : PycSequence(type) { }
 
-    bool isType(int type) const
-    { return (type == TYPE_TUPLE) || PycObject::isType(type); }
-
     bool isEqual(PycRef<PycObject> obj) const;
 
     void load(class PycData* stream, class PycModule* mod);
@@ -41,9 +39,6 @@ public:
     typedef std::list<PycRef<PycObject> > value_t;
 
     PycList(int type = TYPE_LIST) : PycSequence(type) { }
-
-    bool isType(int type) const
-    { return (type == TYPE_LIST) || PycObject::isType(type); }
 
     bool isEqual(PycRef<PycObject> obj) const;
 
@@ -68,9 +63,6 @@ public:
 
     PycDict(int type = TYPE_DICT) : PycSequence(type) { }
 
-    bool isType(int type) const
-    { return (type == TYPE_DICT) || PycObject::isType(type); }
-
     bool isEqual(PycRef<PycObject> obj) const;
 
     void load(class PycData* stream, class PycModule* mod);
@@ -88,6 +80,28 @@ public:
 
 private:
     key_t m_keys;
+    value_t m_values;
+};
+
+class PycSet : public PycSequence {
+public:
+    typedef std::set<PycRef<PycObject> > value_t;
+
+    PycSet(int type = TYPE_SET) : PycSequence(type) { }
+
+    bool isEqual(PycRef<PycObject> obj) const;
+
+    void load(class PycData* stream, class PycModule* mod);
+
+    value_t values() const { return m_values; }
+    PycRef<PycObject> get(int idx) const
+    {
+        value_t::const_iterator it = m_values.begin();
+        for (int i=0; i<idx; i++) ++it;
+        return *it;
+    }
+
+private:
     value_t m_values;
 };
 

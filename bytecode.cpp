@@ -232,17 +232,20 @@ static void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
-        printf("\"");
-        OutputString(obj.cast<PycString>(), QS_Double);
-        printf("\"");
+        if (mod->majorVer() == 3)
+            printf("b'");
+        else
+            printf("'");
+        OutputString(obj.cast<PycString>(), QS_Single);
+        printf("'");
         break;
     case PycObject::TYPE_UNICODE:
         if (mod->majorVer() == 3)
-            printf("\"");
+            printf("'");
         else
-            printf("u\"");
-        OutputString(obj.cast<PycString>(), QS_Double);
-        printf("\"");
+            printf("u'");
+        OutputString(obj.cast<PycString>(), QS_Single);
+        printf("'");
         break;
     case PycObject::TYPE_TUPLE:
         {
@@ -296,6 +299,21 @@ static void print_const(PycRef<PycObject> obj, PycModule* mod)
             printf("}");
         }
         break;
+    case PycObject::TYPE_SET:
+        {
+            printf("{");
+            PycSet::value_t values = obj.cast<PycSet>()->values();
+            PycSet::value_t::iterator it = values.begin();
+            if (it != values.end()) {
+                print_const(*it, mod);
+                while (++it != values.end()) {
+                    printf(", ");
+                    print_const(*it, mod);
+                }
+            }
+            printf("}");
+        }
+        break;
     case PycObject::TYPE_NONE:
         printf("None");
         break;
@@ -311,6 +329,17 @@ static void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_FLOAT:
         printf("%s", obj.cast<PycFloat>()->value());
         break;
+    case PycObject::TYPE_COMPLEX:
+        printf("(%s+%sj)", obj.cast<PycComplex>()->value(),
+                           obj.cast<PycComplex>()->imag());
+        break;
+    case PycObject::TYPE_BINARY_FLOAT:
+        printf("%g", obj.cast<PycCFloat>()->value());
+        break;
+    case PycObject::TYPE_BINARY_COMPLEX:
+        printf("(%g+%gj)", obj.cast<PycCComplex>()->value(),
+                           obj.cast<PycCComplex>()->imag());
+        break;
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
         printf("<CODE> %s", obj.cast<PycCode>()->name()->value());
@@ -322,15 +351,23 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
 
+    int pos = 0;
     while (!source.atEof()) {
+        for (int i=0; i<indent; i++)
+            printf("    ");
+        printf("%-7d ", pos);   // Current bytecode position
+
         int opcode = source.getByte();
         int operand = 0;
         bool haveExtArg = false;
+        pos += 1;
+
         if ((mod->majorVer() == 2 && opcode == Py2k::EXTENDED_ARG) ||
             (mod->majorVer() == 3 && opcode == Py3k::EXTENDED_ARG)) {
             operand = source.get16() << 16;
             opcode = source.getByte();
             haveExtArg = true;
+            pos += 3;
         }
         if (opcode >= HAVE_ARG) {
             // If we have an extended arg, we want to OR the lower part,
@@ -341,10 +378,9 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 operand |= (source.get16() & 0xFFFF);
             else
                 operand = source.get16();
+            pos += 2;
         }
 
-        for (int i=0; i<indent; i++)
-            printf("    ");
         if (mod->majorVer() == 1) {
             printf("%-24s", Py1k::OpcodeNames[opcode]);
         } else if (mod->majorVer() == 2) {
@@ -359,7 +395,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 printf("%d: ", operand);
                 print_const(code->getConst(operand), mod);
             } else if ((mod->majorVer() == 1 && Py1k::IsNameArg(opcode)) ||
-                       (mod->majorVer() == 1 && mod->minorVer() < 4 && Py1k::IsVarNameArg(opcode)) ||
+                       (mod->majorVer() == 1 && mod->minorVer() < 3 && Py1k::IsVarNameArg(opcode)) ||
                        (mod->majorVer() == 2 && Py2k::IsNameArg(opcode)) ||
                        (mod->majorVer() == 3 && Py3k::IsNameArg(opcode))) {
                 printf("%d: %s", operand, code->getName(operand)->value());

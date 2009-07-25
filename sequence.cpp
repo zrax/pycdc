@@ -13,6 +13,9 @@ void PycTuple::load(PycData* stream, PycModule* mod)
 
 bool PycTuple::isEqual(PycRef<PycObject> obj) const
 {
+    if (type() != obj->type())
+        return false;
+
     PycRef<PycTuple> tupleObj = obj.cast<PycTuple>();
     if (m_size != tupleObj->m_size)
         return false;
@@ -37,6 +40,9 @@ void PycList::load(PycData* stream, PycModule* mod)
 
 bool PycList::isEqual(PycRef<PycObject> obj) const
 {
+    if (type() != obj->type())
+        return false;
+
     PycRef<PycList> listObj = obj.cast<PycList>();
     if (m_size != listObj->m_size)
         return false;
@@ -67,6 +73,9 @@ void PycDict::load(PycData* stream, PycModule* mod)
 
 bool PycDict::isEqual(PycRef<PycObject> obj) const
 {
+    if (type() != obj->type())
+        return false;
+
     PycRef<PycDict> dictObj = obj.cast<PycDict>();
     if (m_size != dictObj->m_size)
         return false;
@@ -99,4 +108,31 @@ PycRef<PycObject> PycDict::get(PycRef<PycObject> key) const
         ++ki, ++vi;
     }
     return Pyc_NULL; // Disassembly shouldn't get non-existant keys
+}
+
+
+/* PycSet */
+void PycSet::load(PycData* stream, PycModule* mod)
+{
+    m_size = stream->get32();
+    for (int i=0; i<m_size; i++)
+        m_values.insert(LoadObject(stream, mod));
+}
+
+bool PycSet::isEqual(PycRef<PycObject> obj) const
+{
+    if (type() != obj->type())
+        return false;
+
+    PycRef<PycSet> setObj = obj.cast<PycSet>();
+    if (m_size != setObj->m_size)
+        return false;
+    value_t::const_iterator it1 = m_values.begin();
+    value_t::const_iterator it2 = setObj->m_values.begin();
+    while (it1 != m_values.end()) {
+        if (!(*it1)->isEqual(*it2))
+            return false;
+        ++it1, ++it2;
+    }
+    return true;
 }

@@ -10,9 +10,6 @@ public:
         : PycObject(type), m_argCount(0), m_kwOnlyArgCount(0), m_numLocals(0),
           m_stackSize(0), m_flags(0), m_firstLine(0) { }
 
-    bool isType(int type) const
-    { return (type == TYPE_CODE) || (type == TYPE_CODE2) || PycObject::isType(type); }
-
     void load(class PycData* stream, class PycModule* mod);
 
     int argCount() const { return m_argCount; }

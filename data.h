@@ -3,6 +3,12 @@
 
 #include <cstdio>
 
+#ifdef WIN32
+typedef __int64 Pyc_INT64;
+#else
+typedef long long Pyc_INT64;
+#endif
+
 class PycData {
 public:
     PycData() { }
@@ -15,6 +21,7 @@ public:
     virtual int getBuffer(int bytes, void* buffer) = 0;
     int get16();
     int get32();
+    Pyc_INT64 get64();
 };
 
 class PycFile : public PycData {

@@ -80,9 +80,6 @@ public:
 
     int type() const { return (this) ? m_type : TYPE_NULL; }
 
-    virtual bool isType(int type) const
-    { return (this) ? type == m_type : type == TYPE_NULL; }
-
     virtual bool isEqual(PycRef<PycObject> obj) const
     { return (this == (PycObject*)obj); }
 

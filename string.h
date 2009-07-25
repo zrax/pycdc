@@ -15,12 +15,6 @@ public:
 
     ~PycString() { if (m_value) delete[] m_value; }
 
-    bool isType(int type) const
-    {
-        return (type == TYPE_STRING) || (type == TYPE_INTERNED) ||
-               (type == TYPE_STRINGREF) || PycObject::isType(type);
-    }
-
     bool isEqual(PycRef<PycObject> obj) const;
 
     void load(class PycData* stream, class PycModule* mod);
@@ -31,16 +25,6 @@ public:
 private:
     char* m_value;
     int m_length;
-};
-
-class PycUnicode : public PycString {
-public:
-    PycUnicode(int type = TYPE_UNICODE) : PycString(type) { }
-
-    bool isType(int type) const
-    {
-        return (type == TYPE_UNICODE) || PycString::isType(type);
-    }
 };
 
 void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F = stdout);

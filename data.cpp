@@ -23,6 +23,20 @@ int PycData::get32()
                 );
 }
 
+Pyc_INT64 PycData::get64()
+{
+    /* Ensure endianness */
+    return (Pyc_INT64)( ((Pyc_INT64)(getByte() & 0xFF)      )
+                      | ((Pyc_INT64)(getByte() & 0xFF) <<  8)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 16)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 24)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 32)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 40)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 48)
+                      | ((Pyc_INT64)(getByte() & 0xFF) << 56)
+                      );
+}
+
 
 /* PycFile */
 PycFile::PycFile(const char* filename)

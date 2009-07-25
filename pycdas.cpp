@@ -71,17 +71,20 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
-        iprintf(indent, "\"");
-        OutputString(obj.cast<PycString>(), QS_Double);
-        printf("\"\n");
+        if (mod->majorVer() == 3)
+            iprintf(indent, "b'");
+        else
+            iprintf(indent, "'");
+        OutputString(obj.cast<PycString>(), QS_Single);
+        printf("'\n");
         break;
     case PycObject::TYPE_UNICODE:
         if (mod->majorVer() == 3)
-            iprintf(indent, "\"");
+            iprintf(indent, "'");
         else
-            iprintf(indent, "u\"");
-        OutputString(obj.cast<PycString>(), QS_Double);
-        printf("\"\n");
+            iprintf(indent, "u'");
+        OutputString(obj.cast<PycString>(), QS_Single);
+        printf("'\n");
         break;
     case PycObject::TYPE_TUPLE:
         {
@@ -116,6 +119,15 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent, "}\n");
         }
         break;
+    case PycObject::TYPE_SET:
+        {
+            iprintf(indent, "{\n");
+            PycSet::value_t values = obj.cast<PycSet>()->values();
+            for (PycSet::value_t::iterator i = values.begin(); i != values.end(); i++)
+                output_object(*i, mod, indent + 1);
+            iprintf(indent, "}\n");
+        }
+        break;
     case PycObject::TYPE_NONE:
         iprintf(indent, "None\n");
         break;
@@ -130,6 +142,17 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         break;
     case PycObject::TYPE_FLOAT:
         iprintf(indent, "%s\n", obj.cast<PycFloat>()->value());
+        break;
+    case PycObject::TYPE_COMPLEX:
+        iprintf(indent, "(%s+%sj)\n", obj.cast<PycComplex>()->value(),
+                                      obj.cast<PycComplex>()->imag());
+        break;
+    case PycObject::TYPE_BINARY_FLOAT:
+        iprintf(indent, "%g\n", obj.cast<PycCFloat>()->value());
+        break;
+    case PycObject::TYPE_BINARY_COMPLEX:
+        iprintf(indent, "(%g+%gj)\n", obj.cast<PycCComplex>()->value(),
+                                      obj.cast<PycCComplex>()->imag());
         break;
     default:
         iprintf(indent, "<TYPE: %d>\n", obj->type());
@@ -146,7 +169,7 @@ int main(int argc, char* argv[])
     PycModule mod;
     mod.loadFromFile(argv[1]);
     printf("%s (Python %d.%d%s)\n", argv[1], mod.majorVer(), mod.minorVer(),
-           mod.isUnicode() ? " -U" : "");
+           (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     output_object(mod.code().cast<PycObject>(), &mod, 0);
 
     return 0;
