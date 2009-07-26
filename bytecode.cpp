@@ -1,5 +1,4 @@
 #include "bytecode.h"
-#include "data.h"
 #include "numeric.h"
 
 const char* Py1k::OpcodeNames[256] = {
@@ -226,7 +225,7 @@ bool Py3k::IsCellArg(int opcode)
 }
 
 
-static void print_const(PycRef<PycObject> obj, PycModule* mod)
+void print_const(PycRef<PycObject> obj, PycModule* mod)
 {
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
@@ -347,39 +346,45 @@ static void print_const(PycRef<PycObject> obj, PycModule* mod)
     }
 }
 
+void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
+{
+    opcode = source.getByte();
+    operand = 0;
+    bool haveExtArg = false;
+    pos += 1;
+
+    if ((mod->majorVer() == 2 && opcode == Py2k::EXTENDED_ARG) ||
+        (mod->majorVer() == 3 && opcode == Py3k::EXTENDED_ARG)) {
+        operand = source.get16() << 16;
+        opcode = source.getByte();
+        haveExtArg = true;
+        pos += 3;
+    }
+    if (opcode >= HAVE_ARG) {
+        // If we have an extended arg, we want to OR the lower part,
+        // else we want the whole thing (in case it's negative).  We use
+        // the bool so that values between 0x8000 and 0xFFFF can be stored
+        // without becoming negative
+        if (haveExtArg)
+            operand |= (source.get16() & 0xFFFF);
+        else
+            operand = source.get16();
+        pos += 2;
+    }
+}
+
 void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
 
+    int opcode, operand;
     int pos = 0;
     while (!source.atEof()) {
         for (int i=0; i<indent; i++)
             printf("    ");
         printf("%-7d ", pos);   // Current bytecode position
 
-        int opcode = source.getByte();
-        int operand = 0;
-        bool haveExtArg = false;
-        pos += 1;
-
-        if ((mod->majorVer() == 2 && opcode == Py2k::EXTENDED_ARG) ||
-            (mod->majorVer() == 3 && opcode == Py3k::EXTENDED_ARG)) {
-            operand = source.get16() << 16;
-            opcode = source.getByte();
-            haveExtArg = true;
-            pos += 3;
-        }
-        if (opcode >= HAVE_ARG) {
-            // If we have an extended arg, we want to OR the lower part,
-            // else we want the whole thing (in case it's negative).  We use
-            // the bool so that values between 0x8000 and 0xFFFF can be stored
-            // without becoming negative
-            if (haveExtArg)
-                operand |= (source.get16() & 0xFFFF);
-            else
-                operand = source.get16();
-            pos += 2;
-        }
+        bc_next(source, mod, opcode, operand, pos);
 
         if (mod->majorVer() == 1) {
             printf("%-24s", Py1k::OpcodeNames[opcode]);

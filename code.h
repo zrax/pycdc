@@ -6,6 +6,23 @@
 
 class PycCode : public PycObject {
 public:
+    enum CodeFlags {
+        CO_OPTIMIZED = 0x1,
+        CO_NEWLOCALS = 0x2,
+        CO_VARARGS = 0x4,
+        CO_VARKEYWORDS = 0x8,
+        CO_NESTED = 0x10,
+        CO_GENERATOR = 0x20,
+        CO_NOFREE = 0x40,
+        CO_GENERATOR_ALLOWED = 0x1000,
+        CO_FUTURE_DIVISION = 0x2000,
+        CO_FUTURE_ABSOLUTE_IMPORT = 0x4000,
+        CO_FUTURE_WITH_STATEMENT = 0x8000,
+        CO_FUTURE_PRINT_FUNCTION = 0x10000,
+        CO_FUTURE_UNICODE_LITERALS = 0x20000,
+        CO_FUTURE_BARRY_AS_BDFL = 0x40000,
+    };
+
     PycCode(int type = TYPE_CODE)
         : PycObject(type), m_argCount(0), m_kwOnlyArgCount(0), m_numLocals(0),
           m_stackSize(0), m_flags(0), m_firstLine(0) { }

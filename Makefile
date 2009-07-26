@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -Wall -O2
+CXXFLAGS = -g -Wall
 
 COMMON = \
 	out/module.o \
@@ -9,10 +9,13 @@ COMMON = \
 	out/numeric.o \
 	out/code.o \
 	out/sequence.o \
-	out/string.o
+	out/string.o \
+	out/ASTree.o \
+	out/ASTNode.o
 
 ALL = \
-	bin/pycdas
+	bin/pycdas \
+	bin/pycdc
 
 PREFIX = /usr/local
 
@@ -27,6 +30,9 @@ install:
 
 bin/pycdas: pycdas.cpp $(COMMON)
 	$(CXX) $(CXXFLAGS) $(COMMON) pycdas.cpp -o $@
+
+bin/pycdc: pycdc.cpp $(COMMON)
+	$(CXX) $(CXXFLAGS) $(COMMON) pycdc.cpp -o $@
 
 out/module.o: module.h module.cpp
 	$(CXX) $(CXXFLAGS) -c module.cpp -o $@
@@ -51,3 +57,9 @@ out/sequence.o: sequence.h sequence.cpp
 
 out/string.o: string.h string.cpp
 	$(CXX) $(CXXFLAGS) -c string.cpp -o $@
+
+out/ASTree.o: ASTree.h ASTree.cpp
+	$(CXX) $(CXXFLAGS) -c ASTree.cpp -o $@
+
+out/ASTNode.o: ASTNode.h ASTNode.cpp
+	$(CXX) $(CXXFLAGS) -c ASTNode.cpp -o $@
