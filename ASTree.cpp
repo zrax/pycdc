@@ -134,6 +134,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
             }
             break;
+        case (PY_2000 | Py2k::IMPORT_STAR):
+        case (PY_3000 | Py3k::IMPORT_STAR):
+            {
+                PycRef<ASTNode> import = stack.top();
+                stack.pop();
+                lines.push_back(new ASTStore(import, Node_NULL));
+            }
+            break;
         case (PY_1000 | Py1k::LOAD_ATTR):
         case (PY_2000 | Py2k::LOAD_ATTR):
         case (PY_3000 | Py3k::LOAD_ATTR):
@@ -186,6 +194,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTFunction(code, defArgs));
             }
             break;
+        case (PY_1000 | Py1k::POP_TOP):
+        case (PY_2000 | Py2k::POP_TOP):
+        case (PY_3000 | Py3k::POP_TOP):
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                if (value->type() == ASTNode::NODE_CALL)
+                    lines.push_back(value);
+            }
+            break;
         case (PY_1000 | Py1k::RETURN_VALUE):
         case (PY_2000 | Py2k::RETURN_VALUE):
         case (PY_3000 | Py3k::RETURN_VALUE):
@@ -195,9 +213,31 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 lines.push_back(new ASTReturn(value));
             }
             break;
+        case (PY_1000 | Py1k::STORE_ATTR):
+        case (PY_2000 | Py2k::STORE_ATTR):
+        case (PY_3000 | Py3k::STORE_ATTR):
+            {
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
+                lines.push_back(new ASTStore(value, attr));
+            }
+            break;
         case (PY_1000 | Py1k::STORE_NAME):
         case (PY_2000 | Py2k::STORE_NAME):
         case (PY_3000 | Py3k::STORE_NAME):
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                lines.push_back(new ASTStore(value, name));
+            }
+            break;
+        case (PY_1000 | Py1k::STORE_GLOBAL):
+        case (PY_2000 | Py2k::STORE_GLOBAL):
+        case (PY_3000 | Py3k::STORE_GLOBAL):
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -326,8 +366,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
                         bool first = true;
                         PycTuple::value_t::const_iterator ii = fromlist->values().begin();
                         for (; ii != fromlist->values().end(); ++ii) {
-                            if (first) printf(", ");
+                            if (!first) printf(", ");
                             printf("%s", ii->cast<PycString>()->value());
+                            first = false;
                         }
                     } else {
                         printf("import ");
@@ -384,7 +425,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
         break;
     default:
         fprintf(stderr, "Unsupported Node type: %d\n", node->type());
+        cleanBuild = false;
+        return;
     }
+
+    cleanBuild = true;
 }
 
 void decompyle(PycRef<PycCode> code, PycModule* mod, int indent)
@@ -416,5 +461,11 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, int indent)
             clean->append(new ASTNode(ASTNode::NODE_PASS));
     }
 
+    bool part1clean = cleanBuild;
     print_src(source, mod, indent);
+
+    if (!cleanBuild || !part1clean) {
+        start_indent(indent);
+        printf("# WARNING: Decompyle incomplete\n");
+    }
 }
