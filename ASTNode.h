@@ -11,7 +11,10 @@ public:
     enum Type {
         NODE_INVALID, NODE_LIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
-        NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_PASS
+        NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
+
+        // Empty nodes
+        NODE_PASS, NODE_LOCALS
     };
 
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
@@ -77,7 +80,8 @@ class ASTBinary : public ASTNode {
 public:
     enum BinOp {
         BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_MODULO, BIN_ADD,
-        BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR, BIN_OR
+        BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
+        BIN_OR, BIN_ATTR
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
@@ -141,16 +145,13 @@ private:
 
 class ASTName : public ASTNode {
 public:
-    typedef std::list<PycRef<PycString> > name_t;
-
     ASTName(PycRef<PycString> name)
-        : ASTNode(NODE_NAME) { m_name.push_back(name); }
+        : ASTNode(NODE_NAME), m_name(name) { }
 
-    const name_t& name() const { return m_name; }
-    void add(PycRef<PycString> name) { m_name.push_back(name); }
+    PycRef<PycString> name() const { return m_name; }
 
 private:
-    name_t m_name;
+    PycRef<PycString> m_name;
 };
 
 
@@ -184,13 +185,17 @@ private:
 
 class ASTClass : public ASTNode {
 public:
-    ASTClass(PycRef<ASTNode> code)
-        : ASTNode(NODE_CLASS), m_code(code) { }
+    ASTClass(PycRef<ASTNode> code, PycRef<ASTNode> bases, PycRef<ASTNode> name)
+        : ASTNode(NODE_CLASS), m_code(code), m_bases(bases), m_name(name) { }
 
     PycRef<ASTNode> code() const { return m_code; }
+    PycRef<ASTNode> bases() const { return m_bases; }
+    PycRef<ASTNode> name() const { return m_name; }
 
 private:
     PycRef<ASTNode> m_code;
+    PycRef<ASTNode> m_bases;
+    PycRef<ASTNode> m_name;
 };
 
 
@@ -210,6 +215,34 @@ private:
     PycRef<ASTNode> m_func;
     pparam_t m_pparams;
     kwparam_t m_kwparams;
+};
+
+
+class ASTImport : public ASTNode {
+public:
+    ASTImport(PycRef<ASTNode> name, PycRef<ASTNode> fromlist)
+        : ASTNode(NODE_IMPORT), m_name(name), m_fromlist(fromlist) { }
+
+    PycRef<ASTNode> name() const { return m_name; }
+    PycRef<ASTNode> fromlist() const { return m_fromlist; }
+
+private:
+    PycRef<ASTNode> m_name;
+    PycRef<ASTNode> m_fromlist;
+};
+
+
+class ASTTuple : public ASTNode {
+public:
+    typedef std::vector<PycRef<ASTNode> > value_t;
+
+    ASTTuple(value_t values)
+        : ASTNode(NODE_TUPLE), m_values(values) { }
+
+    const value_t& values() const { return m_values; }
+
+private:
+    value_t m_values;
 };
 
 #endif

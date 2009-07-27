@@ -3,15 +3,6 @@
 #include "module.h"
 
 /* PycTuple */
-PycRef<PycTuple> PycTuple::Build(const value_t& items)
-{
-    PycRef<PycTuple> tupleObj = new PycTuple();
-    tupleObj->m_size = items.size();
-    tupleObj->m_values.resize(tupleObj->m_size);
-    std::copy(items.begin(), items.end(), tupleObj->m_values.begin());
-    return tupleObj;
-}
-
 void PycTuple::load(PycData* stream, PycModule* mod)
 {
     m_size = stream->get32();

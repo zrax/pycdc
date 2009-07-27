@@ -258,7 +258,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
                     print_const(*it, mod);
                 }
             }
-            printf(")");
+            if (values.size() == 1)
+                printf(",)");
+            else
+                printf(")");
         }
         break;
     case PycObject::TYPE_LIST:

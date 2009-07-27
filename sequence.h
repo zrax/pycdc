@@ -22,7 +22,6 @@ public:
     typedef std::vector<PycRef<PycObject> > value_t;
 
     PycTuple(int type = TYPE_TUPLE) : PycSequence(type) { }
-    static PycRef<PycTuple> Build(const value_t& items);
 
     bool isEqual(PycRef<PycObject> obj) const;
 
