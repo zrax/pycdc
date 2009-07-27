@@ -9,9 +9,10 @@
 class ASTNode {
 public:
     enum Type {
-        NODE_INVALID, NODE_LIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
+        NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
         NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
+        NODE_LIST, NODE_MAP, NODE_SUBSCR,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -40,7 +41,7 @@ public:
     typedef std::list<PycRef<ASTNode> > list_t;
 
     ASTNodeList(list_t nodes)
-        : ASTNode(NODE_LIST), m_nodes(nodes) { }
+        : ASTNode(NODE_NODELIST), m_nodes(nodes) { }
 
     const list_t& nodes() const { return m_nodes; }
     void removeFirst();
@@ -81,7 +82,7 @@ public:
     enum BinOp {
         BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_MODULO, BIN_ADD,
         BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
-        BIN_OR, BIN_ATTR
+        BIN_OR, BIN_FLOOR, BIN_ATTR
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
@@ -172,7 +173,7 @@ public:
     typedef std::list<PycRef<ASTNode> > defarg_t;
 
     ASTFunction(PycRef<ASTNode> code, defarg_t defArgs)
-        : ASTNode(NODE_FUNCTION), m_code(code) { }
+        : ASTNode(NODE_FUNCTION), m_code(code), m_defargs(defArgs) { }
 
     PycRef<ASTNode> code() const { return m_code; }
     const defarg_t& defargs() const { return m_defargs; }
@@ -243,6 +244,50 @@ public:
 
 private:
     value_t m_values;
+};
+
+
+class ASTList : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode> > value_t;
+
+    ASTList(value_t values)
+        : ASTNode(NODE_LIST), m_values(values) { }
+
+    const value_t& values() const { return m_values; }
+
+private:
+    value_t m_values;
+};
+
+
+class ASTMap : public ASTNode {
+public:
+    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > map_t;
+
+    ASTMap() : ASTNode(NODE_MAP) { }
+
+    void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
+    { m_values.push_back(std::make_pair(key, value)); }
+
+    const map_t& values() const { return m_values; }
+
+private:
+    map_t m_values;
+};
+
+
+class ASTSubscr : public ASTNode {
+public:
+    ASTSubscr(PycRef<ASTNode> name, PycRef<ASTNode> key)
+        : ASTNode(NODE_SUBSCR), m_name(name), m_key(key) { }
+
+    PycRef<ASTNode> name() const { return m_name; }
+    PycRef<ASTNode> key() const { return m_key; }
+
+private:
+    PycRef<ASTNode> m_name;
+    PycRef<ASTNode> m_key;
 };
 
 #endif

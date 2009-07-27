@@ -21,7 +21,8 @@ void ASTNodeList::removeFirst()
 const char* ASTBinary::op_str() const
 {
     static const char* s_op_strings[] = {
-        "**", "*", "/", "%", "+", "-", "<<", ">>", "&", "^", "|"
+        "**", "*", "/", "%", "+", "-", "<<", ">>", "&", "^", "|", "//",
+        "<ATTR>"
     };
     return s_op_strings[op()];
 }
