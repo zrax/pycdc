@@ -33,7 +33,7 @@ public:
     void load(class PycData* stream, class PycModule* mod);
 
     int size() const { return m_size; }
-    std::list<int> value() const { return m_value; }
+    const std::list<int>& value() const { return m_value; }
 
 private:
     int m_size;

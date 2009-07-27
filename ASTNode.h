@@ -10,7 +10,8 @@ class ASTNode {
 public:
     enum Type {
         NODE_INVALID, NODE_LIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
-        NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE
+        NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
+        NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_PASS
     };
 
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
@@ -38,7 +39,10 @@ public:
     ASTNodeList(list_t nodes)
         : ASTNode(NODE_LIST), m_nodes(nodes) { }
 
-    list_t nodes() const { return m_nodes; }
+    const list_t& nodes() const { return m_nodes; }
+    void removeFirst();
+    void removeLast();
+    void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
 
 private:
     list_t m_nodes;
@@ -71,11 +75,22 @@ private:
 
 class ASTBinary : public ASTNode {
 public:
-    ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int type = NODE_BINARY)
-        : ASTNode(type), m_left(left), m_right(right) { }
+    enum BinOp {
+        BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_MODULO, BIN_ADD,
+        BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR, BIN_OR
+    };
+
+    ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
+              int type = NODE_BINARY)
+        : ASTNode(type), m_op(op), m_left(left), m_right(right) { }
 
     PycRef<ASTNode> left() const { return m_left; }
     PycRef<ASTNode> right() const { return m_right; }
+    int op() const { return m_op; }
+    virtual const char* op_str() const;
+
+protected:
+    int m_op;
 
 private:
     PycRef<ASTNode> m_left;
@@ -91,14 +106,10 @@ public:
         CMP_EXCEPTION, CMP_BAD
     };
 
-    ASTCompare(PycRef<ASTNode> left, PycRef<ASTNode> right, CompareOp op)
-        : ASTBinary(left, right, NODE_COMPARE), m_op(op) { }
+    ASTCompare(PycRef<ASTNode> left, PycRef<ASTNode> right, int op)
+        : ASTBinary(left, right, op, NODE_COMPARE) { }
 
-    CompareOp op() const { return m_op; }
     const char* op_str() const;
-
-private:
-    CompareOp m_op;
 };
 
 
@@ -135,7 +146,7 @@ public:
     ASTName(PycRef<PycString> name)
         : ASTNode(NODE_NAME) { m_name.push_back(name); }
 
-    name_t name() const { return m_name; }
+    const name_t& name() const { return m_name; }
     void add(PycRef<PycString> name) { m_name.push_back(name); }
 
 private:
@@ -152,6 +163,53 @@ public:
 
 private:
     PycRef<ASTNode> m_value;
+};
+
+
+class ASTFunction : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode> > defarg_t;
+
+    ASTFunction(PycRef<ASTNode> code, defarg_t defArgs)
+        : ASTNode(NODE_FUNCTION), m_code(code) { }
+
+    PycRef<ASTNode> code() const { return m_code; }
+    const defarg_t& defargs() const { return m_defargs; }
+
+private:
+    PycRef<ASTNode> m_code;
+    defarg_t m_defargs;
+};
+
+
+class ASTClass : public ASTNode {
+public:
+    ASTClass(PycRef<ASTNode> code)
+        : ASTNode(NODE_CLASS), m_code(code) { }
+
+    PycRef<ASTNode> code() const { return m_code; }
+
+private:
+    PycRef<ASTNode> m_code;
+};
+
+
+class ASTCall : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode> > pparam_t;
+    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > kwparam_t;
+
+    ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
+        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams) { }
+
+    PycRef<ASTNode> func() const { return m_func; }
+    const pparam_t& pparams() const { return m_pparams; }
+    const kwparam_t& kwparams() const { return m_kwparams; }
+
+private:
+    PycRef<ASTNode> m_func;
+    pparam_t m_pparams;
+    kwparam_t m_kwparams;
 };
 
 #endif

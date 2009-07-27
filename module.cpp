@@ -128,7 +128,7 @@ void PycModule::loadFromFile(const char* filename)
 
 PycRef<PycString> PycModule::getIntern(int ref)
 {
-    std::list<PycRef<PycString> >::iterator it = m_interns.begin();
+    std::list<PycRef<PycString> >::const_iterator it = m_interns.begin();
     for (int i=0; i<ref; i++, it++) /* move forward to ref */ ;
     return *it;
 }

@@ -4,16 +4,8 @@
 #include "ASTNode.h"
 
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod);
+void print_src(PycRef<ASTNode> node, PycModule* mod, int indent = 0);
 
-class ASTree {
-public:
-    void load(PycModule* mod)
-    { m_root = BuildFromCode(mod->code(), mod); }
-
-    void printSource(PycModule* mod) const;
-
-private:
-    PycRef<ASTNode> m_root;
-};
+void decompyle(PycRef<PycCode> code, PycModule* mod, int indent = 0);
 
 #endif

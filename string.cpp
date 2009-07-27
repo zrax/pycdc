@@ -39,11 +39,15 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
         return false;
 
     PycRef<PycString> strObj = obj.cast<PycString>();
-    if (m_value == strObj->m_value)
-        return true;
-    return (strcmp(m_value, strObj->m_value) == 0);
+    return isEqual(strObj->m_value);
 }
 
+bool PycString::isEqual(const char* str) const
+{
+    if (m_value == str)
+        return true;
+    return (strcmp(m_value, str) == 0);
+}
 
 void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
 {

@@ -16,6 +16,7 @@ public:
     ~PycString() { if (m_value) delete[] m_value; }
 
     bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(const char* str) const;
 
     void load(class PycData* stream, class PycModule* mod);
 

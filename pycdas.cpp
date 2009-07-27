@@ -90,7 +90,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iprintf(indent, "(\n");
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
-            for (PycTuple::value_t::iterator i = values.begin(); i != values.end(); i++)
+            for (PycTuple::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
             iprintf(indent, ")\n");
         }
@@ -99,7 +99,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iprintf(indent, "[\n");
             PycList::value_t values = obj.cast<PycList>()->values();
-            for (PycList::value_t::iterator i = values.begin(); i != values.end(); i++)
+            for (PycList::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
             iprintf(indent, "]\n");
         }
@@ -109,8 +109,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent, "{\n");
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
-            PycDict::key_t::iterator ki = keys.begin();
-            PycDict::value_t::iterator vi = values.begin();
+            PycDict::key_t::const_iterator ki = keys.begin();
+            PycDict::value_t::const_iterator vi = values.begin();
             while (ki != keys.end()) {
                 output_object(*ki, mod, indent + 1);
                 output_object(*vi, mod, indent + 2);
@@ -123,7 +123,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iprintf(indent, "{\n");
             PycSet::value_t values = obj.cast<PycSet>()->values();
-            for (PycSet::value_t::iterator i = values.begin(); i != values.end(); i++)
+            for (PycSet::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
             iprintf(indent, "}\n");
         }

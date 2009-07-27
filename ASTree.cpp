@@ -32,134 +32,115 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         opcode |= opadd;
 
         switch (opcode) {
-        //case Py2k::STOP_CODE:
-        //case Py2k::POP_TOP:
-        //case Py2k::ROT_TWO:
-        //case Py2k::ROT_THREE:
-        //case Py2k::DUP_TOP:
-        //case Py2k::ROT_FOUR:
-        //case Py2k::NOP:
-        //case Py2k::UNARY_POSITIVE:
-        //case Py2k::UNARY_NEGATIVE:
-        //case Py2k::UNARY_NOT:
-        //case Py2k::UNARY_CONVERT:
-        //case Py2k::UNARY_INVERT:
-        //case Py2k::LIST_APPEND:
-        //case Py2k::BINARY_POWER:
-        //case Py2k::BINARY_MULTIPLY:
-        //case Py2k::BINARY_DIVIDE:
-        //case Py2k::BINARY_MODULO:
-        //case Py2k::BINARY_ADD:
-        //case Py2k::BINARY_SUBTRACT:
-        //case Py2k::BINARY_SUBSCR:
-        //case Py2k::BINARY_FLOOR_DIVIDE:
-        //case Py2k::BINARY_TRUE_DIVIDE:
-        //case Py2k::INPLACE_FLOOR_DIVIDE:
-        //case Py2k::INPLACE_TRUE_DIVIDE:
-        //case Py2k::SLICE_0:
-        //case Py2k::SLICE_1:
-        //case Py2k::SLICE_2:
-        //case Py2k::SLICE_3:
-        //case Py2k::STORE_SLICE_0:
-        //case Py2k::STORE_SLICE_1:
-        //case Py2k::STORE_SLICE_2:
-        //case Py2k::STORE_SLICE_3:
-        //case Py2k::DELETE_SLICE_0:
-        //case Py2k::DELETE_SLICE_1:
-        //case Py2k::DELETE_SLICE_2:
-        //case Py2k::DELETE_SLICE_3:
-        //case Py2k::STORE_MAP:
-        //case Py2k::INPLACE_ADD:
-        //case Py2k::INPLACE_SUBTRACT:
-        //case Py2k::INPLACE_MULTIPLY:
-        //case Py2k::INPLACE_DIVIDE:
-        //case Py2k::INPLACE_MODULO:
-        //case Py2k::STORE_SUBSCR:
-        //case Py2k::DELETE_SUBSCR:
-        //case Py2k::BINARY_LSHIFT:
-        //case Py2k::BINARY_RSHIFT:
-        //case Py2k::BINARY_AND:
-        //case Py2k::BINARY_XOR:
-        //case Py2k::BINARY_OR:
-        //case Py2k::INPLACE_POWER:
-        //case Py2k::GET_ITER:
-        //case Py2k::PRINT_EXPR:
-        //case Py2k::PRINT_ITEM:
-        //case Py2k::PRINT_NEWLINE:
-        //case Py2k::PRINT_ITEM_TO:
-        //case Py2k::PRINT_NEWLINE_TO:
-        //case Py2k::INPLACE_LSHIFT:
-        //case Py2k::INPLACE_RSHIFT:
-        //case Py2k::INPLACE_AND:
-        //case Py2k::INPLACE_XOR:
-        //case Py2k::INPLACE_OR:
-        //case Py2k::BREAK_LOOP:
-        //case Py2k::WITH_CLEANUP:
-        //case Py2k::LOAD_LOCALS:
-        //case Py2k::RETURN_VALUE:
-        //case Py2k::IMPORT_STAR:
-        //case Py2k::EXEC_STMT:
-        //case Py2k::YIELD_VALUE:
-        //case Py2k::POP_BLOCK:
-        //case Py2k::END_FINALLY:
-        //case Py2k::BUILD_CLASS:
-        case (PY_1000 | Py1k::STORE_NAME):
-        case (PY_2000 | Py2k::STORE_NAME):
-        case (PY_3000 | Py3k::STORE_NAME):
+        case (PY_1000 | Py1k::BINARY_AND):
+        case (PY_2000 | Py2k::BINARY_AND):
+        case (PY_3000 | Py3k::BINARY_AND):
             {
-                PycRef<ASTNode> value = stack.top();
-                PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                PycRef<ASTNode> right = stack.top();
                 stack.pop();
-                lines.push_back(new ASTStore(value, name));
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_AND));
             }
             break;
-        //case Py2k::DELETE_NAME:
-        //case Py2k::UNPACK_SEQUENCE:
-        //case Py2k::FOR_ITER:
-        //case Py2k::STORE_ATTR:
-        //case Py2k::DELETE_ATTR:
-        //case Py2k::STORE_GLOBAL:
-        //case Py2k::DELETE_GLOBAL:
-        //case Py2k::DUP_TOPX:
+        case (PY_1000 | Py1k::BUILD_FUNCTION):
+            {
+                PycRef<ASTNode> code = stack.top();
+                stack.pop();
+                stack.push(new ASTFunction(code, ASTFunction::defarg_t()));
+            }
+            break;
+        case (PY_1000 | Py1k::CALL_FUNCTION):
+        case (PY_2000 | Py2k::CALL_FUNCTION):
+        case (PY_3000 | Py3k::CALL_FUNCTION):
+            {
+                int kwparams = (operand & 0xFF00) >> 8;
+                int pparams = (operand & 0xFF);
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+                for (int i=0; i<kwparams; i++) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(key, val));
+                }
+                for (int i=0; i<pparams; i++) {
+                    pparamList.push_front(stack.top());
+                    stack.pop();
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                stack.push(new ASTCall(func, pparamList, kwparamList));
+            }
+            break;
+        case (PY_1000 | Py1k::COMPARE_OP):
+        case (PY_2000 | Py2k::COMPARE_OP):
+        case (PY_3000 | Py3k::COMPARE_OP):
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTCompare(left, right, operand));
+            }
+            break;
         case (PY_1000 | Py1k::LOAD_CONST):
         case (PY_2000 | Py2k::LOAD_CONST):
         case (PY_3000 | Py3k::LOAD_CONST):
             stack.push(new ASTObject(code->getConst(operand)));
             break;
-        //case Py2k::LOAD_NAME:
-        //case Py2k::BUILD_TUPLE:
-        //case Py2k::BUILD_LIST:
-        //case Py2k::BUILD_MAP:
-        //case Py2k::LOAD_ATTR:
-        //case Py2k::COMPARE_OP:
-        //case Py2k::IMPORT_NAME:
-        //case Py2k::IMPORT_FROM:
-        //case Py2k::JUMP_FORWARD:
-        //case Py2k::JUMP_IF_FALSE:
-        //case Py2k::JUMP_IF_TRUE:
-        //case Py2k::JUMP_ABSOLUTE:
-        //case Py2k::FOR_LOOP:
-        //case Py2k::LOAD_GLOBAL:
-        //case Py2k::CONTINUE_LOOP:
-        //case Py2k::SETUP_LOOP:
-        //case Py2k::SETUP_EXCEPT:
-        //case Py2k::SETUP_FINALLY:
-        //case Py2k::LOAD_FAST:
-        //case Py2k::STORE_FAST:
-        //case Py2k::DELETE_FAST:
-        //case Py2k::SET_LINENO:
-        //case Py2k::RAISE_VARARGS:
-        //case Py2k::CALL_FUNCTION:
-        //case Py2k::MAKE_FUNCTION:
-        //case Py2k::BUILD_SLICE:
-        //case Py2k::MAKE_CLOSURE:
-        //case Py2k::LOAD_CLOSURE:
-        //case Py2k::LOAD_DEREF:
-        //case Py2k::STORE_DEREF:
-        //case Py2k::CALL_FUNCTION_VAR:
-        //case Py2k::CALL_FUNCTION_KW:
-        //case Py2k::CALL_FUNCTION_VAR_KW:
-        //case Py2k::EXTENDED_ARG:
+        case (PY_1000 | Py1k::LOAD_FAST):
+            if (mod->minorVer()  < 3)
+                stack.push(new ASTName(code->getName(operand)));
+            else
+                stack.push(new ASTName(code->getVarName(operand)));
+            break;
+        case (PY_2000 | Py2k::LOAD_FAST):
+        case (PY_3000 | Py3k::LOAD_FAST):
+            stack.push(new ASTName(code->getVarName(operand)));
+            break;
+        case (PY_1000 | Py1k::LOAD_GLOBAL):
+        case (PY_2000 | Py2k::LOAD_GLOBAL):
+        case (PY_3000 | Py3k::LOAD_GLOBAL):
+        case (PY_1000 | Py1k::LOAD_NAME):
+        case (PY_2000 | Py2k::LOAD_NAME):
+        case (PY_3000 | Py3k::LOAD_NAME):
+            stack.push(new ASTName(code->getName(operand)));
+            break;
+        case (PY_1000 | Py1k::MAKE_FUNCTION):
+        case (PY_2000 | Py2k::MAKE_FUNCTION):
+        case (PY_3000 | Py3k::MAKE_FUNCTION):
+            {
+                PycRef<ASTNode> code = stack.top();
+                stack.pop();
+                ASTFunction::defarg_t defArgs;
+                for (int i=0; i<operand; i++) {
+                    defArgs.push_front(stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTFunction(code, defArgs));
+            }
+            break;
+        case (PY_1000 | Py1k::RETURN_VALUE):
+        case (PY_2000 | Py2k::RETURN_VALUE):
+        case (PY_3000 | Py3k::RETURN_VALUE):
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                lines.push_back(new ASTReturn(value));
+            }
+            break;
+        case (PY_1000 | Py1k::STORE_NAME):
+        case (PY_2000 | Py2k::STORE_NAME):
+        case (PY_3000 | Py3k::STORE_NAME):
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                lines.push_back(new ASTStore(value, name));
+            }
+            break;
         default:
             if (mod->majorVer() == 1)
                 fprintf(stderr, "Unsupported opcode: %s\n", Py1k::OpcodeNames[opcode & 0xFF]);
@@ -180,45 +161,137 @@ static void start_indent(int indent)
         printf("    ");
 }
 
-static void print_src(PycRef<ASTNode> node, PycModule* mod, int indent = 0)
+void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
 {
     switch (node->type()) {
+    case ASTNode::NODE_BINARY:
+    case ASTNode::NODE_COMPARE:
+        {
+            PycRef<ASTBinary> bin = node.cast<ASTBinary>();
+            printf("(");
+            print_src(bin->left(), mod);
+            printf(" %s ", bin->op_str());
+            print_src(bin->right(), mod);
+            printf(")");
+        }
+        break;
+    case ASTNode::NODE_CALL:
+        {
+            PycRef<ASTCall> call = node.cast<ASTCall>();
+            start_indent(indent);
+            print_src(call->func(), mod);
+            printf("(");
+            bool first = true;
+            for (ASTCall::pparam_t::const_iterator p = call->pparams().begin(); p != call->pparams().end(); ++p) {
+                if (!first) printf(", ");
+                print_src(*p, mod);
+                first = false;
+            }
+            for (ASTCall::kwparam_t::const_iterator p = call->kwparams().begin(); p != call->kwparams().end(); ++p) {
+                if (!first) printf(", ");
+                print_src(p->first, mod);
+                printf("=");
+                print_src(p->second, mod);
+                first = false;
+            }
+            printf(")");
+        }
+        break;
     case ASTNode::NODE_LIST:
         {
             ASTNodeList::list_t lines = node.cast<ASTNodeList>()->nodes();
-            for (ASTNodeList::list_t::iterator ln = lines.begin(); ln != lines.end(); ++ln)
+            for (ASTNodeList::list_t::const_iterator ln = lines.begin(); ln != lines.end(); ++ln) {
                 print_src(*ln, mod, indent);
+                printf("\n");
+            }
         }
         break;
     case ASTNode::NODE_STORE:
         {
             PycRef<ASTNode> src = node.cast<ASTStore>()->src();
             PycRef<ASTNode> dest = node.cast<ASTStore>()->dest();
-            start_indent(indent);
-            print_src(dest, mod);
-            printf(" = ");
-            print_src(src, mod);
-            printf("\n");
+            if (src->type() == ASTNode::NODE_FUNCTION) {
+                printf("\n");
+                start_indent(indent);
+                printf("def ");
+                print_src(dest, mod);
+                printf("(");
+                //TODO: Keyword and Default args
+                PycRef<ASTNode> code = src.cast<ASTFunction>()->code();
+                PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+                for (int i=0; i<code_src->argCount(); i++) {
+                    if (i > 0) printf(", ");
+                    printf("%s", code_src->getVarName(i)->value());
+                }
+                printf("):\n");
+                print_src(code, mod, indent + 1);
+            } else {
+                start_indent(indent);
+                print_src(dest, mod);
+                printf(" = ");
+                print_src(src, mod);
+            }
         }
-        break;
-    case ASTNode::NODE_OBJECT:
-        print_const(node.cast<ASTObject>()->object(), mod);
         break;
     case ASTNode::NODE_NAME:
         {
             ASTName::name_t name = node.cast<ASTName>()->name();
-            ASTName::name_t::iterator n = name.begin();
+            ASTName::name_t::const_iterator n = name.begin();
             printf("%s", (*n)->value());
             while (++n != name.end())
                 printf(".%s", (*n)->value());
         }
         break;
+    case ASTNode::NODE_OBJECT:
+        {
+            PycRef<PycObject> obj = node.cast<ASTObject>()->object();
+            if (obj->type() == PycObject::TYPE_CODE)
+                decompyle(obj.cast<PycCode>(), mod, indent);
+            else
+                print_const(obj, mod);
+        }
+        break;
+    case ASTNode::NODE_PASS:
+        start_indent(indent);
+        printf("pass");
+        break;
+    case ASTNode::NODE_RETURN:
+        start_indent(indent);
+        printf("return ");
+        print_src(node.cast<ASTReturn>()->value(), mod);
+        break;
     default:
-        printf("Unsupported Node type: %d\n", node->type());
+        fprintf(stderr, "Unsupported Node type: %d\n", node->type());
     }
 }
 
-void ASTree::printSource(PycModule* mod) const
+void decompyle(PycRef<PycCode> code, PycModule* mod, int indent)
 {
-    print_src(m_root, mod, 0);
+    PycRef<ASTNode> source = BuildFromCode(code, mod);
+
+    // The Python compiler adds some stuff that we don't really care
+    // about, and would add extra code for re-compilation anyway.
+    // We strip these lines out here, and then add a "pass" statement
+    // if the cleaned up code is empty
+    PycRef<ASTNodeList> clean = source.cast<ASTNodeList>();
+    if (clean->nodes().front()->type() == ASTNode::NODE_STORE) {
+        PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+        if (store->src()->type() == ASTNode::NODE_NAME &&
+            store->dest()->type() == ASTNode::NODE_NAME) {
+            PycRef<ASTName> src = store->src().cast<ASTName>();
+            PycRef<ASTName> dest = store->dest().cast<ASTName>();
+            if (src->name().size() == 1 && dest->name().size() == 1 &&
+                src->name().front()->isEqual("__name__") &&
+                dest->name().front()->isEqual("__module__")) {
+                // __module__ = __name__
+                clean->removeFirst();
+            }
+        }
+    }
+    clean->removeLast();    // Always an extraneous return statement
+
+    if (clean->nodes().size() == 0)
+        clean->append(new ASTNode(ASTNode::NODE_PASS));
+
+    print_src(source, mod, indent);
 }

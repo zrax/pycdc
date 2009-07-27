@@ -250,7 +250,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             printf("(");
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
-            PycTuple::value_t::iterator it = values.begin();
+            PycTuple::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
@@ -265,7 +265,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             printf("[");
             PycList::value_t values = obj.cast<PycList>()->values();
-            PycList::value_t::iterator it = values.begin();
+            PycList::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
@@ -281,8 +281,8 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
             printf("{");
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
-            PycDict::key_t::iterator ki = keys.begin();
-            PycDict::value_t::iterator vi = values.begin();
+            PycDict::key_t::const_iterator ki = keys.begin();
+            PycDict::value_t::const_iterator vi = values.begin();
             if (ki != keys.end()) {
                 print_const(*ki, mod);
                 printf(": ");
@@ -302,7 +302,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             printf("{");
             PycSet::value_t values = obj.cast<PycSet>()->values();
-            PycSet::value_t::iterator it = values.begin();
+            PycSet::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
