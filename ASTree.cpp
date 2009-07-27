@@ -8,6 +8,10 @@
 #define PY_2000 0x2000
 #define PY_3000 0x3000
 
+/* Use this to determine if an error occurred (and therefore, if we should
+ * avoid cleaning the output tree) */
+static bool cleanBuild;
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -148,10 +152,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 fprintf(stderr, "Unsupported opcode: %s\n", Py2k::OpcodeNames[opcode & 0xFF]);
             else if (mod->majorVer() == 3)
                 fprintf(stderr, "Unsupported opcode: %s\n", Py3k::OpcodeNames[opcode & 0xFF]);
+            cleanBuild = false;
             return new ASTNodeList(lines);
         }
     }
 
+    cleanBuild = true;
     return new ASTNodeList(lines);
 }
 
@@ -269,29 +275,31 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, int indent)
 {
     PycRef<ASTNode> source = BuildFromCode(code, mod);
 
-    // The Python compiler adds some stuff that we don't really care
-    // about, and would add extra code for re-compilation anyway.
-    // We strip these lines out here, and then add a "pass" statement
-    // if the cleaned up code is empty
-    PycRef<ASTNodeList> clean = source.cast<ASTNodeList>();
-    if (clean->nodes().front()->type() == ASTNode::NODE_STORE) {
-        PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
-        if (store->src()->type() == ASTNode::NODE_NAME &&
-            store->dest()->type() == ASTNode::NODE_NAME) {
-            PycRef<ASTName> src = store->src().cast<ASTName>();
-            PycRef<ASTName> dest = store->dest().cast<ASTName>();
-            if (src->name().size() == 1 && dest->name().size() == 1 &&
-                src->name().front()->isEqual("__name__") &&
-                dest->name().front()->isEqual("__module__")) {
-                // __module__ = __name__
-                clean->removeFirst();
+    if (cleanBuild) {
+        // The Python compiler adds some stuff that we don't really care
+        // about, and would add extra code for re-compilation anyway.
+        // We strip these lines out here, and then add a "pass" statement
+        // if the cleaned up code is empty
+        PycRef<ASTNodeList> clean = source.cast<ASTNodeList>();
+        if (clean->nodes().front()->type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+            if (store->src()->type() == ASTNode::NODE_NAME &&
+                store->dest()->type() == ASTNode::NODE_NAME) {
+                PycRef<ASTName> src = store->src().cast<ASTName>();
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (src->name().size() == 1 && dest->name().size() == 1 &&
+                    src->name().front()->isEqual("__name__") &&
+                    dest->name().front()->isEqual("__module__")) {
+                    // __module__ = __name__
+                    clean->removeFirst();
+                }
             }
         }
-    }
-    clean->removeLast();    // Always an extraneous return statement
+        clean->removeLast();    // Always an extraneous return statement
 
-    if (clean->nodes().size() == 0)
-        clean->append(new ASTNode(ASTNode::NODE_PASS));
+        if (clean->nodes().size() == 0)
+            clean->append(new ASTNode(ASTNode::NODE_PASS));
+    }
 
     print_src(source, mod, indent);
 }
