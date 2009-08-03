@@ -71,20 +71,14 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
-        if (mod->majorVer() == 3)
-            iprintf(indent, "b'");
-        else
-            iprintf(indent, "'");
-        OutputString(obj.cast<PycString>(), QS_Single);
-        printf("'\n");
+        iprintf(indent, "");
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
+        printf("\n");
         break;
     case PycObject::TYPE_UNICODE:
-        if (mod->majorVer() == 3)
-            iprintf(indent, "'");
-        else
-            iprintf(indent, "u'");
-        OutputString(obj.cast<PycString>(), QS_Single);
-        printf("'\n");
+        iprintf(indent, "");
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
+        printf("\n");
         break;
     case PycObject::TYPE_TUPLE:
         {

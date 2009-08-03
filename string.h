@@ -4,10 +4,6 @@
 #include "object.h"
 #include <cstdio>
 
-enum QuoteStyle {
-    QS_Single, QS_Double, QS_BlockSingle, QS_BlockDouble
-};
-
 class PycString : public PycObject {
 public:
     PycString(int type = TYPE_STRING)
@@ -28,6 +24,7 @@ private:
     int m_length;
 };
 
-void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F = stdout);
+void OutputString(PycRef<PycString> str, char prefix = 0,
+                  bool triple = false, FILE* F = stdout);
 
 #endif

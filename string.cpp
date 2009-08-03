@@ -49,41 +49,64 @@ bool PycString::isEqual(const char* str) const
     return (strcmp(m_value, str) == 0);
 }
 
-void OutputString(PycRef<PycString> str, QuoteStyle style, FILE* F)
+void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
 {
+    if (prefix != 0)
+        fputc(prefix, F);
+
     const char* ch = str->value();
     int len = str->length();
-    if (ch == 0)
+    if (ch == 0) {
+        fprintf(F, "''");
         return;
+    }
+
+    // Determine preferred quote style (Emulate Python's method)
+    bool useQuotes = false;
+    while (len--) {
+        if (*ch == '\'') {
+            useQuotes = true;
+        } else if (*ch == '"') {
+            useQuotes = false;
+            break;
+        }
+        ch++;
+    }
+    ch = str->value();
+    len = str->length();
+
+    // Output the string
+    fputc(useQuotes ? '"' : '\'', F);
     while (len--) {
         if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
                 fprintf(F, "\\r");
             } else if (*ch == '\n') {
-                if (style == QS_BlockSingle || style == QS_BlockDouble)
+                if (triple)
                     fputc('\n', F);
                 else
                     fprintf(F, "\\n");
             } else if (*ch == '\t') {
                 fprintf(F, "\\t");
             } else {
-                fprintf(F, "\\x%x", *ch);
+                fprintf(F, "\\x%x", (*ch & 0xFF));
             }
         } else if (*ch >= 0x80) {
             if (str->type() == PycObject::TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
                 fputc(*ch, F);
             } else {
-                fprintf(F, "\\x%x", *ch);
+                fprintf(F, "\\x%x", (*ch & 0xFF));
             }
         } else {
-            if (style == QS_Single && *ch == '\'')
+            if (!useQuotes && *ch == '\'')
                 fprintf(F, "\\'");
-            else if (style == QS_Double && *ch == '"')
+            else if (useQuotes && *ch == '"')
                 fprintf(F, "\\\"");
             else
                 fputc(*ch, F);
         }
         ch++;
     }
+    fputc(useQuotes ? '"' : '\'', F);
 }

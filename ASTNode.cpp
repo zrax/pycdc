@@ -17,12 +17,22 @@ void ASTNodeList::removeFirst()
 }
 
 
+/* ASTUnary */
+const char* ASTUnary::op_str() const
+{
+    static const char* s_op_strings[] = {
+        "+", "-", "~", "not"
+    };
+    return s_op_strings[op()];
+}
+
+
 /* ASTBinary */
 const char* ASTBinary::op_str() const
 {
     static const char* s_op_strings[] = {
-        "**", "*", "/", "%", "+", "-", "<<", ">>", "&", "^", "|", "//",
-        "<ATTR>"
+        ".", " ** ", " * ", " / ", " // ", " % ", " + ", " - ",
+        " << ", " >> ", " & ", " ^ ", " | ", " and ", " or "
     };
     return s_op_strings[op()];
 }

@@ -12,7 +12,7 @@ public:
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
         NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
-        NODE_LIST, NODE_MAP, NODE_SUBSCR,
+        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -67,10 +67,19 @@ private:
 
 class ASTUnary : public ASTNode {
 public:
-    ASTUnary(PycRef<ASTNode> operand)
-        : ASTNode(NODE_UNARY), m_operand(operand) { }
+    enum UnOp {
+        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT
+    };
+
+    ASTUnary(PycRef<ASTNode> operand, int op)
+        : ASTNode(NODE_UNARY), m_op(op), m_operand(operand) { }
 
     PycRef<ASTNode> operand() const { return m_operand; }
+    int op() const { return m_op; }
+    virtual const char* op_str() const;
+
+protected:
+    int m_op;
 
 private:
     PycRef<ASTNode> m_operand;
@@ -80,9 +89,9 @@ private:
 class ASTBinary : public ASTNode {
 public:
     enum BinOp {
-        BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_MODULO, BIN_ADD,
-        BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
-        BIN_OR, BIN_FLOOR, BIN_ATTR
+        BIN_ATTR, BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_FLOOR, BIN_MODULO,
+        BIN_ADD, BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
+        BIN_OR, BIN_LOG_AND, BIN_LOG_OR
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
@@ -288,6 +297,18 @@ public:
 private:
     PycRef<ASTNode> m_name;
     PycRef<ASTNode> m_key;
+};
+
+
+class ASTPrint : public ASTNode {
+public:
+    ASTPrint(PycRef<ASTNode> value)
+        : ASTNode(NODE_PRINT), m_value(value) { }
+
+    PycRef<ASTNode> value() const { return m_value; }
+
+private:
+    PycRef<ASTNode> m_value;
 };
 
 #endif

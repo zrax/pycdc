@@ -231,20 +231,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
-        if (mod->majorVer() == 3)
-            printf("b'");
-        else
-            printf("'");
-        OutputString(obj.cast<PycString>(), QS_Single);
-        printf("'");
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
         break;
     case PycObject::TYPE_UNICODE:
-        if (mod->majorVer() == 3)
-            printf("'");
-        else
-            printf("u'");
-        OutputString(obj.cast<PycString>(), QS_Single);
-        printf("'");
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
         break;
     case PycObject::TYPE_TUPLE:
         {
