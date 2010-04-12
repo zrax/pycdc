@@ -1,0 +1,4 @@
+.*\.o
+bin/pycdas
+bin/pycdc
+^test/
