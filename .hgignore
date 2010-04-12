@@ -1,4 +1,7 @@
 .*\.o
+.*\.vcproj.*\.user
+.*\.ncb
+.*\.suo
 bin/pycdas
 bin/pycdc
 ^test/

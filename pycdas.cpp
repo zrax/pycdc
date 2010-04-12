@@ -153,6 +153,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     }
 }
 
+#ifdef WIN32
+#  define PATHSEP '\\'
+#else
+#  define PATHSEP '/'
+#endif
+
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
@@ -162,7 +168,9 @@ int main(int argc, char* argv[])
 
     PycModule mod;
     mod.loadFromFile(argv[1]);
-    printf("%s (Python %d.%d%s)\n", argv[1], mod.majorVer(), mod.minorVer(),
+    const char* dispname = strrchr(argv[1], PATHSEP);
+    dispname = (dispname == NULL) ? argv[1] : dispname + 1;
+    printf("%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
            (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     output_object(mod.code().cast<PycObject>(), &mod, 0);
 
