@@ -337,7 +337,7 @@ private:
 
 class ASTPopHack : public ASTNode {
 public:
-    ASTPopHack() : ASTNode(NODE_POP_HACK);
+    ASTPopHack() : ASTNode(NODE_POP_HACK) { }
 };
 
 #endif
