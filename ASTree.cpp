@@ -330,6 +330,31 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(src, right, ASTBinary::BIN_SUBTRACT));
             }
             break;
+        case (PY_1000 | Py1k::JUMP_IF_FALSE):
+        case (PY_2000 | Py2k::JUMP_IF_FALSE):
+        case (PY_3000 | Py3k::JUMP_IF_FALSE):
+            {
+                PycRef<ASTNode> cond = stack.top();
+                stack.pop();
+                stack.push(new ASTJump(operand, ASTJump::JMP_FALSE, cond));
+            }
+            break;
+        case (PY_1000 | Py1k::JUMP_IF_TRUE):
+        case (PY_2000 | Py2k::JUMP_IF_TRUE):
+        case (PY_3000 | Py3k::JUMP_IF_TRUE):
+            {
+                PycRef<ASTNode> cond = stack.top();
+                stack.pop();
+                stack.push(new ASTJump(operand, ASTJump::JMP_TRUE, cond));
+            }
+            break;
+        case (PY_1000 | Py1k::JUMP_FORWARD):
+        case (PY_2000 | Py2k::JUMP_FORWARD):
+        case (PY_3000 | Py3k::JUMP_FORWARD):
+            {
+                stack.push(new ASTJump(operand, ASTJump::JUMP, NULL));
+            }
+            break;
         case (PY_1000 | Py1k::LOAD_ATTR):
         case (PY_2000 | Py2k::LOAD_ATTR):
         case (PY_3000 | Py3k::LOAD_ATTR):
@@ -853,6 +878,27 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
             else
                 printf(")");
         }
+        break;
+    case ASTNode::NODE_JUMP:
+        {
+            ASTJump::Condition jtype = node.cast<ASTJump>()->jtype();
+            if (jtype != ASTJump::JUMP) {
+                printf("if (");
+                if (jtype == ASTJump::JMP_TRUE)
+                    printf("not ");
+                print_src(node.cast<ASTJump>()->cond(), mod, indent);
+                printf("):");
+                cur_indent++;
+            } else {
+                if (node.cast<ASTJump>()->dest() != 1) {
+                    printf("else:"); /* HAX! */
+                    cur_indent++;
+                }
+            }
+        }
+        break;
+    case ASTNode::NODE_POP_HACK:
+        cur_indent--;
         break;
     default:
         printf("<NODE:%d>", node->type());
