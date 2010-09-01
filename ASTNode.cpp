@@ -21,7 +21,7 @@ void ASTNodeList::removeFirst()
 const char* ASTUnary::op_str() const
 {
     static const char* s_op_strings[] = {
-        "+", "-", "~", "not"
+        "+", "-", "~", "not ", "`"
     };
     return s_op_strings[op()];
 }
@@ -32,7 +32,9 @@ const char* ASTBinary::op_str() const
 {
     static const char* s_op_strings[] = {
         ".", " ** ", " * ", " / ", " // ", " % ", " + ", " - ",
-        " << ", " >> ", " & ", " ^ ", " | ", " and ", " or "
+        " << ", " >> ", " & ", " ^ ", " | ", " and ", " or ",
+        " += ", " -= ", " *= ", " /= ", " %= ", " **= ", " <<= ",
+        " >>= ", " &= ", " ^= ", " |= ", " //= ", "["
     };
     return s_op_strings[op()];
 }
@@ -42,7 +44,7 @@ const char* ASTBinary::op_str() const
 const char* ASTCompare::op_str() const
 {
     static const char* s_cmp_strings[] = {
-        "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
+        " < ", " <= ", " == ", " != ", " > ", " >= ", " in ", " not in ", " is ", " is not ",
         "<EXCEPTION MATCH>", "<BAD>"
     };
     return s_cmp_strings[op()];

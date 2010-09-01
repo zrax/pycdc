@@ -12,10 +12,13 @@ public:
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
         NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
-        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
+        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_JUMP,
 
         // Empty nodes
-        NODE_PASS, NODE_LOCALS
+        NODE_PASS, NODE_LOCALS,
+
+        //Hack to unindent
+        NODE_POP_HACK
     };
 
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
@@ -68,7 +71,7 @@ private:
 class ASTUnary : public ASTNode {
 public:
     enum UnOp {
-        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT
+        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT, UN_CONVERT
     };
 
     ASTUnary(PycRef<ASTNode> operand, int op)
@@ -91,7 +94,10 @@ public:
     enum BinOp {
         BIN_ATTR, BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_FLOOR, BIN_MODULO,
         BIN_ADD, BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
-        BIN_OR, BIN_LOG_AND, BIN_LOG_OR
+        BIN_OR, BIN_LOG_AND, BIN_LOG_OR, BIN_IP_ADD, BIN_IP_SUBTRACT,
+        BIN_IP_MULTIPLY, BIN_IP_DIVIDE, BIN_IP_MODULO, BIN_IP_POWER,
+        BIN_IP_LSHIFT, BIN_IP_RSHIFT, BIN_IP_AND, BIN_IP_XOR, BIN_IP_OR,
+        BIN_IP_FLOOR, BIN_SUBSCR
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
@@ -309,6 +315,29 @@ public:
 
 private:
     PycRef<ASTNode> m_value;
+};
+
+
+class ASTJump : public ASTNode {
+public:
+    enum Condition { JUMP, JMP_FALSE, JMP_TRUE };
+
+    ASTJump(int dest, Condition jtype, PycRef<ASTNode> cond)
+        : ASTNode(NODE_JUMP), m_dest(dest), m_jtype(jtype), m_cond(cond) {}
+
+    int dest() const { return m_dest; }
+    Condition jtype() const { return m_jtype; }
+    PycRef<ASTNode> cond() const { return m_cond; }
+
+private:
+    int m_dest;
+    Condition m_jtype;
+    PycRef<ASTNode> m_cond;
+};
+
+class ASTPopHack : public ASTNode {
+public:
+    ASTPopHack() : ASTNode(NODE_POP_HACK);
 };
 
 #endif

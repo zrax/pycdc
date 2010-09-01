@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include <cstdarg>
 #include "module.h"
 #include "bytecode.h"

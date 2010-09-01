@@ -39,6 +39,7 @@ extern const char* OpcodeNames[256];
 bool IsConstArg(int opcode);
 bool IsNameArg(int opcode);
 bool IsVarNameArg(int opcode);
+bool IsJumpOffsetArg(int opcode);
 
 }
 
@@ -84,6 +85,7 @@ bool IsConstArg(int opcode);
 bool IsNameArg(int opcode);
 bool IsVarNameArg(int opcode);
 bool IsCellArg(int opcode);
+bool IsJumpOffsetArg(int opcode);
 
 }
 
@@ -127,6 +129,7 @@ bool IsConstArg(int opcode);
 bool IsNameArg(int opcode);
 bool IsVarNameArg(int opcode);
 bool IsCellArg(int opcode);
+bool IsJumpOffsetArg(int opcode);
 
 }
 

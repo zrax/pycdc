@@ -170,6 +170,12 @@ bool Py1k::IsVarNameArg(int opcode)
            (opcode == Py1k::STORE_FAST);
 }
 
+bool Py1k::IsJumpOffsetArg(int opcode)
+{
+    return (opcode == Py1k::JUMP_FORWARD) || (opcode == Py1k::JUMP_IF_FALSE) ||
+           (opcode == Py1k::JUMP_IF_TRUE);
+}
+
 bool Py2k::IsConstArg(int opcode)
 {
     return (opcode == Py2k::LOAD_CONST);
@@ -197,6 +203,12 @@ bool Py2k::IsCellArg(int opcode)
            (opcode == Py2k::STORE_DEREF);
 }
 
+bool Py2k::IsJumpOffsetArg(int opcode)
+{
+    return (opcode == Py2k::JUMP_FORWARD) || (opcode == Py2k::JUMP_IF_FALSE) ||
+           (opcode == Py2k::JUMP_IF_TRUE);
+}
+
 bool Py3k::IsConstArg(int opcode)
 {
     return (opcode == Py3k::LOAD_CONST);
@@ -222,6 +234,13 @@ bool Py3k::IsCellArg(int opcode)
 {
     return (opcode == Py3k::LOAD_CLOSURE) || (opcode == Py3k::LOAD_DEREF) ||
            (opcode == Py3k::STORE_DEREF);
+}
+
+bool Py3k::IsJumpOffsetArg(int opcode)
+{
+    return (opcode == Py3k::JUMP_FORWARD) || (opcode == Py3k::JUMP_IF_FALSE) ||
+           (opcode == Py3k::JUMP_IF_TRUE) || (opcode == Py3k::POP_JUMP_IF_FALSE) ||
+           (opcode == Py3k::POP_JUMP_IF_TRUE);
 }
 
 
@@ -405,6 +424,10 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                        (mod->majorVer() == 3 && Py3k::IsCellArg(opcode))) {
                 printf("%d: ", operand);
                 print_const(code->getConst(operand), mod);
+            } else if ((mod->majorVer() == 1 && Py1k::IsJumpOffsetArg(opcode)) ||
+                       (mod->majorVer() == 2 && Py2k::IsJumpOffsetArg(opcode)) ||
+                       (mod->majorVer() == 3 && Py3k::IsJumpOffsetArg(opcode))) {
+                printf("%d (to %d)", operand, pos+operand);
             } else {
                 printf("%d", operand);
             }

@@ -19,6 +19,7 @@ enum PycMagic {
     MAGIC_2_4 = 0x0A0DF26D,
     MAGIC_2_5 = 0x0A0DF2B3,
     MAGIC_2_6 = 0x0A0DF2D1,
+    MAGIC_2_7 = 0x0A0DF303,
 
     MAGIC_3_0 = 0x0A0D0C3A,
     MAGIC_3_1 = 0x0A0D0C4E,
