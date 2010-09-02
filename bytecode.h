@@ -77,12 +77,23 @@ enum Opcodes {
     MAKE_CLOSURE, LOAD_CLOSURE, LOAD_DEREF, STORE_DEREF,
     CALL_FUNCTION_VAR = 140, CALL_FUNCTION_KW, CALL_FUNCTION_VAR_KW,
     EXTENDED_ARG,
+
+    /* Different opcodes in Python 2.7.  Boo! */
+    LIST_APPEND_27 = 94,
+    BUILD_SET_27 = BUILD_MAP, BUILD_MAP_27, LOAD_ATTR_27, COMPARE_OP_27,
+    IMPORT_NAME_27, IMPORT_FROM_27,
+    JUMP_IF_FALSE_OR_POP = JUMP_IF_FALSE,
+    JUMP_IF_TRUE_OR_POP = JUMP_IF_TRUE,
+    POP_JUMP_IF_FALSE = FOR_LOOP, POP_JUMP_IF_TRUE,
+    SETUP_WITH = EXTENDED_ARG, EXTENDED_ARG_27 = 145,
+    SET_ADD = 146, MAP_ADD,
 };
 
 extern const char* OpcodeNames[256];
+extern const char* OpcodeNames27[256];
 
 bool IsConstArg(int opcode);
-bool IsNameArg(int opcode);
+bool IsNameArg(int opcode, int minorVer);
 bool IsVarNameArg(int opcode);
 bool IsCellArg(int opcode);
 bool IsJumpOffsetArg(int opcode);

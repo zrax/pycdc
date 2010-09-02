@@ -95,6 +95,7 @@ void PycModule::setVersion(unsigned int magic)
     case MAGIC_2_7:
         m_maj = 2;
         m_min = 7;
+        break;
 
     /* 3.0 and above are always unicode */
     case MAGIC_3_0+1:
