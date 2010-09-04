@@ -152,11 +152,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case (PY_2000 | Py2k::BINARY_SUBSCR):
         case (PY_3000 | Py3k::BINARY_SUBSCR):
             {
-                PycRef<ASTNode> right = stack.top();
+                PycRef<ASTNode> subscr = stack.top();
                 stack.pop();
-                PycRef<ASTNode> left = stack.top();
+                PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                stack.push(new ASTBinary(left, right, ASTBinary::BIN_SUBSCR));
+                stack.push(new ASTSubscr(src, subscr));
             }
             break;
         case (PY_1000 | Py1k::BINARY_SUBTRACT):
@@ -524,6 +524,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case (PY_1000 | Py1k::UNARY_CALL):
+            {
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                stack.push(new ASTCall(func, ASTCall::pparam_t(), ASTCall::kwparam_t()));
+            }
+            break;
         case (PY_1000 | Py1k::UNARY_INVERT):
         case (PY_2000 | Py2k::UNARY_INVERT):
         case (PY_3000 | Py3k::UNARY_INVERT):
@@ -830,17 +837,25 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
             } else if (src->type() == ASTNode::NODE_IMPORT) {
                 PycRef<ASTImport> import = src.cast<ASTImport>();
                 if (import->fromlist() != Node_NULL) {
-                    PycRef<PycTuple> fromlist = import->fromlist().cast<ASTObject>()->object().cast<PycTuple>();
-                    if (fromlist != Pyc_None && fromlist->size() != 0) {
+                    PycRef<PycObject> fromlist = import->fromlist().cast<ASTObject>()->object();
+                    if (fromlist != Pyc_None) {
                         printf("from ");
-                        print_src(import->name(), mod, indent);
+                        if (import->name()->type() == ASTObject::NODE_IMPORT)
+                            print_src(import->name().cast<ASTImport>()->name(), mod, indent);
+                        else
+                            print_src(import->name(), mod, indent);
                         printf(" import ");
-                        bool first = true;
-                        PycTuple::value_t::const_iterator ii = fromlist->values().begin();
-                        for (; ii != fromlist->values().end(); ++ii) {
-                            if (!first) printf(", ");
-                            printf("%s", ii->cast<PycString>()->value());
-                            first = false;
+                        if (fromlist->type() == ASTObject::NODE_TUPLE) {
+                            bool first = true;
+                            PycTuple::value_t::const_iterator ii = fromlist.cast<PycTuple>()->values().begin();
+                            for (; ii != fromlist.cast<PycTuple>()->values().end(); ++ii) {
+                                if (!first)
+                                    printf(", ");
+                                printf("%s", ii->cast<PycString>()->value());
+                                first = false;
+                            }
+                        } else {
+                            printf("%s", fromlist.cast<PycString>()->value());
                         }
                     } else {
                         printf("import ");
@@ -851,9 +866,26 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
                     print_src(import->name(), mod, indent);
                 }
             } else {
-                print_src(dest, mod, indent);
-                printf(" = ");
-                print_src(src, mod, indent);
+                if (dest->type() == ASTNode::NODE_NAME &&
+                    dest.cast<ASTName>()->name()->isEqual("__doc__")) {
+                    if (src->type() == ASTNode::NODE_OBJECT) {
+                        PycRef<PycObject> obj = src.cast<ASTObject>()->object();
+                        if (obj->type() == PycObject::TYPE_STRING ||
+                            obj->type() == PycObject::TYPE_INTERNED ||
+                            obj->type() == PycObject::TYPE_STRINGREF)
+                            OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0, true);
+                        else if (obj->type() == PycObject::TYPE_UNICODE)
+                            OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u', true);
+                    } else {
+                        print_src(dest, mod, indent);
+                        printf(" = ");
+                        print_src(src, mod, indent);
+                    }
+                } else {
+                    print_src(dest, mod, indent);
+                    printf(" = ");
+                    print_src(src, mod, indent);
+                }
             }
         }
         break;

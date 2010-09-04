@@ -76,7 +76,10 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
     len = str->length();
 
     // Output the string
-    fputc(useQuotes ? '"' : '\'', F);
+    if (triple)
+        fprintf(F, useQuotes ? "\"\"\"" : "'''");
+    else
+        fputc(useQuotes ? '"' : '\'', F);
     while (len--) {
         if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
@@ -108,5 +111,8 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
         }
         ch++;
     }
-    fputc(useQuotes ? '"' : '\'', F);
+    if (triple)
+        fprintf(F, useQuotes ? "\"\"\"" : "'''");
+    else
+        fputc(useQuotes ? '"' : '\'', F);
 }
