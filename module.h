@@ -25,6 +25,8 @@ enum PycMagic {
     MAGIC_3_1 = 0x0A0D0C4E,
 };
 
+#define PYC_VERSION(maj, min)  MAGIC_##maj##_##min
+
 class PycModule {
 public:
     PycModule();

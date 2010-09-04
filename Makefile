@@ -11,7 +11,25 @@ COMMON = \
 	out/sequence.o \
 	out/string.o \
 	out/ASTree.o \
-	out/ASTNode.o
+	out/ASTNode.o \
+
+BYTES = \
+	out/python_10.o \
+	out/python_11.o \
+	out/python_13.o \
+	out/python_14.o \
+	out/python_15.o \
+	out/python_16.o \
+	out/python_20.o \
+	out/python_21.o \
+	out/python_22.o \
+	out/python_23.o \
+	out/python_24.o \
+	out/python_25.o \
+	out/python_26.o \
+	out/python_27.o \
+	out/python_30.o \
+	out/python_31.o
 
 ALL = \
 	bin/pycdas \
@@ -22,17 +40,17 @@ PREFIX = /usr/local
 all: $(ALL)
 
 clean:
-	rm -f $(COMMON)
+	rm -f $(COMMON) $(BYTES)
 
 install:
 	mkdir -p $(PREFIX)/bin
 	cp $(ALL) $(PREFIX)/bin
 
-bin/pycdas: pycdas.cpp $(COMMON)
-	$(CXX) $(CXXFLAGS) $(COMMON) pycdas.cpp -o $@
+bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
+	$(CXX) $(CXXFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
 
-bin/pycdc: pycdc.cpp $(COMMON)
-	$(CXX) $(CXXFLAGS) $(COMMON) pycdc.cpp -o $@
+bin/pycdc: pycdc.cpp $(COMMON) $(BYTES)
+	$(CXX) $(CXXFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
 
 out/module.o: module.h module.cpp
 	$(CXX) $(CXXFLAGS) -c module.cpp -o $@
@@ -63,3 +81,9 @@ out/ASTree.o: ASTree.h ASTree.cpp
 
 out/ASTNode.o: ASTNode.h ASTNode.cpp
 	$(CXX) $(CXXFLAGS) -c ASTNode.cpp -o $@
+
+out/python_%.o: bytes/python_%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+bytes/python_%.cpp: bytes/python_%.map
+	( cd bytes ; ./comp_map.py )

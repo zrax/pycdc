@@ -2,12 +2,6 @@
 #include "FastStack.h"
 #include "bytecode.h"
 
-// These are used to avoid writing code 3 times for each of
-// the different python generations
-#define PY_1000 0x1000
-#define PY_2000 0x2000
-#define PY_3000 0x3000
-
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
 static bool cleanBuild;
@@ -27,22 +21,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int opcode, operand;
     int pos = 0;
 
-    int opadd = 0;
-    if (mod->majorVer() == 1)
-        opadd = PY_1000;
-    else if (mod->majorVer() == 2)
-        opadd = PY_2000;
-    else if (mod->majorVer() == 3)
-        opadd = PY_3000;
-
     while (!source.atEof()) {
         bc_next(source, mod, opcode, operand, pos);
-        opcode |= opadd;
 
         switch (opcode) {
-        case (PY_1000 | Py1k::BINARY_ADD):
-        case (PY_2000 | Py2k::BINARY_ADD):
-        case (PY_3000 | Py3k::BINARY_ADD):
+        case Pyc::BINARY_ADD:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -51,9 +34,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_ADD));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_AND):
-        case (PY_2000 | Py2k::BINARY_AND):
-        case (PY_3000 | Py3k::BINARY_AND):
+        case Pyc::BINARY_AND:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -62,8 +43,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_AND));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_DIVIDE):
-        case (PY_2000 | Py2k::BINARY_DIVIDE):
+        case Pyc::BINARY_DIVIDE:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -72,8 +52,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_DIVIDE));
             }
             break;
-        case (PY_2000 | Py2k::BINARY_FLOOR_DIVIDE):
-        case (PY_3000 | Py3k::BINARY_FLOOR_DIVIDE):
+        case Pyc::BINARY_FLOOR_DIVIDE:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -82,9 +61,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_FLOOR));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_LSHIFT):
-        case (PY_2000 | Py2k::BINARY_LSHIFT):
-        case (PY_3000 | Py3k::BINARY_LSHIFT):
+        case Pyc::BINARY_LSHIFT:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -93,9 +70,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_LSHIFT));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_MODULO):
-        case (PY_2000 | Py2k::BINARY_MODULO):
-        case (PY_3000 | Py3k::BINARY_MODULO):
+        case Pyc::BINARY_MODULO:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -104,9 +79,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_MODULO));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_MULTIPLY):
-        case (PY_2000 | Py2k::BINARY_MULTIPLY):
-        case (PY_3000 | Py3k::BINARY_MULTIPLY):
+        case Pyc::BINARY_MULTIPLY:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -115,9 +88,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_SUBTRACT));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_OR):
-        case (PY_2000 | Py2k::BINARY_OR):
-        case (PY_3000 | Py3k::BINARY_OR):
+        case Pyc::BINARY_OR:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -126,9 +97,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_OR));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_POWER):
-        case (PY_2000 | Py2k::BINARY_POWER):
-        case (PY_3000 | Py3k::BINARY_POWER):
+        case Pyc::BINARY_POWER:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -137,9 +106,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_POWER));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_RSHIFT):
-        case (PY_2000 | Py2k::BINARY_RSHIFT):
-        case (PY_3000 | Py3k::BINARY_RSHIFT):
+        case Pyc::BINARY_RSHIFT:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -148,9 +115,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_RSHIFT));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_SUBSCR):
-        case (PY_2000 | Py2k::BINARY_SUBSCR):
-        case (PY_3000 | Py3k::BINARY_SUBSCR):
+        case Pyc::BINARY_SUBSCR:
             {
                 PycRef<ASTNode> subscr = stack.top();
                 stack.pop();
@@ -159,9 +124,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTSubscr(src, subscr));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_SUBTRACT):
-        case (PY_2000 | Py2k::BINARY_SUBTRACT):
-        case (PY_3000 | Py3k::BINARY_SUBTRACT):
+        case Pyc::BINARY_SUBTRACT:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -170,8 +133,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_SUBTRACT));
             }
             break;
-        case (PY_2000 | Py2k::BINARY_TRUE_DIVIDE):
-        case (PY_3000 | Py3k::BINARY_TRUE_DIVIDE):
+        case Pyc::BINARY_TRUE_DIVIDE:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -180,9 +142,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_DIVIDE));
             }
             break;
-        case (PY_1000 | Py1k::BINARY_XOR):
-        case (PY_2000 | Py2k::BINARY_XOR):
-        case (PY_3000 | Py3k::BINARY_XOR):
+        case Pyc::BINARY_XOR:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -191,8 +151,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_XOR));
             }
             break;
-        case (PY_1000 | Py1k::BUILD_CLASS):
-        case (PY_2000 | Py2k::BUILD_CLASS):
+        case Pyc::BUILD_CLASS:
             {
                 PycRef<ASTNode> code = stack.top();
                 stack.pop();
@@ -203,16 +162,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTClass(code, bases, name));
             }
             break;
-        case (PY_1000 | Py1k::BUILD_FUNCTION):
+        case Pyc::BUILD_FUNCTION:
             {
                 PycRef<ASTNode> code = stack.top();
                 stack.pop();
                 stack.push(new ASTFunction(code, ASTFunction::defarg_t()));
             }
             break;
-        case (PY_1000 | Py1k::BUILD_LIST):
-        case (PY_2000 | Py2k::BUILD_LIST):
-        case (PY_3000 | Py3k::BUILD_LIST):
+        case Pyc::BUILD_LIST_A:
             {
                 ASTList::value_t values;
                 for (int i=0; i<operand; i++) {
@@ -222,14 +179,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTList(values));
             }
             break;
-        case (PY_1000 | Py1k::BUILD_MAP):
-        case (PY_2000 | Py2k::BUILD_MAP):
-        case (PY_3000 | Py3k::BUILD_MAP):
+        case Pyc::BUILD_MAP_A:
             stack.push(new ASTMap());
             break;
-        case (PY_1000 | Py1k::BUILD_TUPLE):
-        case (PY_2000 | Py2k::BUILD_TUPLE):
-        case (PY_3000 | Py3k::BUILD_TUPLE):
+        case Pyc::BUILD_TUPLE_A:
             {
                 ASTTuple::value_t values;
                 values.resize(operand);
@@ -240,9 +193,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTTuple(values));
             }
             break;
-        case (PY_1000 | Py1k::CALL_FUNCTION):
-        case (PY_2000 | Py2k::CALL_FUNCTION):
-        case (PY_3000 | Py3k::CALL_FUNCTION):
+        case Pyc::CALL_FUNCTION_A:
             {
                 int kwparams = (operand & 0xFF00) >> 8;
                 int pparams = (operand & 0xFF);
@@ -264,9 +215,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
             break;
-        case (PY_1000 | Py1k::COMPARE_OP):
-        case (PY_2000 | Py2k::COMPARE_OP):
-        case (PY_3000 | Py3k::COMPARE_OP):
+        case Pyc::COMPARE_OP_A:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -275,41 +224,28 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCompare(left, right, operand));
             }
             break;
-        case (PY_1000 | Py1k::DUP_TOP):
-        case (PY_2000 | Py2k::DUP_TOP):
-        case (PY_3000 | Py3k::DUP_TOP):
+        case Pyc::DUP_TOP:
             stack.push(stack.top());
             break;
-        case (PY_1000 | Py1k::IMPORT_NAME):
-            stack.push(new ASTImport(new ASTName(code->getName(operand)), Node_NULL));
-            break;
-        case (PY_2000 | Py2k::IMPORT_NAME):
-            {
+        case Pyc::IMPORT_NAME_A:
+            if (mod->majorVer() == 1) {
+                stack.push(new ASTImport(new ASTName(code->getName(operand)), Node_NULL));
+            } else {
                 PycRef<ASTNode> fromlist = stack.top();
                 stack.pop();
-                if (mod->minorVer() >= 5)
+                if (mod->majorVer() > 2 || mod->minorVer() >= 5)
                     stack.pop();    // Level -- we don't care
                 stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
             }
             break;
-        case (PY_3000 | Py3k::IMPORT_NAME):
-            {
-                PycRef<ASTNode> fromlist = stack.top();
-                stack.pop();
-                stack.pop();    // Level -- we don't care
-                stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
-            }
-            break;
-        case (PY_2000 | Py2k::IMPORT_STAR):
-        case (PY_3000 | Py3k::IMPORT_STAR):
+        case Pyc::IMPORT_STAR:
             {
                 PycRef<ASTNode> import = stack.top();
                 stack.pop();
                 lines.push_back(new ASTStore(import, Node_NULL));
             }
             break;
-        case (PY_2000 | Py2k::INPLACE_ADD):
-        case (PY_3000 | Py3k::INPLACE_ADD):
+        case Pyc::INPLACE_ADD:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -319,8 +255,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(src, right, ASTBinary::BIN_AND));
             }
             break;
-        case (PY_2000 | Py2k::INPLACE_SUBTRACT):
-        case (PY_3000 | Py3k::INPLACE_SUBTRACT):
+        case Pyc::INPLACE_SUBTRACT:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
@@ -330,72 +265,51 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(src, right, ASTBinary::BIN_SUBTRACT));
             }
             break;
-        case (PY_1000 | Py1k::JUMP_IF_FALSE):
-        case (PY_2000 | Py2k::JUMP_IF_FALSE):
-        case (PY_3000 | Py3k::JUMP_IF_FALSE):
+        case Pyc::JUMP_IF_FALSE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 stack.pop();
                 stack.push(new ASTJump(operand, ASTJump::JMP_FALSE, cond));
             }
             break;
-        case (PY_1000 | Py1k::JUMP_IF_TRUE):
-        case (PY_2000 | Py2k::JUMP_IF_TRUE):
-        case (PY_3000 | Py3k::JUMP_IF_TRUE):
+        case Pyc::JUMP_IF_TRUE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 stack.pop();
                 stack.push(new ASTJump(operand, ASTJump::JMP_TRUE, cond));
             }
             break;
-        case (PY_1000 | Py1k::JUMP_FORWARD):
-        case (PY_2000 | Py2k::JUMP_FORWARD):
-        case (PY_3000 | Py3k::JUMP_FORWARD):
+        case Pyc::JUMP_FORWARD_A:
             {
                 stack.push(new ASTJump(operand, ASTJump::JUMP, NULL));
             }
             break;
-        case (PY_1000 | Py1k::LOAD_ATTR):
-        case (PY_2000 | Py2k::LOAD_ATTR):
-        case (PY_3000 | Py3k::LOAD_ATTR):
+        case Pyc::LOAD_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
                 stack.pop();
                 stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
             }
             break;
-        case (PY_1000 | Py1k::LOAD_CONST):
-        case (PY_2000 | Py2k::LOAD_CONST):
-        case (PY_3000 | Py3k::LOAD_CONST):
+        case Pyc::LOAD_CONST_A:
             stack.push(new ASTObject(code->getConst(operand)));
             break;
-        case (PY_1000 | Py1k::LOAD_FAST):
-            if (mod->minorVer()  < 3)
+        case Pyc::LOAD_FAST_A:
+            if (mod->majorVer() == 1 && mod->minorVer()  < 3)
                 stack.push(new ASTName(code->getName(operand)));
             else
                 stack.push(new ASTName(code->getVarName(operand)));
             break;
-        case (PY_2000 | Py2k::LOAD_FAST):
-        case (PY_3000 | Py3k::LOAD_FAST):
-            stack.push(new ASTName(code->getVarName(operand)));
-            break;
-        case (PY_1000 | Py1k::LOAD_GLOBAL):
-        case (PY_2000 | Py2k::LOAD_GLOBAL):
-        case (PY_3000 | Py3k::LOAD_GLOBAL):
+        case Pyc::LOAD_GLOBAL_A:
             stack.push(new ASTName(code->getName(operand)));
             break;
-        case (PY_1000 | Py1k::LOAD_LOCALS):
-        case (PY_2000 | Py2k::LOAD_LOCALS):
+        case Pyc::LOAD_LOCALS:
             stack.push(new ASTNode(ASTNode::NODE_LOCALS));
             break;
-        case (PY_1000 | Py1k::LOAD_NAME):
-        case (PY_2000 | Py2k::LOAD_NAME):
-        case (PY_3000 | Py3k::LOAD_NAME):
+        case Pyc::LOAD_NAME_A:
             stack.push(new ASTName(code->getName(operand)));
             break;
-        case (PY_1000 | Py1k::MAKE_FUNCTION):
-        case (PY_2000 | Py2k::MAKE_FUNCTION):
-        case (PY_3000 | Py3k::MAKE_FUNCTION):
+        case Pyc::MAKE_FUNCTION_A:
             {
                 PycRef<ASTNode> code = stack.top();
                 stack.pop();
@@ -407,9 +321,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTFunction(code, defArgs));
             }
             break;
-        case (PY_1000 | Py1k::POP_TOP):
-        case (PY_2000 | Py2k::POP_TOP):
-        case (PY_3000 | Py3k::POP_TOP):
+        case Pyc::POP_TOP:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -417,27 +329,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     lines.push_back(value);
             }
             break;
-        case (PY_1000 | Py1k::PRINT_ITEM):
-        case (PY_2000 | Py2k::PRINT_ITEM):
+        case Pyc::PRINT_ITEM:
             lines.push_back(new ASTPrint(stack.top()));
             stack.pop();
             break;
-        case (PY_1000 | Py1k::PRINT_NEWLINE):
-        case (PY_2000 | Py2k::PRINT_NEWLINE):
+        case Pyc::PRINT_NEWLINE:
             lines.push_back(new ASTPrint(Node_NULL));
             break;
-        case (PY_1000 | Py1k::RETURN_VALUE):
-        case (PY_2000 | Py2k::RETURN_VALUE):
-        case (PY_3000 | Py3k::RETURN_VALUE):
+        case Pyc::RETURN_VALUE:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 lines.push_back(new ASTReturn(value));
             }
             break;
-        case (PY_1000 | Py1k::ROT_THREE):
-        case (PY_2000 | Py2k::ROT_THREE):
-        case (PY_3000 | Py3k::ROT_THREE):
+        case Pyc::ROT_THREE:
             {
                 PycRef<ASTNode> one = stack.top();
                 stack.pop();
@@ -450,13 +356,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(two);
             }
             break;
-        case (PY_1000 | Py1k::SET_LINENO):
-        case (PY_2000 | Py2k::SET_LINENO):
+        case Pyc::SET_LINENO_A:
             // Ignore
             break;
-        case (PY_1000 | Py1k::STORE_ATTR):
-        case (PY_2000 | Py2k::STORE_ATTR):
-        case (PY_3000 | Py3k::STORE_ATTR):
+        case Pyc::STORE_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
                 stack.pop();
@@ -466,30 +369,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 lines.push_back(new ASTStore(value, attr));
             }
             break;
-        case (PY_1000 | Py1k::STORE_FAST):
+        case Pyc::STORE_FAST_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 PycRef<ASTNode> name;
-                if (mod->minorVer() < 3)
+                if (mod->majorVer() == 1 && mod->minorVer() < 3)
                     name = new ASTName(code->getName(operand));
                 else
                     name = new ASTName(code->getVarName(operand));
                 lines.push_back(new ASTStore(value, name));
             }
             break;
-        case (PY_2000 | Py2k::STORE_FAST):
-        case (PY_3000 | Py3k::STORE_FAST):
-            {
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
-                PycRef<ASTNode> name = new ASTName(code->getVarName(operand));
-                lines.push_back(new ASTStore(value, name));
-            }
-            break;
-        case (PY_1000 | Py1k::STORE_GLOBAL):
-        case (PY_2000 | Py2k::STORE_GLOBAL):
-        case (PY_3000 | Py3k::STORE_GLOBAL):
+        case Pyc::STORE_GLOBAL_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -497,9 +389,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 lines.push_back(new ASTStore(value, name));
             }
             break;
-        case (PY_1000 | Py1k::STORE_NAME):
-        case (PY_2000 | Py2k::STORE_NAME):
-        case (PY_3000 | Py3k::STORE_NAME):
+        case Pyc::STORE_NAME_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -507,9 +397,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 lines.push_back(new ASTStore(value, name));
             }
             break;
-        case (PY_1000 | Py1k::STORE_SUBSCR):
-        case (PY_2000 | Py2k::STORE_SUBSCR):
-        case (PY_3000 | Py3k::STORE_SUBSCR):
+        case Pyc::STORE_SUBSCR:
             {
                 PycRef<ASTNode> subscr = stack.top();
                 stack.pop();
@@ -524,43 +412,35 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
-        case (PY_1000 | Py1k::UNARY_CALL):
+        case Pyc::UNARY_CALL:
             {
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
                 stack.push(new ASTCall(func, ASTCall::pparam_t(), ASTCall::kwparam_t()));
             }
             break;
-        case (PY_1000 | Py1k::UNARY_INVERT):
-        case (PY_2000 | Py2k::UNARY_INVERT):
-        case (PY_3000 | Py3k::UNARY_INVERT):
+        case Pyc::UNARY_INVERT:
             {
                 PycRef<ASTNode> arg = stack.top();
                 stack.pop();
                 stack.push(new ASTUnary(arg, ASTUnary::UN_INVERT));
             }
             break;
-        case (PY_1000 | Py1k::UNARY_NEGATIVE):
-        case (PY_2000 | Py2k::UNARY_NEGATIVE):
-        case (PY_3000 | Py3k::UNARY_NEGATIVE):
+        case Pyc::UNARY_NEGATIVE:
             {
                 PycRef<ASTNode> arg = stack.top();
                 stack.pop();
                 stack.push(new ASTUnary(arg, ASTUnary::UN_NEGATIVE));
             }
             break;
-        case (PY_1000 | Py1k::UNARY_NOT):
-        case (PY_2000 | Py2k::UNARY_NOT):
-        case (PY_3000 | Py3k::UNARY_NOT):
+        case Pyc::UNARY_NOT:
             {
                 PycRef<ASTNode> arg = stack.top();
                 stack.pop();
                 stack.push(new ASTUnary(arg, ASTUnary::UN_NOT));
             }
             break;
-        case (PY_1000 | Py1k::UNARY_POSITIVE):
-        case (PY_2000 | Py2k::UNARY_POSITIVE):
-        case (PY_3000 | Py3k::UNARY_POSITIVE):
+        case Pyc::UNARY_POSITIVE:
             {
                 PycRef<ASTNode> arg = stack.top();
                 stack.pop();
@@ -569,11 +449,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         default:
             if (mod->majorVer() == 1)
-                fprintf(stderr, "Unsupported opcode: %s\n", Py1k::OpcodeNames[opcode & 0xFF]);
+                fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             else if (mod->majorVer() == 2)
-                fprintf(stderr, "Unsupported opcode: %s\n", Py2k::OpcodeNames[opcode & 0xFF]);
+                fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             else if (mod->majorVer() == 3)
-                fprintf(stderr, "Unsupported opcode: %s\n", Py3k::OpcodeNames[opcode & 0xFF]);
+                fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
             return new ASTNodeList(lines);
         }
