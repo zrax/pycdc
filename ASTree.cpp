@@ -683,8 +683,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
             print_ordered(node, bin->left(), mod, indent);
             printf("%s", bin->op_str());
             print_ordered(node, bin->right(), mod, indent);
-            if (bin->op() == ASTBinary::BIN_SUBSCR)
-                printf("]");
         }
         break;
     case ASTNode::NODE_UNARY:

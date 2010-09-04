@@ -97,7 +97,7 @@ public:
         BIN_OR, BIN_LOG_AND, BIN_LOG_OR, BIN_IP_ADD, BIN_IP_SUBTRACT,
         BIN_IP_MULTIPLY, BIN_IP_DIVIDE, BIN_IP_MODULO, BIN_IP_POWER,
         BIN_IP_LSHIFT, BIN_IP_RSHIFT, BIN_IP_AND, BIN_IP_XOR, BIN_IP_OR,
-        BIN_IP_FLOOR, BIN_SUBSCR
+        BIN_IP_FLOOR,
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
