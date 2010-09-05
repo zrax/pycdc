@@ -337,7 +337,13 @@ private:
 
 class ASTPopHack : public ASTNode {
 public:
-    ASTPopHack() : ASTNode(NODE_POP_HACK) { }
+    ASTPopHack(PycRef<ASTNode> value)
+        : ASTNode(NODE_POP_HACK), m_value(value) { }
+
+    PycRef<ASTNode> value() const { return m_value; }
+
+private:
+    PycRef<ASTNode> m_value;
 };
 
 #endif
