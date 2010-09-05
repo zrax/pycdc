@@ -18,6 +18,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     FastStack stack((mod->majorVer() == 1) ? 20 : code->stackSize());
     stackhist_t stack_hist;
 
+    std::stack<int> jumps;
+
     int opcode, operand;
     int pos = 0;
 
@@ -270,6 +272,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> cond = stack.top();
                 stack.pop();
                 stack.push(new ASTJump(operand, ASTJump::JMP_FALSE, cond));
+                jumps.push(pos + operand);
             }
             break;
         case Pyc::JUMP_IF_TRUE_A:
@@ -277,11 +280,26 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> cond = stack.top();
                 stack.pop();
                 stack.push(new ASTJump(operand, ASTJump::JMP_TRUE, cond));
+                jumps.push(pos + operand);
             }
             break;
         case Pyc::JUMP_FORWARD_A:
             {
                 stack.push(new ASTJump(operand, ASTJump::JUMP, NULL));
+                std::stack<int> tmp;
+                int top = jumps.top();
+                while (top < pos + operand) {
+                    tmp.push(jumps.top());
+                    jumps.pop();
+                    if (!jumps.size())
+                        break;
+                    top = jumps.top();
+                }
+                jumps.push(pos + operand);
+                while (tmp.size()) {
+                    jumps.push(tmp.top());
+                    tmp.pop();
+                }
             }
             break;
         case Pyc::LOAD_ATTR_A:
@@ -456,6 +474,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
             return new ASTNodeList(lines);
+        }
+
+        while (jumps.size() && jumps.top() == pos)
+        {
+            PycRef<ASTNode> dest = lines.back();
+            lines.pop_back();
+            lines.push_back(new ASTPopHack(dest));
+            jumps.pop();
         }
     }
 
@@ -768,10 +794,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
         }
         break;
     case ASTNode::NODE_SUBSCR:
-        print_src(node.cast<ASTSubscr>()->name(), mod, indent);
-        printf("[");
-        print_src(node.cast<ASTSubscr>()->key(), mod, indent);
-        printf("]");
+        {
+            print_src(node.cast<ASTSubscr>()->name(), mod, indent);
+            printf("[");
+            print_src(node.cast<ASTSubscr>()->key(), mod, indent);
+            printf("]");
+        }
         break;
     case ASTNode::NODE_TUPLE:
         {
@@ -793,11 +821,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
         {
             ASTJump::Condition jtype = node.cast<ASTJump>()->jtype();
             if (jtype != ASTJump::JUMP) {
-                printf("if (");
+                printf("if ");
                 if (jtype == ASTJump::JMP_TRUE)
                     printf("not ");
                 print_src(node.cast<ASTJump>()->cond(), mod, indent);
-                printf("):");
+                printf(":");
                 cur_indent++;
             } else {
                 if (node.cast<ASTJump>()->dest() != 1) {
@@ -808,7 +836,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, int indent)
         }
         break;
     case ASTNode::NODE_POP_HACK:
-        cur_indent--;
+        {
+            PycRef<ASTNode> val = node.cast<ASTPopHack>()->value();
+            print_src(val, mod, indent);
+
+            if (cur_indent > 0)
+                cur_indent--;
+
+            //printf(" #%d", val.cast<ASTNode>()->type());
+        }
         break;
     default:
         printf("<NODE:%d>", node->type());
