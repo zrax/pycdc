@@ -4,8 +4,8 @@
 #include "ASTNode.h"
 
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod);
-void print_src(PycRef<ASTNode> node, PycModule* mod, int indent);
+void print_src(PycRef<ASTNode> node, PycModule* mod);
 
-void decompyle(PycRef<PycCode> code, PycModule* mod, int indent = 0);
+void decompyle(PycRef<PycCode> code, PycModule* mod);
 
 #endif

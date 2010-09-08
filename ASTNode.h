@@ -15,10 +15,7 @@ public:
         NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_JUMP,
 
         // Empty nodes
-        NODE_PASS, NODE_LOCALS,
-
-        //Hack to unindent
-        NODE_POP_HACK
+        NODE_PASS, NODE_LOCALS
     };
 
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
@@ -334,16 +331,4 @@ private:
     Condition m_jtype;
     PycRef<ASTNode> m_cond;
 };
-
-class ASTPopHack : public ASTNode {
-public:
-    ASTPopHack(PycRef<ASTNode> value)
-        : ASTNode(NODE_POP_HACK), m_value(value) { }
-
-    PycRef<ASTNode> value() const { return m_value; }
-
-private:
-    PycRef<ASTNode> m_value;
-};
-
 #endif
