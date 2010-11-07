@@ -165,6 +165,74 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="Bytecode"
+			>
+			<File
+				RelativePath=".\bytes\python_10.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_11.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_13.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_14.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_15.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_16.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_20.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_21.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_22.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_23.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_24.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_25.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_26.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_27.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_30.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\bytes\python_31.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\ASTNode.cpp"
 			>

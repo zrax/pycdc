@@ -1,6 +1,10 @@
 #include "bytecode.h"
 #include "numeric.h"
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#endif
+
 #define DECLARE_PYTHON(maj, min) \
     extern int python_##maj##min##_map(int); \
     extern int python_##maj##min##_unmap(int);
