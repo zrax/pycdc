@@ -260,7 +260,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
                 /* This is a problem, so fake it with a = a + b syntax */
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_AND));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_ADD));
             }
             break;
         case Pyc::INPLACE_SUBTRACT:
