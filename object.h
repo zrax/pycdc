@@ -36,7 +36,7 @@ public:
 
     /* This is just for coding convenience -- no type checking is done! */
     template <class _Cast>
-    PycRef<_Cast> cast() const { return (_Cast*)m_obj; }
+    PycRef<_Cast> cast() const { return static_cast<_Cast*>(m_obj); }
 
 private:
     _Obj* m_obj;

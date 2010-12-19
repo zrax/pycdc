@@ -244,6 +244,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
             }
             break;
+        case Pyc::IMPORT_FROM_A:
+            break;
         case Pyc::IMPORT_STAR:
             {
                 PycRef<ASTNode> import = stack.top();
@@ -317,7 +319,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_CONST_A:
-            stack.push(new ASTObject(code->getConst(operand)));
+            {
+                PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
+
+                if (t_ob->object()->type() == PycObject::TYPE_TUPLE &&
+                        !t_ob->object().cast<PycTuple>()->values().size()) {
+                    ASTTuple::value_t values;
+                    stack.push(new ASTTuple(values));
+                } else {
+                    stack.push(t_ob.cast<ASTNode>());
+                }
+            }
             break;
         case Pyc::LOAD_FAST_A:
             if (mod->majorVer() == 1 && mod->minorVer()  < 3)

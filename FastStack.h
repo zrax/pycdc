@@ -23,10 +23,15 @@ public:
     { m_stack[++m_ptr] = node; }
 
     void pop()
-    { m_stack[m_ptr--] = Node_NULL; }
+    { if (m_ptr > -1) m_stack[m_ptr--] = Node_NULL; }
 
     PycRef<ASTNode> top() const
-    { return m_stack[m_ptr]; }
+    {
+        if (m_ptr > -1)
+            return m_stack[m_ptr];
+        else
+            return Node_NULL;
+    }
 
     void replace(const FastStack& copy)
     {
