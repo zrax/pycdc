@@ -49,3 +49,25 @@ const char* ASTCompare::op_str() const
     };
     return s_cmp_strings[op()];
 }
+
+/* ASTBlock */
+void ASTBlock::removeLast()
+{
+    list_t::iterator it = m_nodes.end();
+    --it;
+    m_nodes.erase(it);
+}
+
+void ASTBlock::removeFirst()
+{
+    list_t::iterator it = m_nodes.begin();
+    m_nodes.erase(it);
+}
+
+const char* ASTBlock::type_str() const
+{
+    static const char* s_type_strings[] = {
+        "", "try", "except", "finally", "while", "for"
+    };
+    return s_type_strings[type()];
+}

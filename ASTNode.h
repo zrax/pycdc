@@ -12,7 +12,7 @@ public:
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
         NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
-        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_JUMP,
+        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_JUMP, NODE_BLOCK,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -331,4 +331,33 @@ private:
     Condition m_jtype;
     PycRef<ASTNode> m_cond;
 };
+
+class ASTBlock : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode> > list_t;
+
+    enum Type {
+        BLK_MAIN, BLK_TRY, BLK_EXCEPT, BLK_FINALLY, BLK_WHILE, BLK_FOR
+    };
+
+    ASTBlock(Type type, unsigned int start = 0, unsigned int end = 0)
+        : ASTNode(NODE_BLOCK), m_type(type), m_start(start), m_end(end)
+          { }
+
+    Type type() const { return m_type; }
+    unsigned int start() const { return m_start; }
+    unsigned int end() const { return m_end; }
+    const list_t& nodes() const { return m_nodes; }
+    void removeFirst();
+    void removeLast();
+    void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
+    const char* type_str() const;
+
+private:
+    Type m_type;
+    unsigned int m_start;
+    unsigned int m_end;
+    list_t m_nodes;
+};
+
 #endif
