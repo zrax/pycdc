@@ -360,4 +360,22 @@ private:
     list_t m_nodes;
 };
 
+class ASTTryBlock : public ASTBlock {
+public:
+    ASTTryBlock(unsigned int start, unsigned int end,
+            unsigned int except = 0, unsigned int finally = 0)
+        : ASTBlock(BLK_TRY, start, end), m_except(except),
+            m_finally(finally) { }
+
+    unsigned int except() const { return m_except; }
+    unsigned int finally() const { return m_finally; }
+
+    void set_except(unsigned int except) { m_except = except; }
+    void set_finally(unsigned int finally) { m_finally = finally; }
+
+private:
+    unsigned int m_except;
+    unsigned int m_finally;
+};
+
 #endif
