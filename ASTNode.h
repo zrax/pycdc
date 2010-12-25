@@ -315,23 +315,6 @@ private:
 };
 
 
-class ASTJump : public ASTNode {
-public:
-    enum Condition { JUMP, JMP_FALSE, JMP_TRUE };
-
-    ASTJump(int dest, Condition jtype, PycRef<ASTNode> cond)
-        : ASTNode(NODE_JUMP), m_dest(dest), m_jtype(jtype), m_cond(cond) {}
-
-    int dest() const { return m_dest; }
-    Condition jtype() const { return m_jtype; }
-    PycRef<ASTNode> cond() const { return m_cond; }
-
-private:
-    int m_dest;
-    Condition m_jtype;
-    PycRef<ASTNode> m_cond;
-};
-
 class ASTBlock : public ASTNode {
 public:
     typedef std::list<PycRef<ASTNode> > list_t;
@@ -341,11 +324,11 @@ public:
         BLK_FINALLY, BLK_WHILE, BLK_FOR
     };
 
-    ASTBlock(BlkType blktype, unsigned int end = 0)
+    ASTBlock(BlkType blktype, int end = 0)
         : ASTNode(NODE_BLOCK), m_blktype(blktype), m_end(end) { }
 
     BlkType blktype() const { return m_blktype; }
-    unsigned int end() const { return m_end; }
+    int end() const { return m_end; }
     const list_t& nodes() const { return m_nodes; }
     list_t::size_type size() const { return m_nodes.size(); }
     void removeFirst();
@@ -355,7 +338,7 @@ public:
 
 private:
     BlkType m_blktype;
-    unsigned int m_end;
+    int m_end;
     list_t m_nodes;
 };
 

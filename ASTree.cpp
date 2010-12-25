@@ -13,7 +13,6 @@ static bool inPrint;
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
-    std::stack<ASTNodeList::list_t> lines;
 
     FastStack stack((mod->majorVer() == 1) ? 20 : code->stackSize());
     stackhist_t stack_hist;
@@ -23,14 +22,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     PycRef<ASTBlock>& curblock = defblock;
     blocks.push(defblock);
 
-    std::stack<int> jumps;
-
     int opcode, operand;
     int pos = 0;
-    bool startBlock = false;
-
-    ASTNodeList::list_t l;
-    lines.push(l);
 
     while (!source.atEof()) {
         bc_next(source, mod, opcode, operand, pos);
@@ -265,7 +258,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> import = stack.top();
                 stack.pop();
-                lines.top().push_back(new ASTStore(import, Node_NULL));
                 curblock->append(new ASTStore(import, Node_NULL));
             }
             break;
@@ -292,7 +284,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_FALSE_A:
             {
                 stack_hist.push(stack);
-                //stack = FastStack(stack_hist.top());
                 PycRef<ASTNode> cond = stack.top();
                 // Do not pop the condition off the stack!
 
@@ -311,7 +302,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_TRUE_A:
             {
                 stack_hist.push(stack);
-                //stack = FastStack(stack_hist.top());
                 PycRef<ASTNode> cond = stack.top();
                 // Do not pop the condition off the stack!
 
@@ -340,6 +330,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (operand > 1 && (prev->blktype() == ASTBlock::BLK_IF
                             || prev->blktype() == ASTBlock::BLK_ELIF))
                 {
+                    stack_hist.push(stack);
                     PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, pos+operand);
                     blocks.push(next.cast<ASTBlock>());
                 }
@@ -417,25 +408,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 if (value->type() == ASTNode::NODE_CALL) {
-                    lines.top().push_back(value);
                     curblock->append(value);
                 }
             }
             break;
         case Pyc::PRINT_ITEM:
-            lines.top().push_back(new ASTPrint(stack.top()));
             curblock->append(new ASTPrint(stack.top()));
             stack.pop();
             break;
         case Pyc::PRINT_NEWLINE:
-            lines.top().push_back(new ASTPrint(Node_NULL));
             curblock->append(new ASTPrint(Node_NULL));
             break;
         case Pyc::RETURN_VALUE:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
-                lines.top().push_back(new ASTReturn(value));
                 curblock->append(new ASTReturn(value));
             }
             break;
@@ -487,7 +474,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
-                lines.top().push_back(new ASTStore(value, attr));
                 curblock->append(new ASTStore(value, attr));
             }
             break;
@@ -500,7 +486,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     name = new ASTName(code->getName(operand));
                 else
                     name = new ASTName(code->getVarName(operand));
-                lines.top().push_back(new ASTStore(value, name));
                 curblock->append(new ASTStore(value, name));
             }
             break;
@@ -509,7 +494,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                lines.top().push_back(new ASTStore(value, name));
                 curblock->append(new ASTStore(value, name));
             }
             break;
@@ -518,7 +502,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                lines.top().push_back(new ASTStore(value, name));
                 curblock->append(new ASTStore(value, name));
             }
             break;
@@ -533,7 +516,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (dest->type() == ASTNode::NODE_MAP) {
                     dest.cast<ASTMap>()->add(subscr, src);
                 } else {
-                    lines.top().push_back(new ASTStore(src, new ASTSubscr(dest, subscr)));
                     curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
                 }
             }
@@ -579,7 +561,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             return new ASTNodeList(defblock->nodes());
         }
 
-        if (curblock->end() && curblock->end() < pos) {
+        if (curblock->end() == pos) {
             //stack = FastStack(stack_hist.top());
             stack_hist.pop();
 
@@ -956,22 +938,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 printf(",)");
             else
                 printf(")");
-        }
-        break;
-    case ASTNode::NODE_JUMP:
-        {
-            ASTJump::Condition jtype = node.cast<ASTJump>()->jtype();
-            if (jtype != ASTJump::JUMP) {
-                printf("if ");
-                if (jtype == ASTJump::JMP_TRUE)
-                    printf("not ");
-                print_src(node.cast<ASTJump>()->cond(), mod);
-                printf(":");
-            } else {
-                if (node.cast<ASTJump>()->dest() != 1) {
-                    printf("else:"); /* HAX! */
-                }
-            }
         }
         break;
     default:
