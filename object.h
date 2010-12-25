@@ -6,21 +6,27 @@ class PycRef {
 public:
     PycRef() : m_obj(0) { }
     PycRef(_Obj* obj) : m_obj(obj) { m_obj->addRef(); }
-    PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj) { m_obj->addRef(); }
-    ~PycRef<_Obj>() { m_obj->delRef(); }
+    PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj) {
+        if (m_obj != (_Obj*)0) m_obj->addRef();
+    }
+    ~PycRef<_Obj>() { if (m_obj != (_Obj*)0) m_obj->delRef(); }
 
     PycRef<_Obj>& operator=(_Obj* obj)
     {
-        obj->addRef();
-        m_obj->delRef();
+        if (obj != (_Obj*)0)
+            obj->addRef();
+        if (m_obj != (_Obj*)0)
+            m_obj->delRef();
         m_obj = obj;
         return *this;
     }
 
     PycRef<_Obj>& operator=(const PycRef<_Obj>& obj)
     {
-        obj.m_obj->addRef();
-        m_obj->delRef();
+        if (obj.m_obj != (_Obj*)0)
+            obj.m_obj->addRef();
+        if (m_obj != (_Obj*)0)
+            m_obj->delRef();
         m_obj = obj.m_obj;
         return *this;
     }

@@ -67,7 +67,7 @@ void ASTBlock::removeFirst()
 const char* ASTBlock::type_str() const
 {
     static const char* s_type_strings[] = {
-        "", "try", "except", "finally", "while", "for"
+        "", "if", "else", "elif", "try", "except", "finally", "while", "for"
     };
-    return s_type_strings[type()];
+    return s_type_strings[blktype()];
 }

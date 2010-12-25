@@ -336,31 +336,44 @@ class ASTBlock : public ASTNode {
 public:
     typedef std::list<PycRef<ASTNode> > list_t;
 
-    enum Type {
-        BLK_MAIN, BLK_TRY, BLK_EXCEPT, BLK_FINALLY, BLK_WHILE, BLK_FOR
+    enum BlkType {
+        BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, BLK_EXCEPT,
+        BLK_FINALLY, BLK_WHILE, BLK_FOR
     };
 
-    ASTBlock(Type type, unsigned int start = 0, unsigned int end = 0)
-        : ASTNode(NODE_BLOCK), m_type(type), m_start(start), m_end(end)
-          { }
+    ASTBlock(BlkType blktype, unsigned int end = 0)
+        : ASTNode(NODE_BLOCK), m_blktype(blktype), m_end(end) { }
 
-    Type type() const { return m_type; }
-    unsigned int start() const { return m_start; }
+    BlkType blktype() const { return m_blktype; }
     unsigned int end() const { return m_end; }
     const list_t& nodes() const { return m_nodes; }
+    list_t::size_type size() const { return m_nodes.size(); }
     void removeFirst();
     void removeLast();
     void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
     const char* type_str() const;
 
 private:
-    Type m_type;
-    unsigned int m_start;
+    BlkType m_blktype;
     unsigned int m_end;
     list_t m_nodes;
 };
 
-class ASTTryBlock : public ASTBlock {
+class ASTCondBlock : public ASTBlock {
+public:
+    ASTCondBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> cond,
+            bool negative = false)
+        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative) { }
+
+    PycRef<ASTNode> cond() const { return m_cond; }
+    bool negative() const { return m_negative; }
+
+private:
+    PycRef<ASTNode> m_cond;
+    bool m_negative;
+};
+
+/*class ASTTryBlock : public ASTBlock {
 public:
     ASTTryBlock(unsigned int start, unsigned int end,
             unsigned int except = 0, unsigned int finally = 0)
@@ -376,6 +389,6 @@ public:
 private:
     unsigned int m_except;
     unsigned int m_finally;
-};
+};*/
 
 #endif
