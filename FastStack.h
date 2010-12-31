@@ -24,6 +24,11 @@ public:
         delete[] m_stack;
     }
 
+    FastStack& operator=(const FastStack& copy) {
+        replace(copy);
+        return *this;
+    }
+
     void push(PycRef<ASTNode> node) {
         m_stack[++m_ptr] = node;
     }
@@ -43,11 +48,15 @@ public:
 
     void replace(const FastStack& copy)
     {
-        for (int i=0; i<=copy.m_ptr; i++)
-            m_stack[i] = copy.m_stack[i];
-        for (int i=copy.m_ptr+1; i<=m_ptr; i++)
-            m_stack[i] = Node_NULL;
+        if (&copy == this)
+            return;
+        delete[] m_stack;
+
+        m_size = copy.m_size;
         m_ptr = copy.m_ptr;
+        m_stack = new PycRef<ASTNode>[m_size];
+        for (int i=0; i<= m_ptr; i++)
+            m_stack[i] = copy.m_stack[i];
     }
 
 private:
