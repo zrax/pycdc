@@ -46,6 +46,17 @@ install:
 	mkdir -p $(PREFIX)/bin
 	cp $(ALL) $(PREFIX)/bin
 
+test: all
+	@for f in ./tests/*; \
+	do \
+		./bin/pycdc "$$f" > /dev/null; \
+		if [ "$$?" -eq "0" ]; then \
+			echo "\033[32mPASSED\033[m $$f"; \
+		else \
+			echo "\033[31mFAILED\033[m $$f"; \
+		fi \
+	done;
+
 bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
 	$(CXX) $(CXXFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
 

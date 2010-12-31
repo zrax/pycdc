@@ -140,9 +140,8 @@ bool Pyc::IsCellArg(int opcode)
 bool Pyc::IsJumpOffsetArg(int opcode)
 {
     return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
-           (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A) ||
-           (opcode == Pyc::JUMP_IF_TRUE_OR_POP_A) || (opcode == Pyc::POP_JUMP_IF_FALSE_A) ||
-           (opcode == Pyc::POP_JUMP_IF_TRUE_A);
+           (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
+           (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A);
 }
 
 
