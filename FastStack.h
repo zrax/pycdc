@@ -6,24 +6,32 @@
 
 class FastStack {
 public:
-    FastStack(int size) : m_size(size), m_ptr(-1)
-    { m_stack = new PycRef<ASTNode>[m_size]; }
-
-    FastStack(const FastStack& copy) : m_size(copy.m_size), m_ptr(copy.m_ptr)
-    {
+    FastStack(int size) : m_size(size), m_ptr(-1) {
         m_stack = new PycRef<ASTNode>[m_size];
-        for (int i=0; i<m_size; i++)
+    }
+
+    FastStack(const FastStack& copy) : m_size(copy.m_size), m_ptr(copy.m_ptr) {
+        long a = (long)&(*copy.m_stack[0]);
+        m_stack = new PycRef<ASTNode>[m_size];
+        if ((long)&(*copy.m_stack[0]) != a)
+            fprintf(stderr, "\nWe have a serious problem!\n\n");
+
+        for (int i = 0; i <= m_ptr; i++)
             m_stack[i] = copy.m_stack[i];
     }
 
-    ~FastStack()
-    { delete[] m_stack; }
+    ~FastStack() {
+        delete[] m_stack;
+    }
 
-    void push(PycRef<ASTNode> node)
-    { m_stack[++m_ptr] = node; }
+    void push(PycRef<ASTNode> node) {
+        m_stack[++m_ptr] = node;
+    }
 
-    void pop()
-    { if (m_ptr > -1) m_stack[m_ptr--] = Node_NULL; }
+    void pop() {
+        if (m_ptr > -1)
+            m_stack[m_ptr--] = Node_NULL;
+    }
 
     PycRef<ASTNode> top() const
     {

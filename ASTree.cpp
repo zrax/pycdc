@@ -319,7 +319,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::JUMP_FORWARD_A:
             {
-                //stack = FastStack(stack_hist.top());
+                stack = FastStack(stack_hist.top());
                 stack_hist.pop();
 
                 PycRef<ASTBlock> prev = curblock;
@@ -330,7 +330,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (operand > 1 && (prev->blktype() == ASTBlock::BLK_IF
                             || prev->blktype() == ASTBlock::BLK_ELIF))
                 {
-                    stack_hist.push(stack);
+                    //stack_hist.push(stack);
                     PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, pos+operand);
                     blocks.push(next.cast<ASTBlock>());
                 }
@@ -562,13 +562,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         }
 
         if (curblock->end() == pos) {
-            //stack = FastStack(stack_hist.top());
+            stack = FastStack(stack_hist.top());
             stack_hist.pop();
 
             PycRef<ASTBlock> prev = curblock;
             blocks.pop();
             curblock = blocks.top();
             curblock->append(prev.cast<ASTNode>());
+        }
+    }
+
+    if (stack_hist.size()) {
+        fprintf(stderr, "Warning: Stack history is not empty!\n");
+
+        while (stack_hist.size()) {
+            stack_hist.pop();
         }
     }
 
