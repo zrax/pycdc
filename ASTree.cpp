@@ -292,56 +292,58 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
-            {
-                stack_hist.push(stack);
-                PycRef<ASTNode> cond = stack.top();
-                // Do not pop the condition off the stack!
-
-                PycRef<ASTBlock> ifblk;
-
-                if (curblock->blktype() == ASTBlock::BLK_ELSE
-                        && curblock->size() == 0)
-                {
-                    blocks.pop();
-                    ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, pos+operand, cond, false);
-                }
-                else if ((curblock->blktype() == ASTBlock::BLK_WHILE
-                            || curblock->blktype() == ASTBlock::BLK_FOR)
-                            && curblock->size() == 0)
-                {
-                    PycRef<ASTBlock> top = blocks.top();
-                    blocks.pop();
-                    ifblk = new ASTCondBlock(top->blktype(), pos+operand, cond, false);
-                } else {
-                    ifblk = new ASTCondBlock(ASTBlock::BLK_IF, pos+operand, cond, false);
-                }
-                blocks.push(ifblk.cast<ASTBlock>());
-                curblock = blocks.top();
-            }
-            break;
         case Pyc::JUMP_IF_TRUE_A:
+        case Pyc::JUMP_IF_FALSE_OR_POP_A:
+        case Pyc::JUMP_IF_TRUE_OR_POP_A:
+        case Pyc::POP_JUMP_IF_FALSE_A:
+        case Pyc::POP_JUMP_IF_TRUE_A:
             {
-                stack_hist.push(stack);
                 PycRef<ASTNode> cond = stack.top();
-                // Do not pop the condition off the stack!
-
                 PycRef<ASTBlock> ifblk;
+
+                if (opcode == Pyc::POP_JUMP_IF_FALSE_A
+                        || opcode == Pyc::POP_JUMP_IF_TRUE_A) {
+                    /* Pop condition before the jump */
+                    stack.pop();
+                }
+                /* Store the current stack for the else statement(s) */
+                stack_hist.push(stack);
+                if (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A
+                        || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A) {
+                    /* Pop condition only if condition is met */
+                    stack.pop();
+                }
+
+                /* "Jump if true" means "Jump if not false" */
+                bool neg = opcode == Pyc::JUMP_IF_TRUE_A
+                        || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A
+                        || opcode == Pyc::POP_JUMP_IF_TRUE_A;
+
+                int offs = operand;
+                if (opcode == Pyc::JUMP_IF_FALSE_A
+                        || opcode == Pyc::JUMP_IF_TRUE_A) {
+                    /* Offset is relative in these cases */
+                    offs = pos + operand;
+                }
 
                 if (curblock->blktype() == ASTBlock::BLK_ELSE
                         && curblock->size() == 0)
                 {
+                    /* Collapse into elif statement */
                     blocks.pop();
-                    ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, pos+operand, cond, true);
+                    ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, offs, cond, neg);
                 }
-                else if ((curblock->blktype() == ASTBlock::BLK_WHILE
-                            || curblock->blktype() == ASTBlock::BLK_FOR)
-                            && curblock->size() == 0)
+                else if (curblock->size() == 0
+                            && (curblock->blktype() == ASTBlock::BLK_WHILE
+                            || curblock->blktype() == ASTBlock::BLK_FOR))
                 {
+                    /* The condition for a while or for loop */
                     PycRef<ASTBlock> top = blocks.top();
                     blocks.pop();
-                    ifblk = new ASTCondBlock(top->blktype(), pos+operand, cond, true);
+                    ifblk = new ASTCondBlock(top->blktype(), offs, cond, neg);
                 } else {
-                    ifblk = new ASTCondBlock(ASTBlock::BLK_IF, pos+operand, cond, true);
+                    /* Plain old if statement */
+                    ifblk = new ASTCondBlock(ASTBlock::BLK_IF, offs, cond, neg);
                 }
                 blocks.push(ifblk.cast<ASTBlock>());
                 curblock = blocks.top();
