@@ -12,7 +12,8 @@ public:
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
         NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
-        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_BLOCK,
+        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_CONVERT,
+        NODE_KEYWORD, NODE_RAISE, NODE_BLOCK,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -68,7 +69,7 @@ private:
 class ASTUnary : public ASTNode {
 public:
     enum UnOp {
-        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT, UN_CONVERT
+        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT
     };
 
     ASTUnary(PycRef<ASTNode> operand, int op)
@@ -315,6 +316,47 @@ private:
 };
 
 
+class ASTConvert : public ASTNode {
+public:
+    ASTConvert(PycRef<ASTNode> name)
+        : ASTNode(NODE_CONVERT), m_name(name) { }
+
+    PycRef<ASTNode> name() const { return m_name; }
+
+private:
+    PycRef<ASTNode> m_name;
+};
+
+
+class ASTKeyword : public ASTNode {
+public:
+    enum Word {
+        KW_BREAK, KW_CONTINUE
+    };
+
+    ASTKeyword(Word key) : ASTNode(NODE_KEYWORD), m_key(key) { }
+
+    Word key() const { return m_key; }
+    const char* word_str() const;
+
+private:
+    Word m_key;
+};
+
+
+class ASTRaise : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode> > param_t;
+
+    ASTRaise(param_t params) : ASTNode(NODE_RAISE), m_params(params) { }
+
+    const param_t& params() const { return m_params; }
+
+private:
+    param_t m_params;
+};
+
+
 class ASTBlock : public ASTNode {
 public:
     typedef std::list<PycRef<ASTNode> > list_t;
@@ -342,18 +384,40 @@ private:
     list_t m_nodes;
 };
 
+
 class ASTCondBlock : public ASTBlock {
 public:
-    ASTCondBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> cond,
-            bool negative = false)
-        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative) { }
+    ASTCondBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> cond, bool negative = false)
+        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative), m_popped(false) { }
 
     PycRef<ASTNode> cond() const { return m_cond; }
     bool negative() const { return m_negative; }
+    bool popped() const { return m_popped; }
+
+    void popCondition() { m_popped = true; }
 
 private:
     PycRef<ASTNode> m_cond;
     bool m_negative;
+    bool m_popped; /* Has the condition been popped off the stack? */
+};
+
+
+class ASTIterBlock : public ASTBlock {
+public:
+    ASTIterBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> iter)
+        : ASTBlock(blktype, end), m_iter(iter), m_idx(), m_idx_set(false) { }
+
+    PycRef<ASTNode> iter() const { return m_iter; }
+    PycRef<ASTNode> index() const { return m_idx; }
+    bool idxset() const { return m_idx_set; }
+
+    void setIndex(PycRef<ASTNode> idx) { m_idx = idx; m_idx_set = true; }
+
+private:
+    PycRef<ASTNode> m_iter;
+    PycRef<ASTNode> m_idx;
+    bool m_idx_set;
 };
 
 /*class ASTTryBlock : public ASTBlock {

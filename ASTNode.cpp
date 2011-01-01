@@ -21,7 +21,7 @@ void ASTNodeList::removeFirst()
 const char* ASTUnary::op_str() const
 {
     static const char* s_op_strings[] = {
-        "+", "-", "~", "not ", "`"
+        "+", "-", "~", "not "
     };
     return s_op_strings[op()];
 }
@@ -49,6 +49,17 @@ const char* ASTCompare::op_str() const
     };
     return s_cmp_strings[op()];
 }
+
+
+/* ASTKeyword */
+const char* ASTKeyword::word_str() const
+{
+    static const char* s_word_strings[] = {
+        "break", "continue"
+    };
+    return s_word_strings[key()];
+}
+
 
 /* ASTBlock */
 void ASTBlock::removeLast()
