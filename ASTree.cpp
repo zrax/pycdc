@@ -513,9 +513,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
-                if (curblock->blktype() == ASTBlock::BLK_IF
-                        || curblock->blktype() == ASTBlock::BLK_ELIF
-                        || curblock->blktype() == ASTBlock::BLK_ELSE)
+                if ((curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELIF)
+                        && !curblock.cast<ASTCondBlock>()->popped())
                 {
                     curblock.cast<ASTCondBlock>()->popCondition();
                     break;
