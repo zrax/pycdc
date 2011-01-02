@@ -425,22 +425,35 @@ private:
     PycRef<ASTNode> m_idx;
 };
 
-/*class ASTTryBlock : public ASTBlock {
+
+/* Okay, prepare for a bit of illogic:
+ * We store a try block.
+ * We store the except and finally blocks INSIDE that try block.
+ *
+ * In implementation it gets a bit weirder, but given the way the opcodes
+ * work, this is the most straightforward way of doing it.
+ * Heh, "straightforward"...
+ */
+class ASTTryBlock : public ASTBlock {
 public:
-    ASTTryBlock(unsigned int start, unsigned int end,
-            unsigned int except = 0, unsigned int finally = 0)
-        : ASTBlock(BLK_TRY, start, end), m_except(except),
-            m_finally(finally) { }
+    ASTTryBlock(unsigned int end, int finally = 0, int except = 0)
+        : ASTBlock(BLK_TRY, end), m_finally_pos(finally), m_finally(), m_except_pos(except), m_except() { }
 
-    unsigned int except() const { return m_except; }
-    unsigned int finally() const { return m_finally; }
+    int finallyStart() const { return m_finally_pos; }
+    int exceptStart() const { return m_except_pos; }
+    PycRef<ASTBlock> finally() const { return m_finally; }
+    const list_t& except() const { return m_except; }
 
-    void set_except(unsigned int except) { m_except = except; }
-    void set_finally(unsigned int finally) { m_finally = finally; }
+    void setFinallyStart(int finally) { m_finally_pos = finally; }
+    void setExceptStart(int except) { m_except_pos = except; }
+    void setFinally(PycRef<ASTBlock> finally) { m_finally = finally; }
+    void setExcept(const list_t& except) { m_except = except; }
 
 private:
-    unsigned int m_except;
-    unsigned int m_finally;
-};*/
+    int m_finally_pos;
+    PycRef<ASTBlock> m_finally;
+    int m_except_pos;
+    list_t m_except;
+};
 
 #endif

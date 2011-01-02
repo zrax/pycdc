@@ -251,8 +251,26 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::END_FINALLY:
             {
                 if (curblock->blktype() == ASTBlock::BLK_FINALLY) {
+                    PycRef<ASTBlock> finally = curblock;
+                    blocks.pop();
+
+                    curblock = blocks.top();
+                    if (curblock->blktype() == ASTBlock::BLK_TRY) {
+                        PycRef<ASTTryBlock> parent = curblock.cast<ASTTryBlock>();
+                        parent->setFinally(finally);
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened.\n");
+                    }
                     blocks.pop();
                     blocks.top()->append(curblock.cast<ASTNode>());
+
+                    curblock = blocks.top();
+                } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                    /* All except statements have an "else" block that
+                       bubbles the exception up...  ignore it */
+                    if (curblock->size() == 0) {
+                        blocks.pop();
+                    }
 
                     curblock = blocks.top();
                 }
