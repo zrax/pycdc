@@ -49,10 +49,11 @@ install:
 test: all
 	@for f in ./tests/*; \
 	do \
-		./bin/pycdc "$$f" > /dev/null; \
-		if [ "$$?" -eq "0" ]; then \
+		stderr=$$( ./bin/pycdc "$$f" 2>&1 1>/dev/null ); \
+		if [ "$$?" -eq "0" -a -z "$$stderr" ]; then \
 			echo "\033[32mPASSED\033[m $$f"; \
 		else \
+			echo $$stderr; \
 			echo "\033[31mFAILED\033[m $$f"; \
 		fi \
 	done;
