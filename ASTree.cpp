@@ -19,6 +19,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
     std::stack<PycRef<ASTBlock> > blocks;
     PycRef<ASTBlock> defblock = new ASTBlock(ASTBlock::BLK_MAIN);
+    defblock->init();
     PycRef<ASTBlock>& curblock = defblock;
     blocks.push(defblock);
 
@@ -327,13 +328,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
-                bool popped = false;
+                int popped = ASTCondBlock::UNINITED;
 
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
                     stack.pop();
-                    popped = true;
+                    popped = ASTCondBlock::PRE_POPPED;
                 }
                 /* Store the current stack for the else statement(s) */
                 stack_hist.push(stack);
@@ -341,7 +342,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A) {
                     /* Pop condition only if condition is met */
                     stack.pop();
-                    popped = true;
+                    popped = ASTCondBlock::POPPED;
                 }
 
                 /* "Jump if true" means "Jump if not false" */
@@ -363,21 +364,37 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     blocks.pop();
                     ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, offs, cond, neg);
                 }
-                else if (curblock->size() == 0
-                            && (curblock->blktype() == ASTBlock::BLK_WHILE
-                            || curblock->blktype() == ASTBlock::BLK_FOR))
+                else if (curblock->size() == 0 && !curblock->inited()
+                        && curblock->blktype() == ASTBlock::BLK_WHILE)
                 {
                     /* The condition for a while or for loop */
                     PycRef<ASTBlock> top = blocks.top();
                     blocks.pop();
                     ifblk = new ASTCondBlock(top->blktype(), offs, cond, neg);
+                }
+                else if (curblock->size() == 0
+                        && (curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELIF))
+                {
+                    /* if blah and blah */
+                    PycRef<ASTCondBlock> top = curblock.cast<ASTCondBlock>();
+                    PycRef<ASTNode> cond1 = top->cond();
+                    blocks.pop();
+
+                    FastStack s_top = stack_hist.top();
+                    stack_hist.pop();
+                    stack_hist.pop();
+                    stack_hist.push(s_top);
+
+                    PycRef<ASTNode> newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
+                    ifblk = new ASTCondBlock(top->blktype(), top->end(), newcond, neg);
                 } else {
                     /* Plain old if statement */
                     ifblk = new ASTCondBlock(ASTBlock::BLK_IF, offs, cond, neg);
                 }
 
                 if (popped)
-                    ifblk->popCondition();
+                    ifblk->init(popped);
 
                 blocks.push(ifblk.cast<ASTBlock>());
                 curblock = blocks.top();
@@ -424,6 +441,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                 || prev->blktype() == ASTBlock::BLK_ELIF))
                     {
                         PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, pos+operand);
+                        if (prev->inited() == ASTCondBlock::PRE_POPPED) {
+                            next->init(ASTCondBlock::PRE_POPPED);
+                        }
+
                         blocks.push(next.cast<ASTBlock>());
                         prev = nil;
                     }
@@ -513,11 +534,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
-                if ((curblock->blktype() == ASTBlock::BLK_IF
-                        || curblock->blktype() == ASTBlock::BLK_ELIF)
-                        && !curblock.cast<ASTCondBlock>()->popped())
+                if (!curblock->inited())
                 {
-                    curblock.cast<ASTCondBlock>()->popCondition();
+                    curblock.cast<ASTCondBlock>()->init();
                     break;
                 }
 
@@ -548,6 +567,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 curblock->append(new ASTReturn(value));
+
+                /*if (curblock->blktype() != ASTBlock::BLK_MAIN) {
+                    if (curblock->blktype() != ASTBlock::BLK_ELSE) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    }
+
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+                }*/
             }
             break;
         case Pyc::ROT_THREE:
@@ -620,7 +651,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     name = new ASTName(code->getVarName(operand));
 
                 if (curblock->blktype() == ASTBlock::BLK_FOR
-                        && !curblock.cast<ASTIterBlock>()->idxset())
+                        && !curblock->inited())
                 {
                     curblock.cast<ASTIterBlock>()->setIndex(name);
                 } else {

@@ -366,8 +366,8 @@ public:
         BLK_FINALLY, BLK_WHILE, BLK_FOR
     };
 
-    ASTBlock(BlkType blktype, int end = 0)
-        : ASTNode(NODE_BLOCK), m_blktype(blktype), m_end(end) { }
+    ASTBlock(BlkType blktype, int end = 0, int inited = 0)
+        : ASTNode(NODE_BLOCK), m_blktype(blktype), m_end(end), m_inited(inited) { }
 
     BlkType blktype() const { return m_blktype; }
     int end() const { return m_end; }
@@ -378,46 +378,51 @@ public:
     void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
     const char* type_str() const;
 
+    virtual int inited() const { return m_inited; }
+    virtual void init() { m_inited = 1; }
+    virtual void init(int init) { m_inited = init; }
+
 private:
     BlkType m_blktype;
     int m_end;
     list_t m_nodes;
+
+protected:
+    int m_inited;   /* Is the block's definition "complete" */
 };
 
 
 class ASTCondBlock : public ASTBlock {
 public:
+    enum InitCond {
+        UNINITED, POPPED, PRE_POPPED
+    };
+
     ASTCondBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> cond, bool negative = false)
-        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative), m_popped(false) { }
+        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative) { }
 
     PycRef<ASTNode> cond() const { return m_cond; }
     bool negative() const { return m_negative; }
-    bool popped() const { return m_popped; }
-
-    void popCondition() { m_popped = true; }
 
 private:
     PycRef<ASTNode> m_cond;
     bool m_negative;
-    bool m_popped; /* Has the condition been popped off the stack? */
 };
 
 
 class ASTIterBlock : public ASTBlock {
 public:
     ASTIterBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> iter)
-        : ASTBlock(blktype, end), m_iter(iter), m_idx(), m_idx_set(false) { }
+        : ASTBlock(blktype, end), m_iter(iter), m_idx() { }
 
     PycRef<ASTNode> iter() const { return m_iter; }
     PycRef<ASTNode> index() const { return m_idx; }
-    bool idxset() const { return m_idx_set; }
 
-    void setIndex(PycRef<ASTNode> idx) { m_idx = idx; m_idx_set = true; }
+    void setIndex(PycRef<ASTNode> idx) { m_idx = idx; init(); }
 
 private:
     PycRef<ASTNode> m_iter;
     PycRef<ASTNode> m_idx;
-    bool m_idx_set;
 };
 
 /*class ASTTryBlock : public ASTBlock {
