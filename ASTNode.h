@@ -10,10 +10,10 @@ class ASTNode {
 public:
     enum Type {
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
-        NODE_COMPARE, NODE_STORE, NODE_RETURN, NODE_NAME, NODE_DELETE,
-        NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT, NODE_TUPLE,
-        NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT, NODE_CONVERT,
-        NODE_KEYWORD, NODE_RAISE, NODE_BLOCK,
+        NODE_COMPARE, NODE_SLICE, NODE_STORE, NODE_RETURN, NODE_NAME,
+        NODE_DELETE, NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT,
+        NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
+        NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_BLOCK,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -128,6 +128,18 @@ public:
         : ASTBinary(left, right, op, NODE_COMPARE) { }
 
     const char* op_str() const;
+};
+
+
+class ASTSlice : public ASTBinary {
+public:
+    enum SliceOp {
+        SLICE0, SLICE1, SLICE2, SLICE3
+    };
+
+    ASTSlice(int op, PycRef<ASTNode> left = Node_NULL,
+            PycRef<ASTNode> right = Node_NULL)
+        : ASTBinary(left, right, op, NODE_SLICE) { }
 };
 
 
@@ -362,8 +374,9 @@ public:
     typedef std::list<PycRef<ASTNode> > list_t;
 
     enum BlkType {
-        BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, BLK_EXCEPT,
-        BLK_FINALLY, BLK_WHILE, BLK_FOR
+        BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, 
+        BLK_EXCEPT_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
+        BLK_WHILE, BLK_FOR
     };
 
     ASTBlock(BlkType blktype, int end = 0, int inited = 0)

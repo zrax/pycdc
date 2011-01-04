@@ -11,10 +11,7 @@ public:
     }
 
     FastStack(const FastStack& copy) : m_size(copy.m_size), m_ptr(copy.m_ptr) {
-        long a = (long)&(*copy.m_stack[0]);
         m_stack = new PycRef<ASTNode>[m_size];
-        if ((long)&(*copy.m_stack[0]) != a)
-            fprintf(stderr, "\nWe have a serious problem!\n\n");
 
         for (int i = 0; i <= m_ptr; i++)
             m_stack[i] = copy.m_stack[i];
@@ -55,8 +52,20 @@ public:
         m_size = copy.m_size;
         m_ptr = copy.m_ptr;
         m_stack = new PycRef<ASTNode>[m_size];
-        for (int i=0; i<= m_ptr; i++)
+        for (int i = 0; i <= m_ptr; i++)
             m_stack[i] = copy.m_stack[i];
+    }
+
+    void grow(int inc)
+    {
+        m_size += inc;
+        PycRef<ASTNode>* tmp = new PycRef<ASTNode>[m_size];
+
+        for (int i = 0; i <= m_ptr; i++)
+            tmp[i] = m_stack[i];
+
+        delete[] m_stack;
+        m_stack = tmp;
     }
 
 private:

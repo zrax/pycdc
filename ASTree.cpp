@@ -375,7 +375,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     offs = pos + operand;
                 }
 
-                if (curblock->blktype() == ASTBlock::BLK_ELSE
+                if (cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION)
+                {
+                    ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, offs, cond.cast<ASTCompare>()->right(), false);
+                }
+                else if (curblock->blktype() == ASTBlock::BLK_ELSE
                         && curblock->size() == 0)
                 {
                     /* Collapse into elif statement */
@@ -547,16 +551,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 blocks.pop();
                 curblock = blocks.top();
                 curblock->append(tmp.cast<ASTNode>());
-
-                /*if (tmp->type() == ASTBlock::BLK_TRY) {
-                    PycRef<ASTTryBlock> tryblk = tmp.cast<ASTTryBlock>();
-
-                    if (tryblk->except()) {
-                        //todo
-                    }
-                } else if (tmp->type() == ASTBlock::BLK_EXCEPT) {
-                    //todo
-                }*/
             }
             break;
         case Pyc::POP_TOP:
@@ -628,7 +622,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         /*case Pyc::SETUP_EXCEPT_A:
             {
-                if (curblock->type() == ASTBlock::BLK_TRY) {
+                if (curblock->blktype() == ASTBlock::BLK_TRY) {
                     PycRef<ASTTryBlock> tryblk = curblock.cast<ASTTryBlock>();
                     if (tryblk->finally() && tryblk->except() == 0) {
                         tryblk->set_except(pos+operand);
@@ -656,6 +650,50 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTBlock> next = new ASTCondBlock(ASTBlock::BLK_WHILE, pos+operand, Node_NULL, false);
                 blocks.push(next.cast<ASTBlock>());
                 curblock = blocks.top();
+            }
+            break;
+        case Pyc::SLICE_0:
+            {
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> slice = new ASTSlice(ASTSlice::SLICE0);
+                stack.push(new ASTSubscr(name, slice));
+            }
+            break;
+        case Pyc::SLICE_1:
+            {
+                PycRef<ASTNode> lower = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> slice = new ASTSlice(ASTSlice::SLICE1, lower);
+                stack.push(new ASTSubscr(name, slice));
+            }
+            break;
+        case Pyc::SLICE_2:
+            {
+                PycRef<ASTNode> upper = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> slice = new ASTSlice(ASTSlice::SLICE2, Node_NULL, upper);
+                stack.push(new ASTSubscr(name, slice));
+            }
+            break;
+        case Pyc::SLICE_3:
+            {
+                PycRef<ASTNode> upper = stack.top();
+                stack.pop();
+                PycRef<ASTNode> lower = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> slice = new ASTSlice(ASTSlice::SLICE3, lower, upper);
+                stack.push(new ASTSubscr(name, slice));
             }
             break;
         case Pyc::STORE_ATTR_A:
@@ -1002,6 +1040,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 printf(" in ");
                 print_src(blk.cast<ASTIterBlock>()->iter(), mod);
             }
+            else if (blk->blktype() == ASTBlock::BLK_EXCEPT)
+            {
+                printf(" ");
+                print_src(blk.cast<ASTCondBlock>()->cond(), mod);
+            }
             printf(":\n");
 
             cur_indent++;
@@ -1057,6 +1100,19 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_RETURN:
         printf("return ");
         print_src(node.cast<ASTReturn>()->value(), mod);
+        break;
+    case ASTNode::NODE_SLICE:
+        {
+            PycRef<ASTSlice> slice = node.cast<ASTSlice>();
+
+            if (slice->op() & ASTSlice::SLICE1) {
+                print_src(slice->left(), mod);
+            }
+            printf(":");
+            if (slice->op() & ASTSlice::SLICE2) {
+                print_src(slice->right(), mod);
+            }
+        }
         break;
     case ASTNode::NODE_STORE:
         {
