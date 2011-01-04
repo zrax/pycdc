@@ -299,7 +299,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 PycRef<ASTBlock> top = blocks.top();
                 blocks.pop();
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, top->end(), iter);
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, pos+operand, iter);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
 
