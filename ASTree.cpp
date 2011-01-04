@@ -276,6 +276,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::FOR_ITER_A:
+            {
+                PycRef<ASTNode> iter = stack.top(); // Iterable
+                /* Pop it? Don't pop it? */
+
+                PycRef<ASTBlock> top = blocks.top();
+                blocks.pop();
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, pos+operand, iter);
+                blocks.push(forblk.cast<ASTBlock>());
+                curblock = blocks.top();
+
+                stack.push(Node_NULL);
+            }
+            break;
         case Pyc::FOR_LOOP_A:
             {
                 PycRef<ASTNode> curidx = stack.top(); // Current index
@@ -296,6 +310,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(curidx);
                 stack.push(Node_NULL); // We can totally hack this >_>
             }
+            break;
+        case Pyc::GET_ITER:
+            /* We just entirely ignore this */
             break;
         case Pyc::IMPORT_NAME_A:
             if (mod->majorVer() == 1) {
@@ -435,6 +452,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::JUMP_ABSOLUTE_A:
             {
+                if (curblock->blktype() != ASTBlock::BLK_IF
+                        && curblock->blktype() != ASTBlock::BLK_ELIF
+                        && curblock->blktype() != ASTBlock::BLK_WHILE)
+                {
+                    break;
+                }
+
                 stack = stack_hist.top();
                 stack_hist.pop();
 
