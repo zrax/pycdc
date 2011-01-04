@@ -406,10 +406,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else if (curblock->size() == 0 && !curblock->inited()
                         && curblock->blktype() == ASTBlock::BLK_WHILE)
                 {
-                    /* The condition for a while or for loop */
+                    /* The condition for a while loop */
                     PycRef<ASTBlock> top = blocks.top();
                     blocks.pop();
                     ifblk = new ASTCondBlock(top->blktype(), offs, cond, neg);
+
+                    /* We don't store the stack for loops! Pop it! */
+                    stack_hist.pop();
                 }
                 else if (curblock->size() == 0 && curblock->end() <= offs
                         && (curblock->blktype() == ASTBlock::BLK_IF
@@ -452,6 +455,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::JUMP_ABSOLUTE_A:
             {
+                if (operand < pos) {
+                    /* We're in a loop, this jumps back to the start */
+                    /* I think we'll just ignore this case... */
+                    break; // Bad idea? Probably!
+                }
+
                 if (curblock->blktype() != ASTBlock::BLK_IF
                         && curblock->blktype() != ASTBlock::BLK_ELIF
                         && curblock->blktype() != ASTBlock::BLK_WHILE)
@@ -568,9 +577,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_BLOCK:
             {
                 PycRef<ASTBlock> tmp = curblock;
-
-                if (tmp->blktype() == ASTBlock::BLK_FOR)
-                    break;
 
                 blocks.pop();
                 curblock = blocks.top();
