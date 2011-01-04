@@ -2,6 +2,10 @@
 .*\.vcproj.*\.user
 .*\.ncb
 .*\.suo
+.*\.swp
+.*\.swo
 bin/pycdas
 bin/pycdc
+bin/.*\.py
+bin/.*\.pyc
 ^test/
