@@ -471,18 +471,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack = stack_hist.top();
                 stack_hist.pop();
 
-                if (curblock->blktype() == ASTBlock::BLK_WHILE
-                        || curblock->blktype() == ASTBlock::BLK_FOR)
-                {
-                    break;
-                }
-
                 PycRef<ASTBlock> prev = curblock;
                 blocks.pop();
 
                 blocks.top()->append(prev.cast<ASTNode>());
-                if (prev->blktype() == ASTBlock::BLK_IF
+                if ((prev->blktype() == ASTBlock::BLK_IF
                         || prev->blktype() == ASTBlock::BLK_ELIF)
+                        && blocks.top()->end() > pos)
                 {
                     PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, blocks.top()->end());
                     blocks.push(next.cast<ASTBlock>());
@@ -1050,6 +1045,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         break;
     case ASTNode::NODE_BLOCK:
         {
+            if (node.cast<ASTBlock>()->blktype() == ASTBlock::BLK_ELSE
+                    && node.cast<ASTBlock>()->size() == 0)
+                break;
+
             printf("%s", node.cast<ASTBlock>()->type_str());
             PycRef<ASTBlock> blk = node.cast<ASTBlock>();
             if (blk->blktype() == ASTBlock::BLK_IF
