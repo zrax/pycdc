@@ -245,6 +245,25 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCompare(left, right, operand));
             }
             break;
+        case Pyc::DELETE_GLOBAL_A:
+        case Pyc::DELETE_NAME_A:
+            {
+                PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                curblock->append(new ASTDelete(name));
+            }
+            break;
+        case Pyc::DELETE_FAST_A:
+            {
+                PycRef<ASTNode> name;
+
+                if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                    name = new ASTName(code->getName(operand));
+                else
+                    name = new ASTName(code->getVarName(operand));
+
+                curblock->append(new ASTDelete(name));
+            }
+            break;
         case Pyc::DUP_TOP:
             stack.push(stack.top());
             break;
@@ -983,6 +1002,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 first = false;
             }
             printf(")");
+        }
+        break;
+    case ASTNode::NODE_DELETE:
+        {
+            printf("del ");
+            print_src(node.cast<ASTDelete>()->value(), mod);
         }
         break;
     case ASTNode::NODE_KEYWORD:
