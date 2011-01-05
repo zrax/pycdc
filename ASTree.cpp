@@ -34,9 +34,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             else_pop = false;
 
             PycRef<ASTBlock> prev = curblock;
-            blocks.pop();
-            curblock = blocks.top();
-            curblock->append(prev.cast<ASTNode>());
+            while (prev->end() < pos && prev->blktype() != ASTBlock::BLK_MAIN) {
+                blocks.pop();
+                curblock = blocks.top();
+                curblock->append(prev.cast<ASTNode>());
+
+                prev = curblock;
+            }
         }
 
         switch (opcode) {
@@ -243,6 +247,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> left = stack.top();
                 stack.pop();
                 stack.push(new ASTCompare(left, right, operand));
+            }
+            break;
+        case Pyc::DELETE_ATTR_A:
+            {
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+                curblock->append(new ASTDelete(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR)));
             }
             break;
         case Pyc::DELETE_GLOBAL_A:
