@@ -204,6 +204,80 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::BUILD_MAP_A:
             stack.push(new ASTMap());
             break;
+        case Pyc::BUILD_SLICE_A:
+            {
+                if (operand == 2) {
+                    PycRef<ASTNode> end = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> start = stack.top();
+                    stack.pop();
+
+                    if (start->type() == ASTNode::NODE_OBJECT
+                            && start.cast<ASTObject>()->object() == Pyc_None) {
+                        start = Node_NULL;
+                    }
+
+                    if (end->type() == ASTNode::NODE_OBJECT
+                            && end.cast<ASTObject>()->object() == Pyc_None) {
+                        end = Node_NULL;
+                    }
+
+                    if (start == Node_NULL && end == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE0));
+                    } else if (start == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE2, start, end));
+                    } else if (end == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE1, start, end));
+                    } else {
+                        stack.push(new ASTSlice(ASTSlice::SLICE3, start, end));
+                    }
+                } else if (operand == 3) {
+                    PycRef<ASTNode> step = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> end = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> start = stack.top();
+                    stack.pop();
+
+                    if (start->type() == ASTNode::NODE_OBJECT
+                            && start.cast<ASTObject>()->object() == Pyc_None) {
+                        start = Node_NULL;
+                    }
+
+                    if (end->type() == ASTNode::NODE_OBJECT
+                            && end.cast<ASTObject>()->object() == Pyc_None) {
+                        end = Node_NULL;
+                    }
+
+                    if (step->type() == ASTNode::NODE_OBJECT
+                            && step.cast<ASTObject>()->object() == Pyc_None) {
+                        step = Node_NULL;
+                    }
+
+                    /* We have to do this as a slice where one side is another slice */
+                    /* [[a:b]:c] */
+
+                    if (start == Node_NULL && end == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE0));
+                    } else if (start == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE2, start, end));
+                    } else if (end == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE1, start, end));
+                    } else {
+                        stack.push(new ASTSlice(ASTSlice::SLICE3, start, end));
+                    }
+
+                    PycRef<ASTNode> lhs = stack.top();
+                    stack.pop();
+
+                    if (step == Node_NULL) {
+                        stack.push(new ASTSlice(ASTSlice::SLICE1, lhs, step));
+                    } else {
+                        stack.push(new ASTSlice(ASTSlice::SLICE3, lhs, step));
+                    }
+                }
+            }
+            break;
         case Pyc::BUILD_TUPLE_A:
             {
                 ASTTuple::value_t values;
@@ -273,6 +347,46 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     name = new ASTName(code->getVarName(operand));
 
                 curblock->append(new ASTDelete(name));
+            }
+            break;
+        case Pyc::DELETE_SLICE_0:
+            {
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTDelete(new ASTSubscr(name, new ASTSlice(ASTSlice::SLICE0))));
+            }
+            break;
+        case Pyc::DELETE_SLICE_1:
+            {
+                PycRef<ASTNode> upper = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTDelete(new ASTSubscr(name, new ASTSlice(ASTSlice::SLICE1, upper))));
+            }
+            break;
+        case Pyc::DELETE_SLICE_2:
+            {
+                PycRef<ASTNode> lower = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTDelete(new ASTSubscr(name, new ASTSlice(ASTSlice::SLICE2, Node_NULL, lower))));
+            }
+            break;
+        case Pyc::DELETE_SLICE_3:
+            {
+                PycRef<ASTNode> lower = stack.top();
+                stack.pop();
+                PycRef<ASTNode> upper = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTDelete(new ASTSubscr(name, new ASTSlice(ASTSlice::SLICE3, upper, lower))));
             }
             break;
         case Pyc::DELETE_SUBSCR:
