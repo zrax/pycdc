@@ -275,6 +275,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock->append(new ASTDelete(name));
             }
             break;
+        case Pyc::DELETE_SUBSCR:
+            {
+                PycRef<ASTNode> key = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTDelete(new ASTSubscr(name, key)));
+            }
+            break;
         case Pyc::DUP_TOP:
             stack.push(stack.top());
             break;
