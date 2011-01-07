@@ -29,7 +29,8 @@ BYTES = \
 	out/python_26.o \
 	out/python_27.o \
 	out/python_30.o \
-	out/python_31.o
+	out/python_31.o \
+	out/python_32.o
 
 ALL = \
 	bin/pycdas \

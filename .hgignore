@@ -8,4 +8,4 @@ bin/pycdas
 bin/pycdc
 bin/.*\.py
 bin/.*\.pyc
-^test/
+bytes/.*\.cpp

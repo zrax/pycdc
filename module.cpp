@@ -109,6 +109,13 @@ void PycModule::setVersion(unsigned int magic)
         m_unicode = true;
         break;
 
+    /* 3.2 stops using the unicode increment */
+    case MAGIC_3_2:
+        m_maj = 3;
+        m_min = 2;
+        m_unicode = true;
+        break;
+
     /* Bad Magic detected */
     default:
         m_maj = -1;

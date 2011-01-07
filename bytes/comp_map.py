@@ -18,7 +18,7 @@
 maplist = [ 'python_10', 'python_11', 'python_13', 'python_14', 'python_15',
             'python_16', 'python_20', 'python_21', 'python_22', 'python_23',
             'python_24', 'python_25', 'python_26', 'python_27', 'python_30',
-            'python_31' ]
+            'python_31', 'python_32' ]
 
 for mapfile in maplist:
     infile = open(mapfile + '.map', 'rt')
