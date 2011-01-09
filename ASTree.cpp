@@ -25,6 +25,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
     int opcode, operand;
     int pos = 0;
+    int unpack = 0;
     bool else_pop = false;
 
     while (!source.atEof()) {
@@ -742,9 +743,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                if (value->type() == ASTNode::NODE_CALL) {
-                    curblock->append(value);
-                }
+                curblock->append(value);
             }
             break;
         case Pyc::PRINT_ITEM:
@@ -770,17 +769,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 curblock->append(new ASTReturn(value));
 
-                /*if (curblock->blktype() != ASTBlock::BLK_MAIN) {
-                    if (curblock->blktype() != ASTBlock::BLK_ELSE) {
-                        stack = stack_hist.top();
-                        stack_hist.pop();
-                    }
+                if (curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELSE)
+                {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
 
                     PycRef<ASTBlock> prev = curblock;
                     blocks.pop();
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
-                }*/
+                }
             }
             break;
         case Pyc::ROT_TWO:
@@ -898,21 +897,51 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_FAST_A:
             {
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
-                PycRef<ASTNode> name;
+                if (unpack) {
+                    PycRef<ASTNode> name;
 
-                if (mod->majorVer() == 1 && mod->minorVer() < 3)
-                    name = new ASTName(code->getName(operand));
-                else
-                    name = new ASTName(code->getVarName(operand));
+                    if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                        name = new ASTName(code->getName(operand));
+                    else
+                        name = new ASTName(code->getVarName(operand));
 
-                if (curblock->blktype() == ASTBlock::BLK_FOR
-                        && !curblock->inited())
-                {
-                    curblock.cast<ASTIterBlock>()->setIndex(name);
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(name);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        curblock->append(new ASTStore(seq, tup));
+                    }
                 } else {
-                    curblock->append(new ASTStore(value, name));
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> name;
+
+                    if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                        name = new ASTName(code->getName(operand));
+                    else
+                        name = new ASTName(code->getVarName(operand));
+
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && !curblock->inited())
+                    {
+                        curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+                    }
                 }
             }
             break;
@@ -926,10 +955,35 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_NAME_A:
             {
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
-                PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                curblock->append(new ASTStore(value, name));
+                if (unpack) {
+                    PycRef<ASTNode> name = new ASTName(code->getName(operand));
+
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(name);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        curblock->append(new ASTStore(seq, tup));
+                    }
+                } else {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                    curblock->append(new ASTStore(value, name));
+                }
             }
             break;
         case Pyc::STORE_SLICE_0:
@@ -1035,6 +1089,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> arg = stack.top();
                 stack.pop();
                 stack.push(new ASTUnary(arg, ASTUnary::UN_POSITIVE));
+            }
+            break;
+        case Pyc::UNPACK_SEQUENCE_A:
+            {
+                unpack = operand;
+
+                ASTTuple::value_t vals;
+
+                stack.push(new ASTTuple(vals));
             }
             break;
         default:

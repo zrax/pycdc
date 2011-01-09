@@ -266,6 +266,7 @@ public:
         : ASTNode(NODE_TUPLE), m_values(values) { }
 
     const value_t& values() const { return m_values; }
+    void add(PycRef<ASTNode> name) { m_values.push_back(name); }
 
 private:
     value_t m_values;
