@@ -431,6 +431,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::EXEC_STMT:
+            {
+                PycRef<ASTNode> loc = stack.top();
+                stack.pop();
+                PycRef<ASTNode> glob = stack.top();
+                stack.pop();
+                PycRef<ASTNode> stmt = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTExec(stmt, glob, loc));
+            }
+            break;
         case Pyc::FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
@@ -691,6 +703,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         !t_ob->object().cast<PycTuple>()->values().size()) {
                     ASTTuple::value_t values;
                     stack.push(new ASTTuple(values));
+                } else if (t_ob->object()->type() == PycObject::TYPE_NONE) {
+                    stack.push(Node_NULL);
                 } else {
                     stack.push(t_ob.cast<ASTNode>());
                 }
@@ -1276,6 +1290,25 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         {
             printf("del ");
             print_src(node.cast<ASTDelete>()->value(), mod);
+        }
+        break;
+    case ASTNode::NODE_EXEC:
+        {
+            PycRef<ASTExec> exec = node.cast<ASTExec>();
+            printf("exec ");
+            print_src(exec->statement(), mod);
+
+            if (exec->globals() != Node_NULL) {
+                printf(" in ");
+                print_src(exec->globals(), mod);
+
+                if (exec->locals() != Node_NULL
+                        && exec->globals() != exec->locals())
+                {
+                    printf(", ");
+                    print_src(exec->locals(), mod);
+                }
+            }
         }
         break;
     case ASTNode::NODE_KEYWORD:

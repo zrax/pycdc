@@ -13,7 +13,7 @@ public:
         NODE_COMPARE, NODE_SLICE, NODE_STORE, NODE_RETURN, NODE_NAME,
         NODE_DELETE, NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT,
         NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
-        NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_BLOCK,
+        NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -367,6 +367,22 @@ public:
 
 private:
     param_t m_params;
+};
+
+
+class ASTExec : public ASTNode {
+public:
+    ASTExec(PycRef<ASTNode> stmt, PycRef<ASTNode> glob, PycRef<ASTNode> loc)
+        : ASTNode(NODE_EXEC), m_stmt(stmt), m_glob(glob), m_loc(loc) { }
+
+    PycRef<ASTNode> statement() const { return m_stmt; }
+    PycRef<ASTNode> globals() const { return m_glob; }
+    PycRef<ASTNode> locals() const { return m_loc; }
+
+private:
+    PycRef<ASTNode> m_stmt;
+    PycRef<ASTNode> m_glob;
+    PycRef<ASTNode> m_loc;
 };
 
 
