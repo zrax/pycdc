@@ -105,6 +105,7 @@ public:
     PycRef<ASTNode> left() const { return m_left; }
     PycRef<ASTNode> right() const { return m_right; }
     int op() const { return m_op; }
+    bool is_inplace() const { return m_op >= BIN_IP_ADD; }
     virtual const char* op_str() const;
 
 protected:

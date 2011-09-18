@@ -507,8 +507,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                /* This is a problem, so fake it with a = a + b syntax */
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_ADD));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_ADD));
             }
             break;
         case Pyc::INPLACE_SUBTRACT:
@@ -517,8 +516,25 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                /* This is a problem, so fake it with a = a - b syntax */
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_SUBTRACT));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_SUBTRACT));
+            }
+            break;
+        case Pyc::INPLACE_MULTIPLY:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> src = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_MULTIPLY));
+            }
+            break;
+        case Pyc::INPLACE_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> src = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_DIVIDE));
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
@@ -835,6 +851,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> three = stack.top();
                 stack.pop();
                 stack.push(one);
+                stack.push(three);
+                stack.push(two);
+            }
+            break;
+        case Pyc::ROT_FOUR:
+            {
+                PycRef<ASTNode> one = stack.top();
+                stack.pop();
+                PycRef<ASTNode> two = stack.top();
+                stack.pop();
+                PycRef<ASTNode> three = stack.top();
+                stack.pop();
+                PycRef<ASTNode> four = stack.top();
+                stack.pop();
+                stack.push(one);
+                stack.push(four);
                 stack.push(three);
                 stack.push(two);
             }
@@ -1574,6 +1606,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     print_src(import->name(), mod);
                 }
             } else {
+                if (src->type() == ASTNode::NODE_BINARY &&
+                        src.cast<ASTBinary>()->is_inplace() == true) {
+                    print_src(src, mod);
+                    break;
+                }
+
                 if (dest->type() == ASTNode::NODE_NAME &&
                     dest.cast<ASTName>()->name()->isEqual("__doc__")) {
                     if (src->type() == ASTNode::NODE_OBJECT) {
