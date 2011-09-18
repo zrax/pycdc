@@ -779,8 +779,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             curblock->append(new ASTPrint(Node_NULL));
             break;
         case Pyc::PRINT_NEWLINE_TO:
+            curblock->append(new ASTPrint(Node_NULL, stack.top()));
             stack.pop();
-            curblock->append(new ASTPrint(Node_NULL));
             break;
         case Pyc::RAISE_VARARGS_A:
             {
@@ -1445,6 +1445,13 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         break;
     case ASTNode::NODE_PRINT:
         if (node.cast<ASTPrint>()->value() == Node_NULL) {
+            if (!inPrint) {
+                printf("print ");
+                if (node.cast<ASTPrint>()->stream() != Node_NULL) {
+                    printf(">>");
+                    print_src(node.cast<ASTPrint>()->stream(), mod);
+                }
+            }
             inPrint = false;
         } else if (!inPrint) {
             printf("print ");
