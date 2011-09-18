@@ -753,7 +753,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (!curblock->inited()) {
                     curblock.cast<ASTCondBlock>()->init();
                     break;
-                } else if (value->type() == ASTNode::NODE_INVALID) {
+                } else if (value->type() == ASTNode::NODE_INVALID
+                        || value->type() == ASTNode::NODE_BINARY
+                        || value->type() == ASTNode::NODE_NAME) {
                     break;
                 }
 
@@ -764,7 +766,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             curblock->append(new ASTPrint(stack.top()));
             stack.pop();
             break;
+        case Pyc::PRINT_ITEM_TO:
+            {
+                PycRef<ASTNode> stream = stack.top();
+                stack.pop();
+
+                curblock->append(new ASTPrint(stack.top(), stream));
+                stack.pop();
+                break;
+            }
         case Pyc::PRINT_NEWLINE:
+            curblock->append(new ASTPrint(Node_NULL));
+            break;
+        case Pyc::PRINT_NEWLINE_TO:
+            stack.pop();
             curblock->append(new ASTPrint(Node_NULL));
             break;
         case Pyc::RAISE_VARARGS_A:
@@ -1433,6 +1448,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             inPrint = false;
         } else if (!inPrint) {
             printf("print ");
+            if (node.cast<ASTPrint>()->stream() != Node_NULL) {
+                printf(">>");
+                print_src(node.cast<ASTPrint>()->stream(), mod);
+                printf(", ");
+            }
             print_src(node.cast<ASTPrint>()->value(), mod);
             inPrint = true;
         } else {

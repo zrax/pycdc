@@ -319,13 +319,15 @@ private:
 
 class ASTPrint : public ASTNode {
 public:
-    ASTPrint(PycRef<ASTNode> value)
-        : ASTNode(NODE_PRINT), m_value(value) { }
+    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = Node_NULL)
+        : ASTNode(NODE_PRINT), m_value(value), m_stream(stream) { }
 
     PycRef<ASTNode> value() const { return m_value; }
+    PycRef<ASTNode> stream() const { return m_stream; }
 
 private:
     PycRef<ASTNode> m_value;
+    PycRef<ASTNode> m_stream;
 };
 
 
