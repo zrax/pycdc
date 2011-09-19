@@ -172,7 +172,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BREAK_LOOP:
-            stack.push(new ASTKeyword(ASTKeyword::KW_BREAK));
+            curblock->append(new ASTKeyword(ASTKeyword::KW_BREAK));
             break;
         case Pyc::BUILD_CLASS:
             {
@@ -313,7 +313,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::CONTINUE_LOOP_A:
-            stack.push(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+            curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
             break;
         case Pyc::COMPARE_OP_A:
             {
@@ -720,6 +720,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_ABSOLUTE_A:
             {
                 if (operand < pos) {
+                    curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+
                     /* We're in a loop, this jumps back to the start */
                     /* I think we'll just ignore this case... */
                     break; // Bad idea? Probably!
@@ -836,7 +838,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::POP_BLOCK:
             {
-                PycRef<ASTBlock> tmp = curblock;
+                PycRef<ASTBlock> tmp;
+
+                if (curblock->nodes().back()->type() == ASTNode::NODE_KEYWORD) {
+                    curblock->removeLast();
+                }
+
+                tmp = curblock;
 
                 blocks.pop();
                 curblock = blocks.top();
