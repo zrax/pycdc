@@ -510,13 +510,49 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_ADD));
             }
             break;
-        case Pyc::INPLACE_SUBTRACT:
+        case Pyc::INPLACE_AND:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_AND));
+            }
+            break;
+        case Pyc::INPLACE_DIVIDE:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_SUBTRACT));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_DIVIDE));
+            }
+            break;
+        case Pyc::INPLACE_FLOOR_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_FLOOR));
+            }
+            break;
+        case Pyc::INPLACE_LSHIFT:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_LSHIFT));
+            }
+            break;
+        case Pyc::INPLACE_MODULO:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_MODULO));
             }
             break;
         case Pyc::INPLACE_MULTIPLY:
@@ -528,13 +564,58 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_MULTIPLY));
             }
             break;
-        case Pyc::INPLACE_DIVIDE:
+        case Pyc::INPLACE_OR:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_OR));
+            }
+            break;
+        case Pyc::INPLACE_POWER:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_POWER));
+            }
+            break;
+        case Pyc::INPLACE_RSHIFT:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_RSHIFT));
+            }
+            break;
+        case Pyc::INPLACE_SUBTRACT:
             {
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_DIVIDE));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_SUBTRACT));
+            }
+            break;
+        case Pyc::INPLACE_TRUE_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_DIVIDE));
+            }
+            break;
+        case Pyc::INPLACE_XOR:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_XOR));
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
