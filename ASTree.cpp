@@ -1525,6 +1525,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     && node.cast<ASTBlock>()->size() == 0)
                 break;
 
+            inPrint = false;
+
             printf("%s", node.cast<ASTBlock>()->type_str());
             PycRef<ASTBlock> blk = node.cast<ASTBlock>();
             if (blk->blktype() == ASTBlock::BLK_IF
@@ -1563,7 +1565,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     end_line();
                 }
             }
+            if (inPrint) {
+                printf(",");
+            }
             cur_indent--;
+            inPrint = false;
         }
         break;
     case ASTNode::NODE_OBJECT:
