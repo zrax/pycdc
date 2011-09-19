@@ -27,6 +27,9 @@ public:
     }
 
     void push(PycRef<ASTNode> node) {
+        if (m_size == m_ptr + 1) {
+            grow(1);
+        }
         m_stack[++m_ptr] = node;
     }
 

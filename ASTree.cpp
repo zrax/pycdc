@@ -172,7 +172,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BREAK_LOOP:
-            stack.push(new ASTKeyword(ASTKeyword::KW_BREAK));
+            curblock->append(new ASTKeyword(ASTKeyword::KW_BREAK));
             break;
         case Pyc::BUILD_CLASS:
             {
@@ -313,7 +313,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::CONTINUE_LOOP_A:
-            stack.push(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+            curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
             break;
         case Pyc::COMPARE_OP_A:
             {
@@ -507,8 +507,88 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                /* This is a problem, so fake it with a = a + b syntax */
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_ADD));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_ADD));
+            }
+            break;
+        case Pyc::INPLACE_AND:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_AND));
+            }
+            break;
+        case Pyc::INPLACE_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> src = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_DIVIDE));
+            }
+            break;
+        case Pyc::INPLACE_FLOOR_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_FLOOR));
+            }
+            break;
+        case Pyc::INPLACE_LSHIFT:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_LSHIFT));
+            }
+            break;
+        case Pyc::INPLACE_MODULO:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_MODULO));
+            }
+            break;
+        case Pyc::INPLACE_MULTIPLY:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> src = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_MULTIPLY));
+            }
+            break;
+        case Pyc::INPLACE_OR:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_OR));
+            }
+            break;
+        case Pyc::INPLACE_POWER:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_POWER));
+            }
+            break;
+        case Pyc::INPLACE_RSHIFT:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_RSHIFT));
             }
             break;
         case Pyc::INPLACE_SUBTRACT:
@@ -517,8 +597,25 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> src = stack.top();
                 stack.pop();
-                /* This is a problem, so fake it with a = a - b syntax */
-                stack.push(new ASTBinary(src, right, ASTBinary::BIN_SUBTRACT));
+                stack.push(new ASTBinary(src, right, ASTBinary::BIN_IP_SUBTRACT));
+            }
+            break;
+        case Pyc::INPLACE_TRUE_DIVIDE:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_DIVIDE));
+            }
+            break;
+        case Pyc::INPLACE_XOR:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_XOR));
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
@@ -623,6 +720,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_ABSOLUTE_A:
             {
                 if (operand < pos) {
+                    curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+
                     /* We're in a loop, this jumps back to the start */
                     /* I think we'll just ignore this case... */
                     break; // Bad idea? Probably!
@@ -739,7 +838,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::POP_BLOCK:
             {
-                PycRef<ASTBlock> tmp = curblock;
+                PycRef<ASTBlock> tmp;
+
+                if (curblock->nodes().back()->type() == ASTNode::NODE_KEYWORD) {
+                    curblock->removeLast();
+                }
+
+                tmp = curblock;
 
                 blocks.pop();
                 curblock = blocks.top();
@@ -835,6 +940,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> three = stack.top();
                 stack.pop();
                 stack.push(one);
+                stack.push(three);
+                stack.push(two);
+            }
+            break;
+        case Pyc::ROT_FOUR:
+            {
+                PycRef<ASTNode> one = stack.top();
+                stack.pop();
+                PycRef<ASTNode> two = stack.top();
+                stack.pop();
+                PycRef<ASTNode> three = stack.top();
+                stack.pop();
+                PycRef<ASTNode> four = stack.top();
+                stack.pop();
+                stack.push(one);
+                stack.push(four);
                 stack.push(three);
                 stack.push(two);
             }
@@ -1015,12 +1136,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
 
-                    if (value->type() == ASTNode::NODE_INVALID) {
-                        break;
-                    }
-
                     PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                    curblock->append(new ASTStore(value, name));
+
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && !curblock->inited())
+                    {
+                        curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+
+                        if (value->type() == ASTNode::NODE_INVALID) {
+                            break;
+                        }
+                    }
                 }
             }
             break;
@@ -1138,6 +1266,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 ASTTuple::value_t vals;
 
                 stack.push(new ASTTuple(vals));
+            }
+            break;
+        case Pyc::YIELD_VALUE:
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                curblock->append(new ASTReturn(value, ASTReturn::YIELD));
             }
             break;
         default:
@@ -1390,6 +1525,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     && node.cast<ASTBlock>()->size() == 0)
                 break;
 
+            inPrint = false;
+
             printf("%s", node.cast<ASTBlock>()->type_str());
             PycRef<ASTBlock> blk = node.cast<ASTBlock>();
             if (blk->blktype() == ASTBlock::BLK_IF
@@ -1428,7 +1565,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     end_line();
                 }
             }
+            if (inPrint) {
+                printf(",");
+            }
             cur_indent--;
+            inPrint = false;
         }
         break;
     case ASTNode::NODE_OBJECT:
@@ -1480,8 +1621,18 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_RETURN:
-        printf("return ");
-        print_src(node.cast<ASTReturn>()->value(), mod);
+        {
+            PycRef<ASTReturn> ret = node.cast<ASTReturn>();
+            switch (ret->rettype()) {
+                case ASTReturn::RETURN:
+                    printf("return ");
+                    break;
+                case ASTReturn::YIELD:
+                    printf("yield ");
+                    break;
+            }
+            print_src(ret->value(), mod);
+        }
         break;
     case ASTNode::NODE_SLICE:
         {
@@ -1574,6 +1725,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     print_src(import->name(), mod);
                 }
             } else {
+                if (src->type() == ASTNode::NODE_BINARY &&
+                        src.cast<ASTBinary>()->is_inplace() == true) {
+                    print_src(src, mod);
+                    break;
+                }
+
                 if (dest->type() == ASTNode::NODE_NAME &&
                     dest.cast<ASTName>()->name()->isEqual("__doc__")) {
                     if (src->type() == ASTNode::NODE_OBJECT) {
