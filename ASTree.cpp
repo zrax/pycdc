@@ -1260,6 +1260,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTTuple(vals));
             }
             break;
+        case Pyc::YIELD_VALUE:
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                curblock->append(new ASTReturn(value, ASTReturn::YIELD));
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
@@ -1600,8 +1607,18 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_RETURN:
-        printf("return ");
-        print_src(node.cast<ASTReturn>()->value(), mod);
+        {
+            PycRef<ASTReturn> ret = node.cast<ASTReturn>();
+            switch (ret->rettype()) {
+                case ASTReturn::RETURN:
+                    printf("return ");
+                    break;
+                case ASTReturn::YIELD:
+                    printf("yield ");
+                    break;
+            }
+            print_src(ret->value(), mod);
+        }
         break;
     case ASTNode::NODE_SLICE:
         {

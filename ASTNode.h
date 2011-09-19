@@ -160,13 +160,19 @@ private:
 
 class ASTReturn : public ASTNode {
 public:
-    ASTReturn(PycRef<ASTNode> value)
-        : ASTNode(NODE_RETURN), m_value(value) { }
+    enum RetType {
+        RETURN, YIELD
+    };
+
+    ASTReturn(PycRef<ASTNode> value, RetType rettype = RETURN)
+        : ASTNode(NODE_RETURN), m_value(value), m_rettype(rettype) { }
 
     PycRef<ASTNode> value() const { return m_value; }
+    RetType rettype() const { return m_rettype; }
 
 private:
     PycRef<ASTNode> m_value;
+    RetType m_rettype;
 };
 
 
