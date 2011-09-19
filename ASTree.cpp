@@ -1128,12 +1128,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
 
-                    if (value->type() == ASTNode::NODE_INVALID) {
-                        break;
-                    }
-
                     PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                    curblock->append(new ASTStore(value, name));
+
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && !curblock->inited())
+                    {
+                        curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+
+                        if (value->type() == ASTNode::NODE_INVALID) {
+                            break;
+                        }
+                    }
                 }
             }
             break;
