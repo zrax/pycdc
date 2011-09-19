@@ -656,20 +656,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     offs = pos + operand;
                 }
 
-                if (cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION)
-                {
+                if (cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
                     ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, offs, cond.cast<ASTCompare>()->right(), false);
-                }
-                else if (curblock->blktype() == ASTBlock::BLK_ELSE
-                        && curblock->size() == 0)
-                {
+                } else if (curblock->blktype() == ASTBlock::BLK_ELSE
+                           && curblock->size() == 0) {
                     /* Collapse into elif statement */
                     blocks.pop();
                     ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, offs, cond, neg);
-                }
-                else if (curblock->size() == 0 && !curblock->inited()
-                        && curblock->blktype() == ASTBlock::BLK_WHILE)
-                {
+                } else if (curblock->size() == 0 && !curblock->inited()
+                           && curblock->blktype() == ASTBlock::BLK_WHILE) {
                     /* The condition for a while loop */
                     PycRef<ASTBlock> top = blocks.top();
                     blocks.pop();
@@ -677,11 +672,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                     /* We don't store the stack for loops! Pop it! */
                     stack_hist.pop();
-                }
-                else if (curblock->size() == 0 && curblock->end() <= offs
-                        && (curblock->blktype() == ASTBlock::BLK_IF
-                        || curblock->blktype() == ASTBlock::BLK_ELIF))
-                {
+                } else if (curblock->size() == 0 && curblock->end() <= offs
+                           && (curblock->blktype() == ASTBlock::BLK_IF
+                           || curblock->blktype() == ASTBlock::BLK_ELIF)) {
                     PycRef<ASTNode> newcond;
                     PycRef<ASTCondBlock> top = curblock.cast<ASTCondBlock>();
                     PycRef<ASTNode> cond1 = top->cond();
@@ -730,9 +723,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (curblock->blktype() != ASTBlock::BLK_IF
                         && curblock->blktype() != ASTBlock::BLK_ELIF
                         && curblock->blktype() != ASTBlock::BLK_WHILE)
-                {
                     break;
-                }
 
                 stack = stack_hist.top();
                 stack_hist.pop();
@@ -743,8 +734,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 blocks.top()->append(prev.cast<ASTNode>());
                 if ((prev->blktype() == ASTBlock::BLK_IF
                         || prev->blktype() == ASTBlock::BLK_ELIF)
-                        && blocks.top()->end() > pos)
-                {
+                        && blocks.top()->end() > pos) {
                     PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, blocks.top()->end());
                     blocks.push(next.cast<ASTBlock>());
                 }
@@ -773,9 +763,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.push(next.cast<ASTBlock>());
                         prev = nil;
-                    }
-                    else if (prev->blktype() == ASTBlock::BLK_ELSE)
-                    {
+                    } else if (prev->blktype() == ASTBlock::BLK_ELSE) {
                         /* Special case */
                         prev = blocks.top();
                     } else {
@@ -906,8 +894,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if ((curblock->blktype() == ASTBlock::BLK_IF
                         || curblock->blktype() == ASTBlock::BLK_ELSE)
                         && ((mod->majorVer() == 2 && mod->minorVer() >= 6) 
-                            || mod->majorVer() > 2))
-                {
+                            || mod->majorVer() > 2)) {
                     stack = stack_hist.top();
                     stack_hist.pop();
 
@@ -1090,8 +1077,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         name = new ASTName(code->getVarName(operand));
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR
-                            && !curblock->inited())
-                    {
+                            && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
                     } else {
                         curblock->append(new ASTStore(value, name));
@@ -1139,15 +1125,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> name = new ASTName(code->getName(operand));
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR
-                            && !curblock->inited())
-                    {
+                            && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
                     } else {
                         curblock->append(new ASTStore(value, name));
 
-                        if (value->type() == ASTNode::NODE_INVALID) {
+                        if (value->type() == ASTNode::NODE_INVALID)
                             break;
-                        }
                     }
                 }
             }
@@ -1385,14 +1369,16 @@ static void print_ordered(PycRef<ASTNode> parent, PycRef<ASTNode> child,
 
 static void start_line(int indent)
 {
-    if (inPrint) return;
+    if (inPrint)
+        return;
     for (int i=0; i<indent; i++)
         printf("    ");
 }
 
 static void end_line()
 {
-    if (inPrint) return;
+    if (inPrint)
+        return;
     printf("\n");
 }
 
@@ -1423,12 +1409,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             printf("(");
             bool first = true;
             for (ASTCall::pparam_t::const_iterator p = call->pparams().begin(); p != call->pparams().end(); ++p) {
-                if (!first) printf(", ");
+                if (!first)
+                    printf(", ");
                 print_src(*p, mod);
                 first = false;
             }
             for (ASTCall::kwparam_t::const_iterator p = call->kwparams().begin(); p != call->kwparams().end(); ++p) {
-                if (!first) printf(", ");
+                if (!first)
+                    printf(", ");
                 printf("%s = ", p->first.cast<ASTName>()->name()->value());
                 print_src(p->second, mod);
                 first = false;
@@ -1453,8 +1441,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src(exec->globals(), mod);
 
                 if (exec->locals() != Node_NULL
-                        && exec->globals() != exec->locals())
-                {
+                        && exec->globals() != exec->locals()) {
                     printf(", ");
                     print_src(exec->locals(), mod);
                 }
@@ -1462,9 +1449,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_KEYWORD:
-        {
-            printf("%s", node.cast<ASTKeyword>()->word_str());
-        }
+        printf("%s", node.cast<ASTKeyword>()->word_str());
         break;
     case ASTNode::NODE_LIST:
         {
@@ -1473,8 +1458,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             bool first = true;
             cur_indent++;
             for (ASTList::value_t::const_iterator b = values.begin(); b != values.end(); ++b) {
-                if (first) printf("\n");
-                else printf(",\n");
+                if (first)
+                    printf("\n");
+                else
+                    printf(",\n");
                 start_line(cur_indent);
                 print_src(*b, mod);
                 first = false;
@@ -1490,8 +1477,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             bool first = true;
             cur_indent++;
             for (ASTMap::map_t::const_iterator b = values.begin(); b != values.end(); ++b) {
-                if (first) printf("\n");
-                else printf(",\n");
+                if (first)
+                    printf("\n");
+                else
+                    printf(",\n");
                 start_line(cur_indent);
                 print_src(b->first, mod);
                 printf(": ");
@@ -1531,24 +1520,19 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<ASTBlock> blk = node.cast<ASTBlock>();
             if (blk->blktype() == ASTBlock::BLK_IF
                     || blk->blktype() == ASTBlock::BLK_ELIF
-                    || blk->blktype() == ASTBlock::BLK_WHILE)
-            {
+                    || blk->blktype() == ASTBlock::BLK_WHILE) {
                 if (blk.cast<ASTCondBlock>()->negative())
                     printf(" not ");
                 else
                     printf(" ");
 
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod);
-            }
-            else if (blk->blktype() == ASTBlock::BLK_FOR)
-            {
+            } else if (blk->blktype() == ASTBlock::BLK_FOR) {
                 printf(" ");
                 print_src(blk.cast<ASTIterBlock>()->index(), mod);
                 printf(" in ");
                 print_src(blk.cast<ASTIterBlock>()->iter(), mod);
-            }
-            else if (blk->blktype() == ASTBlock::BLK_EXCEPT)
-            {
+            } else if (blk->blktype() == ASTBlock::BLK_EXCEPT) {
                 printf(" ");
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod);
             }
@@ -1614,7 +1598,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             printf("raise ");
             bool first = true;
             for (ASTRaise::param_t::const_iterator p = raise->params().begin(); p != raise->params().end(); ++p) {
-                if (!first) printf(", ");
+                if (!first)
+                    printf(", ");
                 print_src(*p, mod);
                 first = false;
             }
@@ -1662,7 +1647,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 ASTFunction::defarg_t defargs = src.cast<ASTFunction>()->defargs();
                 ASTFunction::defarg_t::iterator da = defargs.begin();
                 for (int i=0; i<code_src->argCount(); i++) {
-                    if (i > 0) printf(", ");
+                    if (i > 0)
+                        printf(", ");
                     printf("%s", code_src->getVarName(i)->value());
                     if ((code_src->argCount() - i) <= (int)defargs.size()) {
                         printf(" = ");
@@ -1681,7 +1667,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     printf("(");
                     bool first = true;
                     for (ASTTuple::value_t::const_iterator b = bases->values().begin(); b != bases->values().end(); ++b) {
-                        if (!first) printf(", ");
+                        if (!first)
+                            printf(", ");
                         print_src(*b, mod);
                         first = false;
                     }
@@ -1775,7 +1762,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             printf("(");
             bool first = true;
             for (ASTTuple::value_t::const_iterator b = values.begin(); b != values.end(); ++b) {
-                if (!first) printf(", ");
+                if (!first)
+                    printf(", ");
                 print_src(*b, mod);
                 first = false;
             }
