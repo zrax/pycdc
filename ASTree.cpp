@@ -403,6 +403,40 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::DUP_TOP:
             stack.push(stack.top());
             break;
+        case Pyc::DUP_TOP_TWO:
+            {
+                PycRef<ASTNode> first = stack.top();
+                stack.pop();
+                PycRef<ASTNode> second = stack.top();
+
+                stack.push(first);
+                stack.push(second);
+                stack.push(first);
+            }
+            break;
+        case Pyc::DUP_TOPX_A:
+            {
+                std::stack<PycRef<ASTNode> > first;
+                std::stack<PycRef<ASTNode> > second;
+
+                for (int i = 0; i < operand; i++) {
+                    PycRef<ASTNode> node = stack.top();
+                    stack.pop();
+                    first.push(node);
+                    second.push(node);
+                }
+
+                while (first.size()) {
+                    stack.push(first.top());
+                    first.pop();
+                }
+
+                while (second.size()) {
+                    stack.push(second.top());
+                    second.pop();
+                }
+            }
+            break;
         case Pyc::END_FINALLY:
             {
                 if (curblock->blktype() == ASTBlock::BLK_FINALLY) {
