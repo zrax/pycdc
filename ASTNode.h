@@ -253,14 +253,21 @@ private:
 
 class ASTImport : public ASTNode {
 public:
+    typedef std::list<PycRef<ASTStore> > list_t;
+
     ASTImport(PycRef<ASTNode> name, PycRef<ASTNode> fromlist)
         : ASTNode(NODE_IMPORT), m_name(name), m_fromlist(fromlist) { }
 
     PycRef<ASTNode> name() const { return m_name; }
+    list_t stores() const { return m_stores; }
+    void add_store(PycRef<ASTStore> store) { m_stores.push_back(store); }
+
     PycRef<ASTNode> fromlist() const { return m_fromlist; }
 
 private:
     PycRef<ASTNode> m_name;
+    list_t m_stores;
+
     PycRef<ASTNode> m_fromlist;
 };
 
