@@ -403,6 +403,40 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::DUP_TOP:
             stack.push(stack.top());
             break;
+        case Pyc::DUP_TOP_TWO:
+            {
+                PycRef<ASTNode> first = stack.top();
+                stack.pop();
+                PycRef<ASTNode> second = stack.top();
+
+                stack.push(first);
+                stack.push(second);
+                stack.push(first);
+            }
+            break;
+        case Pyc::DUP_TOPX_A:
+            {
+                std::stack<PycRef<ASTNode> > first;
+                std::stack<PycRef<ASTNode> > second;
+
+                for (int i = 0; i < operand; i++) {
+                    PycRef<ASTNode> node = stack.top();
+                    stack.pop();
+                    first.push(node);
+                    second.push(node);
+                }
+
+                while (first.size()) {
+                    stack.push(first.top());
+                    first.pop();
+                }
+
+                while (second.size()) {
+                    stack.push(second.top());
+                    second.pop();
+                }
+            }
+            break;
         case Pyc::END_FINALLY:
             {
                 if (curblock->blktype() == ASTBlock::BLK_FINALLY) {
@@ -493,6 +527,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::IMPORT_FROM_A:
+            stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::IMPORT_STAR:
             {
@@ -778,8 +813,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
-                stack.pop();
-                stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                if (name->type() != ASTNode::NODE_IMPORT) {
+                    stack.pop();
+                    stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                }
             }
             break;
         case Pyc::LOAD_CONST_A:
@@ -1127,6 +1164,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else if (stack.top()->type() == ASTNode::NODE_IMPORT) {
+                        PycRef<ASTImport> import = stack.top().cast<ASTImport>();
+
+                        import->add_store(new ASTStore(value, name));
                     } else {
                         curblock->append(new ASTStore(value, name));
 
@@ -1629,6 +1670,47 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             printf(":");
             if (slice->op() & ASTSlice::SLICE2) {
                 print_src(slice->right(), mod);
+            }
+        }
+        break;
+    case ASTNode::NODE_IMPORT:
+        {
+            PycRef<ASTImport> import = node.cast<ASTImport>();
+            if (import->stores().size()) {
+                ASTImport::list_t stores = import->stores();
+
+                printf("from ");
+                if (import->name()->type() == ASTNode::NODE_IMPORT)
+                    print_src(import->name().cast<ASTImport>()->name(), mod);
+                else
+                    print_src(import->name(), mod);
+                printf(" import ");
+
+                ASTImport::list_t::const_iterator ii = stores.begin();
+                if (stores.size() == 1) {
+                    print_src((*ii)->src(), mod);
+
+                    if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                        printf(" as ");
+                        print_src((*ii)->dest(), mod);
+                    }
+                } else {
+                    bool first = true;
+                    for (; ii != stores.end(); ++ii) {
+                        if (!first)
+                            printf(", ");
+                        print_src((*ii)->src(), mod);
+                        first = false;
+
+                        if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                            printf(" as ");
+                            print_src((*ii)->dest(), mod);
+                        }
+                    }
+                }
+            } else {
+                printf("import ");
+                print_src(import->name(), mod);
             }
         }
         break;
