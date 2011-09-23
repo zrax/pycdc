@@ -1431,6 +1431,12 @@ static void end_line()
 int cur_indent = -1;
 void print_src(PycRef<ASTNode> node, PycModule* mod)
 {
+    if (node == Node_NULL) {
+        printf("None");
+        cleanBuild = true;
+        return;
+    }
+
     switch (node->type()) {
     case ASTNode::NODE_BINARY:
     case ASTNode::NODE_COMPARE:
