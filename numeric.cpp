@@ -23,7 +23,7 @@ void PycLong::load(PycData* stream, PycModule*)
         m_size = (hi & 0x80000000) != 0 ? -4 : 4;
     } else {
         m_size = stream->get32();
-        int actualSize = m_size & 0x7FFFFFFF;
+        int actualSize = m_size >= 0 ? m_size : -m_size;
         for (int i=0; i<actualSize; i++)
             m_value.push_back(stream->get16());
     }
