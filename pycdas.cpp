@@ -178,6 +178,9 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_INT:
         iprintf(indent, "%d\n", obj.cast<PycInt>()->value());
         break;
+    case PycObject::TYPE_LONG:
+        iprintf(indent, "%s\n", obj.cast<PycLong>()->repr().c_str());
+        break;
     case PycObject::TYPE_FLOAT:
         iprintf(indent, "%s\n", obj.cast<PycFloat>()->value());
         break;

@@ -47,6 +47,48 @@ bool PycLong::isEqual(PycRef<PycObject> obj) const
     return true;
 }
 
+std::string PycLong::repr() const
+{
+    // Longs are printed as hex, since it's easier (and faster) to convert
+    // arbitrary-length integers to a power of two than an arbitrary base
+
+    if (m_size == 0)
+        return "0x0L";
+
+    // Realign to 32 bits, since Python uses only 15
+    std::list<unsigned> bits;
+    std::list<int>::const_iterator bit;
+    int shift = 0, temp = 0;
+    for (bit = m_value.begin(); bit != m_value.end(); ++bit) {
+        temp |= *bit << shift;
+        shift += 15;
+        if (shift >= 32) {
+            bits.push_back(temp);
+            shift -= 32;
+            temp = *bit >> (15 - shift);
+        }
+    }
+    if (temp)
+        bits.push_back(temp);
+
+    std::string accum;
+    accum.resize(3 + (bits.size() * 8) + 2);
+    char* aptr = &accum[0];
+
+    if (m_size < 0)
+        *aptr++ = '-';
+    *aptr++ = '0';
+    *aptr++ = 'x';
+
+    std::list<unsigned>::const_reverse_iterator iter = bits.rbegin();
+    aptr += snprintf(aptr, 9, "%X", *iter++);
+    while (iter != bits.rend())
+        aptr += snprintf(aptr, 9, "%08X", *iter++);
+    *aptr++ = 'L';
+    *aptr++ = 0;
+    return accum;
+}
+
 
 /* PycFloat */
 void PycFloat::load(PycData* stream, PycModule*)

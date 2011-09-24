@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include <list>
+#include <string>
 
 class PycInt : public PycObject {
 public:
@@ -34,6 +35,8 @@ public:
 
     int size() const { return m_size; }
     const std::list<int>& value() const { return m_value; }
+
+    std::string repr() const;
 
 private:
     int m_size;

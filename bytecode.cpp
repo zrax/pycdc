@@ -243,6 +243,9 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_INT:
         printf("%d", obj.cast<PycInt>()->value());
         break;
+    case PycObject::TYPE_LONG:
+        printf("%s", obj.cast<PycLong>()->repr().c_str());
+        break;
     case PycObject::TYPE_FLOAT:
         printf("%s", obj.cast<PycFloat>()->value());
         break;
