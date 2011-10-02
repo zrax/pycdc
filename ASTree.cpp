@@ -711,6 +711,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 if (cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
+                    if (curblock->blktype() == ASTBlock::BLK_EXCEPT &&
+                            curblock.cast<ASTCondBlock>()->cond() == Node_NULL) {
+                        blocks.pop();
+                        curblock = blocks.top();
+
+                        stack_hist.pop();
+                    }
                     ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, offs, cond.cast<ASTCompare>()->right(), false);
                 } else if (curblock->blktype() == ASTBlock::BLK_ELSE
                            && curblock->size() == 0) {
@@ -801,6 +808,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack_hist.pop();
 
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
+                    PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
+                    if (cont->hasExcept()) {
+                        stack_hist.push(stack);
+
+                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, Node_NULL, false);
+                        blocks.push(except);
+                        curblock = blocks.top();
+                    }
                     break;
                 }
 
@@ -894,7 +909,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 PycRef<ASTBlock> tmp;
 
-                if (curblock->nodes().back()->type() == ASTNode::NODE_KEYWORD) {
+                if (curblock->nodes().size() &&
+                        curblock->nodes().back()->type() == ASTNode::NODE_KEYWORD) {
                     curblock->removeLast();
                 }
 
@@ -1627,7 +1643,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src(blk.cast<ASTIterBlock>()->index(), mod);
                 printf(" in ");
                 print_src(blk.cast<ASTIterBlock>()->iter(), mod);
-            } else if (blk->blktype() == ASTBlock::BLK_EXCEPT) {
+            } else if (blk->blktype() == ASTBlock::BLK_EXCEPT &&
+                    blk.cast<ASTCondBlock>()->cond() != Node_NULL) {
                 printf(" ");
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod);
             }
