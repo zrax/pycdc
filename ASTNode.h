@@ -408,7 +408,7 @@ public:
 
     enum BlkType {
         BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, 
-        BLK_EXCEPT_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
+        BLK_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
         BLK_WHILE, BLK_FOR
     };
 
@@ -471,35 +471,19 @@ private:
     PycRef<ASTNode> m_idx;
 };
 
-
-/* Okay, prepare for a bit of illogic:
- * We store a try block.
- * We store the except and finally blocks INSIDE that try block.
- *
- * In implementation it gets a bit weirder, but given the way the opcodes
- * work, this is the most straightforward way of doing it.
- * Heh, "straightforward"...
- */
-class ASTTryBlock : public ASTBlock {
+class ASTContainerBlock : public ASTBlock {
 public:
-    ASTTryBlock(unsigned int end, int finally = 0, int except = 0)
-        : ASTBlock(BLK_TRY, end), m_finally_pos(finally), m_finally(), m_except_pos(except), m_except() { }
+    ASTContainerBlock(bool hasFinally, bool hasExcept = false)
+        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_hasFinally(hasFinally), m_hasExcept(hasExcept) { }
 
-    int finallyStart() const { return m_finally_pos; }
-    int exceptStart() const { return m_except_pos; }
-    PycRef<ASTBlock> finally() const { return m_finally; }
-    const list_t& except() const { return m_except; }
+    bool hasFinally() const { return m_hasFinally; }
+    bool hasExcept() const { return m_hasExcept; }
 
-    void setFinallyStart(int finally) { m_finally_pos = finally; }
-    void setExceptStart(int except) { m_except_pos = except; }
-    void setFinally(PycRef<ASTBlock> finally) { m_finally = finally; }
-    void setExcept(const list_t& except) { m_except = except; }
+    void setHasExcept(bool hasExcept) { m_hasExcept = hasExcept; }
 
 private:
-    int m_finally_pos;
-    PycRef<ASTBlock> m_finally;
-    int m_except_pos;
-    list_t m_except;
+    bool m_hasFinally;
+    bool m_hasExcept;
 };
 
 #endif

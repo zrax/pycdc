@@ -1,5 +1,8 @@
 CXX = g++
 CXXFLAGS = -g -Wall
+#CXXFLAGS += -fprofile-arcs -ftest-coverage -DBLOCK_DEBUG
+LDFLAGS = 
+#LDFLAGS += -lgcov
 
 COMMON = \
 	out/module.o \
@@ -48,22 +51,33 @@ install:
 	cp $(ALL) $(PREFIX)/bin
 
 test: all
-	@for f in ./tests/*; \
+	@fails=0; \
+	files=(); \
+	errors=(); \
+	for f in ./tests/*; \
 	do \
 		stderr=$$( ./bin/pycdc "$$f" 2>&1 1>/dev/null ); \
 		if [ "$$?" -eq "0" -a -z "$$stderr" ]; then \
-			echo -e "\033[32mPASSED\033[m $$f"; \
+			echo -ne "\033[32m.\033[m"; \
 		else \
-			echo $$stderr; \
-			echo -e "\033[31mFAILED\033[m $$f"; \
+			let fails+=1; \
+			files=("$${files[@]}" "$$f"); \
+			errors=("$${errors[@]}" "$$stderr"); \
+			echo -ne "\033[31m.\033[m"; \
 		fi \
+	done; \
+	echo -e "\n\n$$fails tests failed:"; \
+	for ((i=0; i<$${#files[@]}; i++)); \
+	do \
+	    echo -e "\t\033[31m$${files[i]}\033[m"; \
+       echo -e "$${errors[i]}\n"; \
 	done;
 
 bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
 
 bin/pycdc: pycdc.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
 
 out/module.o: module.h module.cpp
 	$(CXX) $(CXXFLAGS) -c module.cpp -o $@
