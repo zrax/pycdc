@@ -1486,6 +1486,26 @@ static void end_line()
 }
 
 int cur_indent = -1;
+static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
+    ASTBlock::list_t lines = blk->nodes();
+
+    if (lines.size() == 0) {
+        PycRef<ASTNode> pass = new ASTNode(ASTNode::NODE_PASS);
+        start_line(cur_indent);
+        print_src(pass, mod);
+    }
+
+    for (ASTBlock::list_t::const_iterator ln = lines.begin(); ln != lines.end();) {
+        if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
+            start_line(cur_indent);
+        }
+        print_src(*ln, mod);
+        if (++ln != lines.end()) {
+            end_line();
+        }
+    }
+}
+
 void print_src(PycRef<ASTNode> node, PycModule* mod)
 {
     if (node == Node_NULL) {
@@ -1626,16 +1646,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             if (node.cast<ASTBlock>()->blktype() == ASTBlock::BLK_CONTAINER) {
                 end_line();
                 PycRef<ASTBlock> blk = node.cast<ASTBlock>();
-                ASTBlock::list_t lines = blk->nodes();
-                for (ASTBlock::list_t::const_iterator ln = lines.begin(); ln != lines.end();) {
-                    if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
-                        start_line(cur_indent);
-                    }
-                    print_src(*ln, mod);
-                    if (++ln != lines.end()) {
-                        end_line();
-                    }
-                }
+                print_block(blk, mod);
                 end_line();
                 break;
             }
@@ -1665,16 +1676,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             printf(":\n");
 
             cur_indent++;
-            ASTBlock::list_t lines = blk->nodes();
-            for (ASTBlock::list_t::const_iterator ln = lines.begin(); ln != lines.end();) {
-                if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
-                    start_line(cur_indent);
-                }
-                print_src(*ln, mod);
-                if (++ln != lines.end()) {
-                    end_line();
-                }
-            }
+            print_block(blk, mod);
             if (inPrint) {
                 printf(",");
             }
