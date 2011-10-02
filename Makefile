@@ -1,5 +1,8 @@
 CXX = g++
-CXXFLAGS = -g -Wall -fprofile-arcs -ftest-coverage
+CXXFLAGS = -g -Wall
+#CXXFLAGS += -fprofile-arcs -ftest-coverage
+LDFLAGS = 
+#LDFLAGS += -lgcov
 
 COMMON = \
 	out/module.o \
@@ -71,10 +74,10 @@ test: all
 	done;
 
 bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) -lgcov $(COMMON) $(BYTES) pycdas.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
 
 bin/pycdc: pycdc.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) -lgcov $(COMMON) $(BYTES) pycdc.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
 
 out/module.o: module.h module.cpp
 	$(CXX) $(CXXFLAGS) -c module.cpp -o $@
