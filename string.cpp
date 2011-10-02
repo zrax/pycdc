@@ -6,7 +6,8 @@
 /* PycString */
 void PycString::load(PycData* stream, PycModule* mod)
 {
-    if (m_value) delete[] m_value;
+    if (m_value)
+        delete[] m_value;
 
     if (type() == TYPE_STRINGREF) {
         PycRef<PycString> str = mod->getIntern(stream->get32());

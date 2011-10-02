@@ -32,7 +32,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     while (!source.atEof()) {
 #ifdef BLOCK_DEBUG
         fprintf(stderr, "%02d", pos);
-        for (unsigned int i = 0; i < blocks.size(); i++) fprintf(stderr, "    ");
+        for (unsigned int i = 0; i < blocks.size(); i++)
+            fprintf(stderr, "    ");
         fprintf(stderr, "%s\n", curblock->type_str());
 #endif
 
