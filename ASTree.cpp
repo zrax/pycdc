@@ -966,6 +966,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                 }
                 curblock->append(new ASTRaise(paramList));
+
+                if (curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELSE) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+
+                    bc_next(source, mod, opcode, operand, pos);
+                }
             }
             break;
         case Pyc::RETURN_VALUE:
