@@ -3,6 +3,10 @@
 #include "module.h"
 #include <cstring>
 
+#ifdef _MSC_VER
+#define snprintf sprintf_s
+#endif
+
 /* PycInt */
 void PycInt::load(PycData* stream, PycModule*)
 {
