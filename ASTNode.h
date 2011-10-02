@@ -408,7 +408,7 @@ public:
 
     enum BlkType {
         BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, 
-        BLK_EXCEPT_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
+        BLK_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
         BLK_WHILE, BLK_FOR
     };
 
@@ -469,6 +469,21 @@ public:
 private:
     PycRef<ASTNode> m_iter;
     PycRef<ASTNode> m_idx;
+};
+
+class ASTContainerBlock : public ASTBlock {
+public:
+    ASTContainerBlock(bool hasFinally, bool hasExcept = false)
+        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_hasFinally(hasFinally), m_hasExcept(hasExcept) { }
+
+    bool hasFinally() const { return m_hasFinally; }
+    bool hasExcept() const { return m_hasExcept; }
+
+    void setHasExcept(bool hasExcept) { m_hasExcept = hasExcept; }
+
+private:
+    bool m_hasFinally;
+    bool m_hasExcept;
 };
 
 #endif
