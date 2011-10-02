@@ -4,6 +4,9 @@
 *.suo
 *.swp
 *.swo
+*.gcno
+*.gcda
+tags
 /bin/pycdas
 /bin/pycdc
 /bin/*.py
