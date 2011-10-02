@@ -475,7 +475,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock->append(cont.cast<ASTNode>());
                     } else {
                         /* If we need a finally block, add it here */
-                        PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY);
+                        PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, 0, true);
                         blocks.push(final);
                         curblock = blocks.top();
                     }
@@ -813,6 +813,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack_hist.push(stack);
 
                         PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, Node_NULL, false);
+                        except->init();
                         blocks.push(except);
                         curblock = blocks.top();
                     }
@@ -1043,7 +1044,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 /* Store the current stack for the except/finally statement(s) */
                 stack_hist.push(stack);
-                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand);
+                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
                 blocks.push(tryblock.cast<ASTBlock>());
                 curblock = blocks.top();
             }
