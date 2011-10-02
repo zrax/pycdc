@@ -27,6 +27,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int pos = 0;
     int unpack = 0;
     bool else_pop = false;
+    bool need_try = false;
 
     while (!source.atEof()) {
 #ifdef BLOCK_DEBUG
@@ -37,7 +38,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
         bc_next(source, mod, opcode, operand, pos);
 
-        if (else_pop && opcode != Pyc::JUMP_FORWARD_A) {
+        if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
+            need_try = false;
+
+            /* Store the current stack for the except/finally statement(s) */
+            stack_hist.push(stack);
+            PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
+            blocks.push(tryblock.cast<ASTBlock>());
+            curblock = blocks.top();
+        } else if (else_pop && opcode != Pyc::JUMP_FORWARD_A) {
             else_pop = false;
 
             PycRef<ASTBlock> prev = curblock;
@@ -1063,6 +1072,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
                 blocks.push(tryblock.cast<ASTBlock>());
                 curblock = blocks.top();
+
+                need_try = false;
             }
             break;
         case Pyc::SETUP_FINALLY_A:
@@ -1070,6 +1081,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTBlock> next = new ASTContainerBlock(true);
                 blocks.push(next.cast<ASTBlock>());
                 curblock = blocks.top();
+
+                need_try = true;
             }
             break;
         case Pyc::SETUP_LOOP_A:
