@@ -922,6 +922,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock->append(tmp.cast<ASTNode>());
             }
             break;
+        case Pyc::POP_EXCEPT:
+            /* Do nothing. */
+            break;
         case Pyc::POP_TOP:
             {
                 PycRef<ASTNode> value = stack.top();
