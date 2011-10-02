@@ -439,30 +439,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::END_FINALLY:
             {
-                if (curblock->blktype() == ASTBlock::BLK_FINALLY) {
-                    PycRef<ASTBlock> finally = curblock;
-                    blocks.pop();
-
-                    curblock = blocks.top();
-                    if (curblock->blktype() == ASTBlock::BLK_TRY) {
-                        PycRef<ASTTryBlock> parent = curblock.cast<ASTTryBlock>();
-                        parent->setFinally(finally);
-                    } else {
-                        fprintf(stderr, "Something TERRIBLE happened.\n");
-                    }
-                    blocks.pop();
-                    blocks.top()->append(curblock.cast<ASTNode>());
-
-                    curblock = blocks.top();
-                } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
-                    /* All except statements have an "else" block that
-                       bubbles the exception up...  ignore it */
-                    if (curblock->size() == 0) {
-                        blocks.pop();
-                    }
-
-                    curblock = blocks.top();
-                }
             }
             break;
         case Pyc::EXEC_STMT:
@@ -987,31 +963,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SET_LINENO_A:
             // Ignore
             break;
-        /*case Pyc::SETUP_EXCEPT_A:
+        case Pyc::SETUP_EXCEPT_A:
             {
-                if (curblock->blktype() == ASTBlock::BLK_TRY) {
-                    PycRef<ASTTryBlock> tryblk = curblock.cast<ASTTryBlock>();
-                    if (tryblk->finally() && tryblk->except() == 0) {
-                        tryblk->set_except(pos+operand);
-                    } else {
-                        tryblk = new ASTTryBlock(pos, pos+operand, pos+operand, 0);
-                        blocks.push(tryblk.cast<ASTBlock>());
-                        curblock = blocks.top();
-                    }
-                } else {
-                    PycRef<ASTBlock> tryblk = new ASTTryBlock(pos, pos+operand, pos+operand, 0);
-                    blocks.push(tryblk.cast<ASTBlock>());
-                    curblock = blocks.top();
-                }
             }
-            break;*/
-        /*case Pyc::SETUP_FINALLY_A:
+            break;
+        case Pyc::SETUP_FINALLY_A:
             {
-                PycRef<ASTBlock> tryblk = new ASTTryBlock(pos, pos+operand, 0, pos+operand);
-                blocks.push(tryblk.cast<ASTBlock>());
-                curblock = blocks.top();
             }
-            break;*/
+            break;
         case Pyc::SETUP_LOOP_A:
             {
                 PycRef<ASTBlock> next = new ASTCondBlock(ASTBlock::BLK_WHILE, pos+operand, Node_NULL, false);
