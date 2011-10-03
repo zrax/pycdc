@@ -1,4 +1,3 @@
-*.o
 *.vcproj.*.user
 *.ncb
 *.suo
@@ -6,9 +5,14 @@
 *.swo
 *.gcno
 *.gcda
-tags
-/bin/pycdas
-/bin/pycdc
-/bin/*.py
-/bin/*.pyc
+/bin/pycdc*
+/bin/pycdas*
+/out/*.o
+/out/*.obj
+/out/*.manifest
+/out/*.manifest.res
+/out/*.dep
+/out/*.idb
+/out/*.pdb
+/out/BuildLog.htm
 /bytes/*.cpp
