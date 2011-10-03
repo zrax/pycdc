@@ -473,17 +473,19 @@ private:
 
 class ASTContainerBlock : public ASTBlock {
 public:
-    ASTContainerBlock(bool hasFinally, bool hasExcept = false)
-        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_hasFinally(hasFinally), m_hasExcept(hasExcept) { }
+    ASTContainerBlock(unsigned int finally, unsigned int except = 0)
+        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_finally(finally), m_except(except) { }
 
-    bool hasFinally() const { return m_hasFinally; }
-    bool hasExcept() const { return m_hasExcept; }
+    bool hasFinally() const { return m_finally != 0; }
+    bool hasExcept() const { return m_except != 0; }
+    unsigned int finally() const { return m_finally; }
+    unsigned int except() const { return m_except; }
 
-    void setHasExcept(bool hasExcept) { m_hasExcept = hasExcept; }
+    void setExcept(unsigned int except) { m_except = except; }
 
 private:
-    bool m_hasFinally;
-    bool m_hasExcept;
+    unsigned int m_finally;
+    unsigned int m_except;
 };
 
 #endif

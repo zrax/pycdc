@@ -47,11 +47,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
             blocks.push(tryblock.cast<ASTBlock>());
             curblock = blocks.top();
-        } else if (else_pop && opcode != Pyc::JUMP_FORWARD_A) {
+        } else if (else_pop
+                && opcode != Pyc::JUMP_FORWARD_A
+                && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
             PycRef<ASTBlock> prev = curblock;
-            while (prev->end() < pos && prev->blktype() != ASTBlock::BLK_MAIN) {
+            while (prev->end() < pos
+                    && prev->blktype() != ASTBlock::BLK_MAIN) {
                 blocks.pop();
                 curblock = blocks.top();
                 curblock->append(prev.cast<ASTNode>());
@@ -463,15 +466,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(final.cast<ASTNode>());
                     isFinally = true;
-                } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
-                    /* All except statements have an else block that
-                     * bubbles the exception up.
-                     * If it's empty, we'll ignore it.
-                     */
-                    if (curblock->size() == 0) {
-                        blocks.pop();
-                    }
+                } else if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                    /* Turn it into an else statement. */
+                    blocks.pop();
+                    stack_hist.pop();
 
+                    PycRef<ASTBlock> elseblk = new ASTBlock(ASTBlock::BLK_ELSE, curblock->end());
+                    elseblk->init();
+                    blocks.push(elseblk);
                     curblock = blocks.top();
                 }
 
@@ -483,14 +485,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         blocks.pop();
                         curblock = blocks.top();
                         curblock->append(cont.cast<ASTNode>());
-                    } else {
-                        /* If we need a finally block, add it here */
-                        PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, 0, true);
-                        blocks.push(final);
-                        curblock = blocks.top();
                     }
-                } else {
-                    fprintf(stderr, "Something TERRIBLE happened.\n");
                 }
             }
             break;
@@ -847,6 +842,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.push(next.cast<ASTBlock>());
                         prev = nil;
+                    } else if (prev->blktype() == ASTBlock::BLK_EXCEPT) {
+                        stack_hist.push(stack);
+                        PycRef<ASTBlock> next = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+operand, Node_NULL, false);
+                        next->init();
+
+                        blocks.push(next.cast<ASTBlock>());
+                        prev = nil;
                     } else if (prev->blktype() == ASTBlock::BLK_ELSE) {
                         /* Special case */
                         prev = blocks.top();
@@ -926,10 +928,42 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 tmp = curblock;
-
                 blocks.pop();
                 curblock = blocks.top();
-                curblock->append(tmp.cast<ASTNode>());
+
+                if (!(tmp->blktype() == ASTBlock::BLK_ELSE
+                        && tmp->nodes().size() == 0)) {
+                    curblock->append(tmp.cast<ASTNode>());
+                }
+
+                if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
+                    PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
+
+                    if (tmp->blktype() == ASTBlock::BLK_ELSE && !cont->hasFinally()) {
+
+                        /* Pop the container */
+                        blocks.pop();
+                        curblock = blocks.top();
+                        curblock->append(cont.cast<ASTNode>());
+
+                    } else if (tmp->blktype() == ASTBlock::BLK_ELSE && cont->hasFinally()) {
+
+                        /* Add the finally block */
+                        PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, 0, true);
+                        blocks.push(final);
+                        curblock = blocks.top();
+
+                    } else if (tmp->blktype() == ASTBlock::BLK_TRY && !cont->hasExcept()) {
+
+                        /* Add the finally block */
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+
+                        PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, 0, true);
+                        blocks.push(final);
+                        curblock = blocks.top();
+                    }
+                }
             }
             break;
         case Pyc::POP_EXCEPT:
@@ -1065,9 +1099,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SETUP_EXCEPT_A:
             {
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
-                    curblock.cast<ASTContainerBlock>()->setHasExcept(true);
+                    curblock.cast<ASTContainerBlock>()->setExcept(pos+operand);
                 } else {
-                    PycRef<ASTBlock> next = new ASTContainerBlock(false, true);
+                    PycRef<ASTBlock> next = new ASTContainerBlock(0, pos+operand);
                     blocks.push(next.cast<ASTBlock>());
                 }
 
@@ -1082,7 +1116,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::SETUP_FINALLY_A:
             {
-                PycRef<ASTBlock> next = new ASTContainerBlock(true);
+                PycRef<ASTBlock> next = new ASTContainerBlock(pos+operand);
                 blocks.push(next.cast<ASTBlock>());
                 curblock = blocks.top();
 
