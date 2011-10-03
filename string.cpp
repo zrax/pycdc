@@ -95,7 +95,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
             } else {
                 fprintf(F, "\\x%x", (*ch & 0xFF));
             }
-        } else if (*ch >= 0x80) {
+        } else if ((unsigned char)(*ch) >= 0x80) {
             if (str->type() == PycObject::TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
                 fputc(*ch, F);
