@@ -24,6 +24,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     blocks.push(defblock);
 
     int opcode, operand;
+    int curpos = 0;
     int pos = 0;
     int unpack = 0;
     bool else_pop = false;
@@ -43,6 +44,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         fprintf(stderr, "\n");
 #endif
 
+        curpos = pos;
         bc_next(source, mod, opcode, operand, pos);
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
@@ -773,7 +775,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack_hist.pop();
                     stack_hist.push(s_top);
 
-                    if (curblock->end() == offs) {
+                    if (curblock->end() == offs
+                            || (curblock->end() == curpos && !top->negative())) {
                         /* if blah and blah */
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
                     } else {
