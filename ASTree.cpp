@@ -55,6 +55,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             curblock = blocks.top();
         } else if (else_pop
                 && opcode != Pyc::JUMP_FORWARD_A
+                && opcode != Pyc::JUMP_IF_FALSE_A
+                && opcode != Pyc::JUMP_IF_FALSE_OR_POP_A
+                && opcode != Pyc::POP_JUMP_IF_FALSE_A
+                && opcode != Pyc::JUMP_IF_TRUE_A
+                && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
+                && opcode != Pyc::POP_JUMP_IF_TRUE_A
                 && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
@@ -844,6 +850,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     } else if (prev->blktype() == ASTBlock::BLK_ELSE) {
                         /* Special case */
                         prev = blocks.top();
+                        if (!push) {
+                            stack = stack_hist.top();
+                            stack_hist.pop();
+                        }
                         push = false;
                     } else {
                         prev = nil;
@@ -915,6 +925,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     } else if (prev->blktype() == ASTBlock::BLK_ELSE) {
                         /* Special case */
                         prev = blocks.top();
+                        if (!push) {
+                            stack = stack_hist.top();
+                            stack_hist.pop();
+                        }
                         push = false;
                     } else {
                         prev = nil;
