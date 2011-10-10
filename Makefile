@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -g -Wall
-#CXXFLAGS += -fprofile-arcs -ftest-coverage -DBLOCK_DEBUG
+#CXXFLAGS += -fprofile-arcs -ftest-coverage -DBLOCK_DEBUG -DSTACK_DEBUG
 LDFLAGS = 
 #LDFLAGS += -lgcov
 

@@ -238,16 +238,27 @@ public:
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > kwparam_t;
 
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
-        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams) { }
+        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams),
+            m_var(Node_NULL), m_kw(Node_NULL) { }
 
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
     const kwparam_t& kwparams() const { return m_kwparams; }
+    PycRef<ASTNode> var() const { return m_var; }
+    PycRef<ASTNode> kw() const { return m_kw; }
+
+    bool hasVar() const { return m_var != Node_NULL; }
+    bool hasKW() const { return m_kw != Node_NULL; }
+
+    void setVar(PycRef<ASTNode> var) { m_var = var; }
+    void setKW(PycRef<ASTNode> kw) { m_kw = kw; }
 
 private:
     PycRef<ASTNode> m_func;
     pparam_t m_pparams;
     kwparam_t m_kwparams;
+    PycRef<ASTNode> m_var;
+    PycRef<ASTNode> m_kw;
 };
 
 
@@ -444,7 +455,7 @@ public:
         UNINITED, POPPED, PRE_POPPED
     };
 
-    ASTCondBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> cond, bool negative = false)
+    ASTCondBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> cond, bool negative = false)
         : ASTBlock(blktype, end), m_cond(cond), m_negative(negative) { }
 
     PycRef<ASTNode> cond() const { return m_cond; }
@@ -458,7 +469,7 @@ private:
 
 class ASTIterBlock : public ASTBlock {
 public:
-    ASTIterBlock(ASTBlock::BlkType blktype, unsigned int end, PycRef<ASTNode> iter)
+    ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
         : ASTBlock(blktype, end), m_iter(iter), m_idx() { }
 
     PycRef<ASTNode> iter() const { return m_iter; }
@@ -473,19 +484,19 @@ private:
 
 class ASTContainerBlock : public ASTBlock {
 public:
-    ASTContainerBlock(unsigned int finally, unsigned int except = 0)
+    ASTContainerBlock(int finally, int except = 0)
         : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_finally(finally), m_except(except) { }
 
     bool hasFinally() const { return m_finally != 0; }
     bool hasExcept() const { return m_except != 0; }
-    unsigned int finally() const { return m_finally; }
-    unsigned int except() const { return m_except; }
+    int finally() const { return m_finally; }
+    int except() const { return m_except; }
 
-    void setExcept(unsigned int except) { m_except = except; }
+    void setExcept(int except) { m_except = except; }
 
 private:
-    unsigned int m_finally;
-    unsigned int m_except;
+    int m_finally;
+    int m_except;
 };
 
 #endif
