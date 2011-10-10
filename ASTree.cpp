@@ -1130,6 +1130,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock->append(tmp.cast<ASTNode>());
                 }
 
+                if (curblock->blktype() == ASTBlock::BLK_TRY
+                        && tmp->blktype() != ASTBlock::BLK_FOR
+                        && tmp->blktype() != ASTBlock::BLK_WHILE) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+
+                    tmp = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+
+                    if (!(tmp->blktype() == ASTBlock::BLK_ELSE
+                            && tmp->nodes().size() == 0)) {
+                        curblock->append(tmp.cast<ASTNode>());
+                    }
+                }
+
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
                     PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
 
