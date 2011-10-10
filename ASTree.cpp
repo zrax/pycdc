@@ -764,7 +764,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack_hist.pop();
                 } else if (curblock->size() == 0 && curblock->end() <= offs
                            && (curblock->blktype() == ASTBlock::BLK_IF
-                           || curblock->blktype() == ASTBlock::BLK_ELIF)) {
+                           || curblock->blktype() == ASTBlock::BLK_ELIF
+                           || curblock->blktype() == ASTBlock::BLK_WHILE)) {
                     PycRef<ASTNode> newcond;
                     PycRef<ASTCondBlock> top = curblock.cast<ASTCondBlock>();
                     PycRef<ASTNode> cond1 = top->cond();
