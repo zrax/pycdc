@@ -6,6 +6,7 @@
 
 class PycCode : public PycObject {
 public:
+    typedef std::list<PycRef<PycString> > globals_t;
     enum CodeFlags {
         CO_OPTIMIZED = 0x1,
         CO_NEWLOCALS = 0x2,
@@ -60,6 +61,15 @@ public:
                                           : m_cellVars->get(idx);
     }
 
+    globals_t getGlobals() const {
+        return m_globalsUsed;
+    }
+
+    void markGlobal(PycRef<PycString> varname) {
+        m_globalsUsed.push_back(varname);
+        m_globalsUsed.unique();
+    }
+
 private:
     int m_argCount, m_kwOnlyArgCount, m_numLocals, m_stackSize, m_flags;
     PycRef<PycString> m_code;
@@ -72,6 +82,7 @@ private:
     PycRef<PycString> m_name;
     int m_firstLine;
     PycRef<PycString> m_lnTable;
+    globals_t m_globalsUsed; /* Global vars used in this code */
 };
 
 #endif

@@ -10,6 +10,10 @@ static bool cleanBuild;
  * chained prints (print x, y, z) prettier */
 static bool inPrint;
 
+/* Use this to keep track of whether we need to print out the list of global
+ * variables that we are using (such as inside a function). */
+static bool printGlobals = false;
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -1409,6 +1413,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> name = new ASTName(code->getName(operand));
                 curblock->append(new ASTStore(value, name));
+
+                /* Mark the global as used */
+                code->markGlobal(name.cast<ASTName>()->name());
             }
             break;
         case Pyc::STORE_NAME_A:
@@ -1929,10 +1936,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_OBJECT:
         {
             PycRef<PycObject> obj = node.cast<ASTObject>()->object();
-            if (obj->type() == PycObject::TYPE_CODE)
-                decompyle(obj.cast<PycCode>(), mod);
-            else
+            if (obj->type() == PycObject::TYPE_CODE) {
+                PycRef<PycCode> code = obj.cast<PycCode>();
+                decompyle(code, mod);
+            } else {
                 print_const(obj, mod);
+            }
         }
         break;
     case ASTNode::NODE_PASS:
@@ -2086,6 +2095,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     first = false;
                 }
                 printf("):\n");
+                printGlobals = true;
                 print_src(code, mod);
             } else if (src->type() == ASTNode::NODE_CLASS) {
                 printf("\n");
@@ -2251,6 +2261,23 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
 
     inPrint = false;
     bool part1clean = cleanBuild;
+
+    PycCode::globals_t globs = code->getGlobals();
+    if (printGlobals && globs.size()) {
+        start_line(cur_indent+1);
+        printf("global ");
+        bool first = true;
+        PycCode::globals_t::iterator it;
+        for (it = globs.begin(); it != globs.end(); ++it) {
+            if (!first)
+                printf(", ");
+            printf("%s", (*it)->value());
+            first = false;
+        }
+        printf("\n");
+        printGlobals = false;
+    }
+
     print_src(source, mod);
 
     if (!cleanBuild || !part1clean) {
