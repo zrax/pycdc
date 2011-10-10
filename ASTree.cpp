@@ -74,7 +74,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             while (prev->end() < pos
                     && prev->blktype() != ASTBlock::BLK_MAIN) {
                 if (prev->blktype() != ASTBlock::BLK_CONTAINER) {
-                    stack = stack_hist.top();
+                    /* We want to keep the stack the same, but we need to pop
+                     * a level off the history. */
+                    //stack = stack_hist.top();
                     stack_hist.pop();
                 }
                 blocks.pop();
@@ -439,6 +441,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::CONTINUE_LOOP_A:
             curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+
+            if (curblock->blktype() != ASTBlock::BLK_FOR
+                    && curblock->blktype() != ASTBlock::BLK_WHILE) {
+                stack = stack_hist.top();
+                stack_hist.pop();
+            }
+
+            blocks.pop();
+
+            blocks.top()->append(curblock.cast<ASTNode>());
+            curblock = blocks.top();
+
             break;
         case Pyc::COMPARE_OP_A:
             {
