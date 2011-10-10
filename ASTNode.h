@@ -238,16 +238,27 @@ public:
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > kwparam_t;
 
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
-        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams) { }
+        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams),
+            m_var(Node_NULL), m_kw(Node_NULL) { }
 
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
     const kwparam_t& kwparams() const { return m_kwparams; }
+    PycRef<ASTNode> var() const { return m_var; }
+    PycRef<ASTNode> kw() const { return m_kw; }
+
+    bool hasVar() const { return m_var != Node_NULL; }
+    bool hasKW() const { return m_kw != Node_NULL; }
+
+    void setVar(PycRef<ASTNode> var) { m_var = var; }
+    void setKW(PycRef<ASTNode> kw) { m_kw = kw; }
 
 private:
     PycRef<ASTNode> m_func;
     pparam_t m_pparams;
     kwparam_t m_kwparams;
+    PycRef<ASTNode> m_var;
+    PycRef<ASTNode> m_kw;
 };
 
 

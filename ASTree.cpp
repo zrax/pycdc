@@ -349,6 +349,90 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
             break;
+        case Pyc::CALL_FUNCTION_VAR_A:
+            {
+                PycRef<ASTNode> var = stack.top();
+                stack.pop();
+                int kwparams = (operand & 0xFF00) >> 8;
+                int pparams = (operand & 0xFF);
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+                for (int i=0; i<kwparams; i++) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(key, val));
+                }
+                for (int i=0; i<pparams; i++) {
+                    pparamList.push_front(stack.top());
+                    stack.pop();
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> call = new ASTCall(func, pparamList, kwparamList);
+                call.cast<ASTCall>()->setVar(var);
+                stack.push(call);
+            }
+            break;
+        case Pyc::CALL_FUNCTION_KW_A:
+            {
+                PycRef<ASTNode> kw = stack.top();
+                stack.pop();
+                int kwparams = (operand & 0xFF00) >> 8;
+                int pparams = (operand & 0xFF);
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+                for (int i=0; i<kwparams; i++) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(key, val));
+                }
+                for (int i=0; i<pparams; i++) {
+                    pparamList.push_front(stack.top());
+                    stack.pop();
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> call = new ASTCall(func, pparamList, kwparamList);
+                call.cast<ASTCall>()->setKW(kw);
+                stack.push(call);
+            }
+            break;
+        case Pyc::CALL_FUNCTION_VAR_KW_A:
+            {
+                PycRef<ASTNode> kw = stack.top();
+                stack.pop();
+                PycRef<ASTNode> var = stack.top();
+                stack.pop();
+                int kwparams = (operand & 0xFF00) >> 8;
+                int pparams = (operand & 0xFF);
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+                for (int i=0; i<kwparams; i++) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(key, val));
+                }
+                for (int i=0; i<pparams; i++) {
+                    pparamList.push_front(stack.top());
+                    stack.pop();
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> call = new ASTCall(func, pparamList, kwparamList);
+                call.cast<ASTCall>()->setKW(kw);
+                call.cast<ASTCall>()->setVar(var);
+                stack.push(call);
+            }
+            break;
         case Pyc::CONTINUE_LOOP_A:
             curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
             break;
@@ -1694,6 +1778,20 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src(p->second, mod);
                 first = false;
             }
+            if (call->hasVar()) {
+                if (!first)
+                    printf(", ");
+                printf("*");
+                print_src(call->var(), mod);
+                first = false;
+            }
+            if (call->hasKW()) {
+                if (!first)
+                    printf(", ");
+                printf("**");
+                print_src(call->var(), mod);
+                first = false;
+            }
             printf(")");
         }
         break;
@@ -1959,14 +2057,33 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
                 ASTFunction::defarg_t defargs = src.cast<ASTFunction>()->defargs();
                 ASTFunction::defarg_t::iterator da = defargs.begin();
+                bool first = true;
                 for (int i=0; i<code_src->argCount(); i++) {
-                    if (i > 0)
+                    if (!first)
                         printf(", ");
                     printf("%s", code_src->getVarName(i)->value());
                     if ((code_src->argCount() - i) <= (int)defargs.size()) {
                         printf(" = ");
                         print_src(*da++, mod);
                     }
+                    first = false;
+                }
+                if (code_src->flags() & PycCode::CO_VARARGS) {
+                    if (!first)
+                        printf(", ");
+                    printf("*%s", code_src->getVarName(code_src->argCount())->value());
+                    first = false;
+                }
+                if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
+                    if (!first)
+                        printf(", ");
+
+                    int idx = code_src->argCount();
+                    if (code_src->flags() & PycCode::CO_VARARGS) {
+                        idx++;
+                    }
+                    printf("**%s", code_src->getVarName(idx)->value());
+                    first = false;
                 }
                 printf("):\n");
                 print_src(code, mod);
