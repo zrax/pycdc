@@ -473,7 +473,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::DELETE_GLOBAL_A:
         case Pyc::DELETE_NAME_A:
             {
-                PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                PycRef<PycString> varname = code->getName(operand);
+
+                if (varname->value()[0] == '_' && varname->value()[1] == '[') {
+                    /* Don't show deletes that are a result of list comps. */
+                    break;
+                }
+
+                PycRef<ASTNode> name = new ASTName(varname);
                 curblock->append(new ASTDelete(name));
             }
             break;
@@ -626,11 +633,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
+                stack.pop();
                 /* Pop it? Don't pop it? */
 
+                bool comprehension = false;
                 PycRef<ASTBlock> top = blocks.top();
-                blocks.pop();
+                if (top->blktype() == ASTBlock::BLK_WHILE) {
+                    blocks.pop();
+                } else {
+                    comprehension = true;
+                }
                 PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, pos+operand, iter);
+                forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
 
@@ -902,7 +916,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_ABSOLUTE_A:
             {
                 if (operand < pos) {
-                    curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+                    if (curblock->blktype() != ASTBlock::BLK_FOR
+                            || !curblock.cast<ASTIterBlock>()->isComprehension()) {
+                        curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+                    } else {
+                        PycRef<ASTNode> top = stack.top();
+
+                        if (top->type() == ASTNode::NODE_COMPREHENSION) {
+                            PycRef<ASTComprehension> comp = top.cast<ASTComprehension>();
+
+                            comp->addGenerator(curblock.cast<ASTIterBlock>());
+                        }
+
+                        blocks.pop();
+                        curblock = blocks.top();
+                    }
 
                     /* We're in a loop, this jumps back to the start */
                     /* I think we'll just ignore this case... */
@@ -1043,6 +1071,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } while (prev != nil);
 
                 curblock = blocks.top();
+            }
+            break;
+        case Pyc::LIST_APPEND:
+        case Pyc::LIST_APPEND_A:
+            {
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+
+                PycRef<ASTNode> list = stack.top();
+
+
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                    stack.push(new ASTComprehension(value));
+                } else {
+                    stack.push(new ASTSubscr(list, value)); /* Total hack */
+                }
             }
             break;
         case Pyc::LOAD_ATTR_A:
@@ -1189,6 +1234,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 curblock->append(value);
+
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                    /* This relies on some really uncertain logic...
+                     * If it's a comprehension, the only POP_TOP should be
+                     * a call to append the iter to the list.
+                     */
+                    if (value->type() == ASTNode::NODE_CALL) {
+                        PycRef<ASTNode> res = value.cast<ASTCall>()->pparams().front();
+
+                        stack.push(new ASTComprehension(res));
+                    }
+                }
             }
             break;
         case Pyc::PRINT_ITEM:
@@ -1482,7 +1540,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
 
-                    PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                    PycRef<PycString> varname = code->getName(operand);
+                    if (varname->value()[0] == '_' && varname->value()[1] == '[') {
+                        /* Don't show stores of list comp append objects. */
+                        break;
+                    }
+
+                    PycRef<ASTNode> name = new ASTName(varname);
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
@@ -1875,6 +1939,23 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             }
             cur_indent--;
             printf("]");
+        }
+        break;
+    case ASTNode::NODE_COMPREHENSION:
+        {
+            PycRef<ASTComprehension> comp = node.cast<ASTComprehension>();
+            ASTComprehension::generator_t values = comp->generators();
+
+            printf("[ ");
+            print_src(comp->result(), mod);
+
+            for (ASTComprehension::generator_t::const_iterator it = values.begin(); it != values.end(); ++it) {
+                printf(" for ");
+                print_src((*it)->index(), mod);
+                printf(" in ");
+                print_src((*it)->iter(), mod);
+            }
+            printf(" ]");
         }
         break;
     case ASTNode::NODE_MAP:

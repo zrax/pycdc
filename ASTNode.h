@@ -14,6 +14,7 @@ public:
         NODE_DELETE, NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT,
         NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
+        NODE_COMPREHENSION,
 
         // Empty nodes
         NODE_PASS, NODE_LOCALS
@@ -470,16 +471,19 @@ private:
 class ASTIterBlock : public ASTBlock {
 public:
     ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
-        : ASTBlock(blktype, end), m_iter(iter), m_idx() { }
+        : ASTBlock(blktype, end), m_iter(iter), m_idx(), m_comp(false) { }
 
     PycRef<ASTNode> iter() const { return m_iter; }
     PycRef<ASTNode> index() const { return m_idx; }
+    bool isComprehension() const { return m_comp; }
 
     void setIndex(PycRef<ASTNode> idx) { m_idx = idx; init(); }
+    void setComprehension(bool comp) { m_comp = comp; }
 
 private:
     PycRef<ASTNode> m_iter;
     PycRef<ASTNode> m_idx;
+    bool m_comp;
 };
 
 class ASTContainerBlock : public ASTBlock {
@@ -497,6 +501,26 @@ public:
 private:
     int m_finally;
     int m_except;
+};
+
+class ASTComprehension : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTIterBlock> > generator_t;
+
+    ASTComprehension(PycRef<ASTNode> result)
+        : ASTNode(NODE_COMPREHENSION), m_result(result) { }
+
+    PycRef<ASTNode> result() const { return m_result; }
+    generator_t generators() const { return m_generators; }
+
+    void addGenerator(PycRef<ASTIterBlock> gen) {
+        m_generators.push_front(gen);
+    }
+
+private:
+    PycRef<ASTNode> m_result;
+    generator_t m_generators;
+
 };
 
 #endif
