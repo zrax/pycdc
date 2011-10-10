@@ -1599,11 +1599,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             return new ASTNodeList(defblock->nodes());
         }
 
-        /* This could all be done in one giant line, but my 80 columns... */
-        else_pop  = curblock->blktype() == ASTBlock::BLK_ELSE;
-        else_pop |= curblock->blktype() == ASTBlock::BLK_IF;
-        else_pop |= curblock->blktype() == ASTBlock::BLK_ELIF;
-        else_pop &= curblock->end() == pos;
+        else_pop =  ( (curblock->blktype() == ASTBlock::BLK_ELSE)
+                      || (curblock->blktype() == ASTBlock::BLK_IF)
+                      || (curblock->blktype() == ASTBlock::BLK_ELIF) )
+                 && (curblock->end() == pos);
     }
 
     if (stack_hist.size()) {
