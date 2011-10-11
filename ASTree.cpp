@@ -603,6 +603,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
                     /* Turn it into an else statement. */
                     blocks.pop();
+                    if (curblock->size() != 0) {
+                        blocks.top()->append(curblock.cast<ASTNode>());
+                    }
 
                     PycRef<ASTBlock> elseblk = new ASTBlock(ASTBlock::BLK_ELSE, curblock->end());
                     elseblk->init();
@@ -1014,7 +1017,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (cont->hasExcept()) {
                         stack_hist.push(stack);
 
-                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, Node_NULL, false);
+                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+operand, Node_NULL, false);
                         except->init();
                         blocks.push(except);
                         curblock = blocks.top();
@@ -1080,6 +1083,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } while (prev != nil);
 
                 curblock = blocks.top();
+
+                if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                    curblock->setEnd(pos+operand);
+                }
             }
             break;
         case Pyc::LIST_APPEND:
