@@ -43,7 +43,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     #ifdef BLOCK_DEBUG
         for (unsigned int i = 0; i < blocks.size(); i++)
             fprintf(stderr, "    ");
-        fprintf(stderr, "%s", curblock->type_str());
+        fprintf(stderr, "%s (%d)", curblock->type_str(), curblock->end());
     #endif
         fprintf(stderr, "\n");
 #endif
@@ -74,6 +74,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             while (prev->end() < pos
                     && prev->blktype() != ASTBlock::BLK_MAIN) {
                 if (prev->blktype() != ASTBlock::BLK_CONTAINER) {
+                    if (prev->end() == 0) {
+                        break;
+                    }
+
                     /* We want to keep the stack the same, but we need to pop
                      * a level off the history. */
                     //stack = stack_hist.top();
@@ -853,7 +857,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     offs = pos + operand;
                 }
 
-                if (cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
+                if (cond->type() == ASTNode::NODE_COMPARE
+                        && cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
                     if (curblock->blktype() == ASTBlock::BLK_EXCEPT
                             && curblock.cast<ASTCondBlock>()->cond() == Node_NULL) {
                         blocks.pop();
@@ -887,10 +892,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> cond1 = top->cond();
                     blocks.pop();
 
-                    FastStack s_top = stack_hist.top();
-                    stack_hist.pop();
-                    stack_hist.pop();
-                    stack_hist.push(s_top);
+                    if (curblock->blktype() == ASTBlock::BLK_WHILE) {
+                        stack_hist.pop();
+                    } else {
+                        FastStack s_top = stack_hist.top();
+                        stack_hist.pop();
+                        stack_hist.pop();
+                        stack_hist.push(s_top);
+                    }
 
                     if (curblock->end() == offs
                             || (curblock->end() == curpos && !top->negative())) {
