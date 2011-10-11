@@ -2189,6 +2189,27 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             }
         }
         break;
+    case ASTNode::NODE_FUNCTION:
+        {
+            /* Actual named functions are NODE_STORE with a name */
+            printf("lambda ");
+            printf("(");
+            PycRef<ASTNode> code = node.cast<ASTFunction>()->code();
+            PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+            ASTFunction::defarg_t defargs = node.cast<ASTFunction>()->defargs();
+            ASTFunction::defarg_t::iterator da = defargs.begin();
+            for (int i=0; i<code_src->argCount(); i++) {
+                if (i > 0) printf(", ");
+                printf("%s", code_src->getVarName(i)->value());
+                if ((code_src->argCount() - i) <= (int)defargs.size()) {
+                    printf(" = ");
+                    print_src(*da++, mod);
+                }
+            }
+            printf("): ");
+            print_src(code, mod);
+        }
+        break;
     case ASTNode::NODE_STORE:
         {
             PycRef<ASTNode> src = node.cast<ASTStore>()->src();
