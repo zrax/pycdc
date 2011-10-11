@@ -1287,8 +1287,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 curblock->append(new ASTRaise(paramList));
 
-                if (curblock->blktype() == ASTBlock::BLK_IF
-                        || curblock->blktype() == ASTBlock::BLK_ELSE) {
+                if ((curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELSE)
+                        && stack_hist.size()
+                        && ((mod->majorVer() == 2 && mod->minorVer() >= 6) 
+                            || mod->majorVer() > 2)) {
                     stack = stack_hist.top();
                     stack_hist.pop();
 
