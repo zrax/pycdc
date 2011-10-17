@@ -1,6 +1,7 @@
 #include "ASTree.h"
 #include "FastStack.h"
 #include "bytecode.h"
+#include "numeric.h"
 
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
@@ -497,6 +498,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else
                     name = new ASTName(code->getVarName(operand));
 
+                if (name.cast<ASTName>()->name()->value()[0] == '_'
+                        && name.cast<ASTName>()->name()->value()[1] == '[') {
+                    /* Don't show deletes that are a result of list comps. */
+                    break;
+                }
+
                 curblock->append(new ASTDelete(name));
             }
             break;
@@ -657,7 +664,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     comprehension = true;
                 }
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, pos+operand, iter);
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, top->end(), iter);
                 forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
@@ -672,9 +679,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> iter = stack.top(); // Iterable
                 stack.pop();
 
+                bool comprehension = false;
                 PycRef<ASTBlock> top = blocks.top();
-                blocks.pop();
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, pos+operand, iter);
+                if (top->blktype() == ASTBlock::BLK_WHILE) {
+                    blocks.pop();
+                } else {
+                    comprehension = true;
+                }
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, top->end(), iter);
+                forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
 
@@ -935,10 +948,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_ABSOLUTE_A:
             {
                 if (operand < pos) {
-                    if (curblock->blktype() != ASTBlock::BLK_FOR
-                            || !curblock.cast<ASTIterBlock>()->isComprehension()) {
-                        curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
-                    } else {
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && curblock.cast<ASTIterBlock>()->isComprehension()) {
                         PycRef<ASTNode> top = stack.top();
 
                         if (top->type() == ASTNode::NODE_COMPREHENSION) {
@@ -949,6 +960,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
+                    } else {
+                        curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
                     }
 
                     /* We're in a loop, this jumps back to the start */
@@ -1032,6 +1045,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
                     break;
                 } 
+
+                if (curblock->blktype() == ASTBlock::BLK_WHILE
+                        && !curblock->inited()) {
+                    PycRef<PycObject> fakeint = new PycInt(1);
+                    PycRef<ASTNode> truthy = new ASTObject(fakeint);
+
+                    stack.push(truthy);
+                    break;
+                }
 
                 stack = stack_hist.top();
                 stack_hist.pop();
@@ -1197,6 +1219,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (!(tmp->blktype() == ASTBlock::BLK_ELSE
                         && tmp->nodes().size() == 0)) {
                     curblock->append(tmp.cast<ASTNode>());
+                }
+
+                if (tmp->blktype() == ASTBlock::BLK_FOR && tmp->end() > pos) {
+                    stack_hist.push(stack);
+
+                    PycRef<ASTBlock> blkelse = new ASTBlock(ASTBlock::BLK_ELSE, tmp->end());
+                    blocks.push(blkelse);
+                    curblock = blocks.top();
                 }
 
                 if (curblock->blktype() == ASTBlock::BLK_TRY
@@ -1512,6 +1542,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         name = new ASTName(code->getName(operand));
                     else
                         name = new ASTName(code->getVarName(operand));
+
+                    if (name.cast<ASTName>()->name()->value()[0] == '_'
+                            && name.cast<ASTName>()->name()->value()[1] == '[') {
+                        /* Don't show stores of list comp append objects. */
+                        break;
+                    }
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
