@@ -1483,12 +1483,40 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_ATTR_A:
             {
-                PycRef<ASTNode> name = stack.top();
-                stack.pop();
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
-                PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
-                curblock->append(new ASTStore(value, attr));
+                if (unpack) {
+                    PycRef<ASTNode> name = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
+
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(attr);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        curblock->append(new ASTStore(seq, tup));
+                    }
+                } else {
+                    PycRef<ASTNode> name = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
+
+                    curblock->append(new ASTStore(value, attr));
+                }
             }
             break;
         case Pyc::STORE_FAST_A:
@@ -1665,16 +1693,47 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_SUBSCR:
             {
-                PycRef<ASTNode> subscr = stack.top();
-                stack.pop();
-                PycRef<ASTNode> dest = stack.top();
-                stack.pop();
-                PycRef<ASTNode> src = stack.top();
-                stack.pop();
-                if (dest->type() == ASTNode::NODE_MAP) {
-                    dest.cast<ASTMap>()->add(subscr, src);
+                if (unpack) {
+                    PycRef<ASTNode> subscr = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> dest = stack.top();
+                    stack.pop();
+
+                    PycRef<ASTNode> save = new ASTSubscr(dest, subscr);
+
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(save);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        curblock->append(new ASTStore(seq, tup));
+                    }
                 } else {
-                    curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
+                    PycRef<ASTNode> subscr = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> dest = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> src = stack.top();
+                    stack.pop();
+
+                    if (dest->type() == ASTNode::NODE_MAP) {
+                        dest.cast<ASTMap>()->add(subscr, src);
+                    } else {
+                        curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
+                    }
                 }
             }
             break;
