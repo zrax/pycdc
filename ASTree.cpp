@@ -57,7 +57,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
             /* Store the current stack for the except/finally statement(s) */
             stack_hist.push(stack);
-            PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
+            PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, curblock->end(), true);
             blocks.push(tryblock.cast<ASTBlock>());
             curblock = blocks.top();
         } else if (else_pop
@@ -446,18 +446,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::CONTINUE_LOOP_A:
             curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
-
-            if (curblock->blktype() != ASTBlock::BLK_FOR
-                    && curblock->blktype() != ASTBlock::BLK_WHILE) {
-                stack = stack_hist.top();
-                stack_hist.pop();
-            }
-
-            blocks.pop();
-
-            blocks.top()->append(curblock.cast<ASTNode>());
-            curblock = blocks.top();
-
             break;
         case Pyc::COMPARE_OP_A:
             {
