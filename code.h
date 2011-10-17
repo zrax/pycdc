@@ -57,7 +57,7 @@ public:
 
     PycRef<PycObject> getCellVar(int idx) const
     {
-        return (idx > m_cellVars->size()) ? m_freeVars->get(idx - m_cellVars->size())
+        return (idx >= m_cellVars->size()) ? m_freeVars->get(idx - m_cellVars->size())
                                           : m_cellVars->get(idx);
     }
 
