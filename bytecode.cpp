@@ -317,7 +317,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 printf("%d: %s", operand, code->getVarName(operand)->value());
             } else if (Pyc::IsCellArg(opcode)) {
                 printf("%d: ", operand);
-                print_const(code->getConst(operand), mod);
+                print_const(code->getCellVar(operand), mod);
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
                 printf("%d (to %d)", operand, pos+operand);
             } else {

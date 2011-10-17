@@ -1133,6 +1133,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::LOAD_CLOSURE_A:
+            /* Ignore this */
+            break;
         case Pyc::LOAD_CONST_A:
             {
                 PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
@@ -1147,6 +1150,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.push(t_ob.cast<ASTNode>());
                 }
             }
+            break;
+        case Pyc::LOAD_DEREF_A:
+            stack.push(new ASTName(code->getCellVar(operand).cast<PycString>()));
             break;
         case Pyc::LOAD_FAST_A:
             if (mod->majorVer() == 1 && mod->minorVer()  < 3)
@@ -1163,6 +1169,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_NAME_A:
             stack.push(new ASTName(code->getName(operand)));
             break;
+        case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
             {
                 PycRef<ASTNode> code = stack.top();
@@ -1526,6 +1533,39 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::STORE_DEREF_A:
+            {
+                if (unpack) {
+                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand).cast<PycString>());
+
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(name);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        curblock->append(new ASTStore(seq, tup));
+                    }
+                } else {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand).cast<PycString>());
+                    curblock->append(new ASTStore(value, name));
+                }
+            }
+            break;
         case Pyc::STORE_FAST_A:
             {
                 if (unpack) {
@@ -1583,10 +1623,39 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_GLOBAL_A:
             {
-                PycRef<ASTNode> value = stack.top();
-                stack.pop();
                 PycRef<ASTNode> name = new ASTName(code->getName(operand));
-                curblock->append(new ASTStore(value, name));
+
+                if (unpack) {
+                    PycRef<ASTNode> tup = stack.top();
+                    if (tup->type() == ASTNode::NODE_TUPLE) {
+                        stack.pop();
+
+                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                        tuple->add(name);
+
+                        stack.push(tuple.cast<ASTNode>());
+                    } else {
+                        fprintf(stderr, "Something TERRIBLE happened!\n");
+                    }
+
+                    if (--unpack <= 0) {
+                        PycRef<ASTNode> tup = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> seq = stack.top();
+                        stack.pop();
+
+                        if (curblock->blktype() == ASTBlock::BLK_FOR
+                                && !curblock->inited()) {
+                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
+                    }
+                } else {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    curblock->append(new ASTStore(value, name));
+                }
 
                 /* Mark the global as used */
                 code->markGlobal(name.cast<ASTName>()->name());
