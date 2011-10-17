@@ -1254,6 +1254,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock = blocks.top();
                     }
                 }
+
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock->end() == pos) {
+                    blocks.pop();
+                    blocks.top()->append(curblock.cast<ASTNode>());
+                    curblock = blocks.top();
+                }
             }
             break;
         case Pyc::POP_EXCEPT:
