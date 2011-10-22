@@ -1094,6 +1094,27 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             stack_hist.pop();
                         }
                         push = false;
+                    } else if (prev->blktype() == ASTBlock::BLK_TRY
+                            && prev->end() < pos+operand) {
+                        /* Need to add an except/finally block */
+                        stack = stack_hist.top();
+                        stack.pop();
+
+                        if (blocks.top()->blktype() == ASTBlock::BLK_CONTAINER) {
+                            PycRef<ASTContainerBlock> cont = blocks.top().cast<ASTContainerBlock>();
+                            if (cont->hasExcept()) {
+                                if (push) {
+                                    stack_hist.push(stack);
+                                }
+
+                                PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+operand, Node_NULL, false);
+                                except->init();
+                                blocks.push(except);
+                            }
+                        } else {
+                            fprintf(stderr, "Something TERRIBLE happened!!\n");
+                        }
+                        prev = nil;
                     } else {
                         prev = nil;
                     }
