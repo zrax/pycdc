@@ -11,6 +11,9 @@ static bool cleanBuild;
  * chained prints (print x, y, z) prettier */
 static bool inPrint;
 
+/* Use this to prevent printing return keywords and newlines in lambdas. */
+static bool inLambda = false;
+
 /* Use this to keep track of whether we need to print out the list of global
  * variables that we are using (such as inside a function). */
 static bool printGlobals = false;
@@ -2014,7 +2017,7 @@ static void print_ordered(PycRef<ASTNode> parent, PycRef<ASTNode> child,
 
 static void start_line(int indent)
 {
-    if (inPrint)
+    if (inPrint || inLambda)
         return;
     for (int i=0; i<indent; i++)
         printf("    ");
@@ -2022,7 +2025,7 @@ static void start_line(int indent)
 
 static void end_line()
 {
-    if (inPrint)
+    if (inPrint || inLambda)
         return;
     printf("\n");
 }
@@ -2311,13 +2314,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_RETURN:
         {
             PycRef<ASTReturn> ret = node.cast<ASTReturn>();
-            switch (ret->rettype()) {
-                case ASTReturn::RETURN:
-                    printf("return ");
-                    break;
-                case ASTReturn::YIELD:
-                    printf("yield ");
-                    break;
+            if (!inLambda) {
+                switch (ret->rettype()) {
+                    case ASTReturn::RETURN:
+                        printf("return ");
+                        break;
+                    case ASTReturn::YIELD:
+                        printf("yield ");
+                        break;
+                }
             }
             print_src(ret->value(), mod);
         }
@@ -2380,7 +2385,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         {
             /* Actual named functions are NODE_STORE with a name */
             printf("lambda ");
-            printf("(");
             PycRef<ASTNode> code = node.cast<ASTFunction>()->code();
             PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
             ASTFunction::defarg_t defargs = node.cast<ASTFunction>()->defargs();
@@ -2393,8 +2397,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     print_src(*da++, mod);
                 }
             }
-            printf("): ");
+            printf(": ");
+
+            inLambda = true;
             print_src(code, mod);
+            inLambda = false;
         }
         break;
     case ASTNode::NODE_STORE:
