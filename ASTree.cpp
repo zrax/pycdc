@@ -11,6 +11,9 @@ static bool cleanBuild;
  * chained prints (print x, y, z) prettier */
 static bool inPrint;
 
+/* Use this to prevent printing return keywords and newlines in lambdas. */
+static bool inLambda = false;
+
 /* Use this to keep track of whether we need to print out the list of global
  * variables that we are using (such as inside a function). */
 static bool printGlobals = false;
@@ -948,6 +951,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
+                    } if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+
+                        blocks.pop();
+                        blocks.top()->append(curblock.cast<ASTNode>());
+                        curblock = blocks.top();
+
+                        if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                                && !curblock.cast<ASTContainerBlock>()->hasFinally()) {
+                            blocks.pop();
+                            blocks.top()->append(curblock.cast<ASTNode>());
+                            curblock = blocks.top();
+                        }
                     } else {
                         curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
                     }
@@ -1034,8 +1051,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 } 
 
-                if (curblock->blktype() == ASTBlock::BLK_WHILE
-                        && !curblock->inited()) {
+                if ((curblock->blktype() == ASTBlock::BLK_WHILE
+                            && !curblock->inited())
+                        || (curblock->blktype() == ASTBlock::BLK_IF
+                            && curblock->size() == 0)) {
                     PycRef<PycObject> fakeint = new PycInt(1);
                     PycRef<ASTNode> truthy = new ASTObject(fakeint);
 
@@ -1094,6 +1113,32 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             stack_hist.pop();
                         }
                         push = false;
+
+                        if (prev->blktype() == ASTBlock::BLK_MAIN) {
+                            /* Something went out of control! */
+                            prev = nil;
+                        }
+                    } else if (prev->blktype() == ASTBlock::BLK_TRY
+                            && prev->end() < pos+operand) {
+                        /* Need to add an except/finally block */
+                        stack = stack_hist.top();
+                        stack.pop();
+
+                        if (blocks.top()->blktype() == ASTBlock::BLK_CONTAINER) {
+                            PycRef<ASTContainerBlock> cont = blocks.top().cast<ASTContainerBlock>();
+                            if (cont->hasExcept()) {
+                                if (push) {
+                                    stack_hist.push(stack);
+                                }
+
+                                PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+operand, Node_NULL, false);
+                                except->init();
+                                blocks.push(except);
+                            }
+                        } else {
+                            fprintf(stderr, "Something TERRIBLE happened!!\n");
+                        }
+                        prev = nil;
                     } else {
                         prev = nil;
                     }
@@ -1986,7 +2031,7 @@ static void print_ordered(PycRef<ASTNode> parent, PycRef<ASTNode> child,
 
 static void start_line(int indent)
 {
-    if (inPrint)
+    if (inPrint || inLambda)
         return;
     for (int i=0; i<indent; i++)
         printf("    ");
@@ -1994,7 +2039,7 @@ static void start_line(int indent)
 
 static void end_line()
 {
-    if (inPrint)
+    if (inPrint || inLambda)
         return;
     printf("\n");
 }
@@ -2283,13 +2328,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_RETURN:
         {
             PycRef<ASTReturn> ret = node.cast<ASTReturn>();
-            switch (ret->rettype()) {
-                case ASTReturn::RETURN:
-                    printf("return ");
-                    break;
-                case ASTReturn::YIELD:
-                    printf("yield ");
-                    break;
+            if (!inLambda) {
+                switch (ret->rettype()) {
+                    case ASTReturn::RETURN:
+                        printf("return ");
+                        break;
+                    case ASTReturn::YIELD:
+                        printf("yield ");
+                        break;
+                }
             }
             print_src(ret->value(), mod);
         }
@@ -2352,7 +2399,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         {
             /* Actual named functions are NODE_STORE with a name */
             printf("lambda ");
-            printf("(");
             PycRef<ASTNode> code = node.cast<ASTFunction>()->code();
             PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
             ASTFunction::defarg_t defargs = node.cast<ASTFunction>()->defargs();
@@ -2365,8 +2411,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     print_src(*da++, mod);
                 }
             }
-            printf("): ");
+            printf(": ");
+
+            inLambda = true;
             print_src(code, mod);
+            inLambda = false;
         }
         break;
     case ASTNode::NODE_STORE:
