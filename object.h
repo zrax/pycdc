@@ -5,24 +5,41 @@ template <class _Obj>
 class PycRef {
 public:
     PycRef() : m_obj(0) { }
-    PycRef(_Obj* obj) : m_obj(obj) { if(m_obj) m_obj->addRef(); }
-    PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj) {
-        if(m_obj) m_obj->addRef();
+
+    PycRef(_Obj* obj) : m_obj(obj)
+    {
+        if(m_obj)
+            m_obj->addRef();
     }
-    ~PycRef<_Obj>() { if(m_obj) m_obj->delRef(); }
+
+    PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj)
+    {
+        if(m_obj)
+            m_obj->addRef();
+    }
+
+    ~PycRef<_Obj>()
+    {
+        if(m_obj)
+            m_obj->delRef();
+    }
 
     PycRef<_Obj>& operator=(_Obj* obj)
     {
-        if (obj) obj->addRef();
-        if (m_obj) m_obj->delRef();
+        if (obj)
+            obj->addRef();
+        if (m_obj)
+            m_obj->delRef();
         m_obj = obj;
         return *this;
     }
 
     PycRef<_Obj>& operator=(const PycRef<_Obj>& obj)
     {
-        if (obj.m_obj) obj.m_obj->addRef();
-        if (m_obj) m_obj->delRef();
+        if (obj.m_obj)
+            obj.m_obj->addRef();
+        if (m_obj)
+            m_obj->delRef();
         m_obj = obj.m_obj;
         return *this;
     }

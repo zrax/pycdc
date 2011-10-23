@@ -61,11 +61,10 @@ public:
                                           : m_cellVars->get(idx);
     }
 
-    globals_t getGlobals() const {
-        return m_globalsUsed;
-    }
+    const globals_t& getGlobals() const { return m_globalsUsed; }
 
-    void markGlobal(PycRef<PycString> varname) {
+    void markGlobal(PycRef<PycString> varname)
+    {
         m_globalsUsed.push_back(varname);
         m_globalsUsed.unique();
     }
