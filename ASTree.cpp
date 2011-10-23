@@ -951,6 +951,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
+                    } if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+
+                        blocks.pop();
+                        blocks.top()->append(curblock.cast<ASTNode>());
+                        curblock = blocks.top();
+
+                        if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                                && !curblock.cast<ASTContainerBlock>()->hasFinally()) {
+                            blocks.pop();
+                            blocks.top()->append(curblock.cast<ASTNode>());
+                            curblock = blocks.top();
+                        }
                     } else {
                         curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
                     }
