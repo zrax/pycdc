@@ -1,6 +1,5 @@
 #include <cstring>
 #include "ASTree.h"
-#include "data.h"
 
 #ifdef WIN32
 #  define PATHSEP '\\'

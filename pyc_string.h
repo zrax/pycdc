@@ -2,6 +2,7 @@
 #define _PYC_STRING_H
 
 #include "pyc_object.h"
+#include "data.h"
 #include <cstdio>
 
 class PycString : public PycObject {
@@ -25,6 +26,6 @@ private:
 };
 
 void OutputString(PycRef<PycString> str, char prefix = 0,
-                  bool triple = false, FILE* F = stdout);
+                  bool triple = false, FILE* F = pyc_output);
 
 #endif

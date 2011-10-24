@@ -107,6 +107,8 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
                 fprintf(F, "\\'");
             else if (useQuotes && *ch == '"')
                 fprintf(F, "\\\"");
+            else if (*ch == '\\')
+                fprintf(F, "\\\\");
             else
                 fputc(*ch, F);
         }
