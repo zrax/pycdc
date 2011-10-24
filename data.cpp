@@ -1,6 +1,8 @@
 #include "data.h"
 #include <cstring>
 
+FILE* pyc_output = stdout;
+
 /* PycData */
 int PycData::get16()
 {

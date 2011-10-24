@@ -1,5 +1,6 @@
 #include <cstring>
 #include "ASTree.h"
+#include "data.h"
 
 #ifdef WIN32
 #  define PATHSEP '\\'
@@ -22,9 +23,9 @@ int main(int argc, char* argv[])
     }
     const char* dispname = strrchr(argv[1], PATHSEP);
     dispname = (dispname == NULL) ? argv[1] : dispname + 1;
-    printf("# Source Generated with Decompyle++\n");
-    printf("# File: %s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
-           (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
+    fprintf(pyc_output, "# Source Generated with Decompyle++\n");
+    fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
+            (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
     decompyle(mod.code(), &mod);
 
     return 0;

@@ -56,4 +56,6 @@ private:
     int m_size, m_pos;
 };
 
+extern FILE* pyc_output;
+
 #endif

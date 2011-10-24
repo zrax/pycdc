@@ -163,106 +163,106 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         break;
     case PycObject::TYPE_TUPLE:
         {
-            printf("(");
+            fprintf(pyc_output, "(");
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
             PycTuple::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
-                    printf(", ");
+                    fprintf(pyc_output, ", ");
                     print_const(*it, mod);
                 }
             }
             if (values.size() == 1)
-                printf(",)");
+                fprintf(pyc_output, ",)");
             else
-                printf(")");
+                fprintf(pyc_output, ")");
         }
         break;
     case PycObject::TYPE_LIST:
         {
-            printf("[");
+            fprintf(pyc_output, "[");
             PycList::value_t values = obj.cast<PycList>()->values();
             PycList::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
-                    printf(", ");
+                    fprintf(pyc_output, ", ");
                     print_const(*it, mod);
                 }
             }
-            printf("]");
+            fprintf(pyc_output, "]");
         }
         break;
     case PycObject::TYPE_DICT:
         {
-            printf("{");
+            fprintf(pyc_output, "{");
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
             PycDict::key_t::const_iterator ki = keys.begin();
             PycDict::value_t::const_iterator vi = values.begin();
             if (ki != keys.end()) {
                 print_const(*ki, mod);
-                printf(": ");
+                fprintf(pyc_output, ": ");
                 print_const(*vi, mod);
                 while (++ki != keys.end()) {
                     ++vi;
-                    printf(", ");
+                    fprintf(pyc_output, ", ");
                     print_const(*ki, mod);
-                    printf(": ");
+                    fprintf(pyc_output, ": ");
                     print_const(*vi, mod);
                 }
             }
-            printf("}");
+            fprintf(pyc_output, "}");
         }
         break;
     case PycObject::TYPE_SET:
         {
-            printf("{");
+            fprintf(pyc_output, "{");
             PycSet::value_t values = obj.cast<PycSet>()->values();
             PycSet::value_t::const_iterator it = values.begin();
             if (it != values.end()) {
                 print_const(*it, mod);
                 while (++it != values.end()) {
-                    printf(", ");
+                    fprintf(pyc_output, ", ");
                     print_const(*it, mod);
                 }
             }
-            printf("}");
+            fprintf(pyc_output, "}");
         }
         break;
     case PycObject::TYPE_NONE:
-        printf("None");
+        fprintf(pyc_output, "None");
         break;
     case PycObject::TYPE_TRUE:
-        printf("True");
+        fprintf(pyc_output, "True");
         break;
     case PycObject::TYPE_FALSE:
-        printf("False");
+        fprintf(pyc_output, "False");
         break;
     case PycObject::TYPE_INT:
-        printf("%d", obj.cast<PycInt>()->value());
+        fprintf(pyc_output, "%d", obj.cast<PycInt>()->value());
         break;
     case PycObject::TYPE_LONG:
-        printf("%s", obj.cast<PycLong>()->repr().c_str());
+        fprintf(pyc_output, "%s", obj.cast<PycLong>()->repr().c_str());
         break;
     case PycObject::TYPE_FLOAT:
-        printf("%s", obj.cast<PycFloat>()->value());
+        fprintf(pyc_output, "%s", obj.cast<PycFloat>()->value());
         break;
     case PycObject::TYPE_COMPLEX:
-        printf("(%s+%sj)", obj.cast<PycComplex>()->value(),
-                           obj.cast<PycComplex>()->imag());
+        fprintf(pyc_output, "(%s+%sj)", obj.cast<PycComplex>()->value(),
+                                        obj.cast<PycComplex>()->imag());
         break;
     case PycObject::TYPE_BINARY_FLOAT:
-        printf("%g", obj.cast<PycCFloat>()->value());
+        fprintf(pyc_output, "%g", obj.cast<PycCFloat>()->value());
         break;
     case PycObject::TYPE_BINARY_COMPLEX:
-        printf("(%g+%gj)", obj.cast<PycCComplex>()->value(),
-                           obj.cast<PycCComplex>()->imag());
+        fprintf(pyc_output, "(%g+%gj)", obj.cast<PycCComplex>()->value(),
+                                        obj.cast<PycCComplex>()->imag());
         break;
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
-        printf("<CODE> %s", obj.cast<PycCode>()->name()->value());
+        fprintf(pyc_output, "<CODE> %s", obj.cast<PycCode>()->name()->value());
         break;
     }
 }
@@ -301,29 +301,29 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
     int pos = 0;
     while (!source.atEof()) {
         for (int i=0; i<indent; i++)
-            printf("    ");
-        printf("%-7d ", pos);   // Current bytecode position
+            fprintf(pyc_output, "    ");
+        fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
 
         bc_next(source, mod, opcode, operand, pos);
-        printf("%-24s", Pyc::OpcodeName(opcode));
+        fprintf(pyc_output, "%-24s", Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {
-                printf("%d: ", operand);
+                fprintf(pyc_output, "%d: ", operand);
                 print_const(code->getConst(operand), mod);
             } else if (Pyc::IsNameArg(opcode)) {
-                printf("%d: %s", operand, code->getName(operand)->value());
+                fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
             } else if (Pyc::IsVarNameArg(opcode)) {
-                printf("%d: %s", operand, code->getVarName(operand)->value());
+                fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
             } else if (Pyc::IsCellArg(opcode)) {
-                printf("%d: ", operand);
+                fprintf(pyc_output, "%d: ", operand);
                 print_const(code->getCellVar(operand), mod);
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
-                printf("%d (to %d)", operand, pos+operand);
+                fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
             } else {
-                printf("%d", operand);
+                fprintf(pyc_output, "%d", operand);
             }
         }
-        printf("\n");
+        fprintf(pyc_output, "\n");
     }
 }

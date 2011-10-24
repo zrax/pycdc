@@ -26,31 +26,31 @@ static const char* flag_names[] = {
 static void print_coflags(unsigned long flags)
 {
     if (flags == 0) {
-        printf("\n");
+        fprintf(pyc_output, "\n");
         return;
     }
 
-    printf(" (");
+    fprintf(pyc_output, " (");
     unsigned long f = 1;
     int k = 0;
     while (k < 32) {
         if ((flags & f) != 0) {
             flags &= ~f;
             if (flags == 0)
-                printf("%s", flag_names[k]);
+                fprintf(pyc_output, "%s", flag_names[k]);
             else
-                printf("%s | ", flag_names[k]);
+                fprintf(pyc_output, "%s | ", flag_names[k]);
         }
         ++k;
         f <<= 1;
     }
-    printf(")\n");
+    fprintf(pyc_output, ")\n");
 }
 
 static void ivprintf(int indent, const char* fmt, va_list varargs)
 {
     for (int i=0; i<indent; i++)
-        printf("    ");
+        fprintf(pyc_output, "    ");
     vprintf(fmt, varargs);
 }
 
@@ -117,12 +117,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_INTERNED:
         iprintf(indent, "");
         OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
-        printf("\n");
+        fprintf(pyc_output, "\n");
         break;
     case PycObject::TYPE_UNICODE:
         iprintf(indent, "");
         OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
-        printf("\n");
+        fprintf(pyc_output, "\n");
         break;
     case PycObject::TYPE_TUPLE:
         {
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     mod.loadFromFile(argv[1]);
     const char* dispname = strrchr(argv[1], PATHSEP);
     dispname = (dispname == NULL) ? argv[1] : dispname + 1;
-    printf("%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
+    fprintf(pyc_output, "%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
            (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     output_object(mod.code().cast<PycObject>(), &mod, 0);
 
