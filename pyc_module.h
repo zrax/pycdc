@@ -1,7 +1,7 @@
 #ifndef _PYC_MODULE_H
 #define _PYC_MODULE_H
 
-#include "code.h"
+#include "pyc_code.h"
 #include <list>
 
 enum PycMagic {

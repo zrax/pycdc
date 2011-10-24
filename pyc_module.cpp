@@ -1,4 +1,4 @@
-#include "module.h"
+#include "pyc_module.h"
 #include "data.h"
 
 PycModule::PycModule()

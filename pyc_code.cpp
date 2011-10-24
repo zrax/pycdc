@@ -1,6 +1,6 @@
-#include "code.h"
+#include "pyc_code.h"
+#include "pyc_module.h"
 #include "data.h"
-#include "module.h"
 
 void PycCode::load(PycData* stream, PycModule* mod)
 {

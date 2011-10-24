@@ -1,6 +1,6 @@
-#include "sequence.h"
+#include "pyc_sequence.h"
+#include "pyc_module.h"
 #include "data.h"
-#include "module.h"
 
 /* PycTuple */
 void PycTuple::load(PycData* stream, PycModule* mod)

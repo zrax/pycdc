@@ -1,7 +1,7 @@
 #ifndef _PYC_ASTNODE_H
 #define _PYC_ASTNODE_H
 
-#include "module.h"
+#include "pyc_module.h"
 #include <list>
 
 /* Similar interface to PycObject, so PycRef can work on it... *

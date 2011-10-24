@@ -1,10 +1,9 @@
-#include "object.h"
-
-#include <cstdio>
+#include "pyc_object.h"
+#include "pyc_module.h"
+#include "pyc_numeric.h"
+#include "pyc_code.h"
 #include "data.h"
-#include "module.h"
-#include "numeric.h"
-#include "code.h"
+#include <cstdio>
 
 PycRef<PycObject> Pyc_NULL = (PycObject*)0;
 PycRef<PycObject> Pyc_None = new PycObject(PycObject::TYPE_NONE);

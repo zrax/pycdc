@@ -262,14 +262,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\code.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\code.h"
-			>
-		</File>
-		<File
 			RelativePath=".\data.cpp"
 			>
 		</File>
@@ -282,47 +274,55 @@
 			>
 		</File>
 		<File
-			RelativePath=".\module.cpp"
+			RelativePath=".\pyc_code.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\module.h"
+			RelativePath=".\pyc_code.h"
 			>
 		</File>
 		<File
-			RelativePath=".\numeric.cpp"
+			RelativePath=".\pyc_module.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\numeric.h"
+			RelativePath=".\pyc_module.h"
 			>
 		</File>
 		<File
-			RelativePath=".\object.cpp"
+			RelativePath=".\pyc_numeric.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\object.h"
+			RelativePath=".\pyc_numeric.h"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_object.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_object.h"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_sequence.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_sequence.h"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_string.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\pyc_string.h"
 			>
 		</File>
 		<File
 			RelativePath=".\pycdas.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\sequence.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\sequence.h"
-			>
-		</File>
-		<File
-			RelativePath=".\string.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\string.h"
 			>
 		</File>
 	</Files>

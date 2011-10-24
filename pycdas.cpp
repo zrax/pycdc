@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
-#include "module.h"
+#include "pyc_module.h"
+#include "pyc_numeric.h"
 #include "bytecode.h"
-#include "numeric.h"
 
 #ifdef WIN32
 #  define PATHSEP '\\'

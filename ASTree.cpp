@@ -1,7 +1,7 @@
 #include "ASTree.h"
 #include "FastStack.h"
+#include "pyc_numeric.h"
 #include "bytecode.h"
-#include "numeric.h"
 
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */

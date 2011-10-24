@@ -1,5 +1,5 @@
-#include "code.h"
-#include "module.h"
+#include "pyc_code.h"
+#include "pyc_module.h"
 #include "data.h"
 
 namespace Pyc {

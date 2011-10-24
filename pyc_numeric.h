@@ -1,7 +1,7 @@
 #ifndef _PYC_NUMERIC_H
 #define _PYC_NUMERIC_H
 
-#include "object.h"
+#include "pyc_object.h"
 #include <list>
 #include <string>
 

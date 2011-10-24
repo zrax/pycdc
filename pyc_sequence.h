@@ -1,7 +1,7 @@
 #ifndef _PYC_SEQUENCE_H
 #define _PYC_SEQUENCE_H
 
-#include "object.h"
+#include "pyc_object.h"
 #include <vector>
 #include <list>
 #include <set>

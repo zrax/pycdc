@@ -1,7 +1,7 @@
 #ifndef _PYC_STRING_H
 #define _PYC_STRING_H
 
-#include "object.h"
+#include "pyc_object.h"
 #include <cstdio>
 
 class PycString : public PycObject {

@@ -1,6 +1,6 @@
-#include "numeric.h"
+#include "pyc_numeric.h"
+#include "pyc_module.h"
 #include "data.h"
-#include "module.h"
 #include <cstring>
 
 #ifdef _MSC_VER
