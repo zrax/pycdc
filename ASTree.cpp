@@ -467,6 +467,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::DELETE_GLOBAL_A:
+            code->markGlobal(code->getName(operand));
+            /* Fall through */
         case Pyc::DELETE_NAME_A:
             {
                 PycRef<PycString> varname = code->getName(operand);
