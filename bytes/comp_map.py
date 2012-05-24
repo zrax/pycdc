@@ -23,29 +23,32 @@ maplist = [ 'python_10', 'python_11', 'python_13', 'python_14', 'python_15',
 for mapfile in maplist:
     infile = open(mapfile + '.map', 'rt')
     outfile = open(mapfile + '.cpp', 'wb')
-    with infile and outfile:
-        idToOpcode = {}
-        opcodeToId = {}
-        for ln in infile.readlines():
-            fileid, code = ln.split()
-            idToOpcode[fileid] = code
-            opcodeToId[code] = fileid
 
-        outfile.write('/* This file was auto-generated with comp_map.py.  DO NOT EDIT! */\n\n')
-        outfile.write('#include "../bytecode.h"\n\n')
-        outfile.write('int ' + mapfile + '_map(int id)\n')
-        outfile.write('{\n')
-        outfile.write('    switch (id) {\n')
-        for i in idToOpcode:
-            outfile.write('    case ' + i + ': return Pyc::' + idToOpcode[i] + ';\n')
-        outfile.write('    default: return Pyc::PYC_INVALID_OPCODE;\n')
-        outfile.write('    }\n')
-        outfile.write('}\n\n')
-        outfile.write('int ' + mapfile + '_unmap(int id)\n')
-        outfile.write('{\n')
-        outfile.write('    switch (id) {\n')
-        for i in opcodeToId:
-            outfile.write('    case Pyc::' + i + ': return ' + opcodeToId[i] + ';\n')
-        outfile.write('    default: return -1;\n')
-        outfile.write('    }\n')
-        outfile.write('}\n')
+    idToOpcode = {}
+    opcodeToId = {}
+    for ln in infile.readlines():
+        fileid, code = ln.split()
+        idToOpcode[fileid] = code
+        opcodeToId[code] = fileid
+
+    outfile.write('/* This file was auto-generated with comp_map.py.  DO NOT EDIT! */\n\n')
+    outfile.write('#include "../bytecode.h"\n\n')
+    outfile.write('int ' + mapfile + '_map(int id)\n')
+    outfile.write('{\n')
+    outfile.write('    switch (id) {\n')
+    for i in idToOpcode:
+        outfile.write('    case ' + i + ': return Pyc::' + idToOpcode[i] + ';\n')
+    outfile.write('    default: return Pyc::PYC_INVALID_OPCODE;\n')
+    outfile.write('    }\n')
+    outfile.write('}\n\n')
+    outfile.write('int ' + mapfile + '_unmap(int id)\n')
+    outfile.write('{\n')
+    outfile.write('    switch (id) {\n')
+    for i in opcodeToId:
+        outfile.write('    case Pyc::' + i + ': return ' + opcodeToId[i] + ';\n')
+    outfile.write('    default: return -1;\n')
+    outfile.write('    }\n')
+    outfile.write('}\n')
+
+    infile.close()
+    outfile.close()
