@@ -1,8 +1,9 @@
 CXX = g++
 CXXFLAGS = -g -Wall
-#CXXFLAGS += -fprofile-arcs -ftest-coverage -DBLOCK_DEBUG -DSTACK_DEBUG
-LDFLAGS = 
-#LDFLAGS += -lgcov
+#CXXFLAGS += -fprofile-arcs -ftest-coverage
+#CPPFLAGS += -DBLOCK_DEBUG -DSTACK_DEBUG
+#LFLAGS += -lgcov
+SHELL = /bin/bash
 
 COMMON = \
 	out/data.o \
@@ -69,21 +70,21 @@ test: all
 	echo -e "\n\n$$fails tests failed:"; \
 	for ((i=0; i<$${#files[@]}; i++)); \
 	do \
-	    echo -e "\t\033[31m$${files[i]}\033[m"; \
-       echo -e "$${errors[i]}\n"; \
+		echo -e "\t\033[31m$${files[i]}\033[m"; \
+	echo -e "$${errors[i]}\n"; \
 	done;
 
 bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
 
 bin/pycdc: pycdc.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
+	$(CXX) $(CXXFLAGS) $(LFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
 
 out/%.o: %.cpp %.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 out/python_%.o: bytes/python_%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 bytes/python_%.cpp: bytes/python_%.map
 	( cd bytes ; ./comp_map.py )
