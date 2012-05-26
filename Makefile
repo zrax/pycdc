@@ -18,23 +18,14 @@ COMMON = \
 	out/ASTNode.o \
 
 BYTES = \
-	out/python_10.o \
-	out/python_11.o \
-	out/python_13.o \
-	out/python_14.o \
-	out/python_15.o \
-	out/python_16.o \
-	out/python_20.o \
-	out/python_21.o \
-	out/python_22.o \
-	out/python_23.o \
-	out/python_24.o \
-	out/python_25.o \
-	out/python_26.o \
-	out/python_27.o \
-	out/python_30.o \
-	out/python_31.o \
-	out/python_32.o
+	python_10 python_11 python_13 python_14 python_15 python_16 \
+	python_20 python_21 python_22 python_23 python_24 \
+	python_25 python_26 python_27 \
+	python_30 python_31 python_32
+
+BYTE_OBJS = $(BYTES:%=out/%.o)
+BYTE_SRCS = $(BYTES:%=bytes/%.cpp)
+BYTE_MAPS = $(BYTES:%=bytes/%.map)
 
 ALL = \
 	bin/pycdas \
@@ -45,7 +36,7 @@ PREFIX = /usr/local
 all: $(ALL)
 
 clean:
-	rm -f $(COMMON) $(BYTES)
+	rm -f $(COMMON) $(BYTE_OBJS) $(BYTE_SRCS)
 
 install:
 	mkdir -p $(PREFIX)/bin
@@ -74,17 +65,17 @@ test: all
 	echo -e "$${errors[i]}\n"; \
 	done;
 
-bin/pycdas: pycdas.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(LFLAGS) $(COMMON) $(BYTES) pycdas.cpp -o $@
+bin/pycdas: pycdas.cpp $(COMMON) $(BYTE_OBJS)
+	$(CXX) $(CXXFLAGS) $(LFLAGS) $^ -o $@
 
-bin/pycdc: pycdc.cpp $(COMMON) $(BYTES)
-	$(CXX) $(CXXFLAGS) $(LFLAGS) $(COMMON) $(BYTES) pycdc.cpp -o $@
+bin/pycdc: pycdc.cpp $(COMMON) $(BYTE_OBJS)
+	$(CXX) $(CXXFLAGS) $(LFLAGS) $^ -o $@
 
 out/%.o: %.cpp %.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-out/python_%.o: bytes/python_%.cpp
+out/python_%.o: bytes/python_%.cpp $(BYTE_SRCS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-bytes/python_%.cpp: bytes/python_%.map
+$(BYTE_SRCS): $(BYTE_MAPS)
 	( cd bytes ; ./comp_map.py )

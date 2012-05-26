@@ -15,37 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with pycdc.  If not, see <http://www.gnu.org/licenses/>.
 
-maplist = [ 'python_10', 'python_11', 'python_13', 'python_14', 'python_15',
-            'python_16', 'python_20', 'python_21', 'python_22', 'python_23',
-            'python_24', 'python_25', 'python_26', 'python_27', 'python_30',
-            'python_31', 'python_32' ]
+maplist = [ 10, 11, 13, 14, 15, 16,
+            20, 21, 22, 23, 24, 25, 26, 27,
+            30, 31, 32 ]
 
-for mapfile in maplist:
-    infile = open(mapfile + '.map', 'rt')
-    outfile = open(mapfile + '.cpp', 'wb')
+for mapver in maplist:
+    infile = open('python_%d.map' % mapver, 'rt')
+    outfile = open('python_%d.cpp' % mapver, 'wb')
 
     idToOpcode = {}
     opcodeToId = {}
     for ln in infile.readlines():
         fileid, code = ln.split()
-        idToOpcode[fileid] = code
-        opcodeToId[code] = fileid
+        idToOpcode[int(fileid)] = code
+        opcodeToId[code] = int(fileid)
 
     outfile.write('/* This file was auto-generated with comp_map.py.  DO NOT EDIT! */\n\n')
     outfile.write('#include "../bytecode.h"\n\n')
-    outfile.write('int ' + mapfile + '_map(int id)\n')
+    outfile.write('int python_%d_map(int id)\n' % mapver)
     outfile.write('{\n')
     outfile.write('    switch (id) {\n')
-    for i in idToOpcode:
-        outfile.write('    case ' + i + ': return Pyc::' + idToOpcode[i] + ';\n')
+    for i in sorted(idToOpcode):
+        outfile.write('    case %d: return Pyc::%s;\n' % (i, idToOpcode[i]))
     outfile.write('    default: return Pyc::PYC_INVALID_OPCODE;\n')
     outfile.write('    }\n')
     outfile.write('}\n\n')
-    outfile.write('int ' + mapfile + '_unmap(int id)\n')
+    outfile.write('int python_%d_unmap(int id)\n' % mapver)
     outfile.write('{\n')
     outfile.write('    switch (id) {\n')
-    for i in opcodeToId:
-        outfile.write('    case Pyc::' + i + ': return ' + opcodeToId[i] + ';\n')
+    for i in sorted(opcodeToId):
+        outfile.write('    case Pyc::%s: return %d;\n' % (i, opcodeToId[i]))
     outfile.write('    default: return -1;\n')
     outfile.write('    }\n')
     outfile.write('}\n')
