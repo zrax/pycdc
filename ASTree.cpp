@@ -486,7 +486,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> name;
 
-                if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                if (mod->verCompare(1, 3) < 0)
                     name = new ASTName(code->getName(operand));
                 else
                     name = new ASTName(code->getVarName(operand));
@@ -701,7 +701,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             } else {
                 PycRef<ASTNode> fromlist = stack.top();
                 stack.pop();
-                if (mod->majorVer() > 2 || mod->minorVer() >= 5)
+                if (mod->verCompare(2, 5) >= 0)
                     stack.pop();    // Level -- we don't care
                 stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
             }
@@ -1202,7 +1202,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getCellVar(operand).cast<PycString>()));
             break;
         case Pyc::LOAD_FAST_A:
-            if (mod->majorVer() == 1 && mod->minorVer()  < 3)
+            if (mod->verCompare(1, 3) < 0)
                 stack.push(new ASTName(code->getName(operand)));
             else
                 stack.push(new ASTName(code->getVarName(operand)));
@@ -1384,8 +1384,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if ((curblock->blktype() == ASTBlock::BLK_IF
                         || curblock->blktype() == ASTBlock::BLK_ELSE)
                         && stack_hist.size()
-                        && ((mod->majorVer() == 2 && mod->minorVer() >= 6) 
-                            || mod->majorVer() > 2)) {
+                        && (mod->verCompare(2, 6) >= 0)) {
                     stack = stack_hist.top();
                     stack_hist.pop();
 
@@ -1407,8 +1406,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if ((curblock->blktype() == ASTBlock::BLK_IF
                         || curblock->blktype() == ASTBlock::BLK_ELSE)
                         && stack_hist.size()
-                        && ((mod->majorVer() == 2 && mod->minorVer() >= 6) 
-                            || mod->majorVer() > 2)) {
+                        && (mod->verCompare(2, 6) >= 0)) {
                     stack = stack_hist.top();
                     stack_hist.pop();
 
@@ -1618,7 +1616,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (unpack) {
                     PycRef<ASTNode> name;
 
-                    if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                    if (mod->verCompare(1, 3) < 0)
                         name = new ASTName(code->getName(operand));
                     else
                         name = new ASTName(code->getVarName(operand));
@@ -1648,7 +1646,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                     PycRef<ASTNode> name;
 
-                    if (mod->majorVer() == 1 && mod->minorVer() < 3)
+                    if (mod->verCompare(1, 3) < 0)
                         name = new ASTName(code->getName(operand));
                     else
                         name = new ASTName(code->getVarName(operand));
