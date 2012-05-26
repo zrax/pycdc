@@ -116,6 +116,12 @@ void PycModule::setVersion(unsigned int magic)
         m_unicode = true;
         break;
 
+    case MAGIC_3_3:
+        m_maj = 3;
+        m_min = 3;
+        m_unicode = true;
+        break;
+
     /* Bad Magic detected */
     default:
         m_maj = -1;
@@ -136,6 +142,9 @@ void PycModule::loadFromFile(const char* filename)
         return;
     }
     in.get32(); // Timestamp -- who cares?
+
+    if (verCompare(3, 3) >= 0)
+        in.get32(); // Size parameter added in Python 3.3
 
     m_code = LoadObject(&in, this).cast<PycCode>();
 }

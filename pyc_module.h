@@ -24,6 +24,7 @@ enum PycMagic {
     MAGIC_3_0 = 0x0A0D0C3A,
     MAGIC_3_1 = 0x0A0D0C4E,
     MAGIC_3_2 = 0x0A0D0C6C,
+    MAGIC_3_3 = 0x0A0D0C94,
 };
 
 #define PYC_VERSION(maj, min)  MAGIC_##maj##_##min
@@ -37,6 +38,14 @@ public:
 
     unsigned int majorVer() const { return m_maj; }
     unsigned int minorVer() const { return m_min; }
+
+    int verCompare(int maj, int min) const
+    {
+        if (m_maj == maj)
+            return m_min - min;
+        return m_maj - maj;
+    }
+
     bool isUnicode() const { return m_unicode; }
 
     PycRef<PycCode> code() const { return m_code; }

@@ -26,6 +26,7 @@ DECLARE_PYTHON(2, 7)
 DECLARE_PYTHON(3, 0)
 DECLARE_PYTHON(3, 1)
 DECLARE_PYTHON(3, 2)
+DECLARE_PYTHON(3, 3)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -48,7 +49,7 @@ const char* Pyc::OpcodeName(int opcode)
     "GET_ITER", "PRINT_ITEM_TO", "PRINT_NEWLINE_TO", "INPLACE_LSHIFT",
     "INPLACE_RSHIFT", "INPLACE_AND", "INPLACE_XOR", "INPLACE_OR",
     "WITH_CLEANUP", "IMPORT_STAR", "YIELD_VALUE", "LOAD_BUILD_CLASS",
-    "STORE_LOCALS", "POP_EXCEPT", "SET_ADD",
+    "STORE_LOCALS", "POP_EXCEPT", "SET_ADD", "YIELD_FROM",
 
     "STORE_NAME", "DELETE_NAME", "UNPACK_TUPLE", "UNPACK_LIST", "UNPACK_ARG",
     "STORE_ATTR", "DELETE_ATTR", "STORE_GLOBAL", "DELETE_GLOBAL",
@@ -108,6 +109,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 0: return python_30_map(opcode);
         case 1: return python_31_map(opcode);
         case 2: return python_32_map(opcode);
+        case 3: return python_33_map(opcode);
         }
         break;
     }

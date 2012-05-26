@@ -64,7 +64,7 @@ PycRef<PycObject> CreateObject(int type)
         return new PycSet(PycObject::TYPE_FROZENSET);
     default:
         fprintf(stderr, "CreateObject: Got unsupported type 0x%X\n", type);
-        return (PycObject*)0;
+        return Pyc_NULL;
     }
 }
 
