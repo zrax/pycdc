@@ -236,6 +236,10 @@
 				RelativePath=".\bytes\python_32.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\bytes\python_33.cpp"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\ASTNode.cpp"
