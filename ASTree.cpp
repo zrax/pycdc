@@ -256,6 +256,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::BUILD_MAP_A:
             stack.push(new ASTMap());
             break;
+        case Pyc::STORE_MAP:
+            {
+                ASTList::value_t values;
+                PycRef<ASTNode> key = stack.top();
+                stack.pop();
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTMap> map = stack.top().cast<ASTMap>();
+                map->add(key, value);
+            }
+            break;
         case Pyc::BUILD_SLICE_A:
             {
                 if (operand == 2) {
@@ -1051,7 +1062,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock = blocks.top();
                     }
                     break;
-                } 
+                }
 
                 if ((curblock->blktype() == ASTBlock::BLK_WHILE
                             && !curblock->inited())
