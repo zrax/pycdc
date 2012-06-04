@@ -1791,7 +1791,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         PycRef<ASTImport> import = stack.top().cast<ASTImport>();
 
                         import->add_store(new ASTStore(value, name));
-                    } else if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                    } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                               && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
                     } else {
@@ -2306,8 +2307,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src(blk.cast<ASTWithBlock>()->expr(), mod);
                 PycRef<ASTNode> var = blk.cast<ASTWithBlock>()->var();
                 if (var != Node_NULL) {
-                  fprintf(pyc_output, " as ");
-                  print_src(var, mod);
+                    fprintf(pyc_output, " as ");
+                    print_src(var, mod);
                 }
             }
             fprintf(pyc_output, ":\n");
