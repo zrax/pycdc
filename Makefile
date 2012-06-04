@@ -4,6 +4,7 @@ CXXFLAGS = -g -Wall
 #CPPFLAGS += -DBLOCK_DEBUG -DSTACK_DEBUG
 #LFLAGS += -lgcov
 SHELL = /bin/bash
+ETAGS = etags
 
 COMMON = \
 	out/data.o \
@@ -27,6 +28,8 @@ BYTE_OBJS = $(BYTES:%=out/%.o)
 BYTE_SRCS = $(BYTES:%=bytes/%.cpp)
 BYTE_MAPS = $(BYTES:%=bytes/%.map)
 
+SRCS = $(COMMON:out/%.o=%.cpp) $(COMMON:out/%.o=%.h) $(BYTE_SRCS) pycdas.cpp pycdc.cpp FastStack.h
+
 ALL = \
 	bin/pycdas \
 	bin/pycdc
@@ -36,7 +39,7 @@ PREFIX = /usr/local
 all: $(ALL)
 
 clean:
-	rm -f $(COMMON) $(BYTE_OBJS) $(BYTE_SRCS)
+	rm -f $(COMMON) $(BYTE_OBJS) $(BYTE_SRCS) TAGS
 
 install:
 	mkdir -p $(PREFIX)/bin
@@ -79,3 +82,6 @@ out/python_%.o: bytes/python_%.cpp $(BYTE_SRCS)
 
 $(BYTE_SRCS): $(BYTE_MAPS)
 	( cd bytes ; ./comp_map.py )
+
+tags: $(SRCS)
+	$(ETAGS) $(SRCS)
