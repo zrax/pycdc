@@ -419,9 +419,9 @@ public:
     typedef std::list<PycRef<ASTNode> > list_t;
 
     enum BlkType {
-        BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY, 
+        BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY,
         BLK_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
-        BLK_WHILE, BLK_FOR
+        BLK_WHILE, BLK_FOR, BLK_WITH
     };
 
     ASTBlock(BlkType blktype, int end = 0, int inited = 0)
@@ -503,6 +503,22 @@ public:
 private:
     int m_finally;
     int m_except;
+};
+
+class ASTWithBlock : public ASTBlock {
+public:
+    ASTWithBlock(int end)
+        : ASTBlock(ASTBlock::BLK_WITH, end) { }
+
+    PycRef<ASTNode> expr() const { return m_expr; }
+    PycRef<ASTNode> var() const { return m_var; }
+
+    void setExpr(PycRef<ASTNode> expr) { m_expr = expr; init(); }
+    void setVar(PycRef<ASTNode> var) { m_var = var; }
+
+private:
+    PycRef<ASTNode> m_expr;
+    PycRef<ASTNode> m_var;      // optional value
 };
 
 class ASTComprehension : public ASTNode {
