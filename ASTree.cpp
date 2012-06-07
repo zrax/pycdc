@@ -70,7 +70,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::POP_JUMP_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_TRUE_A
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
-                && opcode != Pyc::POP_JUMP_IF_TRUE_A) {
+                && opcode != Pyc::POP_JUMP_IF_TRUE_A
+                && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
             PycRef<ASTBlock> prev = curblock;
