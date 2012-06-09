@@ -46,7 +46,7 @@ test: all
 	@fails=0; \
 	files=(); \
 	errors=(); \
-	for f in ./tests/*; \
+	for f in ./tests/*.pyc; \
 	do \
 		stderr=$$( ./bin/pycdc "$$f" 2>&1 1>/dev/null ); \
 		if [ "$$?" -eq "0" -a -z "$$stderr" ]; then \
