@@ -1248,6 +1248,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
+                if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                    // This should only be popped by a WITH_CLEANUP
+                    break;
+                }
+
                 PycRef<ASTBlock> tmp;
 
                 if (curblock->nodes().size() &&
@@ -1486,12 +1491,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::WITH_CLEANUP:
             {
-                // Stack top should be a None.
+                // Stack top should be a None. Ignore it.
                 PycRef<ASTNode> none = stack.top();
                 stack.pop();
 
                 if (none != Node_NULL) {
                     fprintf(stderr, "Something TERRIBLE happened!\n");
+                    break;
+                }
+
+                if (curblock->blktype() == ASTBlock::BLK_WITH
+                        && curblock->end() == curpos) {
+                    PycRef<ASTBlock> with = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(with.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
                 }
             }
             break;
@@ -1693,7 +1710,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
-                    } else if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                    } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                                   && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
                     } else {
