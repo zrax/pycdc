@@ -2527,7 +2527,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     }
                 } else {
                     fprintf(pyc_output, "import ");
-                    print_src(import->name(), mod);
+                    PycRef<ASTNode> import_name = import->name();
+                    print_src(import_name, mod);
+                    if (!dest.cast<ASTName>()->name()->isEqual(import_name.cast<ASTName>()->name().cast<PycObject>())) {
+                        fprintf(pyc_output, " as ");
+                        print_src(dest, mod);
+                    }
                 }
             } else {
                 if (src->type() == ASTNode::NODE_BINARY &&
