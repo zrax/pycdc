@@ -1248,6 +1248,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
+                if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                    // This should only be popped by a WITH_CLEANUP
+                    break;
+                }
+
                 PycRef<ASTBlock> tmp;
 
                 if (curblock->nodes().size() &&
@@ -1336,7 +1341,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 if (!curblock->inited()) {
-                    curblock.cast<ASTCondBlock>()->init();
+                    if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                        curblock.cast<ASTWithBlock>()->setExpr(value);
+                    } else {
+                        curblock.cast<ASTCondBlock>()->init();
+                    }
                     break;
                 } else if (value->type() == ASTNode::NODE_INVALID
                         || value->type() == ASTNode::NODE_BINARY
@@ -1472,6 +1481,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::SET_LINENO_A:
             // Ignore
+            break;
+        case Pyc::SETUP_WITH_A:
+            {
+                PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
+                blocks.push(withblock);
+                curblock = blocks.top();
+            }
+            break;
+        case Pyc::WITH_CLEANUP:
+            {
+                // Stack top should be a None. Ignore it.
+                PycRef<ASTNode> none = stack.top();
+                stack.pop();
+
+                if (none != Node_NULL) {
+                    fprintf(stderr, "Something TERRIBLE happened!\n");
+                    break;
+                }
+
+                if (curblock->blktype() == ASTBlock::BLK_WITH
+                        && curblock->end() == curpos) {
+                    PycRef<ASTBlock> with = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(with.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
+                }
+            }
             break;
         case Pyc::SETUP_EXCEPT_A:
             {
@@ -1671,6 +1710,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                                   && !curblock->inited()) {
+                        curblock.cast<ASTWithBlock>()->setExpr(value);
+                        curblock.cast<ASTWithBlock>()->setVar(name);
                     } else {
                         curblock->append(new ASTStore(value, name));
                     }
@@ -1766,6 +1809,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         PycRef<ASTImport> import = stack.top().cast<ASTImport>();
 
                         import->add_store(new ASTStore(value, name));
+                    } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                               && !curblock->inited()) {
+                        curblock.cast<ASTWithBlock>()->setExpr(value);
+                        curblock.cast<ASTWithBlock>()->setVar(name);
                     } else {
                         curblock->append(new ASTStore(value, name));
 
@@ -2273,6 +2320,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     blk.cast<ASTCondBlock>()->cond() != Node_NULL) {
                 fprintf(pyc_output, " ");
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod);
+            } else if (blk->blktype() == ASTBlock::BLK_WITH) {
+                fprintf(pyc_output, " ");
+                print_src(blk.cast<ASTWithBlock>()->expr(), mod);
+                PycRef<ASTNode> var = blk.cast<ASTWithBlock>()->var();
+                if (var != Node_NULL) {
+                    fprintf(pyc_output, " as ");
+                    print_src(var, mod);
+                }
             }
             fprintf(pyc_output, ":\n");
 
