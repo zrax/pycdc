@@ -37,6 +37,7 @@ all: $(ALL)
 
 clean:
 	rm -f $(COMMON) $(BYTE_OBJS) $(BYTE_SRCS)
+	rm -f tests/*.pyc.src tests/*.pyc.err
 
 install:
 	mkdir -p $(PREFIX)/bin
@@ -48,7 +49,7 @@ test: all
 	errors=(); \
 	for f in ./tests/*.pyc; \
 	do \
-		stderr=$$( ./bin/pycdc "$$f" 2>&1 1>/dev/null ); \
+		stderr=$$( ./bin/pycdc "$$f" 2>$$f.err 1>$$f.src ); \
 		if [ "$$?" -eq "0" -a -z "$$stderr" ]; then \
 			echo -ne "\033[32m.\033[m"; \
 		else \
