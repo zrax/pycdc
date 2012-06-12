@@ -366,8 +366,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     kwparamList.push_front(std::make_pair(key, val));
                 }
                 for (int i=0; i<pparams; i++) {
-                    pparamList.push_front(stack.top());
+                    PycRef<ASTNode> param = stack.top();
                     stack.pop();
+                    if (param->type() == ASTNode::NODE_FUNCTION) {
+                        PycRef<ASTNode> code = param.cast<ASTFunction>()->code();
+                        PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+                        PycRef<PycString> function_name = code_src->name();
+                        if (function_name->isEqual("<lambda>")) {
+                            pparamList.push_front(param);
+                        } else {
+                            // Decorator used
+                            PycRef<ASTNode> name = new ASTName(function_name);
+                            curblock->append(new ASTStore(param, name));
+
+                            pparamList.push_front(name);
+                        }
+                    } else {
+                        pparamList.push_front(param);
+                    }
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
