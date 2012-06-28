@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -Wall
+CXXFLAGS = -g -Wall -Wextra -Werror
 #CXXFLAGS += -fprofile-arcs -ftest-coverage
 #CPPFLAGS += -DBLOCK_DEBUG -DSTACK_DEBUG
 #LFLAGS += -lgcov
