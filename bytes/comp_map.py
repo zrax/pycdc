@@ -21,7 +21,7 @@ maplist = [ 10, 11, 13, 14, 15, 16,
 
 for mapver in maplist:
     infile = open('python_%d.map' % mapver, 'rt')
-    outfile = open('python_%d.cpp' % mapver, 'wb')
+    outfile = open('python_%d.cpp' % mapver, 'wt')
 
     idToOpcode = {}
     opcodeToId = {}
