@@ -2,6 +2,7 @@
 #include <cstring>
 
 FILE* pyc_output = stdout;
+// FILE* pyc_output = fopen("test.py", "wb");
 
 /* PycData */
 int PycData::get16()

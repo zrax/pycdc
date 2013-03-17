@@ -31,7 +31,7 @@ ALL = \
 	bin/pycdas \
 	bin/pycdc
 
-PREFIX = /usr/local
+PREFIX = /usr/local/pycdc
 
 all: $(ALL)
 
