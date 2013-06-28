@@ -1705,7 +1705,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        if (curblock->blktype() == ASTBlock::BLK_FOR
+                                && !curblock->inited()) {
+                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
                     }
                 } else {
                     PycRef<ASTNode> value = stack.top();
