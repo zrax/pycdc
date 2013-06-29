@@ -2516,7 +2516,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
                 bool isLambda = false;
 
-                if (strncmp(code_src->name()->value(), "<lambda>", 8) == 0) {
+                if (strcmp(code_src->name()->value(), "<lambda>") == 0) {
                     fprintf(pyc_output, "\n");
                     start_line(cur_indent);
                     print_src(dest, mod);
@@ -2562,7 +2562,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 }
 
                 if (isLambda) {
-                    fprintf(pyc_output, " : ");
+                    fprintf(pyc_output, ": ");
                 } else {
                     fprintf(pyc_output, "):\n");
                     printGlobals = true;
