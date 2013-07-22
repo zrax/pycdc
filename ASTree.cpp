@@ -86,9 +86,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     /* We want to keep the stack the same, but we need to pop
                      * a level off the history. */
                     //stack = stack_hist.top();
-                    stack_hist.pop();
+                    if (!stack_hist.empty())
+                        stack_hist.pop();
                 }
                 blocks.pop();
+                
+                if (blocks.empty())
+                    break;
+
                 curblock = blocks.top();
                 curblock->append(prev.cast<ASTNode>());
 
@@ -1092,8 +1097,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                stack = stack_hist.top();
-                stack_hist.pop();
+                if (!stack_hist.empty()) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
 
                 PycRef<ASTBlock> prev = curblock;
                 PycRef<ASTBlock> nil;
@@ -1102,7 +1109,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 do {
                     blocks.pop();
 
-                    blocks.top()->append(prev.cast<ASTNode>());
+                    if (!blocks.empty())
+                        blocks.top()->append(prev.cast<ASTNode>());
 
                     if (prev->blktype() == ASTBlock::BLK_IF
                             || prev->blktype() == ASTBlock::BLK_ELIF) {
@@ -1289,14 +1297,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 tmp = curblock;
                 blocks.pop();
-                curblock = blocks.top();
+                
+                if(!blocks.empty())
+                    curblock = blocks.top();
 
                 if (!(tmp->blktype() == ASTBlock::BLK_ELSE
                         && tmp->nodes().size() == 0)) {
                     curblock->append(tmp.cast<ASTNode>());
                 }
 
-                if (tmp->blktype() == ASTBlock::BLK_FOR && tmp->end() > pos) {
+                if (tmp->blktype() == ASTBlock::BLK_FOR && tmp->end() >= pos) {
                     stack_hist.push(stack);
 
                     PycRef<ASTBlock> blkelse = new ASTBlock(ASTBlock::BLK_ELSE, tmp->end());
