@@ -1297,7 +1297,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 tmp = curblock;
                 blocks.pop();
-                
+
                 if (!blocks.empty())
                     curblock = blocks.top();
 
