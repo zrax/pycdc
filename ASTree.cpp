@@ -90,7 +90,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack_hist.pop();
                 }
                 blocks.pop();
-                
+
                 if (blocks.empty())
                     break;
 
@@ -1298,7 +1298,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 tmp = curblock;
                 blocks.pop();
                 
-                if(!blocks.empty())
+                if (!blocks.empty())
                     curblock = blocks.top();
 
                 if (!(tmp->blktype() == ASTBlock::BLK_ELSE
