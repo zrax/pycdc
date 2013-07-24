@@ -2478,7 +2478,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (stores.size() == 1) {
                     print_src((*ii)->src(), mod);
 
-                    if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                    std::string s1 = (*ii)->src().cast<ASTName>()->name()->value();
+                    std::string s2 = (*ii)->dest().cast<ASTName>()->name()->value();
+                    if (s1 != s2) {
                         fprintf(pyc_output, " as ");
                         print_src((*ii)->dest(), mod);
                     }
@@ -2490,7 +2492,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         print_src((*ii)->src(), mod);
                         first = false;
 
-                        if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                        std::string s1 = (*ii)->src().cast<ASTName>()->name()->value();
+                        std::string s2 = (*ii)->dest().cast<ASTName>()->name()->value();
+                        if (s1 != s2) {
                             fprintf(pyc_output, " as ");
                             print_src((*ii)->dest(), mod);
                         }
