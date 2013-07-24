@@ -1746,6 +1746,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                    && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
+                    } else if (stack.top()->type() == ASTNode::NODE_IMPORT) {
+                        PycRef<ASTImport> import = stack.top().cast<ASTImport>();
+                        import->add_store(new ASTStore(value, name));
                     } else {
                         curblock->append(new ASTStore(value, name));
                     }
@@ -1785,7 +1788,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
-                    curblock->append(new ASTStore(value, name));
+
+                    if (name.cast<ASTName>()->name() == value.cast<ASTName>()->name()) {
+                        PycRef<ASTImport> import = stack.top().cast<ASTImport>();
+                        import->add_store(new ASTStore(value, name));
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+                    }
                 }
 
                 /* Mark the global as used */
