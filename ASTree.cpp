@@ -950,7 +950,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack_hist.push(s_top);
                     }
 
-                    if (curblock->end() == offs
+                    if (curblock->end() == offs && !top->negative()
                             || (curblock->end() == curpos && !top->negative())) {
                         /* if blah and blah */
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
