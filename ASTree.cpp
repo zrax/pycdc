@@ -2154,6 +2154,11 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
     }
 
     for (ASTBlock::list_t::const_iterator ln = lines.begin(); ln != lines.end();) {
+        if ((*ln).cast<ASTNode>()->type() == ASTNode::NODE_KEYWORD) {
+            ++ln;
+            continue;
+        }
+
         if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
             start_line(cur_indent);
         }
