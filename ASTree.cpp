@@ -2322,16 +2322,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             cur_indent++;
             ASTNodeList::list_t lines = node.cast<ASTNodeList>()->nodes();
             for (ASTNodeList::list_t::const_iterator ln = lines.begin(); ln != lines.end(); ++ln) {
-                if ((*ln).cast<ASTNode>()->type() == ASTNode::NODE_CALL) {
-                    start_line(cur_indent);
-                    print_src((*ln).cast<ASTNode>(), mod);
-                    end_line();
-                    continue;
-                }
-
-                if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
-                    start_line(cur_indent);
-                }
+                start_line(cur_indent);
                 print_src(*ln, mod);
                 end_line();
             }
