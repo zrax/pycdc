@@ -9,9 +9,7 @@ int PycData::get16()
     /* Ensure endianness */
     int result = getByte() & 0xFF;
     result |= (getByte() & 0xFF) << 8;
-
-    /* Extend sign */
-    return (result | -(result & 0x8000));
+    return result;
 }
 
 int PycData::get32()
