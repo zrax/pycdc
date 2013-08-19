@@ -950,8 +950,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack_hist.push(s_top);
                     }
 
-                    if (curblock->end() == offs
-                            || (curblock->end() == curpos && !top->negative())) {
+                    if ((curblock->end() == offs || curblock->end() == curpos)
+                        && !top->negative()) {
                         /* if blah and blah */
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
                     } else {
@@ -1107,7 +1107,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 bool push = true;
 
                 do {
-                    blocks.pop();
+                    if (!blocks.empty())
+                        blocks.pop();
 
                     if (!blocks.empty())
                         blocks.top()->append(prev.cast<ASTNode>());
@@ -1183,7 +1184,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 } while (prev != nil);
 
-                curblock = blocks.top();
+                if (!blocks.empty())
+                    curblock = blocks.top();
 
                 if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
                     curblock->setEnd(pos+operand);
@@ -1291,8 +1293,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || curblock->blktype() == ASTBlock::BLK_TRY
                         || curblock->blktype() == ASTBlock::BLK_EXCEPT
                         || curblock->blktype() == ASTBlock::BLK_FINALLY) {
-                    stack = stack_hist.top();
-                    stack_hist.pop();
+                    if (!stack_hist.empty()) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    }
                 }
 
                 tmp = curblock;
@@ -1376,7 +1380,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 } else if (value->type() == ASTNode::NODE_INVALID
                         || value->type() == ASTNode::NODE_BINARY
-                        || value->type() == ASTNode::NODE_NAME) {
+                        ) {
                     break;
                 } else if (value->type() == ASTNode::NODE_COMPARE
                         && value.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
@@ -1746,6 +1750,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                    && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
+                    } else if (stack.top()->type() == ASTNode::NODE_IMPORT) {
+                        PycRef<ASTImport> import = stack.top().cast<ASTImport>();
+                        import->add_store(new ASTStore(value, name));
                     } else {
                         curblock->append(new ASTStore(value, name));
                     }
@@ -1785,7 +1792,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
-                    curblock->append(new ASTStore(value, name));
+
+                    if (name.cast<ASTName>()->name() == value.cast<ASTName>()->name()) {
+                        PycRef<ASTImport> import = stack.top().cast<ASTImport>();
+                        import->add_store(new ASTStore(value, name));
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+                    }
                 }
 
                 /* Mark the global as used */
@@ -2145,6 +2158,11 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
     }
 
     for (ASTBlock::list_t::const_iterator ln = lines.begin(); ln != lines.end();) {
+        if ((*ln).cast<ASTNode>()->type() == ASTNode::NODE_KEYWORD) {
+            ++ln;
+            continue;
+        }
+
         if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
             start_line(cur_indent);
         }
@@ -2210,7 +2228,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (!first)
                     fprintf(pyc_output, ", ");
                 fprintf(pyc_output, "**");
-                print_src(call->var(), mod);
+                print_src(call->kw(), mod);
                 first = false;
             }
             fprintf(pyc_output, ")");
@@ -2308,9 +2326,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             cur_indent++;
             ASTNodeList::list_t lines = node.cast<ASTNodeList>()->nodes();
             for (ASTNodeList::list_t::const_iterator ln = lines.begin(); ln != lines.end(); ++ln) {
-                if ((*ln).cast<ASTNode>()->type() != ASTNode::NODE_NODELIST) {
-                    start_line(cur_indent);
-                }
+                start_line(cur_indent);
                 print_src(*ln, mod);
                 end_line();
             }
@@ -2469,7 +2485,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (stores.size() == 1) {
                     print_src((*ii)->src(), mod);
 
-                    if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                    std::string s1 = (*ii)->src().cast<ASTName>()->name()->value();
+                    std::string s2 = (*ii)->dest().cast<ASTName>()->name()->value();
+                    if (s1 != s2) {
                         fprintf(pyc_output, " as ");
                         print_src((*ii)->dest(), mod);
                     }
@@ -2481,7 +2499,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         print_src((*ii)->src(), mod);
                         first = false;
 
-                        if ((*ii)->src().cast<ASTName>()->name()->value() != (*ii)->dest().cast<ASTName>()->name()->value()) {
+                        std::string s1 = (*ii)->src().cast<ASTName>()->name()->value();
+                        std::string s2 = (*ii)->dest().cast<ASTName>()->name()->value();
+                        if (s1 != s2) {
                             fprintf(pyc_output, " as ");
                             print_src((*ii)->dest(), mod);
                         }
