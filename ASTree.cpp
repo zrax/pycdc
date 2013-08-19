@@ -1107,7 +1107,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 bool push = true;
 
                 do {
-                    blocks.pop();
+                    if (!blocks.empty())
+                        blocks.pop();
 
                     if (!blocks.empty())
                         blocks.top()->append(prev.cast<ASTNode>());
@@ -1183,7 +1184,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 } while (prev != nil);
 
-                curblock = blocks.top();
+                if (!blocks.empty())
+                    curblock = blocks.top();
 
                 if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
                     curblock->setEnd(pos+operand);
@@ -1291,8 +1293,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || curblock->blktype() == ASTBlock::BLK_TRY
                         || curblock->blktype() == ASTBlock::BLK_EXCEPT
                         || curblock->blktype() == ASTBlock::BLK_FINALLY) {
-                    stack = stack_hist.top();
-                    stack_hist.pop();
+                    if (!stack_hist.empty()) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    }
                 }
 
                 tmp = curblock;
