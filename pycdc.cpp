@@ -1,5 +1,4 @@
 #include <cstring>
-#include <stdio.h>
 #include "ASTree.h"
 
 #ifdef WIN32
