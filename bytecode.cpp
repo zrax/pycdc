@@ -273,24 +273,15 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
 {
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
     operand = 0;
-    bool haveExtArg = false;
     pos += 1;
 
     if (opcode == Pyc::EXTENDED_ARG_A) {
         operand = source.get16() << 16;
-        opcode = source.getByte();
-        haveExtArg = true;
+        opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
         pos += 3;
     }
     if (opcode >= Pyc::PYC_HAVE_ARG) {
-        // If we have an extended arg, we want to OR the lower part,
-        // else we want the whole thing (in case it's negative).  We use
-        // the bool so that values between 0x8000 and 0xFFFF can be stored
-        // without becoming negative
-        if (haveExtArg)
-            operand |= (source.get16() & 0xFFFF);
-        else
-            operand = source.get16();
+        operand |= source.get16();
         pos += 2;
     }
 }

@@ -1,3 +1,4 @@
+#include <cstring>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -85,9 +86,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     /* We want to keep the stack the same, but we need to pop
                      * a level off the history. */
                     //stack = stack_hist.top();
-                    stack_hist.pop();
+                    if (!stack_hist.empty())
+                        stack_hist.pop();
                 }
                 blocks.pop();
+
+                if (blocks.empty())
+                    break;
+
                 curblock = blocks.top();
                 curblock->append(prev.cast<ASTNode>());
 
@@ -1091,8 +1097,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                stack = stack_hist.top();
-                stack_hist.pop();
+                if (!stack_hist.empty()) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
 
                 PycRef<ASTBlock> prev = curblock;
                 PycRef<ASTBlock> nil;
@@ -1101,7 +1109,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 do {
                     blocks.pop();
 
-                    blocks.top()->append(prev.cast<ASTNode>());
+                    if (!blocks.empty())
+                        blocks.top()->append(prev.cast<ASTNode>());
 
                     if (prev->blktype() == ASTBlock::BLK_IF
                             || prev->blktype() == ASTBlock::BLK_ELIF) {
@@ -1288,14 +1297,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 tmp = curblock;
                 blocks.pop();
-                curblock = blocks.top();
+
+                if (!blocks.empty())
+                    curblock = blocks.top();
 
                 if (!(tmp->blktype() == ASTBlock::BLK_ELSE
                         && tmp->nodes().size() == 0)) {
                     curblock->append(tmp.cast<ASTNode>());
                 }
 
-                if (tmp->blktype() == ASTBlock::BLK_FOR && tmp->end() > pos) {
+                if (tmp->blktype() == ASTBlock::BLK_FOR && tmp->end() >= pos) {
                     stack_hist.push(stack);
 
                     PycRef<ASTBlock> blkelse = new ASTBlock(ASTBlock::BLK_ELSE, tmp->end());
@@ -1705,7 +1716,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        if (curblock->blktype() == ASTBlock::BLK_FOR
+                                && !curblock->inited()) {
+                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
                     }
                 } else {
                     PycRef<ASTNode> value = stack.top();
@@ -2506,13 +2522,24 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<ASTNode> src = node.cast<ASTStore>()->src();
             PycRef<ASTNode> dest = node.cast<ASTStore>()->dest();
             if (src->type() == ASTNode::NODE_FUNCTION) {
-                fprintf(pyc_output, "\n");
-                start_line(cur_indent);
-                fprintf(pyc_output, "def ");
-                print_src(dest, mod);
-                fprintf(pyc_output, "(");
                 PycRef<ASTNode> code = src.cast<ASTFunction>()->code();
                 PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+                bool isLambda = false;
+
+                if (strcmp(code_src->name()->value(), "<lambda>") == 0) {
+                    fprintf(pyc_output, "\n");
+                    start_line(cur_indent);
+                    print_src(dest, mod);
+                    fprintf(pyc_output, " = lambda ");
+                    isLambda = true;
+                } else {
+                    fprintf(pyc_output, "\n");
+                    start_line(cur_indent);
+                    fprintf(pyc_output, "def ");
+                    print_src(dest, mod);
+                    fprintf(pyc_output, "(");
+                }
+
                 ASTFunction::defarg_t defargs = src.cast<ASTFunction>()->defargs();
                 ASTFunction::defarg_t::iterator da = defargs.begin();
                 bool first = true;
@@ -2543,9 +2570,20 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     fprintf(pyc_output, "**%s", code_src->getVarName(idx)->value());
                     first = false;
                 }
-                fprintf(pyc_output, "):\n");
-                printGlobals = true;
+
+                if (isLambda) {
+                    fprintf(pyc_output, ": ");
+                } else {
+                    fprintf(pyc_output, "):\n");
+                    printGlobals = true;
+                }
+
+                bool preLambda = inLambda;
+                inLambda |= isLambda;
+
                 print_src(code, mod);
+
+                inLambda = preLambda;
             } else if (src->type() == ASTNode::NODE_CLASS) {
                 fprintf(pyc_output, "\n");
                 start_line(cur_indent);

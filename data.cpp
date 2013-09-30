@@ -7,36 +7,33 @@ FILE* pyc_output = stdout;
 int PycData::get16()
 {
     /* Ensure endianness */
-    int val = ( ((getByte() & 0xFF)     )
-              | ((getByte() & 0xFF) << 8)
-              );
-
-    /* Extend sign */
-    return (val | -(val & 0x8000));
+    int result = getByte() & 0xFF;
+    result |= (getByte() & 0xFF) << 8;
+    return result;
 }
 
 int PycData::get32()
 {
     /* Ensure endianness */
-    return (int)( ((getByte() & 0xFF)      )
-                | ((getByte() & 0xFF) <<  8)
-                | ((getByte() & 0xFF) << 16)
-                | ((getByte() & 0xFF) << 24)
-                );
+    int result = getByte() & 0xFF;
+    result |= (getByte() & 0xFF) <<  8;
+    result |= (getByte() & 0xFF) << 16;
+    result |= (getByte() & 0xFF) << 24;
+    return result;
 }
 
 Pyc_INT64 PycData::get64()
 {
     /* Ensure endianness */
-    return (Pyc_INT64)( ((Pyc_INT64)(getByte() & 0xFF)      )
-                      | ((Pyc_INT64)(getByte() & 0xFF) <<  8)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 16)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 24)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 32)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 40)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 48)
-                      | ((Pyc_INT64)(getByte() & 0xFF) << 56)
-                      );
+    Pyc_INT64 result = (Pyc_INT64)(getByte() & 0xFF);
+    result |= (Pyc_INT64)(getByte() & 0xFF) <<  8;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 16;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 24;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 32;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 40;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 48;
+    result |= (Pyc_INT64)(getByte() & 0xFF) << 56;
+    return result;
 }
 
 
