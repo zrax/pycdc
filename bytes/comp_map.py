@@ -17,7 +17,7 @@
 
 maplist = [ 10, 11, 13, 14, 15, 16,
             20, 21, 22, 23, 24, 25, 26, 27,
-            30, 31, 32, 33 ]
+            30, 31, 32, 33, 34 ]
 
 for mapver in maplist:
     infile = open('python_%d.map' % mapver, 'rt')

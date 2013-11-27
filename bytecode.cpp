@@ -27,6 +27,7 @@ DECLARE_PYTHON(3, 0)
 DECLARE_PYTHON(3, 1)
 DECLARE_PYTHON(3, 2)
 DECLARE_PYTHON(3, 3)
+DECLARE_PYTHON(3, 4)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -65,7 +66,7 @@ const char* Pyc::OpcodeName(int opcode)
     "POP_JUMP_IF_FALSE", "POP_JUMP_IF_TRUE", "CONTINUE_LOOP", "MAKE_CLOSURE",
     "LOAD_CLOSURE", "LOAD_DEREF", "STORE_DEREF", "DELETE_DEREF",
     "EXTENDED_ARG", "SETUP_WITH", "SET_ADD", "MAP_ADD", "UNPACK_EX",
-    "LIST_APPEND"
+    "LIST_APPEND", "LOAD_CLASSDEREF",
     };
 
     if (opcode < 0)
@@ -110,6 +111,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 1: return python_31_map(opcode);
         case 2: return python_32_map(opcode);
         case 3: return python_33_map(opcode);
+        case 4: return python_34_map(opcode);
         }
         break;
     }
