@@ -640,7 +640,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (curblock->size() != 0) {
                         blocks.top()->append(curblock.cast<ASTNode>());
                     }
-                    curblock = blocks.top();
+
+                    if (!blocks.empty())
+                        curblock = blocks.top();
 
                     if (curblock->end() != pos || curblock.cast<ASTContainerBlock>()->hasFinally()) {
                         PycRef<ASTBlock> elseblk = new ASTBlock(ASTBlock::BLK_ELSE, prev->end());
