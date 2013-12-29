@@ -988,33 +988,42 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
-                    } if (curblock->blktype() == ASTBlock::BLK_ELSE) {
-                        stack = stack_hist.top();
-                        stack_hist.pop();
+                    }
 
-                        blocks.pop();
-                        blocks.top()->append(curblock.cast<ASTNode>());
-                        curblock = blocks.top();
+                    if (curblock->blktype() == ASTBlock::BLK_CONTAINER ||
+                        curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                        ; //pass
+                    } else {
+                        if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                            stack = stack_hist.top();
+                            stack_hist.pop();
 
-                        if (curblock->blktype() == ASTBlock::BLK_CONTAINER
-                                && !curblock.cast<ASTContainerBlock>()->hasFinally()) {
                             blocks.pop();
                             blocks.top()->append(curblock.cast<ASTNode>());
                             curblock = blocks.top();
-                        }
-                    } else {
-                        curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
-                    }
 
-                    /* We're in a loop, this jumps back to the start */
-                    /* I think we'll just ignore this case... */
-                    break; // Bad idea? Probably!
+                            if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                                    && !curblock.cast<ASTContainerBlock>()->hasFinally()) {
+                                blocks.pop();
+                                blocks.top()->append(curblock.cast<ASTNode>());
+                                curblock = blocks.top();
+                            }
+                        } else {
+                            curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+                        }
+
+                        /* We're in a loop, this jumps back to the start */
+                        /* I think we'll just ignore this case... */
+                        break; // Bad idea? Probably!
+                    }
                 }
 
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
                     PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
-                    if (cont->hasExcept() && pos < cont->except()) {
-                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, Node_NULL, false);
+                    if (cont->hasExcept()) {
+                        stack_hist.push(stack);
+                        curblock->setEnd(pos+operand);
+                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+operand, Node_NULL, false);
                         except->init();
                         blocks.push(except);
                         curblock = blocks.top();
@@ -1070,6 +1079,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } while (prev != nil);
 
                 curblock = blocks.top();
+
+                if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                    curblock->setEnd(pos+operand);
+                }
             }
             break;
         case Pyc::JUMP_FORWARD_A:
