@@ -962,6 +962,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_OR);
                     }
                     ifblk = new ASTCondBlock(top->blktype(), offs, newcond, neg);
+                } else if ( curblock->blktype() == ASTBlock::BLK_FOR && size == 1) {
+                    ifblk = new ASTCondBlock(ASTBlock::BLK_ELIF, offs, cond, neg);
                 } else {
                     /* Plain old if statement */
                     ifblk = new ASTCondBlock(ASTBlock::BLK_IF, offs, cond, neg);
@@ -1403,7 +1405,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                curblock->append(value);
+                if (value->type() != ASTNode::NODE_OBJECT)
+                    curblock->append(value);
 
                 if (curblock->blktype() == ASTBlock::BLK_FOR
                         && curblock.cast<ASTIterBlock>()->isComprehension()) {
