@@ -60,5 +60,5 @@ bool IsJumpOffsetArg(int opcode);
 }
 
 void print_const(PycRef<PycObject> obj, PycModule* mod);
-void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos);
+void bc_next(PycBuffer& source, PycRef<PycCode> code, PycModule* mod, int& opcode, int& operand, int& pos, bool is_disasm);
 void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent);

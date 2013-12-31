@@ -38,6 +38,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int unpack = 0;
     bool else_pop = false;
     bool need_try = false;
+    bool is_disasm = false;
 
     while (!source.atEof()) {
 #if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
@@ -54,7 +55,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 #endif
 
         curpos = pos;
-        bc_next(source, mod, opcode, operand, pos);
+        bc_next(source, code, mod, opcode, operand, pos, is_disasm);
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -1461,7 +1462,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock->append(prev.cast<ASTNode>());
                     }
 
-                    bc_next(source, mod, opcode, operand, pos);
+                    bc_next(source, code, mod, opcode, operand, pos, is_disasm);
                 }
             }
             break;

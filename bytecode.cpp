@@ -269,8 +269,36 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
     }
 }
 
-void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
+void bc_print(PycRef<PycCode> code, PycModule* mod, int opcode, int pos, int operand)
 {
+    fprintf(pyc_output, "%-24s", Pyc::OpcodeName(opcode));
+
+    if (opcode >= Pyc::PYC_HAVE_ARG) {
+        if (Pyc::IsConstArg(opcode)) {
+            fprintf(pyc_output, "%d: ", operand);
+            print_const(code->getConst(operand), mod);
+        } else if (Pyc::IsNameArg(opcode)) {
+            fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+        } else if (Pyc::IsVarNameArg(opcode)) {
+            fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
+        } else if (Pyc::IsCellArg(opcode)) {
+            fprintf(pyc_output, "%d: ", operand);
+            print_const(code->getCellVar(operand), mod);
+        } else if (Pyc::IsJumpOffsetArg(opcode)) {
+            fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
+        } else {
+            fprintf(pyc_output, "%d", operand);
+        }
+    }
+    fprintf(pyc_output, "\n");
+}
+
+
+void bc_next(PycBuffer& source, PycRef<PycCode> code, PycModule* mod, int& opcode, int& operand, int& pos, bool is_disasm)
+{
+    if (is_disasm)
+        fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
+
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
     operand = 0;
     bool haveExtArg = false;
@@ -293,6 +321,9 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
             operand = source.get16();
         pos += 2;
     }
+
+    if (is_disasm)
+        bc_print(code, mod, opcode, pos, operand);
 }
 
 void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
@@ -304,28 +335,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
     while (!source.atEof()) {
         for (int i=0; i<indent; i++)
             fprintf(pyc_output, "    ");
-        fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
 
-        bc_next(source, mod, opcode, operand, pos);
-        fprintf(pyc_output, "%-24s", Pyc::OpcodeName(opcode));
-
-        if (opcode >= Pyc::PYC_HAVE_ARG) {
-            if (Pyc::IsConstArg(opcode)) {
-                fprintf(pyc_output, "%d: ", operand);
-                print_const(code->getConst(operand), mod);
-            } else if (Pyc::IsNameArg(opcode)) {
-                fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
-            } else if (Pyc::IsVarNameArg(opcode)) {
-                fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
-            } else if (Pyc::IsCellArg(opcode)) {
-                fprintf(pyc_output, "%d: ", operand);
-                print_const(code->getCellVar(operand), mod);
-            } else if (Pyc::IsJumpOffsetArg(opcode)) {
-                fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
-            } else {
-                fprintf(pyc_output, "%d", operand);
-            }
-        }
-        fprintf(pyc_output, "\n");
+        bc_next(source, code, mod, opcode, operand, pos, true);
     }
 }
