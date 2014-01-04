@@ -1270,7 +1270,35 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTNode(ASTNode::NODE_LOCALS));
             break;
         case Pyc::LOAD_NAME_A:
-            stack.push(new ASTName(code->getName(operand)));
+            {
+                stack.push(new ASTName(code->getName(operand)));
+
+                ASTBlock::BlkType type = curblock->blktype();
+                int end = curblock->end();
+
+                if (type == ASTBlock::BLK_IF && end == pos) {
+                    PycRef<ASTNode> newcond;
+                    PycRef<ASTNode> cond = stack.top();
+
+                    PycRef<ASTCondBlock> top = curblock.cast<ASTCondBlock>();
+                    PycRef<ASTNode> cond1 = top->cond();
+
+                    if (!top->negative()) {
+                        newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
+                    } else {
+                        newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_OR);
+                    }
+
+                    curblock->append(newcond);
+
+                    PycRef<ASTNode> curblockfront = curblock->nodes().front();
+                    stack.push(curblockfront);
+
+                    PycRef<ASTBlock> btop = blocks.top();
+                    btop->removeLast();
+                    blocks.pop();
+                };
+            }
             break;
         case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
