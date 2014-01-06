@@ -1906,11 +1906,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock.cast<ASTWithBlock>()->setVar(name);
                     } else {
                         ASTBlock::list_t nodes = curblock->nodes();
-                        PycRef<ASTNode> b = nodes.back().cast<ASTNode>();
-                        int type = b->type();
+                        if (nodes.size() > 0) {
+                            PycRef<ASTNode> b = nodes.back().cast<ASTNode>();
+                            int type = b->type();
 
-                        if (type == ASTNode::NODE_BLOCK) {
-                            curblock->removeLast();
+                            if (type == ASTNode::NODE_BLOCK) {
+                                curblock->removeLast();
+                            }
                         }
 
                         curblock->append(new ASTStore(value, name));
