@@ -30,7 +30,7 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_INT:
         return new PycInt();
     case PycObject::TYPE_INT64:
-        return new PycLong(PycObject::TYPE_INT64);
+        return new PycLong(type);
     case PycObject::TYPE_FLOAT:
         return new PycFloat();
     case PycObject::TYPE_BINARY_FLOAT:
@@ -42,13 +42,17 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_LONG:
         return new PycLong();
     case PycObject::TYPE_STRING:
-        return new PycString();
     case PycObject::TYPE_INTERNED:
-        return new PycString(PycObject::TYPE_INTERNED);
     case PycObject::TYPE_STRINGREF:
-        return new PycString(PycObject::TYPE_STRINGREF);
+    case PycObject::TYPE_UNICODE:
+    case PycObject::TYPE_ASCII:
+    case PycObject::TYPE_ASCII_INTERNED:
+    case PycObject::TYPE_SHORT_ASCII:
+    case PycObject::TYPE_SHORT_ASCII_INTERNED:
+        return new PycString(type);
     case PycObject::TYPE_TUPLE:
-        return new PycTuple();
+    case PycObject::TYPE_SMALL_TUPLE:
+        return new PycTuple(type);
     case PycObject::TYPE_LIST:
         return new PycList();
     case PycObject::TYPE_DICT:
@@ -56,12 +60,9 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
         return new PycCode();
-    case PycObject::TYPE_UNICODE:
-        return new PycString(PycObject::TYPE_UNICODE);
     case PycObject::TYPE_SET:
-        return new PycSet();
     case PycObject::TYPE_FROZENSET:
-        return new PycSet(PycObject::TYPE_FROZENSET);
+        return new PycSet(type);
     default:
         fprintf(stderr, "CreateObject: Got unsupported type 0x%X\n", type);
         return Pyc_NULL;
@@ -70,8 +71,20 @@ PycRef<PycObject> CreateObject(int type)
 
 PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod)
 {
-    PycRef<PycObject> obj = CreateObject(stream->getByte());
-    if (obj != Pyc_NULL)
-        obj->load(stream, mod);
+    int type = stream->getByte();
+    PycRef<PycObject> obj;
+
+    if (type == PycObject::TYPE_OBREF) {
+        int index = stream->get32();
+        obj = mod->getRef(index);
+    } else {
+        obj = CreateObject(type & 0x7F);
+        if (obj != Pyc_NULL) {
+            if (type & 0x80)
+                mod->refObject(obj);
+            obj->load(stream, mod);
+        }
+    }
+
     return obj;
 }

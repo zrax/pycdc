@@ -3,6 +3,46 @@
 #include "data.h"
 #include <cstring>
 
+static void ascii_to_utf8(char** data)
+{
+    size_t utf8len = 0, asciilen = 0;
+    unsigned char* cp = reinterpret_cast<unsigned char*>(*data);
+    while (*cp) {
+        if (*cp & 0x80)
+            utf8len += 2;
+        else
+            utf8len += 1;
+
+        // Advance ASCII pointer
+        ++asciilen;
+        ++cp;
+    }
+
+    if (asciilen == utf8len) {
+        // This can only happen if all characters are [0x00-0x7f].
+        // If that happens, we don't need to do any conversion, nor
+        // reallocate any buffers.  Woot!
+        return;
+    }
+
+    char* utf8_buffer = new char[utf8len + 1];
+    unsigned char* up = reinterpret_cast<unsigned char*>(utf8_buffer);
+    cp = reinterpret_cast<unsigned char*>(*data);
+    while (*cp) {
+        if (*cp & 0x80) {
+            *up++ = 0xC0 | ((*cp >> 6) & 0x1F);
+            *up++ = 0x80 | ((*cp     ) & 0x3F);
+        } else {
+            *up++ = *cp;
+        }
+        ++cp;
+    }
+
+    utf8_buffer[utf8len] = 0;
+    delete[] *data;
+    *data = utf8_buffer;
+}
+
 /* PycString */
 void PycString::load(PycData* stream, PycModule* mod)
 {
@@ -20,16 +60,25 @@ void PycString::load(PycData* stream, PycModule* mod)
             m_value = 0;
         }
     } else {
-        m_length = stream->get32();
+        if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
+            m_length = stream->getByte();
+        else
+            m_length = stream->get32();
+
         if (m_length) {
             m_value = new char[m_length+1];
             stream->getBuffer(m_length, m_value);
             m_value[m_length] = 0;
+
+            if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
+                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
+                ascii_to_utf8(&m_value);
         } else {
             m_value = 0;
         }
 
-        if (type() == TYPE_INTERNED)
+        if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
+                type() == TYPE_SHORT_ASCII_INTERNED)
             mod->intern(this);
     }
 }

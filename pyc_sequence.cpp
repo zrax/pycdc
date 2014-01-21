@@ -5,7 +5,11 @@
 /* PycTuple */
 void PycTuple::load(PycData* stream, PycModule* mod)
 {
-    m_size = stream->get32();
+    if (type() == TYPE_SMALL_TUPLE)
+        m_size = stream->getByte();
+    else
+        m_size = stream->get32();
+
     m_values.resize(m_size);
     for (int i=0; i<m_size; i++)
         m_values[i] = LoadObject(stream, mod);

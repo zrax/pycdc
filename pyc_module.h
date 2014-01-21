@@ -52,7 +52,10 @@ public:
     PycRef<PycCode> code() const { return m_code; }
 
     void intern(PycRef<PycString> str) { m_interns.push_back(str); }
-    PycRef<PycString> getIntern(int ref);
+    PycRef<PycString> getIntern(int ref) const;
+
+    void refObject(PycRef<PycObject> str) { m_refs.push_back(str); }
+    PycRef<PycObject> getRef(int ref) const;
 
 private:
     void setVersion(unsigned int magic);
@@ -63,6 +66,7 @@ private:
 
     PycRef<PycCode> m_code;
     std::list<PycRef<PycString> > m_interns;
+    std::list<PycRef<PycObject> > m_refs;
 };
 
 #endif

@@ -155,9 +155,18 @@ void PycModule::loadFromFile(const char* filename)
     m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
-PycRef<PycString> PycModule::getIntern(int ref)
+PycRef<PycString> PycModule::getIntern(int ref) const
 {
     std::list<PycRef<PycString> >::const_iterator it = m_interns.begin();
-    for (int i=0; i<ref; i++, it++) /* move forward to ref */ ;
+    while (ref--)
+        ++it;
+    return *it;
+}
+
+PycRef<PycObject> PycModule::getRef(int ref) const
+{
+    std::list<PycRef<PycObject> >::const_iterator it = m_refs.begin();
+    while (ref--)
+        ++it;
     return *it;
 }

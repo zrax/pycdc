@@ -8,19 +8,19 @@ public:
 
     PycRef(_Obj* obj) : m_obj(obj)
     {
-        if(m_obj)
+        if (m_obj)
             m_obj->addRef();
     }
 
     PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj)
     {
-        if(m_obj)
+        if (m_obj)
             m_obj->addRef();
     }
 
     ~PycRef<_Obj>()
     {
-        if(m_obj)
+        if (m_obj)
             m_obj->delRef();
     }
 
@@ -62,6 +62,9 @@ private:
 };
 
 
+class PycData;
+class PycModule;
+
 /* Please only hold PycObjects inside PycRefs! */
 class PycObject {
 public:
@@ -83,6 +86,7 @@ public:
         TYPE_STRING = 's',
         TYPE_INTERNED = 't',
         TYPE_STRINGREF = 'R',
+        TYPE_OBREF = 'r',
         TYPE_TUPLE = '(',
         TYPE_LIST = '[',
         TYPE_DICT = '{',
@@ -92,6 +96,11 @@ public:
         TYPE_UNKNOWN = '?',
         TYPE_SET = '<',
         TYPE_FROZENSET = '>',
+        TYPE_ASCII = 'a',
+        TYPE_ASCII_INTERNED = 'A',
+        TYPE_SMALL_TUPLE = ')',
+        TYPE_SHORT_ASCII = 'z',
+        TYPE_SHORT_ASCII_INTERNED = 'Z',
     };
 
     PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }
@@ -102,19 +111,19 @@ public:
     virtual bool isEqual(PycRef<PycObject> obj) const
     { return (this == (PycObject*)obj); }
 
-    virtual void load(class PycData*, class PycModule*) { }
+    virtual void load(PycData*, PycModule*) { }
 
 private:
     int m_refs;
     int m_type;
 
 public:
-    void addRef() { if (this) ++m_refs; }
-    void delRef() { if (this && --m_refs == 0) delete this; }
+    void addRef() { ++m_refs; }
+    void delRef() { if (--m_refs == 0) delete this; }
 };
 
 PycRef<PycObject> CreateObject(int type);
-PycRef<PycObject> LoadObject(class PycData* stream, class PycModule* mod);
+PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod);
 
 /* Static Singleton objects */
 extern PycRef<PycObject> Pyc_NULL;

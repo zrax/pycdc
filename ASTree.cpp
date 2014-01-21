@@ -1223,7 +1223,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
 
-                if (t_ob->object()->type() == PycObject::TYPE_TUPLE &&
+                if ((t_ob->object()->type() == PycObject::TYPE_TUPLE ||
+                        t_ob->object()->type() == PycObject::TYPE_SMALL_TUPLE) &&
                         !t_ob->object().cast<PycTuple>()->values().size()) {
                     ASTTuple::value_t values;
                     stack.push(new ASTTuple(values));
@@ -2618,7 +2619,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         else
                             print_src(import->name(), mod);
                         fprintf(pyc_output, " import ");
-                        if (fromlist->type() == PycObject::TYPE_TUPLE) {
+                        if (fromlist->type() == PycObject::TYPE_TUPLE ||
+                                fromlist->type() == PycObject::TYPE_SMALL_TUPLE) {
                             bool first = true;
                             PycTuple::value_t::const_iterator ii = fromlist.cast<PycTuple>()->values().begin();
                             for (; ii != fromlist.cast<PycTuple>()->values().end(); ++ii) {
@@ -2656,6 +2658,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         PycRef<PycObject> obj = src.cast<ASTObject>()->object();
                         if (obj->type() == PycObject::TYPE_STRING ||
                             obj->type() == PycObject::TYPE_INTERNED ||
+                            obj->type() == PycObject::TYPE_ASCII ||
+                            obj->type() == PycObject::TYPE_ASCII_INTERNED ||
+                            obj->type() == PycObject::TYPE_SHORT_ASCII ||
+                            obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED ||
                             obj->type() == PycObject::TYPE_STRINGREF)
                             OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0, true);
                         else if (obj->type() == PycObject::TYPE_UNICODE)
