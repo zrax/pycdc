@@ -2656,16 +2656,17 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     dest.cast<ASTName>()->name()->isEqual("__doc__")) {
                     if (src->type() == ASTNode::NODE_OBJECT) {
                         PycRef<PycObject> obj = src.cast<ASTObject>()->object();
-                        if (obj->type() == PycObject::TYPE_STRING ||
-                            obj->type() == PycObject::TYPE_INTERNED ||
-                            obj->type() == PycObject::TYPE_ASCII ||
-                            obj->type() == PycObject::TYPE_ASCII_INTERNED ||
-                            obj->type() == PycObject::TYPE_SHORT_ASCII ||
-                            obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED ||
-                            obj->type() == PycObject::TYPE_STRINGREF)
+                        if (obj->type() == PycObject::TYPE_STRING)
                             OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0, true);
                         else if (obj->type() == PycObject::TYPE_UNICODE)
                             OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u', true);
+                        else if (obj->type() == PycObject::TYPE_INTERNED ||
+                                 obj->type() == PycObject::TYPE_STRINGREF ||
+                                 obj->type() == PycObject::TYPE_ASCII ||
+                                 obj->type() == PycObject::TYPE_ASCII_INTERNED ||
+                                 obj->type() == PycObject::TYPE_SHORT_ASCII ||
+                                 obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
+                            OutputString(obj.cast<PycString>(), 0, true);
                     } else {
                         print_src(dest, mod);
                         fprintf(pyc_output, " = ");

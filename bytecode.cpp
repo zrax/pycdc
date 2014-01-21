@@ -158,16 +158,18 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
 {
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
+        break;
+    case PycObject::TYPE_UNICODE:
+        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
+        break;
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
-        break;
-    case PycObject::TYPE_UNICODE:
-        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
+        OutputString(obj.cast<PycString>(), 0);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
