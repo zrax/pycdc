@@ -10,7 +10,7 @@ public:
     PycString(int type = TYPE_STRING)
         : PycObject(type), m_value(0), m_length(0) { }
 
-    ~PycString() { if (m_value) delete[] m_value; }
+    ~PycString() { delete[] m_value; }
 
     bool isEqual(PycRef<PycObject> obj) const;
     bool isEqual(const char* str) const;

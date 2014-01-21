@@ -1,10 +1,6 @@
 #include "pyc_module.h"
 #include "data.h"
 
-PycModule::PycModule()
-    : m_maj(-1), m_min(-1), m_unicode(false)
-{ }
-
 void PycModule::setVersion(unsigned int magic)
 {
     // Default for versions that don't support unicode selection

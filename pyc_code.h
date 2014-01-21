@@ -58,7 +58,7 @@ public:
     PycRef<PycObject> getCellVar(int idx) const
     {
         return (idx >= m_cellVars->size()) ? m_freeVars->get(idx - m_cellVars->size())
-                                          : m_cellVars->get(idx);
+                                           : m_cellVars->get(idx);
     }
 
     const globals_t& getGlobals() const { return m_globalsUsed; }

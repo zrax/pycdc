@@ -98,8 +98,7 @@ std::string PycLong::repr() const
 void PycFloat::load(PycData* stream, PycModule*)
 {
     int len = stream->getByte();
-    if (m_value)
-        delete[] m_value;
+    delete[] m_value;
     if (len > 0) {
         m_value = new char[len+1];
         stream->getBuffer(len, m_value);
@@ -127,8 +126,7 @@ void PycComplex::load(PycData* stream, PycModule* mod)
     PycFloat::load(stream, mod);
 
     int len = stream->getByte();
-    if (m_imag)
-        delete[] m_imag;
+    delete[] m_imag;
     if (len > 0) {
         m_imag = new char[len+1];
         stream->getBuffer(len, m_imag);

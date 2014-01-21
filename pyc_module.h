@@ -32,7 +32,7 @@ enum PycMagic {
 
 class PycModule {
 public:
-    PycModule();
+    PycModule() : m_maj(-1), m_min(-1), m_unicode(false) { }
 
     void loadFromFile(const char* filename);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
