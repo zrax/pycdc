@@ -2,6 +2,7 @@
 #define _PYC_NUMERIC_H
 
 #include "pyc_object.h"
+#include "data.h"
 #include <list>
 #include <string>
 
@@ -93,7 +94,11 @@ public:
     double value() const { return m_value; }
 
 private:
-    double m_value;
+    union
+    {
+        Pyc_INT64 m_value_i64;
+        double m_value;
+    };
 };
 
 class PycCComplex : public PycCFloat {
@@ -112,7 +117,11 @@ public:
     double imag() const { return m_imag; }
 
 private:
-    double m_imag;
+    union
+    {
+        Pyc_INT64 m_imag_i64;
+        double m_imag;
+    };
 };
 
 #endif
