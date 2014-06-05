@@ -80,20 +80,24 @@ private:
 class PycCFloat : public PycObject {
 public:
     PycCFloat(int type = TYPE_BINARY_FLOAT)
-        : PycObject(type), m_value(0.0) { }
+        : PycObject(type), m_value.d(0.0) { }
 
     bool isEqual(PycRef<PycObject> obj) const
     {
         return (type() == obj->type()) &&
-               (m_value == obj.cast<PycCFloat>()->m_value);
+               (m_value.d == obj.cast<PycCFloat>()->m_value.d);
     }
 
     void load(class PycData* stream, class PycModule* mod);
 
-    double value() const { return m_value; }
+    double value() const { return m_value.d; }
 
 private:
-    double m_value;
+    union
+    {
+        Pyc_INT64 i64;
+        double d;
+    } m_value;
 };
 
 class PycCComplex : public PycCFloat {
