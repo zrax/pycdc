@@ -85,7 +85,7 @@ public:
     bool isEqual(PycRef<PycObject> obj) const
     {
         return (type() == obj->type()) &&
-               (m_value.d == obj.cast<PycCFloat>()->m_value);
+               (m_value == obj.cast<PycCFloat>()->m_value);
     }
 
     void load(class PycData* stream, class PycModule* mod);
