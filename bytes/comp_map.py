@@ -15,13 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with pycdc.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import os
+
+if len(sys.argv) != 3:
+    sys.stderr.write('Usage: %s in_dir out_dir\n' % sys.argv[0])
+    sys.exit(1)
+
+if not os.path.exists(sys.argv[2]):
+    os.mkdir(sys.argv[2])
+
 maplist = [ 10, 11, 13, 14, 15, 16,
             20, 21, 22, 23, 24, 25, 26, 27,
             30, 31, 32, 33, 34 ]
 
 for mapver in maplist:
-    infile = open('python_%d.map' % mapver, 'rt')
-    outfile = open('python_%d.cpp' % mapver, 'wt')
+    infile = open(os.path.join(sys.argv[1], 'python_%d.map' % mapver), 'rt')
+    outfile = open(os.path.join(sys.argv[2], 'python_%d.cpp' % mapver), 'wt')
 
     idToOpcode = {}
     opcodeToId = {}
@@ -31,7 +41,7 @@ for mapver in maplist:
         opcodeToId[code] = int(fileid)
 
     outfile.write('/* This file was auto-generated with comp_map.py.  DO NOT EDIT! */\n\n')
-    outfile.write('#include "../bytecode.h"\n\n')
+    outfile.write('#include "bytecode.h"\n\n')
     outfile.write('int python_%d_map(int id)\n' % mapver)
     outfile.write('{\n')
     outfile.write('    switch (id) {\n')
