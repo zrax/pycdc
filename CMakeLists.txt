@@ -14,8 +14,6 @@ set(PYTHON_VERSIONS
     30 31 32 33 34
 )
 
-set(MAP_FILES "")
-set(MAP_SOURCES "")
 foreach(ver ${PYTHON_VERSIONS})
     set(MAP_FILES   ${MAP_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/bytes/python_${ver}.map)
     set(MAP_SOURCES ${MAP_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/bytes/python_${ver}.cpp)
@@ -42,7 +40,7 @@ set(COMMON_SOURCES
     ${MAP_SOURCES}
 )
 
-set(pycdas_SOURCES
+set(pycdc_AST_SOURCES
     ASTree.cpp
     ASTNode.cpp
 )
@@ -53,7 +51,7 @@ add_library(pycxx STATIC ${COMMON_SOURCES})
 add_executable(pycdas pycdas.cpp)
 target_link_libraries(pycdas pycxx)
 
-add_executable(pycdc pycdc.cpp ${pycdas_SOURCES})
+add_executable(pycdc pycdc.cpp ${pycdc_AST_SOURCES})
 target_link_libraries(pycdc pycxx)
 
 # For tests
