@@ -14,10 +14,11 @@ If you wish to contribute, please fork us on github at
 https://github.com/zrax/pycdc
 
 ## Building Decompyle++
-* Generate a project or makefile with [CMake](http://www.cmake.org)
-* For projects (e.g. MSVC), open the generated project file and build it
-* For makefiles, just run `make`
-* To run tests (\*nix or MSYS), run `make test`
+* Generate a project or makefile with [CMake](http://www.cmake.org) (See CMake's documentation for details)
+* Build the generated project or makefile
+  * For projects (e.g. MSVC), open the generated project file and build it
+  * For makefiles, just run `make`
+  * To run tests (on \*nix or MSYS), run `make test`
 
 ## Usage
 **To run pycdas**, the PYC Disassembler:
