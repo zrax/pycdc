@@ -15,9 +15,9 @@ static bool inPrint;
 /* Use this to prevent printing return keywords and newlines in lambdas. */
 static bool inLambda = false;
 
-/* Use this to keep track of whether we need to print out the list of global
- * variables that we are using (such as inside a function). */
-static bool printGlobals = false;
+/* Use this to keep track of whether we need to print out any docstring and
+ * the list of global variables that we are using (such as inside a function). */
+static bool printDocstringAndGlobals = false;
 
 /* Use this to keep track of whether we need to print a class or module docstring */
 static bool printClassDocstring = true;
@@ -2579,7 +2579,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     fprintf(pyc_output, ": ");
                 } else {
                     fprintf(pyc_output, "):\n");
-                    printGlobals = true;
+                    printDocstringAndGlobals = true;
                 }
 
                 bool preLambda = inLambda;
@@ -2701,6 +2701,30 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     cleanBuild = true;
 }
 
+bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
+{
+    // docstrings are translated from the bytecode __doc__ = 'string' to simply '''string'''
+    char prefix = -1;
+    if (obj->type() == PycObject::TYPE_STRING)
+        prefix = mod->majorVer() == 3 ? 'b' : 0;
+    else if (obj->type() == PycObject::TYPE_UNICODE)
+        prefix = mod->majorVer() == 3 ? 0 : 'u';
+    else if (obj->type() == PycObject::TYPE_INTERNED ||
+            obj->type() == PycObject::TYPE_STRINGREF ||
+            obj->type() == PycObject::TYPE_ASCII ||
+            obj->type() == PycObject::TYPE_ASCII_INTERNED ||
+            obj->type() == PycObject::TYPE_SHORT_ASCII ||
+            obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
+        prefix = 0;
+    if (prefix != -1) {
+        start_line(indent);
+        OutputString(obj.cast<PycString>(), prefix, true);
+        fprintf(pyc_output, "\n");
+        return true;
+    } else
+        return false;
+}
+
 void decompyle(PycRef<PycCode> code, PycModule* mod)
 {
     PycRef<ASTNode> source = BuildFromCode(code, mod);
@@ -2724,33 +2748,15 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
                 }
             }
         }
-        // Class and module docstrings may only appear at the beginning of their source,
-        // and are translated from the bytecode __doc__ = 'string' to simply '''string'''
+        // Class and module docstrings may only appear at the beginning of their source
         if (printClassDocstring && clean->nodes().front()->type() == ASTNode::NODE_STORE) {
             PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
             if (store->dest()->type() == ASTNode::NODE_NAME &&
                     store->dest().cast<ASTName>()->name()->isEqual("__doc__") &&
                     store->src()->type() == ASTNode::NODE_OBJECT) {
-
-                PycRef<PycObject> obj = store->src().cast<ASTObject>()->object();
-                char prefix = -1;
-                if (obj->type() == PycObject::TYPE_STRING)
-                    prefix = mod->majorVer() == 3 ? 'b' : 0;
-                else if (obj->type() == PycObject::TYPE_UNICODE)
-                    prefix = mod->majorVer() == 3 ? 0 : 'u';
-                else if (obj->type() == PycObject::TYPE_INTERNED ||
-                        obj->type() == PycObject::TYPE_STRINGREF ||
-                        obj->type() == PycObject::TYPE_ASCII ||
-                        obj->type() == PycObject::TYPE_ASCII_INTERNED ||
-                        obj->type() == PycObject::TYPE_SHORT_ASCII ||
-                        obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
-                    prefix = 0;
-                if (prefix != -1) {
-                    start_line(cur_indent + (code->name()->isEqual("<module>") ? 0 : 1));
-                    OutputString(obj.cast<PycString>(), prefix, true);
-                    fprintf(pyc_output, "\n");
+                if (print_docstring(store->src().cast<ASTObject>()->object(),
+                        cur_indent + (code->name()->isEqual("<module>") ? 0 : 1), mod))
                     clean->removeFirst();
-                }
             }
         }
         if (clean->nodes().back()->type() == ASTNode::NODE_RETURN) {
@@ -2771,20 +2777,25 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
     inPrint = false;
     bool part1clean = cleanBuild;
 
-    PycCode::globals_t globs = code->getGlobals();
-    if (printGlobals && globs.size()) {
-        start_line(cur_indent+1);
-        fprintf(pyc_output, "global ");
-        bool first = true;
-        PycCode::globals_t::iterator it;
-        for (it = globs.begin(); it != globs.end(); ++it) {
-            if (!first)
-                fprintf(pyc_output, ", ");
-            fprintf(pyc_output, "%s", (*it)->value());
-            first = false;
+    if (printDocstringAndGlobals) {
+        if (code->consts()->size())
+            print_docstring(code->getConst(0), cur_indent + 1, mod);
+
+        PycCode::globals_t globs = code->getGlobals();
+        if (globs.size()) {
+            start_line(cur_indent + 1);
+            fprintf(pyc_output, "global ");
+            bool first = true;
+            PycCode::globals_t::iterator it;
+            for (it = globs.begin(); it != globs.end(); ++it) {
+                if (!first)
+                    fprintf(pyc_output, ", ");
+                fprintf(pyc_output, "%s", (*it)->value());
+                first = false;
+            }
+            fprintf(pyc_output, "\n");
         }
-        fprintf(pyc_output, "\n");
-        printGlobals = false;
+        printDocstringAndGlobals = false;
     }
 
     print_src(source, mod);
