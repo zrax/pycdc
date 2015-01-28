@@ -19,6 +19,9 @@ static bool inLambda = false;
  * variables that we are using (such as inside a function). */
 static bool printGlobals = false;
 
+/* Use this to keep track of whether we need to print a class or module docstring */
+static bool printClassDocstring = true;
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -2605,6 +2608,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     // Don't put parens if there are no base classes
                     fprintf(pyc_output, ":\n");
                 }
+                printClassDocstring = true;
                 PycRef<ASTNode> code = src.cast<ASTClass>()->code().cast<ASTCall>()
                                        ->func().cast<ASTFunction>()->code();
                 print_src(code, mod);
@@ -2645,38 +2649,13 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         print_src(dest, mod);
                     }
                 }
+            } else if (src->type() == ASTNode::NODE_BINARY &&
+                    src.cast<ASTBinary>()->is_inplace() == true) {
+                print_src(src, mod);
             } else {
-                if (src->type() == ASTNode::NODE_BINARY &&
-                        src.cast<ASTBinary>()->is_inplace() == true) {
-                    print_src(src, mod);
-                    break;
-                }
-
-                if (dest->type() == ASTNode::NODE_NAME &&
-                    dest.cast<ASTName>()->name()->isEqual("__doc__")) {
-                    if (src->type() == ASTNode::NODE_OBJECT) {
-                        PycRef<PycObject> obj = src.cast<ASTObject>()->object();
-                        if (obj->type() == PycObject::TYPE_STRING)
-                            OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0, true);
-                        else if (obj->type() == PycObject::TYPE_UNICODE)
-                            OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u', true);
-                        else if (obj->type() == PycObject::TYPE_INTERNED ||
-                                 obj->type() == PycObject::TYPE_STRINGREF ||
-                                 obj->type() == PycObject::TYPE_ASCII ||
-                                 obj->type() == PycObject::TYPE_ASCII_INTERNED ||
-                                 obj->type() == PycObject::TYPE_SHORT_ASCII ||
-                                 obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
-                            OutputString(obj.cast<PycString>(), 0, true);
-                    } else {
-                        print_src(dest, mod);
-                        fprintf(pyc_output, " = ");
-                        print_src(src, mod);
-                    }
-                } else {
-                    print_src(dest, mod);
-                    fprintf(pyc_output, " = ");
-                    print_src(src, mod);
-                }
+                print_src(dest, mod);
+                fprintf(pyc_output, " = ");
+                print_src(src, mod);
             }
         }
         break;
@@ -2745,6 +2724,35 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
                 }
             }
         }
+        // Class and module docstrings may only appear at the beginning of their source,
+        // and are translated from the bytecode __doc__ = 'string' to simply '''string'''
+        if (printClassDocstring && clean->nodes().front()->type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+            if (store->dest()->type() == ASTNode::NODE_NAME &&
+                    store->dest().cast<ASTName>()->name()->isEqual("__doc__") &&
+                    store->src()->type() == ASTNode::NODE_OBJECT) {
+
+                PycRef<PycObject> obj = store->src().cast<ASTObject>()->object();
+                char prefix = -1;
+                if (obj->type() == PycObject::TYPE_STRING)
+                    prefix = mod->majorVer() == 3 ? 'b' : 0;
+                else if (obj->type() == PycObject::TYPE_UNICODE)
+                    prefix = mod->majorVer() == 3 ? 0 : 'u';
+                else if (obj->type() == PycObject::TYPE_INTERNED ||
+                        obj->type() == PycObject::TYPE_STRINGREF ||
+                        obj->type() == PycObject::TYPE_ASCII ||
+                        obj->type() == PycObject::TYPE_ASCII_INTERNED ||
+                        obj->type() == PycObject::TYPE_SHORT_ASCII ||
+                        obj->type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
+                    prefix = 0;
+                if (prefix != -1) {
+                    start_line(cur_indent + (code->name()->isEqual("<module>") ? 0 : 1));
+                    OutputString(obj.cast<PycString>(), prefix, true);
+                    fprintf(pyc_output, "\n");
+                    clean->removeFirst();
+                }
+            }
+        }
         if (clean->nodes().back()->type() == ASTNode::NODE_RETURN) {
             PycRef<ASTReturn> ret = clean->nodes().back().cast<ASTReturn>();
 
@@ -2753,6 +2761,8 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
             }
         }
     }
+    if (printClassDocstring)
+        printClassDocstring = false;
     // This is outside the clean check so a source block will always
     // be compilable, even if decompylation failed.
     if (clean->nodes().size() == 0)
