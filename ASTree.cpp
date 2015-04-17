@@ -1258,6 +1258,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> code = stack.top();
                 stack.pop();
+
+                /* Test for the qualified name of the function (at TOS) */
+                int tos_type = code.cast<ASTObject>()->object()->type();
+                if (tos_type != PycObject::TYPE_CODE &&
+					tos_type != PycObject::TYPE_CODE2) {
+					code = stack.top();
+                    stack.pop();
+                }
+
                 ASTFunction::defarg_t defArgs;
                 for (int i=0; i<operand; i++) {
                     defArgs.push_front(stack.top());
