@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir tests
+mkdir -p tests
 
 fails=0
 files=()
