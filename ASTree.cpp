@@ -2713,7 +2713,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
 bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
 {
     // docstrings are translated from the bytecode __doc__ = 'string' to simply '''string'''
-    char prefix = -1;
+    signed char prefix = -1;
     if (obj->type() == PycObject::TYPE_STRING)
         prefix = mod->majorVer() == 3 ? 'b' : 0;
     else if (obj->type() == PycObject::TYPE_UNICODE)
