@@ -17,7 +17,7 @@ public:
         NODE_COMPREHENSION,
 
         // Empty nodes
-        NODE_PASS, NODE_LOCALS
+        NODE_PASS, NODE_LOCALS, NODE_LOADBUILDCLASS
     };
 
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
@@ -539,6 +539,18 @@ private:
     PycRef<ASTNode> m_result;
     generator_t m_generators;
 
+};
+
+
+class ASTLoadBuildClass : public ASTNode {
+public:
+    ASTLoadBuildClass(PycRef<PycObject> obj)
+        : ASTNode(NODE_LOADBUILDCLASS), m_obj(obj) { }
+
+    PycRef<PycObject> object() const { return m_obj; }
+
+private:
+    PycRef<PycObject> m_obj;
 };
 
 #endif

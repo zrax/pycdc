@@ -367,6 +367,43 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 int pparams = (operand & 0xFF);
                 ASTCall::kwparam_t kwparamList;
                 ASTCall::pparam_t pparamList;
+
+                /* Test for the load build class function */
+                stack_hist.push(stack);
+                int basecnt = 0;
+                ASTTuple::value_t bases;
+                bases.resize(basecnt);
+                PycRef<ASTNode> TOS = stack.top();
+                int TOS_type = TOS->type();
+                // bases are NODE_NAME at TOS
+                while (TOS_type == ASTNode::NODE_NAME) {
+                    bases.resize(basecnt + 1);
+                    bases[basecnt] = TOS;
+                    basecnt++;
+                    stack.pop();
+                    TOS = stack.top();
+                    TOS_type = TOS->type();
+                }
+                // qualified name is PycString at TOS
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+                PycRef<ASTNode> function = stack.top();
+                stack.pop();
+                PycRef<ASTNode> loadbuild = stack.top();
+                stack.pop();
+                int loadbuild_type = loadbuild->type();
+                if (loadbuild_type == ASTNode::NODE_LOADBUILDCLASS) {
+                    PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
+                    stack.push(new ASTClass(call, new ASTTuple(bases), name));
+                    stack_hist.pop();
+                    break;
+                }
+                else
+                {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
+
                 for (int i=0; i<kwparams; i++) {
                     PycRef<ASTNode> val = stack.top();
                     stack.pop();
@@ -2019,6 +2056,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 curblock->append(new ASTReturn(value, ASTReturn::YIELD));
+            }
+            break;
+        case Pyc::LOAD_BUILD_CLASS:
+            {
+                stack.push(new ASTLoadBuildClass(new PycObject()));
             }
             break;
         default:
