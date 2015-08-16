@@ -32,7 +32,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     std::stack<PycRef<ASTBlock> > blocks;
     PycRef<ASTBlock> defblock = new ASTBlock(ASTBlock::BLK_MAIN);
     defblock->init();
-    PycRef<ASTBlock>& curblock = defblock;
+    PycRef<ASTBlock> curblock = defblock;
     blocks.push(defblock);
 
     int opcode, operand;
