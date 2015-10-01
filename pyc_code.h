@@ -15,6 +15,8 @@ public:
         CO_NESTED = 0x10,
         CO_GENERATOR = 0x20,
         CO_NOFREE = 0x40,
+        CO_COROUTINE = 0x80,
+        CO_ITERABLE_COROUTINE = 0x100,
         CO_GENERATOR_ALLOWED = 0x1000,
         CO_FUTURE_DIVISION = 0x2000,
         CO_FUTURE_ABSOLUTE_IMPORT = 0x4000,
@@ -22,6 +24,7 @@ public:
         CO_FUTURE_PRINT_FUNCTION = 0x10000,
         CO_FUTURE_UNICODE_LITERALS = 0x20000,
         CO_FUTURE_BARRY_AS_BDFL = 0x40000,
+        CO_FUTURE_GENERATOR_STOP = 0x80000,
     };
 
     PycCode(int type = TYPE_CODE)

@@ -9,9 +9,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 set(PYTHON_VERSIONS
-    10 11 13 14 15 16        # Python 1.1 and 1.2 are marshall-identical
+    10 11    13 14 15 16        # Python 1.1 and 1.2 are marshal-identical
     20 21 22 23 24 25 26 27
-    30 31 32 33 34
+    30 31 32 33 34 35
 )
 
 foreach(ver ${PYTHON_VERSIONS})

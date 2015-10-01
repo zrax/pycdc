@@ -28,6 +28,7 @@ DECLARE_PYTHON(3, 1)
 DECLARE_PYTHON(3, 2)
 DECLARE_PYTHON(3, 3)
 DECLARE_PYTHON(3, 4)
+DECLARE_PYTHON(3, 5)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -49,8 +50,11 @@ const char* Pyc::OpcodeName(int opcode)
     "INPLACE_MULTIPLY", "INPLACE_DIVIDE", "INPLACE_MODULO", "INPLACE_POWER",
     "GET_ITER", "PRINT_ITEM_TO", "PRINT_NEWLINE_TO", "INPLACE_LSHIFT",
     "INPLACE_RSHIFT", "INPLACE_AND", "INPLACE_XOR", "INPLACE_OR",
-    "WITH_CLEANUP", "IMPORT_STAR", "YIELD_VALUE", "LOAD_BUILD_CLASS",
-    "STORE_LOCALS", "POP_EXCEPT", "SET_ADD", "YIELD_FROM",
+    "WITH_CLEANUP", "WITH_CLEANUP_START", "WITH_CLEANUP_FINISH", "IMPORT_STAR",
+    "YIELD_VALUE", "LOAD_BUILD_CLASS", "STORE_LOCALS", "POP_EXCEPT", "SET_ADD",
+    "YIELD_FROM", "BINARY_MATRIX_MULTIPLY", "INPLACE_MATRIX_MULTIPLY",
+    "GET_AITER", "GET_ANEXT", "BEFORE_ASYNC_WITH", "GET_YEILD_FROM_ITER",
+    "GET_AWAITABLE",
 
     "STORE_NAME", "DELETE_NAME", "UNPACK_TUPLE", "UNPACK_LIST", "UNPACK_ARG",
     "STORE_ATTR", "DELETE_ATTR", "STORE_GLOBAL", "DELETE_GLOBAL",
@@ -66,8 +70,15 @@ const char* Pyc::OpcodeName(int opcode)
     "POP_JUMP_IF_FALSE", "POP_JUMP_IF_TRUE", "CONTINUE_LOOP", "MAKE_CLOSURE",
     "LOAD_CLOSURE", "LOAD_DEREF", "STORE_DEREF", "DELETE_DEREF",
     "EXTENDED_ARG", "SETUP_WITH", "SET_ADD", "MAP_ADD", "UNPACK_EX",
-    "LIST_APPEND", "LOAD_CLASSDEREF",
+    "LIST_APPEND", "LOAD_CLASSDEREF", "BUILD_LIST_UNPACK", "BUILD_MAP_UNPACK",
+    "BUILD_MAP_UNPACK_WITH_CALL", "BUILD_TUPLE_UNPACK", "BUILD_SET_UNPACK",
+    "SETUP_ASYNC_WITH",
     };
+
+#if __cplusplus >= 201103L
+    static_assert(sizeof(opcode_names) / sizeof(opcode_names[0]) == PYC_LAST_OPCODE,
+                  "Pyc::OpcodeName opcode_names not in sync with opcode enum");
+#endif
 
     if (opcode < 0)
         return "<INVALID>";
@@ -112,6 +123,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 2: return python_32_map(opcode);
         case 3: return python_33_map(opcode);
         case 4: return python_34_map(opcode);
+        case 5: return python_35_map(opcode);
         }
         break;
     }
