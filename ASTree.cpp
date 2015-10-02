@@ -231,6 +231,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_XOR));
             }
             break;
+        case Pyc::BINARY_MATRIX_MULTIPLY:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_MAT_MULTIPLY));
+            }
         case Pyc::BREAK_LOOP:
             curblock->append(new ASTKeyword(ASTKeyword::KW_BREAK));
             break;
@@ -904,6 +912,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> left = stack.top();
                 stack.pop();
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_XOR));
+            }
+            break;
+        case Pyc::INPLACE_MATRIX_MULTIPLY:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_MAT_MULTIPLY));
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
