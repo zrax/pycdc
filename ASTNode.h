@@ -23,15 +23,33 @@ public:
     ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
     virtual ~ASTNode() { }
 
-    int type() const { return (this) ? m_type : NODE_INVALID; }
+    int type() const { return internalGetType(this); }
 
 private:
     int m_refs;
     int m_type;
 
+    // Hack to make clang happy :(
+    static int internalGetType(const ASTNode *node)
+    {
+        return node ? node->m_type : NODE_INVALID;
+    }
+
+    static void internalAddRef(ASTNode *node)
+    {
+        if (node)
+            ++node->m_refs;
+    }
+
+    static void internalDelRef(ASTNode *node)
+    {
+        if (node && --node->m_refs == 0)
+            delete node;
+    }
+
 public:
-    void addRef() { if (this) ++m_refs; }
-    void delRef() { if (this && --m_refs == 0) delete this; }
+    void addRef() { internalAddRef(this); }
+    void delRef() { internalDelRef(this); }
 };
 
 /* A NULL node for comparison */

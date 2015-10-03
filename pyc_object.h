@@ -106,7 +106,7 @@ public:
     PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }
     virtual ~PycObject() { }
 
-    int type() const { return (this) ? m_type : TYPE_NULL; }
+    int type() const { return internalGetType(this); }
 
     virtual bool isEqual(PycRef<PycObject> obj) const
     { return (this == (PycObject*)obj); }
@@ -116,6 +116,12 @@ public:
 private:
     int m_refs;
     int m_type;
+
+    // Hack to make clang happy :(
+    static int internalGetType(const PycObject *obj)
+    {
+        return obj ? obj->m_type : TYPE_NULL;
+    }
 
 public:
     void addRef() { ++m_refs; }
