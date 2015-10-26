@@ -51,8 +51,14 @@ add_library(pycxx STATIC ${COMMON_SOURCES})
 add_executable(pycdas pycdas.cpp)
 target_link_libraries(pycdas pycxx)
 
+install(TARGETS pycdas
+    RUNTIME DESTINATION bin)
+
 add_executable(pycdc pycdc.cpp ${pycdc_AST_SOURCES})
 target_link_libraries(pycdc pycxx)
+
+install(TARGETS pycdc
+    RUNTIME DESTINATION bin)
 
 # For tests
 add_custom_target(test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
