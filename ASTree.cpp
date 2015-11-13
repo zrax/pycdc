@@ -2607,6 +2607,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 } else {
                     fprintf(pyc_output, "\n");
                     start_line(cur_indent);
+                    if (code_src->flags() & PycCode::CO_COROUTINE)
+                        fprintf(pyc_output, "async ");
                     fprintf(pyc_output, "def ");
                     print_src(dest, mod);
                     fprintf(pyc_output, "(");
