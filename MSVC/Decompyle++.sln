@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pyc_disasm", "pyc_disasm.vcxproj", "{68BBE691-4539-49D0-AEA4-F01392E7FE87}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pycdc", "pycdc.vcxproj", "{13058ECD-D42E-4108-B062-EDA8D9394BC2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pyc_decomp", "pyc_decomp.vcxproj", "{13058ECD-D42E-4108-B062-EDA8D9394BC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
