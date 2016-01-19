@@ -7,25 +7,57 @@
 #  define PATHSEP '/'
 #endif
 
+
+#define exitMain( exitCode ) \
+	logVerb("ExitCode: %i\n", ERR_InputFileNotSet );	\
+	return exitCode;
+
+
 int main(int argc, char* argv[])
 {
+
     if (argc < 2) {
-        fprintf(stderr, "No input file specified\n");
-        return 1;
+		logErr( " Decompyle++ [jan'16]"
+				" -------------------"
+				"\n"
+				"   No input file specified\n");
+		exitMain( ERR_InputFileNotSet )
     }
 
-    PycModule mod;
-    mod.loadFromFile(argv[1]);
-    if (!mod.isValid()) {
-        fprintf(stderr, "Could not load file %s\n", argv[1]);
-        return 1;
-    }
-    const char* dispname = strrchr(argv[1], PATHSEP);
-    dispname = (dispname == NULL) ? argv[1] : dispname + 1;
-    fprintf(pyc_output, "# Source Generated with Decompyle++\n");
-    fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
-            (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
-    decompyle(mod.code(), &mod);
+	try {
 
-    return 0;
+		PycModule mod;
+		mod.loadFromFile( argv[1] );
+		if ( !mod.isValid() || 
+			 (mod.code() == Pyc_NULL) ) {
+
+			logErr( "Could not load file %s\n", argv[1]);
+			exitMain( ERR_ParsingInputFile )
+
+		}
+
+	 // output logo
+		const char* dispname = strrchr(argv[1], PATHSEP);
+		dispname = (dispname == NULL) ? argv[1] : dispname + 1;
+		log ( "# Source Generated with Decompyle++\n");
+		log ( "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
+				( (mod.majorVer() < 3) && 
+				   mod.isUnicode()        ) ? " Unicode" : "");
+
+	 // Start decompile
+		decompyle(mod.code(), &mod);
+
+		exitMain( Success )
+
+	}
+	catch (ExitCodes exitCode) {
+		logVerb("ExitCode: %i\n", exitCode);
+		exitMain( exitCode )
+	}
+	catch (...) {
+		// catch unexpected error - mostly some nullpointer or accessviolations
+		logErr("Whoops an unexpected error occured.\n");
+		exitMain( ERR_InputFileNotSet )
+
+	}
 }

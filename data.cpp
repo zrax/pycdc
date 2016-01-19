@@ -1,5 +1,6 @@
 #include "data.h"
 #include <cstring>
+#include <share.h>
 
 FILE* pyc_output = stdout;
 
@@ -40,7 +41,7 @@ Pyc_INT64 PycData::get64()
 /* PycFile */
 PycFile::PycFile(const char* filename)
 {
-    m_stream = fopen(filename, "rb");
+	m_stream = _fsopen(filename, "rb" , _SH_DENYNO);
 }
 
 bool PycFile::atEof() const
