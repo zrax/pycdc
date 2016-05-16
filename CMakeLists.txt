@@ -6,6 +6,19 @@ find_package(PythonInterp REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror ${CMAKE_CXX_FLAGS}")
+elseif(MSVC)
+    # Make MSVC treat compiler warnings as errors
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+
+    # Increase warning levels to 4
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    # Disable CRT secure warnings (This project isn't windows specific)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 set(PYTHON_VERSIONS
