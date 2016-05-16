@@ -11,35 +11,39 @@ fails=0
 files=()
 errors=()
 diffs=()
-for f in $(find $1/inputs -name '*.pyc' -or -name '*.pyo')
+for prog in pycdc pycdas
 do
-    rel=$(realpath --relative-to=$1/inputs $f)
-    base=tests/$rel
-    mkdir -p $(dirname $base)
-    if ! ./pycdc "$f" 2>$base.err 1>$base.src
-    then
-        let fails+=1
-        files=("${files[@]}" "$rel")
-        stderr=$(cat $base.err)
-        errors=("${errors[@]}" "Bad exit code\n$stderr")
-        echo -ne "\033[31m.\033[m"
-    elif ! diff $base.err $1/baseline/$rel.err >/dev/null 2>&1
-    then
-        let fails+=1
-        files=("${files[@]}" "$rel")
-        errdiff=$(diff $base.err $1/baseline/$rel.err)
-        errors=("${errors[@]}" "Mismatch stderr\n$errdiff")
-        echo -ne "\033[31m.\033[m"
-    elif ! diff $base.src $1/baseline/$rel.src >/dev/null 2>&1
-    then
-        let fails+=1
-        files=("${files[@]}" "$rel")
-        srcdiff=$(diff $base.src $1/baseline/$rel.src)
-        errors=("${errors[@]}" "Mismatch stdout\n$srcdiff")
-        echo -ne "\033[31m.\033[m"
-    else
-        echo -ne "\033[32m.\033[m"
-    fi
+    for f in $(find $1/inputs -name '*.pyc' -or -name '*.pyo')
+    do
+        rel=$(realpath --relative-to=$1/inputs $f)
+        baseline=$1/baseline/$prog/$rel
+        out=tests/$prog/$rel
+        mkdir -p $(dirname $out)
+        if ! ./$prog "$f" 2>$out.err 1>$out.src
+        then
+            let fails+=1
+            files=("${files[@]}" "$rel")
+            stderr=$(cat $out.err)
+            errors=("${errors[@]}" "Bad exit code\n$stderr")
+            echo -ne "\033[31m.\033[m"
+        elif ! diff $out.err $baseline.err >/dev/null 2>&1
+        then
+            let fails+=1
+            files=("${files[@]}" "$rel")
+            errdiff=$(diff $out.err $baseline.err)
+            errors=("${errors[@]}" "Mismatch stderr\n$errdiff")
+            echo -ne "\033[31m.\033[m"
+        elif ! diff $out.src $baseline.src >/dev/null 2>&1
+        then
+            let fails+=1
+            files=("${files[@]}" "$rel")
+            srcdiff=$(diff $out.src $baseline.src)
+            errors=("${errors[@]}" "Mismatch stdout\n$srcdiff")
+            echo -ne "\033[31m.\033[m"
+        else
+            echo -ne "\033[32m.\033[m"
+        fi
+    done
 done
 echo -e "\n\n$fails tests failed:"
 for ((i=0; i<${#files[@]}; i++))

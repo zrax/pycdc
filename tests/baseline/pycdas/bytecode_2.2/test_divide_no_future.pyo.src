@@ -1,0 +1,53 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_divide_no_future.pyo (Python 2.2)
+[Code]
+    File Name: test/test_divide_no_future.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '  1 // 2   ='
+        1
+        2
+        '1.0 // 2.0 ='
+        1.0
+        2.0
+        '  1 /  2   ='
+        '1.0 /  2.0 ='
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '  1 // 2   ='
+        3       PRINT_ITEM              
+        4       LOAD_CONST              1: 1
+        7       LOAD_CONST              2: 2
+        10      BINARY_FLOOR_DIVIDE     
+        11      PRINT_ITEM              
+        12      PRINT_NEWLINE           
+        13      LOAD_CONST              3: '1.0 // 2.0 ='
+        16      PRINT_ITEM              
+        17      LOAD_CONST              4: 1.0
+        20      LOAD_CONST              5: 2.0
+        23      BINARY_FLOOR_DIVIDE     
+        24      PRINT_ITEM              
+        25      PRINT_NEWLINE           
+        26      LOAD_CONST              6: '  1 /  2   ='
+        29      PRINT_ITEM              
+        30      LOAD_CONST              1: 1
+        33      LOAD_CONST              2: 2
+        36      BINARY_DIVIDE           
+        37      PRINT_ITEM              
+        38      PRINT_NEWLINE           
+        39      LOAD_CONST              7: '1.0 /  2.0 ='
+        42      PRINT_ITEM              
+        43      LOAD_CONST              4: 1.0
+        46      LOAD_CONST              5: 2.0
+        49      BINARY_DIVIDE           
+        50      PRINT_ITEM              
+        51      PRINT_NEWLINE           
+        52      LOAD_CONST              8: None
+        55      RETURN_VALUE            

@@ -1,0 +1,52 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_loops2.pyc (Python 2.2)
+[Code]
+    File Name: test/test_loops2.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'args'
+        'term'
+    [Var Names]
+        'term'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_loops2.py -- source test pattern for loops (CONTINUE_LOOP)\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_loops2.py -- source test pattern for loops (CONTINUE_LOOP)\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              14
+        15      SETUP_LOOP              54 (to 72)
+        18      LOAD_NAME               1: args
+        21      GET_ITER                
+        22      SET_LINENO              14
+        25      FOR_ITER                43
+        28      STORE_NAME              2: term
+        31      SET_LINENO              15
+        34      SETUP_EXCEPT            18 (to 55)
+        37      SET_LINENO              16
+        40      PRINT_NEWLINE           
+        41      SET_LINENO              17
+        44      CONTINUE_LOOP           22
+        47      SET_LINENO              18
+        50      PRINT_NEWLINE           
+        51      POP_BLOCK               
+        52      JUMP_FORWARD            13 (to 68)
+        55      SET_LINENO              19
+        58      POP_TOP                 
+        59      POP_TOP                 
+        60      POP_TOP                 
+        61      SET_LINENO              20
+        64      JUMP_FORWARD            1 (to 68)
+        67      END_FINALLY             
+        68      JUMP_ABSOLUTE           22
+        71      POP_BLOCK               
+        72      LOAD_CONST              1: None
+        75      RETURN_VALUE            

@@ -1,0 +1,248 @@
+../../pycdc/tests/inputs/bytecode_2.1/misc.pyc (Python 2.1)
+[Code]
+    File Name: misc.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        'A'
+        'b'
+        'range'
+        'i'
+        'append'
+        'a'
+        'len'
+        'None'
+        'p2'
+    [Var Names]
+        'A'
+        'p2'
+        'b'
+        'i'
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'A'
+        [Code]
+            File Name: misc.py
+            Object Name: A
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                '__init__'
+                '__repr__'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: misc.py
+                    Object Name: __init__
+                    Arg Count: 2
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'num'
+                        'self'
+                    [Var Names]
+                        'self'
+                        'num'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       SET_LINENO              3
+                        3       SET_LINENO              4
+                        6       LOAD_FAST               1: num
+                        9       LOAD_FAST               0: self
+                        12      STORE_ATTR              0: num
+                        15      LOAD_CONST              0: None
+                        18      RETURN_VALUE            
+                [Code]
+                    File Name: misc.py
+                    Object Name: __repr__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'str'
+                        'self'
+                        'num'
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       SET_LINENO              5
+                        3       SET_LINENO              6
+                        6       LOAD_GLOBAL             0: str
+                        9       LOAD_FAST               0: self
+                        12      LOAD_ATTR               2: num
+                        15      CALL_FUNCTION           1
+                        18      RETURN_VALUE            
+                        19      LOAD_CONST              0: None
+                        22      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              2
+                3       SET_LINENO              3
+                6       LOAD_CONST              1: <CODE> __init__
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              0: __init__
+                15      SET_LINENO              5
+                18      LOAD_CONST              2: <CODE> __repr__
+                21      MAKE_FUNCTION           0
+                24      STORE_NAME              1: __repr__
+                27      LOAD_LOCALS             
+                28      RETURN_VALUE            
+        10
+        0
+        5
+        'CALL_FUNCTION'
+        'CALL_FUNCTION_VAR'
+        'CALL_FUNCTION_VAR_KW'
+        'CALL_FUNCTION_KW'
+        '\t'
+        3
+        2
+        'has value'
+        ' no value'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              2
+        6       LOAD_CONST              0: 'A'
+        9       BUILD_TUPLE             0
+        12      LOAD_CONST              1: <CODE> A
+        15      MAKE_FUNCTION           0
+        18      CALL_FUNCTION           0
+        21      BUILD_CLASS             
+        22      STORE_NAME              0: A
+        25      SET_LINENO              8
+        28      BUILD_LIST              0
+        31      STORE_NAME              1: b
+        34      SET_LINENO              9
+        37      SETUP_LOOP              47 (to 87)
+        40      LOAD_NAME               2: range
+        43      LOAD_CONST              2: 10
+        46      CALL_FUNCTION           1
+        49      LOAD_CONST              3: 0
+        52      SET_LINENO              9
+        55      FOR_LOOP                28 (to 86)
+        58      STORE_NAME              3: i
+        61      SET_LINENO              10
+        64      LOAD_NAME               1: b
+        67      LOAD_ATTR               4: append
+        70      LOAD_NAME               0: A
+        73      LOAD_NAME               3: i
+        76      CALL_FUNCTION           1
+        79      CALL_FUNCTION           1
+        82      POP_TOP                 
+        83      JUMP_ABSOLUTE           52
+        86      POP_BLOCK               
+        87      SET_LINENO              12
+        90      LOAD_NAME               1: b
+        93      PRINT_ITEM              
+        94      PRINT_NEWLINE           
+        95      SET_LINENO              13
+        98      LOAD_NAME               1: b
+        101     LOAD_CONST              4: 5
+        104     BINARY_SUBSCR           
+        105     STORE_NAME              5: a
+        108     SET_LINENO              14
+        111     DELETE_NAME             5: a
+        114     SET_LINENO              15
+        117     LOAD_NAME               1: b
+        120     PRINT_ITEM              
+        121     PRINT_NEWLINE           
+        122     SET_LINENO              16
+        125     LOAD_NAME               1: b
+        128     LOAD_CONST              4: 5
+        131     DELETE_SUBSCR           
+        132     SET_LINENO              17
+        135     LOAD_NAME               1: b
+        138     PRINT_ITEM              
+        139     PRINT_NEWLINE           
+        140     SET_LINENO              19
+        143     SETUP_LOOP              117 (to 263)
+        146     LOAD_CONST              5: 'CALL_FUNCTION'
+        149     LOAD_CONST              6: 'CALL_FUNCTION_VAR'
+        152     LOAD_CONST              7: 'CALL_FUNCTION_VAR_KW'
+        155     LOAD_CONST              8: 'CALL_FUNCTION_KW'
+        158     BUILD_TUPLE             4
+        161     LOAD_CONST              3: 0
+        164     SET_LINENO              19
+        167     FOR_LOOP                92 (to 262)
+        170     STORE_NAME              3: i
+        173     SET_LINENO              21
+        176     LOAD_NAME               3: i
+        179     PRINT_ITEM              
+        180     LOAD_CONST              9: '\t'
+        183     PRINT_ITEM              
+        184     LOAD_NAME               6: len
+        187     LOAD_NAME               3: i
+        190     CALL_FUNCTION           1
+        193     PRINT_ITEM              
+        194     LOAD_NAME               6: len
+        197     LOAD_NAME               3: i
+        200     CALL_FUNCTION           1
+        203     LOAD_NAME               6: len
+        206     LOAD_CONST              5: 'CALL_FUNCTION'
+        209     CALL_FUNCTION           1
+        212     BINARY_SUBTRACT         
+        213     PRINT_ITEM              
+        214     SET_LINENO              22
+        217     LOAD_NAME               6: len
+        220     LOAD_NAME               3: i
+        223     CALL_FUNCTION           1
+        226     LOAD_NAME               6: len
+        229     LOAD_CONST              5: 'CALL_FUNCTION'
+        232     CALL_FUNCTION           1
+        235     BINARY_SUBTRACT         
+        236     LOAD_CONST              10: 3
+        239     BINARY_DIVIDE           
+        240     PRINT_ITEM              
+        241     SET_LINENO              23
+        244     LOAD_NAME               3: i
+        247     LOAD_NAME               6: len
+        250     LOAD_CONST              5: 'CALL_FUNCTION'
+        253     CALL_FUNCTION           1
+        256     SLICE_1                 
+        257     PRINT_ITEM              
+        258     PRINT_NEWLINE           
+        259     JUMP_ABSOLUTE           164
+        262     POP_BLOCK               
+        263     SET_LINENO              25
+        266     LOAD_CONST              3: 0
+        269     LOAD_CONST              3: 0
+        272     LOAD_NAME               7: None
+        275     BUILD_TUPLE             3
+        278     STORE_NAME              8: p2
+        281     SET_LINENO              26
+        284     LOAD_NAME               8: p2
+        287     LOAD_CONST              11: 2
+        290     BINARY_SUBSCR           
+        291     JUMP_IF_FALSE           12 (to 306)
+        294     POP_TOP                 
+        295     SET_LINENO              27
+        298     LOAD_CONST              12: 'has value'
+        301     PRINT_ITEM              
+        302     PRINT_NEWLINE           
+        303     JUMP_FORWARD            9 (to 315)
+        306     POP_TOP                 
+        307     SET_LINENO              29
+        310     LOAD_CONST              13: ' no value'
+        313     PRINT_ITEM              
+        314     PRINT_NEWLINE           
+        315     LOAD_CONST              14: None
+        318     RETURN_VALUE            

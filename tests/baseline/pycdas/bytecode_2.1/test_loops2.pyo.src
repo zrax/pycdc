@@ -1,0 +1,43 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_loops2.pyo (Python 2.1)
+[Code]
+    File Name: test/test_loops2.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'args'
+        'term'
+    [Var Names]
+        'term'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_loops2.py -- source test pattern for loops (CONTINUE_LOOP)\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        0
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_loops2.py -- source test pattern for loops (CONTINUE_LOOP)\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       SETUP_LOOP              35 (to 44)
+        9       LOAD_NAME               1: args
+        12      LOAD_CONST              1: 0
+        15      FOR_LOOP                25 (to 43)
+        18      STORE_NAME              2: term
+        21      SETUP_EXCEPT            9 (to 33)
+        24      PRINT_NEWLINE           
+        25      CONTINUE_LOOP           15
+        28      PRINT_NEWLINE           
+        29      POP_BLOCK               
+        30      JUMP_FORWARD            7 (to 40)
+        33      POP_TOP                 
+        34      POP_TOP                 
+        35      POP_TOP                 
+        36      JUMP_FORWARD            1 (to 40)
+        39      END_FINALLY             
+        40      JUMP_ABSOLUTE           15
+        43      POP_BLOCK               
+        44      LOAD_CONST              2: None
+        47      RETURN_VALUE            

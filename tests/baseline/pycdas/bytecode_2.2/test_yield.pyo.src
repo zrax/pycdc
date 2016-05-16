@@ -1,0 +1,169 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_yield.pyo (Python 2.2)
+[Code]
+    File Name: test/test_yield.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00001000 (CO_GENERATOR_ALLOWED)
+    [Names]
+        '__future__'
+        'generators'
+        'inorder'
+        'generate_ints'
+        'i'
+        'gen'
+        'next'
+    [Var Names]
+        'i'
+        'inorder'
+        'generators'
+        'gen'
+        'generate_ints'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        (
+            'generators'
+        )
+        [Code]
+            File Name: test/test_yield.py
+            Object Name: inorder
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 2
+            Flags: 0x00001023 (CO_OPTIMIZED | CO_NEWLOCALS | CO_GENERATOR | CO_GENERATOR_ALLOWED)
+            [Names]
+                't'
+                'inorder'
+                'left'
+                'x'
+                'label'
+                'right'
+            [Var Names]
+                't'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: t
+                3       JUMP_IF_FALSE           71 (to 77)
+                6       POP_TOP                 
+                7       SETUP_LOOP              27 (to 37)
+                10      LOAD_GLOBAL             1: inorder
+                13      LOAD_FAST               0: t
+                16      LOAD_ATTR               2: left
+                19      CALL_FUNCTION           1
+                22      GET_ITER                
+                23      FOR_ITER                10
+                26      STORE_FAST              1: x
+                29      LOAD_FAST               1: x
+                32      YIELD_VALUE             
+                33      JUMP_ABSOLUTE           23
+                36      POP_BLOCK               
+                37      LOAD_FAST               0: t
+                40      LOAD_ATTR               4: label
+                43      YIELD_VALUE             
+                44      SETUP_LOOP              27 (to 74)
+                47      LOAD_GLOBAL             1: inorder
+                50      LOAD_FAST               0: t
+                53      LOAD_ATTR               5: right
+                56      CALL_FUNCTION           1
+                59      GET_ITER                
+                60      FOR_ITER                10
+                63      STORE_FAST              1: x
+                66      LOAD_FAST               1: x
+                69      YIELD_VALUE             
+                70      JUMP_ABSOLUTE           60
+                73      POP_BLOCK               
+                74      JUMP_FORWARD            1 (to 78)
+                77      POP_TOP                 
+                78      LOAD_CONST              0: None
+                81      RETURN_VALUE            
+        [Code]
+            File Name: test/test_yield.py
+            Object Name: generate_ints
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00001023 (CO_OPTIMIZED | CO_NEWLOCALS | CO_GENERATOR | CO_GENERATOR_ALLOWED)
+            [Names]
+                'range'
+                'n'
+                'i'
+            [Var Names]
+                'n'
+                'i'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                2
+            [Disassembly]
+                0       SETUP_LOOP              28 (to 31)
+                3       LOAD_GLOBAL             0: range
+                6       LOAD_FAST               0: n
+                9       CALL_FUNCTION           1
+                12      GET_ITER                
+                13      FOR_ITER                14
+                16      STORE_FAST              1: i
+                19      LOAD_FAST               1: i
+                22      LOAD_CONST              1: 2
+                25      BINARY_MULTIPLY         
+                26      YIELD_VALUE             
+                27      JUMP_ABSOLUTE           13
+                30      POP_BLOCK               
+                31      LOAD_CONST              0: None
+                34      RETURN_VALUE            
+        5
+        3
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: ('generators',)
+        3       IMPORT_NAME             0: __future__
+        6       IMPORT_FROM             1: generators
+        9       STORE_NAME              1: generators
+        12      POP_TOP                 
+        13      LOAD_CONST              1: <CODE> inorder
+        16      MAKE_FUNCTION           0
+        19      STORE_NAME              2: inorder
+        22      LOAD_CONST              2: <CODE> generate_ints
+        25      MAKE_FUNCTION           0
+        28      STORE_NAME              3: generate_ints
+        31      SETUP_LOOP              24 (to 58)
+        34      LOAD_NAME               3: generate_ints
+        37      LOAD_CONST              3: 5
+        40      CALL_FUNCTION           1
+        43      GET_ITER                
+        44      FOR_ITER                10
+        47      STORE_NAME              4: i
+        50      LOAD_NAME               4: i
+        53      PRINT_ITEM              
+        54      JUMP_ABSOLUTE           44
+        57      POP_BLOCK               
+        58      PRINT_NEWLINE           
+        59      LOAD_NAME               3: generate_ints
+        62      LOAD_CONST              4: 3
+        65      CALL_FUNCTION           1
+        68      STORE_NAME              5: gen
+        71      LOAD_NAME               5: gen
+        74      LOAD_ATTR               6: next
+        77      CALL_FUNCTION           0
+        80      PRINT_ITEM              
+        81      LOAD_NAME               5: gen
+        84      LOAD_ATTR               6: next
+        87      CALL_FUNCTION           0
+        90      PRINT_ITEM              
+        91      LOAD_NAME               5: gen
+        94      LOAD_ATTR               6: next
+        97      CALL_FUNCTION           0
+        100     PRINT_ITEM              
+        101     LOAD_NAME               5: gen
+        104     LOAD_ATTR               6: next
+        107     CALL_FUNCTION           0
+        110     PRINT_ITEM              
+        111     PRINT_NEWLINE           
+        112     LOAD_CONST              5: None
+        115     RETURN_VALUE            

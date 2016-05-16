@@ -1,0 +1,162 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_tuple_params.pyo (Python 1.5)
+[Code]
+    File Name: test/test_tuple_params.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'A'
+        'B'
+        'C'
+        'D'
+        'E'
+    [Var Names]
+    [Constants]
+        '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: A
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.4'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               2: .4
+                3       UNPACK_TUPLE            3
+                6       STORE_FAST              4: x
+                9       STORE_FAST              5: y
+                12      STORE_FAST              6: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: B
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.6'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               2: .6
+                3       UNPACK_TUPLE            3
+                6       STORE_FAST              4: x
+                9       STORE_FAST              5: y
+                12      STORE_FAST              6: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        42
+        1
+        2
+        3
+        17
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: C
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_TUPLE            3
+                6       STORE_FAST              1: x
+                9       STORE_FAST              2: y
+                12      STORE_FAST              3: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: D
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_TUPLE            1
+                6       STORE_FAST              1: x
+                9       LOAD_CONST              0: None
+                12      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: E
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       STORE_FAST              1: x
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: <CODE> A
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              1: A
+        15      LOAD_CONST              3: 42
+        18      LOAD_CONST              4: 1
+        21      LOAD_CONST              5: 2
+        24      LOAD_CONST              6: 3
+        27      BUILD_TUPLE             3
+        30      LOAD_CONST              7: 17
+        33      LOAD_CONST              2: <CODE> B
+        36      MAKE_FUNCTION           3
+        39      STORE_NAME              2: B
+        42      LOAD_CONST              8: <CODE> C
+        45      MAKE_FUNCTION           0
+        48      STORE_NAME              3: C
+        51      LOAD_CONST              9: <CODE> D
+        54      MAKE_FUNCTION           0
+        57      STORE_NAME              4: D
+        60      LOAD_CONST              10: <CODE> E
+        63      MAKE_FUNCTION           0
+        66      STORE_NAME              5: E
+        69      LOAD_CONST              11: None
+        72      RETURN_VALUE            

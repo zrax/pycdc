@@ -1,0 +1,202 @@
+../../pycdc/tests/inputs/bytecode_2.1/tuple_params.pyc (Python 2.1)
+[Code]
+    File Name: tuple_params.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        'A'
+        'B'
+        'C'
+        'D'
+        'E'
+    [Var Names]
+        'D'
+        'E'
+        'B'
+        'C'
+        'A'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: tuple_params.py
+            Object Name: A
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+                'y'
+                'z'
+            [Var Names]
+                'a'
+                'b'
+                '.4'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              9
+                3       LOAD_FAST               2: .4
+                6       UNPACK_SEQUENCE         3
+                9       STORE_FAST              4: x
+                12      STORE_FAST              5: y
+                15      STORE_FAST              6: z
+                18      SET_LINENO              10
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        42
+        1
+        2
+        3
+        17
+        [Code]
+            File Name: tuple_params.py
+            Object Name: B
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+                'y'
+                'z'
+            [Var Names]
+                'a'
+                'b'
+                '.6'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              12
+                3       LOAD_FAST               2: .6
+                6       UNPACK_SEQUENCE         3
+                9       STORE_FAST              4: x
+                12      STORE_FAST              5: y
+                15      STORE_FAST              6: z
+                18      SET_LINENO              13
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        [Code]
+            File Name: tuple_params.py
+            Object Name: C
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+                'y'
+                'z'
+            [Var Names]
+                '.0'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              15
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         3
+                9       STORE_FAST              1: x
+                12      STORE_FAST              2: y
+                15      STORE_FAST              3: z
+                18      SET_LINENO              16
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        [Code]
+            File Name: tuple_params.py
+            Object Name: D
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+            [Var Names]
+                '.0'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              18
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         1
+                9       STORE_FAST              1: x
+                12      SET_LINENO              19
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: tuple_params.py
+            Object Name: E
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+            [Var Names]
+                '.0'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              21
+                3       LOAD_FAST               0: .0
+                6       STORE_FAST              1: x
+                9       SET_LINENO              22
+                12      LOAD_CONST              0: None
+                15      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: <CODE> A
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              0: A
+        15      SET_LINENO              12
+        18      LOAD_CONST              1: 42
+        21      LOAD_CONST              2: 1
+        24      LOAD_CONST              3: 2
+        27      LOAD_CONST              4: 3
+        30      BUILD_TUPLE             3
+        33      LOAD_CONST              5: 17
+        36      LOAD_CONST              6: <CODE> B
+        39      MAKE_FUNCTION           3
+        42      STORE_NAME              1: B
+        45      SET_LINENO              15
+        48      LOAD_CONST              7: <CODE> C
+        51      MAKE_FUNCTION           0
+        54      STORE_NAME              2: C
+        57      SET_LINENO              18
+        60      LOAD_CONST              8: <CODE> D
+        63      MAKE_FUNCTION           0
+        66      STORE_NAME              3: D
+        69      SET_LINENO              21
+        72      LOAD_CONST              9: <CODE> E
+        75      MAKE_FUNCTION           0
+        78      STORE_NAME              4: E
+        81      LOAD_CONST              10: None
+        84      RETURN_VALUE            

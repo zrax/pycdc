@@ -1,0 +1,149 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_del.pyc (Python 2.2)
+[Code]
+    File Name: test/test_del.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'b'
+        'a'
+        'testme'
+    [Var Names]
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_del.py -- source test pattern for 'del' statements\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        "This program can't be run"
+        0
+        5
+        1
+        2
+        3
+        4
+        '4a'
+        42
+        '4b'
+        40
+        1024
+        10
+        '5a'
+        41
+        6
+        None
+        <TYPE: 46>
+        24
+        100
+        7
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: "\ntest_del.py -- source test pattern for 'del' statements\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              10
+        12      SET_LINENO              12
+        15      LOAD_CONST              1: "This program can't be run"
+        18      RAISE_VARARGS           1
+        21      SET_LINENO              14
+        24      LOAD_CONST              2: 0
+        27      PRINT_ITEM              
+        28      PRINT_NEWLINE           
+        29      SET_LINENO              15
+        32      LOAD_NAME               1: b
+        35      LOAD_CONST              3: 5
+        38      BINARY_SUBSCR           
+        39      STORE_NAME              2: a
+        42      SET_LINENO              16
+        45      LOAD_CONST              4: 1
+        48      PRINT_ITEM              
+        49      PRINT_NEWLINE           
+        50      SET_LINENO              17
+        53      DELETE_NAME             2: a
+        56      SET_LINENO              18
+        59      LOAD_CONST              5: 2
+        62      PRINT_ITEM              
+        63      PRINT_NEWLINE           
+        64      SET_LINENO              19
+        67      LOAD_NAME               1: b
+        70      LOAD_CONST              3: 5
+        73      DELETE_SUBSCR           
+        74      SET_LINENO              20
+        77      LOAD_CONST              6: 3
+        80      PRINT_ITEM              
+        81      PRINT_NEWLINE           
+        82      SET_LINENO              22
+        85      LOAD_NAME               3: testme
+        88      LOAD_CONST              4: 1
+        91      DELETE_SUBSCR           
+        92      SET_LINENO              23
+        95      LOAD_CONST              7: 4
+        98      PRINT_ITEM              
+        99      PRINT_NEWLINE           
+        100     SET_LINENO              24
+        103     LOAD_NAME               3: testme
+        106     DELETE_SLICE_0          
+        107     SET_LINENO              25
+        110     LOAD_CONST              8: '4a'
+        113     PRINT_ITEM              
+        114     PRINT_NEWLINE           
+        115     SET_LINENO              26
+        118     LOAD_NAME               3: testme
+        121     LOAD_CONST              9: 42
+        124     DELETE_SLICE_2          
+        125     SET_LINENO              27
+        128     LOAD_CONST              10: '4b'
+        131     PRINT_ITEM              
+        132     PRINT_NEWLINE           
+        133     SET_LINENO              28
+        136     LOAD_NAME               3: testme
+        139     LOAD_CONST              11: 40
+        142     LOAD_CONST              9: 42
+        145     DELETE_SLICE_3          
+        146     SET_LINENO              29
+        149     LOAD_CONST              3: 5
+        152     PRINT_ITEM              
+        153     PRINT_NEWLINE           
+        154     SET_LINENO              30
+        157     LOAD_NAME               3: testme
+        160     LOAD_CONST              5: 2
+        163     LOAD_CONST              12: 1024
+        166     LOAD_CONST              13: 10
+        169     BUILD_SLICE             3
+        172     DELETE_SUBSCR           
+        173     SET_LINENO              31
+        176     LOAD_CONST              14: '5a'
+        179     PRINT_ITEM              
+        180     PRINT_NEWLINE           
+        181     SET_LINENO              32
+        184     LOAD_NAME               3: testme
+        187     LOAD_CONST              11: 40
+        190     LOAD_CONST              15: 41
+        193     LOAD_CONST              9: 42
+        196     BUILD_TUPLE             3
+        199     DELETE_SUBSCR           
+        200     SET_LINENO              33
+        203     LOAD_CONST              16: 6
+        206     PRINT_ITEM              
+        207     PRINT_NEWLINE           
+        208     SET_LINENO              34
+        211     LOAD_NAME               3: testme
+        214     LOAD_CONST              17: None
+        217     LOAD_CONST              9: 42
+        220     BUILD_SLICE             2
+        223     LOAD_CONST              18: 
+        226     LOAD_CONST              17: None
+        229     LOAD_CONST              19: 24
+        232     LOAD_CONST              17: None
+        235     BUILD_SLICE             3
+        238     LOAD_CONST              19: 24
+        241     LOAD_CONST              20: 100
+        244     BUILD_TUPLE             5
+        247     DELETE_SUBSCR           
+        248     SET_LINENO              35
+        251     LOAD_CONST              21: 7
+        254     PRINT_ITEM              
+        255     PRINT_NEWLINE           
+        256     LOAD_CONST              17: None
+        259     RETURN_VALUE            

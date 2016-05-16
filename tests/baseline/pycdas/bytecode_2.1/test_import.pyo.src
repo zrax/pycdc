@@ -1,0 +1,106 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_import.pyo (Python 2.1)
+[Code]
+    File Name: test/test_import.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'os'
+        'BaseHTTPServer'
+        'test.test_MimeWriter'
+        'test'
+        'rfc822'
+        'Message'
+        'mimetools'
+        'decode'
+        'choose_boundary'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+        'v'
+        'BaseHTTPServer'
+        'os'
+        'decode'
+        'test'
+        'choose_boundary'
+        'Message'
+        'k'
+        'sys'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        None
+        (
+            'Message'
+        )
+        (
+            'Message'
+            'decode'
+            'choose_boundary'
+        )
+        (
+            '*'
+        )
+        0
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: None
+        9       IMPORT_NAME             1: sys
+        12      STORE_NAME              1: sys
+        15      LOAD_CONST              1: None
+        18      IMPORT_NAME             2: os
+        21      STORE_NAME              2: os
+        24      LOAD_CONST              1: None
+        27      IMPORT_NAME             1: sys
+        30      STORE_NAME              1: sys
+        33      LOAD_CONST              1: None
+        36      IMPORT_NAME             3: BaseHTTPServer
+        39      STORE_NAME              3: BaseHTTPServer
+        42      LOAD_CONST              1: None
+        45      IMPORT_NAME             4: test.test_MimeWriter
+        48      STORE_NAME              5: test
+        51      LOAD_CONST              2: ('Message',)
+        54      IMPORT_NAME             6: rfc822
+        57      IMPORT_FROM             7: Message
+        60      STORE_NAME              7: Message
+        63      POP_TOP                 
+        64      LOAD_CONST              3: ('Message', 'decode', 'choose_boundary')
+        67      IMPORT_NAME             8: mimetools
+        70      IMPORT_FROM             7: Message
+        73      STORE_NAME              7: Message
+        76      IMPORT_FROM             9: decode
+        79      STORE_NAME              9: decode
+        82      IMPORT_FROM             10: choose_boundary
+        85      STORE_NAME              10: choose_boundary
+        88      POP_TOP                 
+        89      LOAD_CONST              4: ('*',)
+        92      IMPORT_NAME             2: os
+        95      IMPORT_STAR             
+        96      SETUP_LOOP              41 (to 140)
+        99      LOAD_NAME               11: globals
+        102     CALL_FUNCTION           0
+        105     LOAD_ATTR               12: items
+        108     CALL_FUNCTION           0
+        111     LOAD_CONST              5: 0
+        114     FOR_LOOP                22 (to 139)
+        117     UNPACK_SEQUENCE         2
+        120     STORE_NAME              13: k
+        123     STORE_NAME              14: v
+        126     LOAD_NAME               13: k
+        129     UNARY_CONVERT           
+        130     PRINT_ITEM              
+        131     LOAD_NAME               14: v
+        134     PRINT_ITEM              
+        135     PRINT_NEWLINE           
+        136     JUMP_ABSOLUTE           114
+        139     POP_BLOCK               
+        140     LOAD_CONST              1: None
+        143     RETURN_VALUE            

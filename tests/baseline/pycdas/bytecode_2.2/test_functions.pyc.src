@@ -1,0 +1,557 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_functions.pyc (Python 2.2)
+[Code]
+    File Name: test/test_functions.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        'x0'
+        'x1'
+        'x2'
+        'x3a'
+        'x3b'
+        'x3c'
+        'x4a'
+        'x4b'
+        'x4c'
+        'func_with_tuple_args'
+        'func_with_tuple_args2'
+        'func_with_tuple_args3'
+        'func_with_tuple_args4'
+        'func_with_tuple_args5'
+        'func_with_tuple_args6'
+    [Var Names]
+        'func_with_tuple_args6'
+        'func_with_tuple_args'
+        'func_with_tuple_args4'
+        'func_with_tuple_args3'
+        'func_with_tuple_args2'
+        'func_with_tuple_args5'
+        'x3b'
+        'x3c'
+        'x3a'
+        'x4c'
+        'x4b'
+        'x4a'
+        'x2'
+        'x0'
+        'x1'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x0
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              9
+                3       SET_LINENO              10
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x1
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'arg1'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              12
+                3       SET_LINENO              13
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x2
+            Arg Count: 2
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'arg1'
+                'arg2'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              15
+                3       SET_LINENO              16
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x3a
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000007 (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS)
+            [Names]
+            [Var Names]
+                'args'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              18
+                3       SET_LINENO              19
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x3b
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x0000000B (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARKEYWORDS)
+            [Names]
+            [Var Names]
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              21
+                3       SET_LINENO              22
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x3c
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+            [Var Names]
+                'args'
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              24
+                3       SET_LINENO              25
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        1
+        2
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x4a
+            Arg Count: 3
+            Locals: 4
+            Stack Size: 1
+            Flags: 0x00000007 (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS)
+            [Names]
+            [Var Names]
+                'foo'
+                'bar'
+                'bla'
+                'args'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              27
+                3       SET_LINENO              28
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x4b
+            Arg Count: 3
+            Locals: 4
+            Stack Size: 1
+            Flags: 0x0000000B (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARKEYWORDS)
+            [Names]
+            [Var Names]
+                'foo'
+                'bar'
+                'bla'
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              30
+                3       SET_LINENO              31
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: x4c
+            Arg Count: 3
+            Locals: 5
+            Stack Size: 1
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+            [Var Names]
+                'foo'
+                'bar'
+                'bla'
+                'args'
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              33
+                3       SET_LINENO              34
+                6       LOAD_CONST              0: None
+                9       RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args
+            Arg Count: 1
+            Locals: 3
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                '.0'
+                'a'
+                'b'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              36
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              1: a
+                12      STORE_FAST              2: b
+                15      SET_LINENO              37
+                18      LOAD_FAST               1: a
+                21      PRINT_ITEM              
+                22      PRINT_NEWLINE           
+                23      SET_LINENO              38
+                26      LOAD_FAST               2: b
+                29      PRINT_ITEM              
+                30      PRINT_NEWLINE           
+                31      LOAD_CONST              0: None
+                34      RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args2
+            Arg Count: 2
+            Locals: 6
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+            [Var Names]
+                '.0'
+                '.2'
+                'a'
+                'b'
+                'c'
+                'd'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              40
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              2: a
+                12      STORE_FAST              3: b
+                15      LOAD_FAST               1: .2
+                18      UNPACK_SEQUENCE         2
+                21      STORE_FAST              4: c
+                24      STORE_FAST              5: d
+                27      SET_LINENO              41
+                30      LOAD_FAST               2: a
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      SET_LINENO              42
+                38      LOAD_FAST               4: c
+                41      PRINT_ITEM              
+                42      PRINT_NEWLINE           
+                43      LOAD_CONST              0: None
+                46      RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args3
+            Arg Count: 2
+            Locals: 7
+            Stack Size: 2
+            Flags: 0x00000007 (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+            [Var Names]
+                '.0'
+                '.2'
+                'args'
+                'a'
+                'b'
+                'c'
+                'd'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              44
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              3: a
+                12      STORE_FAST              4: b
+                15      LOAD_FAST               1: .2
+                18      UNPACK_SEQUENCE         2
+                21      STORE_FAST              5: c
+                24      STORE_FAST              6: d
+                27      SET_LINENO              45
+                30      LOAD_FAST               3: a
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      SET_LINENO              46
+                38      LOAD_FAST               5: c
+                41      PRINT_ITEM              
+                42      PRINT_NEWLINE           
+                43      LOAD_CONST              0: None
+                46      RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args4
+            Arg Count: 2
+            Locals: 7
+            Stack Size: 2
+            Flags: 0x0000000B (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARKEYWORDS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+            [Var Names]
+                '.0'
+                '.2'
+                'kwargs'
+                'a'
+                'b'
+                'c'
+                'd'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              48
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              3: a
+                12      STORE_FAST              4: b
+                15      LOAD_FAST               1: .2
+                18      UNPACK_SEQUENCE         2
+                21      STORE_FAST              5: c
+                24      STORE_FAST              6: d
+                27      SET_LINENO              49
+                30      LOAD_FAST               3: a
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      SET_LINENO              50
+                38      LOAD_FAST               5: c
+                41      PRINT_ITEM              
+                42      PRINT_NEWLINE           
+                43      LOAD_CONST              0: None
+                46      RETURN_VALUE            
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args5
+            Arg Count: 2
+            Locals: 8
+            Stack Size: 2
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+            [Var Names]
+                '.0'
+                '.2'
+                'args'
+                'kwargs'
+                'a'
+                'b'
+                'c'
+                'd'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              52
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              4: a
+                12      STORE_FAST              5: b
+                15      LOAD_FAST               1: .2
+                18      UNPACK_SEQUENCE         2
+                21      STORE_FAST              6: c
+                24      STORE_FAST              7: d
+                27      SET_LINENO              53
+                30      LOAD_FAST               4: a
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      SET_LINENO              54
+                38      LOAD_FAST               6: c
+                41      PRINT_ITEM              
+                42      PRINT_NEWLINE           
+                43      LOAD_CONST              0: None
+                46      RETURN_VALUE            
+        3
+        [Code]
+            File Name: test/test_functions.py
+            Object Name: func_with_tuple_args6
+            Arg Count: 2
+            Locals: 8
+            Stack Size: 2
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+            [Var Names]
+                '.0'
+                '.2'
+                'args'
+                'kwargs'
+                'a'
+                'b'
+                'c'
+                'd'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              56
+                3       LOAD_FAST               0: .0
+                6       UNPACK_SEQUENCE         2
+                9       STORE_FAST              4: a
+                12      STORE_FAST              5: b
+                15      LOAD_FAST               1: .2
+                18      UNPACK_SEQUENCE         2
+                21      STORE_FAST              6: c
+                24      STORE_FAST              7: d
+                27      SET_LINENO              57
+                30      LOAD_FAST               4: a
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      SET_LINENO              58
+                38      LOAD_FAST               6: c
+                41      PRINT_ITEM              
+                42      PRINT_NEWLINE           
+                43      LOAD_CONST              0: None
+                46      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: <CODE> x0
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              0: x0
+        15      SET_LINENO              12
+        18      LOAD_CONST              1: <CODE> x1
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              1: x1
+        27      SET_LINENO              15
+        30      LOAD_CONST              2: <CODE> x2
+        33      MAKE_FUNCTION           0
+        36      STORE_NAME              2: x2
+        39      SET_LINENO              18
+        42      LOAD_CONST              3: <CODE> x3a
+        45      MAKE_FUNCTION           0
+        48      STORE_NAME              3: x3a
+        51      SET_LINENO              21
+        54      LOAD_CONST              4: <CODE> x3b
+        57      MAKE_FUNCTION           0
+        60      STORE_NAME              4: x3b
+        63      SET_LINENO              24
+        66      LOAD_CONST              5: <CODE> x3c
+        69      MAKE_FUNCTION           0
+        72      STORE_NAME              5: x3c
+        75      SET_LINENO              27
+        78      LOAD_CONST              6: 1
+        81      LOAD_CONST              7: 2
+        84      LOAD_CONST              8: <CODE> x4a
+        87      MAKE_FUNCTION           2
+        90      STORE_NAME              6: x4a
+        93      SET_LINENO              30
+        96      LOAD_CONST              6: 1
+        99      LOAD_CONST              7: 2
+        102     LOAD_CONST              9: <CODE> x4b
+        105     MAKE_FUNCTION           2
+        108     STORE_NAME              7: x4b
+        111     SET_LINENO              33
+        114     LOAD_CONST              6: 1
+        117     LOAD_CONST              7: 2
+        120     LOAD_CONST              10: <CODE> x4c
+        123     MAKE_FUNCTION           2
+        126     STORE_NAME              8: x4c
+        129     SET_LINENO              36
+        132     LOAD_CONST              11: <CODE> func_with_tuple_args
+        135     MAKE_FUNCTION           0
+        138     STORE_NAME              9: func_with_tuple_args
+        141     SET_LINENO              40
+        144     LOAD_CONST              12: <CODE> func_with_tuple_args2
+        147     MAKE_FUNCTION           0
+        150     STORE_NAME              10: func_with_tuple_args2
+        153     SET_LINENO              44
+        156     LOAD_CONST              13: <CODE> func_with_tuple_args3
+        159     MAKE_FUNCTION           0
+        162     STORE_NAME              11: func_with_tuple_args3
+        165     SET_LINENO              48
+        168     LOAD_CONST              14: <CODE> func_with_tuple_args4
+        171     MAKE_FUNCTION           0
+        174     STORE_NAME              12: func_with_tuple_args4
+        177     SET_LINENO              52
+        180     LOAD_CONST              15: <CODE> func_with_tuple_args5
+        183     MAKE_FUNCTION           0
+        186     STORE_NAME              13: func_with_tuple_args5
+        189     SET_LINENO              56
+        192     LOAD_CONST              7: 2
+        195     LOAD_CONST              16: 3
+        198     BUILD_TUPLE             2
+        201     LOAD_CONST              17: <CODE> func_with_tuple_args6
+        204     MAKE_FUNCTION           1
+        207     STORE_NAME              14: func_with_tuple_args6
+        210     LOAD_CONST              18: None
+        213     RETURN_VALUE            

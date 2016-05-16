@@ -1,0 +1,17 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_empty.pyc (Python 2.7)
+[Code]
+    File Name: source\test_empty.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: None
+        3       RETURN_VALUE            

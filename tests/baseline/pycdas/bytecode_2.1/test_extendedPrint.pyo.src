@@ -1,0 +1,67 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_extendedPrint.pyo (Python 2.1)
+[Code]
+    File Name: test/test_extendedPrint.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        'sys'
+        'stdout'
+    [Var Names]
+        'sys'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        None
+        'Hello World'
+        1
+        2
+        3
+    [Disassembly]
+        0       LOAD_CONST              0: None
+        3       IMPORT_NAME             0: sys
+        6       STORE_NAME              0: sys
+        9       LOAD_NAME               0: sys
+        12      LOAD_ATTR               1: stdout
+        15      DUP_TOP                 
+        16      LOAD_CONST              1: 'Hello World'
+        19      ROT_TWO                 
+        20      PRINT_ITEM_TO           
+        21      PRINT_NEWLINE_TO        
+        22      LOAD_NAME               0: sys
+        25      LOAD_ATTR               1: stdout
+        28      DUP_TOP                 
+        29      LOAD_CONST              2: 1
+        32      ROT_TWO                 
+        33      PRINT_ITEM_TO           
+        34      DUP_TOP                 
+        35      LOAD_CONST              3: 2
+        38      ROT_TWO                 
+        39      PRINT_ITEM_TO           
+        40      DUP_TOP                 
+        41      LOAD_CONST              4: 3
+        44      ROT_TWO                 
+        45      PRINT_ITEM_TO           
+        46      PRINT_NEWLINE_TO        
+        47      LOAD_NAME               0: sys
+        50      LOAD_ATTR               1: stdout
+        53      DUP_TOP                 
+        54      LOAD_CONST              2: 1
+        57      ROT_TWO                 
+        58      PRINT_ITEM_TO           
+        59      DUP_TOP                 
+        60      LOAD_CONST              3: 2
+        63      ROT_TWO                 
+        64      PRINT_ITEM_TO           
+        65      DUP_TOP                 
+        66      LOAD_CONST              4: 3
+        69      ROT_TWO                 
+        70      PRINT_ITEM_TO           
+        71      POP_TOP                 
+        72      LOAD_NAME               0: sys
+        75      LOAD_ATTR               1: stdout
+        78      PRINT_NEWLINE_TO        
+        79      LOAD_CONST              0: None
+        82      RETURN_VALUE            

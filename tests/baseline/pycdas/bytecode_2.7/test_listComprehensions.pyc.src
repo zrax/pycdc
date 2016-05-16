@@ -1,0 +1,270 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_listComprehensions.pyc (Python 2.7)
+[Code]
+    File Name: source\test_listComprehensions.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 8
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'range'
+        'XXX'
+        'i'
+        'j'
+        'seq1'
+        'seq2'
+        'x'
+        'y'
+        'flatten'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        4
+        1
+        2
+        3
+        7
+        0
+        'abc'
+        [Code]
+            File Name: source\test_listComprehensions.py
+            Object Name: flatten
+            Arg Count: 1
+            Locals: 3
+            Stack Size: 4
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'seq'
+                'subseq'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       BUILD_LIST              0
+                3       LOAD_FAST               0: seq
+                6       GET_ITER                
+                7       FOR_ITER                25
+                10      STORE_FAST              1: subseq
+                13      LOAD_FAST               1: subseq
+                16      GET_ITER                
+                17      FOR_ITER                12
+                20      STORE_FAST              2: x
+                23      LOAD_FAST               2: x
+                26      LIST_APPEND             3
+                29      JUMP_ABSOLUTE           17
+                32      JUMP_ABSOLUTE           7
+                35      RETURN_VALUE            
+        5
+        6
+        8
+        9
+        None
+        (
+            1
+            2
+            3
+            4
+        )
+        (
+            1
+            2
+            3
+        )
+    [Disassembly]
+        0       LOAD_NAME               0: range
+        3       LOAD_CONST              0: 4
+        6       CALL_FUNCTION           1
+        9       STORE_NAME              1: XXX
+        12      BUILD_LIST              0
+        15      LOAD_NAME               1: XXX
+        18      GET_ITER                
+        19      FOR_ITER                12
+        22      STORE_NAME              2: i
+        25      LOAD_NAME               2: i
+        28      LIST_APPEND             2
+        31      JUMP_ABSOLUTE           19
+        34      PRINT_ITEM              
+        35      PRINT_NEWLINE           
+        36      PRINT_NEWLINE           
+        37      BUILD_LIST              0
+        40      LOAD_CONST              13: (1, 2, 3, 4)
+        43      GET_ITER                
+        44      FOR_ITER                12
+        47      STORE_NAME              2: i
+        50      LOAD_NAME               2: i
+        53      LIST_APPEND             2
+        56      JUMP_ABSOLUTE           44
+        59      PRINT_ITEM              
+        60      PRINT_NEWLINE           
+        61      PRINT_NEWLINE           
+        62      BUILD_LIST              0
+        65      LOAD_NAME               1: XXX
+        68      GET_ITER                
+        69      FOR_ITER                18
+        72      STORE_NAME              2: i
+        75      LOAD_NAME               2: i
+        78      LOAD_CONST              1: 1
+        81      BUILD_TUPLE             2
+        84      LIST_APPEND             2
+        87      JUMP_ABSOLUTE           69
+        90      PRINT_ITEM              
+        91      PRINT_NEWLINE           
+        92      PRINT_NEWLINE           
+        93      BUILD_LIST              0
+        96      LOAD_NAME               0: range
+        99      LOAD_CONST              0: 4
+        102     CALL_FUNCTION           1
+        105     GET_ITER                
+        106     FOR_ITER                16
+        109     STORE_NAME              2: i
+        112     LOAD_NAME               2: i
+        115     LOAD_CONST              2: 2
+        118     BINARY_MULTIPLY         
+        119     LIST_APPEND             2
+        122     JUMP_ABSOLUTE           106
+        125     PRINT_ITEM              
+        126     PRINT_NEWLINE           
+        127     PRINT_NEWLINE           
+        128     BUILD_LIST              0
+        131     LOAD_NAME               0: range
+        134     LOAD_CONST              0: 4
+        137     CALL_FUNCTION           1
+        140     GET_ITER                
+        141     FOR_ITER                35
+        144     STORE_NAME              2: i
+        147     LOAD_NAME               0: range
+        150     LOAD_CONST              4: 7
+        153     CALL_FUNCTION           1
+        156     GET_ITER                
+        157     FOR_ITER                16
+        160     STORE_NAME              3: j
+        163     LOAD_NAME               2: i
+        166     LOAD_NAME               3: j
+        169     BINARY_MULTIPLY         
+        170     LIST_APPEND             3
+        173     JUMP_ABSOLUTE           157
+        176     JUMP_ABSOLUTE           141
+        179     PRINT_ITEM              
+        180     PRINT_NEWLINE           
+        181     BUILD_LIST              0
+        184     LOAD_NAME               0: range
+        187     LOAD_CONST              0: 4
+        190     CALL_FUNCTION           1
+        193     GET_ITER                
+        194     FOR_ITER                28
+        197     STORE_NAME              2: i
+        200     LOAD_NAME               2: i
+        203     LOAD_CONST              5: 0
+        206     COMPARE_OP              2
+        209     POP_JUMP_IF_FALSE       194
+        212     LOAD_NAME               2: i
+        215     LOAD_CONST              2: 2
+        218     BINARY_MULTIPLY         
+        219     LIST_APPEND             2
+        222     JUMP_ABSOLUTE           194
+        225     PRINT_ITEM              
+        226     PRINT_NEWLINE           
+        227     BUILD_LIST              0
+        230     LOAD_NAME               0: range
+        233     LOAD_CONST              0: 4
+        236     CALL_FUNCTION           1
+        239     GET_ITER                
+        240     FOR_ITER                38
+        243     STORE_NAME              2: i
+        246     LOAD_NAME               2: i
+        249     LOAD_CONST              2: 2
+        252     BINARY_MODULO           
+        253     LOAD_CONST              5: 0
+        256     COMPARE_OP              2
+        259     POP_JUMP_IF_FALSE       240
+        262     LOAD_NAME               2: i
+        265     LOAD_NAME               2: i
+        268     LOAD_CONST              2: 2
+        271     BINARY_POWER            
+        272     BUILD_TUPLE             2
+        275     LIST_APPEND             2
+        278     JUMP_ABSOLUTE           240
+        281     PRINT_ITEM              
+        282     PRINT_NEWLINE           
+        283     BUILD_LIST              0
+        286     LOAD_NAME               0: range
+        289     LOAD_CONST              0: 4
+        292     CALL_FUNCTION           1
+        295     GET_ITER                
+        296     FOR_ITER                67
+        299     STORE_NAME              2: i
+        302     LOAD_NAME               2: i
+        305     LOAD_CONST              2: 2
+        308     COMPARE_OP              2
+        311     POP_JUMP_IF_FALSE       296
+        314     LOAD_NAME               0: range
+        317     LOAD_CONST              4: 7
+        320     CALL_FUNCTION           1
+        323     GET_ITER                
+        324     FOR_ITER                36
+        327     STORE_NAME              3: j
+        330     LOAD_NAME               2: i
+        333     LOAD_NAME               2: i
+        336     LOAD_CONST              2: 2
+        339     BINARY_MODULO           
+        340     BINARY_ADD              
+        341     LOAD_CONST              5: 0
+        344     COMPARE_OP              2
+        347     POP_JUMP_IF_FALSE       324
+        350     LOAD_NAME               2: i
+        353     LOAD_NAME               3: j
+        356     BINARY_MULTIPLY         
+        357     LIST_APPEND             3
+        360     JUMP_ABSOLUTE           324
+        363     JUMP_ABSOLUTE           296
+        366     PRINT_ITEM              
+        367     PRINT_NEWLINE           
+        368     LOAD_CONST              6: 'abc'
+        371     STORE_NAME              4: seq1
+        374     LOAD_CONST              14: (1, 2, 3)
+        377     STORE_NAME              5: seq2
+        380     BUILD_LIST              0
+        383     LOAD_NAME               4: seq1
+        386     GET_ITER                
+        387     FOR_ITER                31
+        390     STORE_NAME              6: x
+        393     LOAD_NAME               5: seq2
+        396     GET_ITER                
+        397     FOR_ITER                18
+        400     STORE_NAME              7: y
+        403     LOAD_NAME               6: x
+        406     LOAD_NAME               7: y
+        409     BUILD_TUPLE             2
+        412     LIST_APPEND             3
+        415     JUMP_ABSOLUTE           397
+        418     JUMP_ABSOLUTE           387
+        421     POP_TOP                 
+        422     LOAD_CONST              7: <CODE> flatten
+        425     MAKE_FUNCTION           0
+        428     STORE_NAME              8: flatten
+        431     LOAD_NAME               8: flatten
+        434     LOAD_CONST              5: 0
+        437     BUILD_LIST              1
+        440     LOAD_CONST              1: 1
+        443     LOAD_CONST              2: 2
+        446     LOAD_CONST              3: 3
+        449     BUILD_LIST              3
+        452     LOAD_CONST              0: 4
+        455     LOAD_CONST              8: 5
+        458     BUILD_LIST              2
+        461     LOAD_CONST              9: 6
+        464     LOAD_CONST              4: 7
+        467     LOAD_CONST              10: 8
+        470     LOAD_CONST              11: 9
+        473     BUILD_LIST              4
+        476     BUILD_LIST              0
+        479     BUILD_LIST              5
+        482     CALL_FUNCTION           1
+        485     PRINT_ITEM              
+        486     PRINT_NEWLINE           
+        487     LOAD_CONST              12: None
+        490     RETURN_VALUE            

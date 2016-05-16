@@ -1,0 +1,366 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_augmentedAssign.pyc (Python 2.2)
+[Code]
+    File Name: test/test_augmentedAssign.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'a'
+        'b'
+        'l'
+        'value'
+        'val'
+        'range'
+        'i'
+        'lj'
+        'j'
+        'lk'
+        'k'
+        'append'
+        'f'
+    [Var Names]
+        'a'
+        'b'
+        'f'
+        'k'
+        'j'
+        'lj'
+        'l'
+        'lk'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\naugmentedAssign.py -- source test pattern for augmented assigns\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        "This program can't be run"
+        1
+        2
+        7
+        3
+        9
+        4
+        42
+        43
+        0
+        [Code]
+            File Name: test/test_augmentedAssign.py
+            Object Name: f
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'i'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+            [Disassembly]
+                0       SET_LINENO              47
+                3       SET_LINENO              48
+                6       SET_LINENO              49
+                9       LOAD_GLOBAL             0: i
+                12      LOAD_CONST              1: 1
+                15      INPLACE_ADD             
+                16      STORE_GLOBAL            0: i
+                19      SET_LINENO              50
+                22      LOAD_GLOBAL             0: i
+                25      RETURN_VALUE            
+                26      LOAD_CONST              0: None
+                29      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\naugmentedAssign.py -- source test pattern for augmented assigns\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: "This program can't be run"
+        18      RAISE_VARARGS           1
+        21      SET_LINENO              13
+        24      LOAD_CONST              2: 1
+        27      STORE_NAME              1: a
+        30      SET_LINENO              14
+        33      LOAD_CONST              3: 2
+        36      STORE_NAME              2: b
+        39      SET_LINENO              15
+        42      LOAD_NAME               1: a
+        45      LOAD_NAME               2: b
+        48      INPLACE_ADD             
+        49      STORE_NAME              1: a
+        52      LOAD_NAME               1: a
+        55      PRINT_ITEM              
+        56      PRINT_NEWLINE           
+        57      SET_LINENO              16
+        60      LOAD_NAME               1: a
+        63      LOAD_NAME               2: b
+        66      INPLACE_SUBTRACT        
+        67      STORE_NAME              1: a
+        70      LOAD_NAME               1: a
+        73      PRINT_ITEM              
+        74      PRINT_NEWLINE           
+        75      SET_LINENO              17
+        78      LOAD_NAME               1: a
+        81      LOAD_NAME               2: b
+        84      INPLACE_MULTIPLY        
+        85      STORE_NAME              1: a
+        88      LOAD_NAME               1: a
+        91      PRINT_ITEM              
+        92      PRINT_NEWLINE           
+        93      SET_LINENO              18
+        96      LOAD_NAME               1: a
+        99      LOAD_NAME               1: a
+        102     INPLACE_SUBTRACT        
+        103     STORE_NAME              1: a
+        106     LOAD_NAME               1: a
+        109     PRINT_ITEM              
+        110     PRINT_NEWLINE           
+        111     SET_LINENO              19
+        114     LOAD_NAME               1: a
+        117     LOAD_CONST              4: 7
+        120     LOAD_CONST              5: 3
+        123     BINARY_MULTIPLY         
+        124     INPLACE_ADD             
+        125     STORE_NAME              1: a
+        128     LOAD_NAME               1: a
+        131     PRINT_ITEM              
+        132     PRINT_NEWLINE           
+        133     SET_LINENO              21
+        136     LOAD_CONST              2: 1
+        139     LOAD_CONST              3: 2
+        142     LOAD_CONST              5: 3
+        145     BUILD_LIST              3
+        148     STORE_NAME              3: l
+        151     SET_LINENO              22
+        154     LOAD_NAME               3: l
+        157     LOAD_CONST              2: 1
+        160     DUP_TOPX                2
+        163     BINARY_SUBSCR           
+        164     LOAD_CONST              5: 3
+        167     INPLACE_MULTIPLY        
+        168     ROT_THREE               
+        169     STORE_SUBSCR            
+        170     LOAD_NAME               3: l
+        173     LOAD_CONST              2: 1
+        176     BINARY_SUBSCR           
+        177     PRINT_ITEM              
+        178     PRINT_NEWLINE           
+        179     SET_LINENO              23
+        182     LOAD_CONST              4: 7
+        185     LOAD_NAME               3: l
+        188     LOAD_CONST              2: 1
+        191     BINARY_SUBSCR           
+        192     LOAD_CONST              3: 2
+        195     BINARY_SUBSCR           
+        196     LOAD_CONST              5: 3
+        199     STORE_SUBSCR            
+        200     SET_LINENO              24
+        203     LOAD_NAME               3: l
+        206     LOAD_CONST              2: 1
+        209     BINARY_SUBSCR           
+        210     LOAD_CONST              3: 2
+        213     BINARY_SUBSCR           
+        214     LOAD_CONST              5: 3
+        217     DUP_TOPX                2
+        220     BINARY_SUBSCR           
+        221     LOAD_CONST              5: 3
+        224     INPLACE_MULTIPLY        
+        225     ROT_THREE               
+        226     STORE_SUBSCR            
+        227     SET_LINENO              25
+        230     LOAD_NAME               3: l
+        233     DUP_TOP                 
+        234     SLICE_0                 
+        235     LOAD_CONST              6: 9
+        238     BUILD_LIST              1
+        241     INPLACE_ADD             
+        242     ROT_TWO                 
+        243     STORE_SLICE_0           
+        244     LOAD_NAME               3: l
+        247     PRINT_ITEM              
+        248     PRINT_NEWLINE           
+        249     SET_LINENO              26
+        252     LOAD_NAME               3: l
+        255     LOAD_CONST              3: 2
+        258     DUP_TOPX                2
+        261     SLICE_2                 
+        262     LOAD_CONST              6: 9
+        265     BUILD_LIST              1
+        268     INPLACE_ADD             
+        269     ROT_THREE               
+        270     STORE_SLICE_2           
+        271     LOAD_NAME               3: l
+        274     PRINT_ITEM              
+        275     PRINT_NEWLINE           
+        276     SET_LINENO              27
+        279     LOAD_NAME               3: l
+        282     LOAD_CONST              2: 1
+        285     DUP_TOPX                2
+        288     SLICE_1                 
+        289     LOAD_CONST              6: 9
+        292     BUILD_LIST              1
+        295     INPLACE_ADD             
+        296     ROT_THREE               
+        297     STORE_SLICE_1           
+        298     LOAD_NAME               3: l
+        301     PRINT_ITEM              
+        302     PRINT_NEWLINE           
+        303     SET_LINENO              28
+        306     LOAD_NAME               3: l
+        309     LOAD_CONST              2: 1
+        312     LOAD_CONST              7: 4
+        315     DUP_TOPX                3
+        318     SLICE_3                 
+        319     LOAD_CONST              6: 9
+        322     BUILD_LIST              1
+        325     INPLACE_ADD             
+        326     ROT_FOUR                
+        327     STORE_SLICE_3           
+        328     LOAD_NAME               3: l
+        331     PRINT_ITEM              
+        332     PRINT_NEWLINE           
+        333     SET_LINENO              29
+        336     LOAD_NAME               3: l
+        339     LOAD_CONST              8: 42
+        342     LOAD_CONST              9: 43
+        345     BUILD_LIST              2
+        348     INPLACE_ADD             
+        349     STORE_NAME              3: l
+        352     LOAD_NAME               3: l
+        355     PRINT_ITEM              
+        356     PRINT_NEWLINE           
+        357     SET_LINENO              31
+        360     LOAD_CONST              2: 1
+        363     LOAD_NAME               1: a
+        366     STORE_ATTR              4: value
+        369     SET_LINENO              32
+        372     LOAD_NAME               1: a
+        375     DUP_TOP                 
+        376     LOAD_ATTR               4: value
+        379     LOAD_CONST              2: 1
+        382     INPLACE_ADD             
+        383     ROT_TWO                 
+        384     STORE_ATTR              4: value
+        387     SET_LINENO              33
+        390     LOAD_CONST              2: 1
+        393     LOAD_NAME               1: a
+        396     LOAD_ATTR               2: b
+        399     STORE_ATTR              5: val
+        402     SET_LINENO              34
+        405     LOAD_NAME               1: a
+        408     LOAD_ATTR               2: b
+        411     DUP_TOP                 
+        412     LOAD_ATTR               5: val
+        415     LOAD_CONST              2: 1
+        418     INPLACE_ADD             
+        419     ROT_TWO                 
+        420     STORE_ATTR              5: val
+        423     SET_LINENO              36
+        426     BUILD_LIST              0
+        429     STORE_NAME              3: l
+        432     SET_LINENO              37
+        435     SETUP_LOOP              147 (to 585)
+        438     LOAD_NAME               6: range
+        441     LOAD_CONST              5: 3
+        444     CALL_FUNCTION           1
+        447     GET_ITER                
+        448     SET_LINENO              37
+        451     FOR_ITER                130
+        454     STORE_GLOBAL            7: i
+        457     SET_LINENO              38
+        460     BUILD_LIST              0
+        463     STORE_NAME              8: lj
+        466     SET_LINENO              39
+        469     SETUP_LOOP              93 (to 565)
+        472     LOAD_NAME               6: range
+        475     LOAD_CONST              5: 3
+        478     CALL_FUNCTION           1
+        481     GET_ITER                
+        482     SET_LINENO              39
+        485     FOR_ITER                76
+        488     STORE_NAME              9: j
+        491     SET_LINENO              40
+        494     BUILD_LIST              0
+        497     STORE_NAME              10: lk
+        500     SET_LINENO              41
+        503     SETUP_LOOP              39 (to 545)
+        506     LOAD_NAME               6: range
+        509     LOAD_CONST              5: 3
+        512     CALL_FUNCTION           1
+        515     GET_ITER                
+        516     SET_LINENO              41
+        519     FOR_ITER                22
+        522     STORE_NAME              11: k
+        525     SET_LINENO              42
+        528     LOAD_NAME               10: lk
+        531     LOAD_ATTR               12: append
+        534     LOAD_CONST              10: 0
+        537     CALL_FUNCTION           1
+        540     POP_TOP                 
+        541     JUMP_ABSOLUTE           516
+        544     POP_BLOCK               
+        545     SET_LINENO              43
+        548     LOAD_NAME               8: lj
+        551     LOAD_ATTR               12: append
+        554     LOAD_NAME               10: lk
+        557     CALL_FUNCTION           1
+        560     POP_TOP                 
+        561     JUMP_ABSOLUTE           482
+        564     POP_BLOCK               
+        565     SET_LINENO              44
+        568     LOAD_NAME               3: l
+        571     LOAD_ATTR               12: append
+        574     LOAD_NAME               8: lj
+        577     CALL_FUNCTION           1
+        580     POP_TOP                 
+        581     JUMP_ABSOLUTE           448
+        584     POP_BLOCK               
+        585     SET_LINENO              46
+        588     LOAD_CONST              2: 1
+        591     DUP_TOP                 
+        592     STORE_GLOBAL            7: i
+        595     DUP_TOP                 
+        596     STORE_NAME              9: j
+        599     STORE_NAME              11: k
+        602     SET_LINENO              47
+        605     LOAD_CONST              11: <CODE> f
+        608     MAKE_FUNCTION           0
+        611     STORE_NAME              13: f
+        614     SET_LINENO              52
+        617     LOAD_CONST              2: 1
+        620     LOAD_NAME               3: l
+        623     LOAD_GLOBAL             7: i
+        626     BINARY_SUBSCR           
+        627     LOAD_NAME               9: j
+        630     BINARY_SUBSCR           
+        631     LOAD_NAME               11: k
+        634     STORE_SUBSCR            
+        635     SET_LINENO              53
+        638     LOAD_CONST              2: 1
+        641     STORE_GLOBAL            7: i
+        644     SET_LINENO              54
+        647     LOAD_NAME               3: l
+        650     LOAD_NAME               13: f
+        653     CALL_FUNCTION           0
+        656     BINARY_SUBSCR           
+        657     LOAD_NAME               9: j
+        660     BINARY_SUBSCR           
+        661     LOAD_NAME               11: k
+        664     DUP_TOPX                2
+        667     BINARY_SUBSCR           
+        668     LOAD_CONST              2: 1
+        671     INPLACE_ADD             
+        672     ROT_THREE               
+        673     STORE_SUBSCR            
+        674     SET_LINENO              55
+        677     LOAD_GLOBAL             7: i
+        680     PRINT_ITEM              
+        681     LOAD_NAME               3: l
+        684     PRINT_ITEM              
+        685     PRINT_NEWLINE           
+        686     LOAD_CONST              12: None
+        689     RETURN_VALUE            

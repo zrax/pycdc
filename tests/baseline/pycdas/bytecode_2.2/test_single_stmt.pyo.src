@@ -1,0 +1,21 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_single_stmt.pyo (Python 2.2)
+[Code]
+    File Name: test/test_single_stmt.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        5
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: 5
+        3       PRINT_ITEM              
+        4       PRINT_NEWLINE           
+        5       LOAD_CONST              1: None
+        8       RETURN_VALUE            

@@ -1,0 +1,103 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_tuples.pyo (Python 2.2)
+[Code]
+    File Name: test/test_tuples.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'a'
+        'b'
+        'x'
+    [Var Names]
+        'a'
+        'x'
+        'b'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        1
+        2
+        3
+        4
+        5
+        42
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: 1
+        9       BUILD_TUPLE             1
+        12      STORE_NAME              1: a
+        15      LOAD_CONST              2: 2
+        18      LOAD_CONST              3: 3
+        21      BUILD_TUPLE             2
+        24      STORE_NAME              2: b
+        27      LOAD_CONST              1: 1
+        30      LOAD_CONST              2: 2
+        33      BUILD_TUPLE             2
+        36      UNPACK_SEQUENCE         2
+        39      STORE_NAME              1: a
+        42      STORE_NAME              2: b
+        45      LOAD_CONST              1: 1
+        48      LOAD_CONST              2: 2
+        51      BUILD_TUPLE             2
+        54      LOAD_CONST              3: 3
+        57      LOAD_CONST              4: 4
+        60      LOAD_CONST              5: 5
+        63      BUILD_TUPLE             3
+        66      BUILD_TUPLE             2
+        69      UNPACK_SEQUENCE         2
+        72      STORE_NAME              1: a
+        75      STORE_NAME              2: b
+        78      BUILD_MAP               0
+        81      STORE_NAME              3: x
+        84      SETUP_EXCEPT            21 (to 108)
+        87      LOAD_NAME               3: x
+        90      LOAD_CONST              1: 1
+        93      LOAD_CONST              2: 2
+        96      LOAD_CONST              3: 3
+        99      BUILD_TUPLE             3
+        102     BINARY_SUBSCR           
+        103     POP_TOP                 
+        104     POP_BLOCK               
+        105     JUMP_FORWARD            7 (to 115)
+        108     POP_TOP                 
+        109     POP_TOP                 
+        110     POP_TOP                 
+        111     JUMP_FORWARD            1 (to 115)
+        114     END_FINALLY             
+        115     LOAD_CONST              6: 42
+        118     LOAD_NAME               3: x
+        121     LOAD_CONST              1: 1
+        124     LOAD_CONST              2: 2
+        127     LOAD_CONST              3: 3
+        130     BUILD_TUPLE             3
+        133     STORE_SUBSCR            
+        134     LOAD_NAME               3: x
+        137     LOAD_CONST              1: 1
+        140     LOAD_CONST              2: 2
+        143     LOAD_CONST              3: 3
+        146     BUILD_TUPLE             3
+        149     BINARY_SUBSCR           
+        150     PRINT_ITEM              
+        151     PRINT_NEWLINE           
+        152     LOAD_NAME               3: x
+        155     LOAD_CONST              1: 1
+        158     LOAD_CONST              2: 2
+        161     LOAD_CONST              3: 3
+        164     BUILD_TUPLE             3
+        167     BINARY_SUBSCR           
+        168     PRINT_ITEM              
+        169     PRINT_NEWLINE           
+        170     LOAD_NAME               3: x
+        173     LOAD_CONST              1: 1
+        176     LOAD_CONST              2: 2
+        179     LOAD_CONST              3: 3
+        182     BUILD_TUPLE             3
+        185     DELETE_SUBSCR           
+        186     LOAD_CONST              7: None
+        189     RETURN_VALUE            

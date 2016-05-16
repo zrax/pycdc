@@ -1,0 +1,191 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_applyEquiv.pyc (Python 2.7)
+[Code]
+    File Name: source\test_applyEquiv.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 11
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'kwfunc'
+        'argsfunc'
+        'no_apply'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: source\test_applyEquiv.py
+            Object Name: kwfunc
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x0000004B (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARKEYWORDS | CO_NOFREE)
+            [Names]
+                'items'
+            [Var Names]
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: kwargs
+                3       LOAD_ATTR               0: items
+                6       CALL_FUNCTION           0
+                9       PRINT_ITEM              
+                10      PRINT_NEWLINE           
+                11      LOAD_CONST              0: None
+                14      RETURN_VALUE            
+        [Code]
+            File Name: source\test_applyEquiv.py
+            Object Name: argsfunc
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000047 (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'args'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: args
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       LOAD_CONST              0: None
+                8       RETURN_VALUE            
+        [Code]
+            File Name: source\test_applyEquiv.py
+            Object Name: no_apply
+            Arg Count: 0
+            Locals: 3
+            Stack Size: 7
+            Flags: 0x0000004F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS | CO_NOFREE)
+            [Names]
+                'items'
+                'argsfunc'
+                'kwfunc'
+                'no_apply'
+            [Var Names]
+                'args'
+                'kwargs'
+                'foo'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                34
+                'x'
+                11
+                42
+            [Disassembly]
+                0       LOAD_FAST               0: args
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       LOAD_FAST               1: kwargs
+                8       LOAD_ATTR               0: items
+                11      CALL_FUNCTION           0
+                14      PRINT_ITEM              
+                15      PRINT_NEWLINE           
+                16      LOAD_GLOBAL             1: argsfunc
+                19      LOAD_CONST              1: 34
+                22      CALL_FUNCTION           1
+                25      POP_TOP                 
+                26      LOAD_GLOBAL             1: argsfunc
+                29      LOAD_FAST               0: args
+                32      CALL_FUNCTION_VAR       0
+                35      STORE_FAST              2: foo
+                38      LOAD_GLOBAL             1: argsfunc
+                41      LOAD_FAST               0: args
+                44      CALL_FUNCTION_VAR       0
+                47      POP_TOP                 
+                48      LOAD_GLOBAL             1: argsfunc
+                51      LOAD_CONST              1: 34
+                54      LOAD_FAST               0: args
+                57      CALL_FUNCTION_VAR       1
+                60      POP_TOP                 
+                61      LOAD_GLOBAL             2: kwfunc
+                64      LOAD_FAST               1: kwargs
+                67      CALL_FUNCTION_KW        0
+                70      POP_TOP                 
+                71      LOAD_GLOBAL             2: kwfunc
+                74      LOAD_CONST              2: 'x'
+                77      LOAD_CONST              3: 11
+                80      LOAD_FAST               1: kwargs
+                83      CALL_FUNCTION_KW        256
+                86      POP_TOP                 
+                87      LOAD_GLOBAL             3: no_apply
+                90      LOAD_FAST               0: args
+                93      LOAD_FAST               1: kwargs
+                96      CALL_FUNCTION_VAR_KW    0
+                99      POP_TOP                 
+                100     LOAD_GLOBAL             3: no_apply
+                103     LOAD_CONST              1: 34
+                106     LOAD_FAST               0: args
+                109     LOAD_FAST               1: kwargs
+                112     CALL_FUNCTION_VAR_KW    1
+                115     POP_TOP                 
+                116     LOAD_GLOBAL             3: no_apply
+                119     LOAD_CONST              2: 'x'
+                122     LOAD_CONST              3: 11
+                125     LOAD_FAST               0: args
+                128     LOAD_FAST               1: kwargs
+                131     CALL_FUNCTION_VAR_KW    256
+                134     POP_TOP                 
+                135     LOAD_GLOBAL             3: no_apply
+                138     LOAD_CONST              1: 34
+                141     LOAD_CONST              2: 'x'
+                144     LOAD_CONST              3: 11
+                147     LOAD_FAST               0: args
+                150     LOAD_FAST               1: kwargs
+                153     CALL_FUNCTION_VAR_KW    257
+                156     POP_TOP                 
+                157     LOAD_GLOBAL             3: no_apply
+                160     LOAD_CONST              4: 42
+                163     LOAD_CONST              1: 34
+                166     LOAD_CONST              2: 'x'
+                169     LOAD_CONST              3: 11
+                172     LOAD_FAST               0: args
+                175     LOAD_FAST               1: kwargs
+                178     CALL_FUNCTION_VAR_KW    258
+                181     POP_TOP                 
+                182     LOAD_CONST              0: None
+                185     RETURN_VALUE            
+        1
+        2
+        4
+        8
+        'a'
+        'b'
+        3
+        'c'
+        5
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> kwfunc
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: kwfunc
+        9       LOAD_CONST              1: <CODE> argsfunc
+        12      MAKE_FUNCTION           0
+        15      STORE_NAME              1: argsfunc
+        18      LOAD_CONST              2: <CODE> no_apply
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              2: no_apply
+        27      LOAD_NAME               2: no_apply
+        30      LOAD_CONST              3: 1
+        33      LOAD_CONST              4: 2
+        36      LOAD_CONST              5: 4
+        39      LOAD_CONST              6: 8
+        42      LOAD_CONST              7: 'a'
+        45      LOAD_CONST              4: 2
+        48      LOAD_CONST              8: 'b'
+        51      LOAD_CONST              9: 3
+        54      LOAD_CONST              10: 'c'
+        57      LOAD_CONST              11: 5
+        60      CALL_FUNCTION           772
+        63      POP_TOP                 
+        64      LOAD_CONST              12: None
+        67      RETURN_VALUE            

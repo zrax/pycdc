@@ -1,0 +1,44 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_exec.pyc (Python 2.2)
+[Code]
+    File Name: test/test_exec.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        'testcode'
+        'globals'
+        'locals'
+    [Var Names]
+        'testcode'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'a = 12'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: 'a = 12'
+        9       STORE_NAME              0: testcode
+        12      SET_LINENO              11
+        15      LOAD_NAME               0: testcode
+        18      LOAD_CONST              1: None
+        21      DUP_TOP                 
+        22      EXEC_STMT               
+        23      SET_LINENO              12
+        26      LOAD_NAME               0: testcode
+        29      LOAD_NAME               1: globals
+        32      CALL_FUNCTION           0
+        35      DUP_TOP                 
+        36      EXEC_STMT               
+        37      SET_LINENO              13
+        40      LOAD_NAME               0: testcode
+        43      LOAD_NAME               1: globals
+        46      CALL_FUNCTION           0
+        49      LOAD_NAME               2: locals
+        52      CALL_FUNCTION           0
+        55      EXEC_STMT               
+        56      LOAD_CONST              1: None
+        59      RETURN_VALUE            

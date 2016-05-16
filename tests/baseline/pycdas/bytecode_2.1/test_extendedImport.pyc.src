@@ -1,0 +1,113 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_extendedImport.pyc (Python 2.1)
+[Code]
+    File Name: test/test_extendedImport.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        'os'
+        'sys'
+        'System'
+        'time'
+        'rfc822'
+        'Message'
+        'Msg822'
+        'mimetools'
+        'MimeMsg'
+        'decode'
+        'choose_boundary'
+        'MimeBoundary'
+        'test.test_StringIO'
+        'test_StringIO'
+        'StringTest'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+        'v'
+        'os'
+        'time'
+        'StringTest'
+        'decode'
+        'Msg822'
+        'MimeBoundary'
+        'System'
+        'MimeMsg'
+        'k'
+        'sys'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        None
+        (
+            'Message'
+        )
+        (
+            'Message'
+            'decode'
+            'choose_boundary'
+        )
+        0
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: None
+        9       IMPORT_NAME             0: os
+        12      STORE_NAME              0: os
+        15      LOAD_CONST              0: None
+        18      IMPORT_NAME             1: sys
+        21      STORE_NAME              2: System
+        24      LOAD_CONST              0: None
+        27      IMPORT_NAME             3: time
+        30      STORE_NAME              3: time
+        33      SET_LINENO              10
+        36      LOAD_CONST              0: None
+        39      IMPORT_NAME             1: sys
+        42      STORE_NAME              1: sys
+        45      SET_LINENO              12
+        48      LOAD_CONST              1: ('Message',)
+        51      IMPORT_NAME             4: rfc822
+        54      IMPORT_FROM             5: Message
+        57      STORE_NAME              6: Msg822
+        60      POP_TOP                 
+        61      SET_LINENO              13
+        64      LOAD_CONST              2: ('Message', 'decode', 'choose_boundary')
+        67      IMPORT_NAME             7: mimetools
+        70      IMPORT_FROM             5: Message
+        73      STORE_NAME              8: MimeMsg
+        76      IMPORT_FROM             9: decode
+        79      STORE_NAME              9: decode
+        82      IMPORT_FROM             10: choose_boundary
+        85      STORE_NAME              11: MimeBoundary
+        88      POP_TOP                 
+        89      SET_LINENO              15
+        92      LOAD_CONST              0: None
+        95      IMPORT_NAME             12: test.test_StringIO
+        98      LOAD_ATTR               13: test_StringIO
+        101     STORE_NAME              14: StringTest
+        104     SET_LINENO              17
+        107     SETUP_LOOP              47 (to 157)
+        110     LOAD_NAME               15: globals
+        113     CALL_FUNCTION           0
+        116     LOAD_ATTR               16: items
+        119     CALL_FUNCTION           0
+        122     LOAD_CONST              3: 0
+        125     SET_LINENO              17
+        128     FOR_LOOP                25 (to 156)
+        131     UNPACK_SEQUENCE         2
+        134     STORE_NAME              17: k
+        137     STORE_NAME              18: v
+        140     SET_LINENO              18
+        143     LOAD_NAME               17: k
+        146     UNARY_CONVERT           
+        147     PRINT_ITEM              
+        148     LOAD_NAME               18: v
+        151     PRINT_ITEM              
+        152     PRINT_NEWLINE           
+        153     JUMP_ABSOLUTE           125
+        156     POP_BLOCK               
+        157     LOAD_CONST              0: None
+        160     RETURN_VALUE            

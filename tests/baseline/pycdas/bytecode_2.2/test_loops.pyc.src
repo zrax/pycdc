@@ -1,0 +1,184 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_loops.pyc (Python 2.2)
+[Code]
+    File Name: test/test_loops.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'range'
+        'i'
+    [Var Names]
+        'i'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_loops.py -- source test pattern for loops\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        10
+        3
+        5
+        'Else'
+        0
+        1
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_loops.py -- source test pattern for loops\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      SETUP_LOOP              88 (to 106)
+        18      LOAD_NAME               1: range
+        21      LOAD_CONST              1: 10
+        24      CALL_FUNCTION           1
+        27      GET_ITER                
+        28      SET_LINENO              11
+        31      FOR_ITER                63
+        34      STORE_NAME              2: i
+        37      SET_LINENO              12
+        40      LOAD_NAME               2: i
+        43      LOAD_CONST              2: 3
+        46      COMPARE_OP              2
+        49      JUMP_IF_FALSE           10 (to 62)
+        52      POP_TOP                 
+        53      SET_LINENO              13
+        56      JUMP_ABSOLUTE           28
+        59      JUMP_FORWARD            1 (to 63)
+        62      POP_TOP                 
+        63      SET_LINENO              14
+        66      LOAD_NAME               2: i
+        69      LOAD_CONST              3: 5
+        72      COMPARE_OP              2
+        75      JUMP_IF_FALSE           8 (to 86)
+        78      POP_TOP                 
+        79      SET_LINENO              15
+        82      BREAK_LOOP              
+        83      JUMP_FORWARD            1 (to 87)
+        86      POP_TOP                 
+        87      SET_LINENO              16
+        90      LOAD_NAME               2: i
+        93      PRINT_ITEM              
+        94      JUMP_ABSOLUTE           28
+        97      POP_BLOCK               
+        98      SET_LINENO              18
+        101     LOAD_CONST              4: 'Else'
+        104     PRINT_ITEM              
+        105     PRINT_NEWLINE           
+        106     SET_LINENO              19
+        109     PRINT_NEWLINE           
+        110     SET_LINENO              21
+        113     SETUP_LOOP              64 (to 180)
+        116     LOAD_NAME               1: range
+        119     LOAD_CONST              1: 10
+        122     CALL_FUNCTION           1
+        125     GET_ITER                
+        126     SET_LINENO              21
+        129     FOR_ITER                39
+        132     STORE_NAME              2: i
+        135     SET_LINENO              22
+        138     LOAD_NAME               2: i
+        141     LOAD_CONST              2: 3
+        144     COMPARE_OP              2
+        147     JUMP_IF_FALSE           10 (to 160)
+        150     POP_TOP                 
+        151     SET_LINENO              23
+        154     JUMP_ABSOLUTE           126
+        157     JUMP_FORWARD            1 (to 161)
+        160     POP_TOP                 
+        161     SET_LINENO              24
+        164     LOAD_NAME               2: i
+        167     PRINT_ITEM              
+        168     JUMP_ABSOLUTE           126
+        171     POP_BLOCK               
+        172     SET_LINENO              26
+        175     LOAD_CONST              4: 'Else'
+        178     PRINT_ITEM              
+        179     PRINT_NEWLINE           
+        180     SET_LINENO              29
+        183     LOAD_CONST              5: 0
+        186     STORE_NAME              2: i
+        189     SET_LINENO              30
+        192     SETUP_LOOP              99 (to 294)
+        195     SET_LINENO              30
+        198     LOAD_NAME               2: i
+        201     LOAD_CONST              1: 10
+        204     COMPARE_OP              0
+        207     JUMP_IF_FALSE           74 (to 284)
+        210     POP_TOP                 
+        211     SET_LINENO              31
+        214     LOAD_NAME               2: i
+        217     LOAD_CONST              6: 1
+        220     BINARY_ADD              
+        221     STORE_NAME              2: i
+        224     SET_LINENO              32
+        227     LOAD_NAME               2: i
+        230     LOAD_CONST              2: 3
+        233     COMPARE_OP              2
+        236     JUMP_IF_FALSE           10 (to 249)
+        239     POP_TOP                 
+        240     SET_LINENO              33
+        243     JUMP_ABSOLUTE           195
+        246     JUMP_FORWARD            1 (to 250)
+        249     POP_TOP                 
+        250     SET_LINENO              34
+        253     LOAD_NAME               2: i
+        256     LOAD_CONST              3: 5
+        259     COMPARE_OP              2
+        262     JUMP_IF_FALSE           8 (to 273)
+        265     POP_TOP                 
+        266     SET_LINENO              35
+        269     BREAK_LOOP              
+        270     JUMP_FORWARD            1 (to 274)
+        273     POP_TOP                 
+        274     SET_LINENO              36
+        277     LOAD_NAME               2: i
+        280     PRINT_ITEM              
+        281     JUMP_ABSOLUTE           195
+        284     POP_TOP                 
+        285     POP_BLOCK               
+        286     SET_LINENO              38
+        289     LOAD_CONST              4: 'Else'
+        292     PRINT_ITEM              
+        293     PRINT_NEWLINE           
+        294     SET_LINENO              39
+        297     PRINT_NEWLINE           
+        298     SET_LINENO              41
+        301     LOAD_CONST              5: 0
+        304     STORE_NAME              2: i
+        307     SET_LINENO              42
+        310     SETUP_LOOP              75 (to 388)
+        313     SET_LINENO              42
+        316     LOAD_NAME               2: i
+        319     LOAD_CONST              1: 10
+        322     COMPARE_OP              0
+        325     JUMP_IF_FALSE           50 (to 378)
+        328     POP_TOP                 
+        329     SET_LINENO              43
+        332     LOAD_NAME               2: i
+        335     LOAD_CONST              6: 1
+        338     BINARY_ADD              
+        339     STORE_NAME              2: i
+        342     SET_LINENO              44
+        345     LOAD_NAME               2: i
+        348     LOAD_CONST              2: 3
+        351     COMPARE_OP              2
+        354     JUMP_IF_FALSE           10 (to 367)
+        357     POP_TOP                 
+        358     SET_LINENO              45
+        361     JUMP_ABSOLUTE           313
+        364     JUMP_FORWARD            1 (to 368)
+        367     POP_TOP                 
+        368     SET_LINENO              46
+        371     LOAD_NAME               2: i
+        374     PRINT_ITEM              
+        375     JUMP_ABSOLUTE           313
+        378     POP_TOP                 
+        379     POP_BLOCK               
+        380     SET_LINENO              48
+        383     LOAD_CONST              4: 'Else'
+        386     PRINT_ITEM              
+        387     PRINT_NEWLINE           
+        388     LOAD_CONST              7: None
+        391     RETURN_VALUE            

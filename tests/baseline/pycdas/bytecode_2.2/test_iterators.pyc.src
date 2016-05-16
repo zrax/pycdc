@@ -1,0 +1,58 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_iterators.pyc (Python 2.2)
+[Code]
+    File Name: test/test_iterators.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        'range'
+        'i'
+    [Var Names]
+        'i'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        20
+        10
+        'The End'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              2
+        6       SETUP_LOOP              30 (to 39)
+        9       LOAD_NAME               0: range
+        12      LOAD_CONST              0: 20
+        15      CALL_FUNCTION           1
+        18      GET_ITER                
+        19      SET_LINENO              2
+        22      FOR_ITER                13
+        25      STORE_NAME              1: i
+        28      SET_LINENO              3
+        31      LOAD_NAME               1: i
+        34      PRINT_ITEM              
+        35      JUMP_ABSOLUTE           19
+        38      POP_BLOCK               
+        39      SET_LINENO              5
+        42      PRINT_NEWLINE           
+        43      SET_LINENO              7
+        46      SETUP_LOOP              38 (to 87)
+        49      LOAD_NAME               0: range
+        52      LOAD_CONST              1: 10
+        55      CALL_FUNCTION           1
+        58      GET_ITER                
+        59      SET_LINENO              7
+        62      FOR_ITER                13
+        65      STORE_NAME              1: i
+        68      SET_LINENO              8
+        71      LOAD_NAME               1: i
+        74      PRINT_ITEM              
+        75      JUMP_ABSOLUTE           59
+        78      POP_BLOCK               
+        79      SET_LINENO              11
+        82      LOAD_CONST              2: 'The End'
+        85      PRINT_ITEM              
+        86      PRINT_NEWLINE           
+        87      LOAD_CONST              3: None
+        90      RETURN_VALUE            

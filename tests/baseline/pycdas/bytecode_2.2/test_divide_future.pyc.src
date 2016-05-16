@@ -1,0 +1,70 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_divide_future.pyc (Python 2.2)
+[Code]
+    File Name: test/test_divide_future.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00002000 (CO_FUTURE_DIVISION)
+    [Names]
+        '__future__'
+        'division'
+    [Var Names]
+        'division'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        (
+            'division'
+        )
+        '  1 // 2   ='
+        1
+        2
+        '1.0 // 2.0 ='
+        1.0
+        2.0
+        '  1 /  2   ='
+        '1.0 /  2.0 ='
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              1
+        6       LOAD_CONST              0: ('division',)
+        9       IMPORT_NAME             0: __future__
+        12      IMPORT_FROM             1: division
+        15      STORE_NAME              1: division
+        18      POP_TOP                 
+        19      SET_LINENO              3
+        22      LOAD_CONST              1: '  1 // 2   ='
+        25      PRINT_ITEM              
+        26      LOAD_CONST              2: 1
+        29      LOAD_CONST              3: 2
+        32      BINARY_FLOOR_DIVIDE     
+        33      PRINT_ITEM              
+        34      PRINT_NEWLINE           
+        35      SET_LINENO              4
+        38      LOAD_CONST              4: '1.0 // 2.0 ='
+        41      PRINT_ITEM              
+        42      LOAD_CONST              5: 1.0
+        45      LOAD_CONST              6: 2.0
+        48      BINARY_FLOOR_DIVIDE     
+        49      PRINT_ITEM              
+        50      PRINT_NEWLINE           
+        51      SET_LINENO              5
+        54      LOAD_CONST              7: '  1 /  2   ='
+        57      PRINT_ITEM              
+        58      LOAD_CONST              2: 1
+        61      LOAD_CONST              3: 2
+        64      BINARY_TRUE_DIVIDE      
+        65      PRINT_ITEM              
+        66      PRINT_NEWLINE           
+        67      SET_LINENO              6
+        70      LOAD_CONST              8: '1.0 /  2.0 ='
+        73      PRINT_ITEM              
+        74      LOAD_CONST              5: 1.0
+        77      LOAD_CONST              6: 2.0
+        80      BINARY_TRUE_DIVIDE      
+        81      PRINT_ITEM              
+        82      PRINT_NEWLINE           
+        83      LOAD_CONST              9: None
+        86      RETURN_VALUE            

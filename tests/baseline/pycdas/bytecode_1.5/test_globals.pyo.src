@@ -1,0 +1,59 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_globals.pyo (Python 1.5)
+[Code]
+    File Name: test/test_globals.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+        'f'
+        'x'
+    [Var Names]
+    [Constants]
+        [Code]
+            File Name: test/test_globals.py
+            Object Name: f
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+            [Var Names]
+                'x'
+            [Constants]
+                None
+                1
+            [Disassembly]
+                0       LOAD_FAST               0: x
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       LOAD_FAST               0: x
+                8       LOAD_CONST              1: 1
+                11      BINARY_ADD              
+                12      STORE_FAST              0: x
+                15      LOAD_FAST               0: x
+                18      PRINT_ITEM              
+                19      PRINT_NEWLINE           
+                20      LOAD_CONST              0: None
+                23      RETURN_VALUE            
+        "This program can't be run"
+        1
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> f
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: f
+        9       LOAD_CONST              1: "This program can't be run"
+        12      RAISE_VARARGS           1
+        15      LOAD_CONST              2: 1
+        18      STORE_NAME              1: x
+        21      LOAD_NAME               0: f
+        24      CALL_FUNCTION           0
+        27      POP_TOP                 
+        28      LOAD_NAME               1: x
+        31      PRINT_ITEM              
+        32      PRINT_NEWLINE           
+        33      LOAD_CONST              3: None
+        36      RETURN_VALUE            

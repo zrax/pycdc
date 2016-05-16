@@ -1,0 +1,134 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_integers.pyc (Python 2.1)
+[Code]
+    File Name: test/test_integers.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'i'
+        'maxint'
+        'minint'
+        'long'
+        'repr'
+    [Var Names]
+        'sys'
+        'minint'
+        'i'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_integers.py -- source test pattern for integers\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        None
+        1
+        42
+        2147483647
+        0x80000000L
+        0x80000001L
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: "\ntest_integers.py -- source test pattern for integers\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              10
+        12      SET_LINENO              12
+        15      LOAD_CONST              1: None
+        18      IMPORT_NAME             1: sys
+        21      STORE_NAME              1: sys
+        24      SET_LINENO              15
+        27      LOAD_CONST              2: 1
+        30      STORE_NAME              2: i
+        33      SET_LINENO              16
+        36      LOAD_CONST              3: 42
+        39      STORE_NAME              2: i
+        42      SET_LINENO              17
+        45      LOAD_CONST              2: 1
+        48      UNARY_NEGATIVE          
+        49      STORE_NAME              2: i
+        52      SET_LINENO              18
+        55      LOAD_CONST              3: 42
+        58      UNARY_NEGATIVE          
+        59      STORE_NAME              2: i
+        62      SET_LINENO              19
+        65      LOAD_NAME               1: sys
+        68      LOAD_ATTR               3: maxint
+        71      STORE_NAME              2: i
+        74      SET_LINENO              20
+        77      LOAD_NAME               1: sys
+        80      LOAD_ATTR               3: maxint
+        83      UNARY_NEGATIVE          
+        84      LOAD_CONST              2: 1
+        87      BINARY_SUBTRACT         
+        88      STORE_NAME              4: minint
+        91      SET_LINENO              21
+        94      LOAD_NAME               1: sys
+        97      LOAD_ATTR               3: maxint
+        100     PRINT_ITEM              
+        101     PRINT_NEWLINE           
+        102     SET_LINENO              22
+        105     LOAD_NAME               4: minint
+        108     PRINT_ITEM              
+        109     PRINT_NEWLINE           
+        110     SET_LINENO              23
+        113     LOAD_NAME               5: long
+        116     LOAD_NAME               4: minint
+        119     CALL_FUNCTION           1
+        122     LOAD_CONST              2: 1
+        125     BINARY_SUBTRACT         
+        126     PRINT_ITEM              
+        127     PRINT_NEWLINE           
+        128     SET_LINENO              25
+        131     PRINT_NEWLINE           
+        132     SET_LINENO              26
+        135     LOAD_CONST              4: 2147483647
+        138     UNARY_NEGATIVE          
+        139     STORE_NAME              2: i
+        142     SET_LINENO              27
+        145     LOAD_NAME               2: i
+        148     PRINT_ITEM              
+        149     LOAD_NAME               6: repr
+        152     LOAD_NAME               2: i
+        155     CALL_FUNCTION           1
+        158     PRINT_ITEM              
+        159     PRINT_NEWLINE           
+        160     SET_LINENO              28
+        163     LOAD_NAME               2: i
+        166     LOAD_CONST              2: 1
+        169     BINARY_SUBTRACT         
+        170     STORE_NAME              2: i
+        173     SET_LINENO              29
+        176     LOAD_NAME               2: i
+        179     PRINT_ITEM              
+        180     LOAD_NAME               6: repr
+        183     LOAD_NAME               2: i
+        186     CALL_FUNCTION           1
+        189     PRINT_ITEM              
+        190     PRINT_NEWLINE           
+        191     SET_LINENO              30
+        194     LOAD_CONST              5: 0x80000000L
+        197     UNARY_NEGATIVE          
+        198     STORE_NAME              2: i
+        201     SET_LINENO              31
+        204     LOAD_NAME               2: i
+        207     PRINT_ITEM              
+        208     LOAD_NAME               6: repr
+        211     LOAD_NAME               2: i
+        214     CALL_FUNCTION           1
+        217     PRINT_ITEM              
+        218     PRINT_NEWLINE           
+        219     SET_LINENO              32
+        222     LOAD_CONST              6: 0x80000001L
+        225     UNARY_NEGATIVE          
+        226     STORE_NAME              2: i
+        229     SET_LINENO              33
+        232     LOAD_NAME               2: i
+        235     PRINT_ITEM              
+        236     LOAD_NAME               6: repr
+        239     LOAD_NAME               2: i
+        242     CALL_FUNCTION           1
+        245     PRINT_ITEM              
+        246     PRINT_NEWLINE           
+        247     LOAD_CONST              1: None
+        250     RETURN_VALUE            

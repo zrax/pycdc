@@ -1,0 +1,85 @@
+../../pycdc/tests/inputs/bytecode_2.1/print.pyc (Python 2.1)
+[Code]
+    File Name: print.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        'b'
+        'a'
+    [Var Names]
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        1
+        2
+        3
+        4
+        5
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: 1
+        9       PRINT_ITEM              
+        10      LOAD_CONST              1: 2
+        13      PRINT_ITEM              
+        14      LOAD_CONST              2: 3
+        17      PRINT_ITEM              
+        18      LOAD_CONST              3: 4
+        21      PRINT_ITEM              
+        22      LOAD_CONST              4: 5
+        25      PRINT_ITEM              
+        26      PRINT_NEWLINE           
+        27      SET_LINENO              10
+        30      LOAD_NAME               0: b
+        33      LOAD_CONST              4: 5
+        36      BINARY_ADD              
+        37      STORE_NAME              1: a
+        40      SET_LINENO              11
+        43      LOAD_CONST              0: 1
+        46      PRINT_ITEM              
+        47      LOAD_CONST              1: 2
+        50      PRINT_ITEM              
+        51      LOAD_CONST              2: 3
+        54      PRINT_ITEM              
+        55      LOAD_CONST              3: 4
+        58      PRINT_ITEM              
+        59      LOAD_CONST              4: 5
+        62      PRINT_ITEM              
+        63      PRINT_NEWLINE           
+        64      SET_LINENO              12
+        67      LOAD_CONST              0: 1
+        70      PRINT_ITEM              
+        71      LOAD_CONST              1: 2
+        74      PRINT_ITEM              
+        75      LOAD_CONST              2: 3
+        78      PRINT_ITEM              
+        79      LOAD_CONST              3: 4
+        82      PRINT_ITEM              
+        83      LOAD_CONST              4: 5
+        86      PRINT_ITEM              
+        87      PRINT_NEWLINE           
+        88      SET_LINENO              13
+        91      PRINT_NEWLINE           
+        92      SET_LINENO              14
+        95      PRINT_NEWLINE           
+        96      SET_LINENO              15
+        99      LOAD_CONST              0: 1
+        102     PRINT_ITEM              
+        103     LOAD_CONST              1: 2
+        106     PRINT_ITEM              
+        107     LOAD_CONST              2: 3
+        110     PRINT_ITEM              
+        111     LOAD_CONST              3: 4
+        114     PRINT_ITEM              
+        115     LOAD_CONST              4: 5
+        118     PRINT_ITEM              
+        119     PRINT_NEWLINE           
+        120     SET_LINENO              16
+        123     PRINT_NEWLINE           
+        124     LOAD_CONST              5: None
+        127     RETURN_VALUE            

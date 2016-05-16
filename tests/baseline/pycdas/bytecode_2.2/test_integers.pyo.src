@@ -1,0 +1,110 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_integers.pyo (Python 2.2)
+[Code]
+    File Name: test/test_integers.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'i'
+        'maxint'
+        'minint'
+        'long'
+        'repr'
+    [Var Names]
+        'sys'
+        'i'
+        'minint'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_integers.py -- source test pattern for integers\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        None
+        1
+        42
+        -1
+        -42
+        -2147483647
+        -0x80000000L
+        -0x80000001L
+    [Disassembly]
+        0       LOAD_CONST              0: "\ntest_integers.py -- source test pattern for integers\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: None
+        9       IMPORT_NAME             1: sys
+        12      STORE_NAME              1: sys
+        15      LOAD_CONST              2: 1
+        18      STORE_NAME              2: i
+        21      LOAD_CONST              3: 42
+        24      STORE_NAME              2: i
+        27      LOAD_CONST              4: -1
+        30      STORE_NAME              2: i
+        33      LOAD_CONST              5: -42
+        36      STORE_NAME              2: i
+        39      LOAD_NAME               1: sys
+        42      LOAD_ATTR               3: maxint
+        45      STORE_NAME              2: i
+        48      LOAD_NAME               1: sys
+        51      LOAD_ATTR               3: maxint
+        54      UNARY_NEGATIVE          
+        55      LOAD_CONST              2: 1
+        58      BINARY_SUBTRACT         
+        59      STORE_NAME              4: minint
+        62      LOAD_NAME               1: sys
+        65      LOAD_ATTR               3: maxint
+        68      PRINT_ITEM              
+        69      PRINT_NEWLINE           
+        70      LOAD_NAME               4: minint
+        73      PRINT_ITEM              
+        74      PRINT_NEWLINE           
+        75      LOAD_NAME               5: long
+        78      LOAD_NAME               4: minint
+        81      CALL_FUNCTION           1
+        84      LOAD_CONST              2: 1
+        87      BINARY_SUBTRACT         
+        88      PRINT_ITEM              
+        89      PRINT_NEWLINE           
+        90      PRINT_NEWLINE           
+        91      LOAD_CONST              6: -2147483647
+        94      STORE_NAME              2: i
+        97      LOAD_NAME               2: i
+        100     PRINT_ITEM              
+        101     LOAD_NAME               6: repr
+        104     LOAD_NAME               2: i
+        107     CALL_FUNCTION           1
+        110     PRINT_ITEM              
+        111     PRINT_NEWLINE           
+        112     LOAD_NAME               2: i
+        115     LOAD_CONST              2: 1
+        118     BINARY_SUBTRACT         
+        119     STORE_NAME              2: i
+        122     LOAD_NAME               2: i
+        125     PRINT_ITEM              
+        126     LOAD_NAME               6: repr
+        129     LOAD_NAME               2: i
+        132     CALL_FUNCTION           1
+        135     PRINT_ITEM              
+        136     PRINT_NEWLINE           
+        137     LOAD_CONST              7: -0x80000000L
+        140     STORE_NAME              2: i
+        143     LOAD_NAME               2: i
+        146     PRINT_ITEM              
+        147     LOAD_NAME               6: repr
+        150     LOAD_NAME               2: i
+        153     CALL_FUNCTION           1
+        156     PRINT_ITEM              
+        157     PRINT_NEWLINE           
+        158     LOAD_CONST              8: -0x80000001L
+        161     STORE_NAME              2: i
+        164     LOAD_NAME               2: i
+        167     PRINT_ITEM              
+        168     LOAD_NAME               6: repr
+        171     LOAD_NAME               2: i
+        174     CALL_FUNCTION           1
+        177     PRINT_ITEM              
+        178     PRINT_NEWLINE           
+        179     LOAD_CONST              1: None
+        182     RETURN_VALUE            

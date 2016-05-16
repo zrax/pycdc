@@ -1,0 +1,15 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_empty.pyo (Python 1.5)
+[Code]
+    File Name: test/test_empty.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+    [Var Names]
+    [Constants]
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: None
+        3       RETURN_VALUE            
