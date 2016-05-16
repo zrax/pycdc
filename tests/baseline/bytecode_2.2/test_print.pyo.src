@@ -1,0 +1,11 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_2.2/test_print.pyo (Python 2.2)
+
+print 1, 2, 3, 4, 5
+a = b + 5
+print 1, 2, 3, 4, 5
+print 1, 2, 3, 4, 5
+print 
+print 
+print 1, 2, 3, 4, 5
+print 

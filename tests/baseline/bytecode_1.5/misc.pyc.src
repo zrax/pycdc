@@ -1,0 +1,32 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_1.5/misc.pyc (Python 1.5)
+
+
+class A:
+    
+    def __init__(self, num):
+        self.num = num
+
+    
+    def __repr__(self):
+        return str(self.num)
+
+
+b = []
+for i in range(10):
+    b.append(A(i))
+
+print b
+a = b[5]
+del a
+print b
+del b[5]
+print b
+for i in ('CALL_FUNCTION', 'CALL_FUNCTION_VAR', 'CALL_FUNCTION_VAR_KW', 'CALL_FUNCTION_KW'):
+    print i, '\t', len(i), len(i) - len('CALL_FUNCTION'), (len(i) - len('CALL_FUNCTION')) / 3, i[len('CALL_FUNCTION'):]
+
+p2 = (0, 0, None)
+if p2[2]:
+    print 'has value'
+else:
+    print ' no value'

@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_2.1/exec.pyc (Python 2.1)
+
+testcode = 'a = 12'
+exec testcode
+exec testcode in globals()
+exec testcode in globals(), locals()

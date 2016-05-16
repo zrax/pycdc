@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_2.2/test_divide_no_future.pyc (Python 2.2)
+
+print '  1 // 2   =', 1 // 2
+print '1.0 // 2.0 =', 1.0 // 2.0
+print '  1 /  2   =', 1 / 2
+print '1.0 /  2.0 =', 1.0 / 2.0

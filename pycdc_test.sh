@@ -1,22 +1,44 @@
 #!/bin/bash
 
+# TODO: Consider making a non-empty stderr be a failure
+# result, however this can make understanding new versions
+# harder to upgrade with.
+#
+# Possibly need a 'warning' level from test output.
 mkdir -p tests
 
 fails=0
 files=()
 errors=()
-for f in $1/*.pyc
+diffs=()
+for f in $(find $1/inputs -name '*.pyc' -or -name '*.pyo')
 do
-    base=tests/$( basename "$f" )
-    stderr=$( ./pycdc "$f" 2>$base.err 1>$base.src )
-    if [ "$?" -eq "0" -a -z "$stderr" ]
+    rel=$(realpath --relative-to=$1/inputs $f)
+    base=tests/$rel
+    mkdir -p $(dirname $base)
+    if ! ./pycdc "$f" 2>$base.err 1>$base.src
     then
-        echo -ne "\033[32m.\033[m"
-    else
         let fails+=1
-        files=("${files[@]}" "$f")
-        errors=("${errors[@]}" "$stderr")
+        files=("${files[@]}" "$rel")
+        stderr=$(cat $base.err)
+        errors=("${errors[@]}" "Bad exit code\n$stderr")
         echo -ne "\033[31m.\033[m"
+    elif ! diff $base.err $1/baseline/$rel.err >/dev/null 2>&1
+    then
+        let fails+=1
+        files=("${files[@]}" "$rel")
+        errdiff=$(diff $base.err $1/baseline/$rel.err)
+        errors=("${errors[@]}" "Mismatch stderr\n$errdiff")
+        echo -ne "\033[31m.\033[m"
+    elif ! diff $base.src $1/baseline/$rel.src >/dev/null 2>&1
+    then
+        let fails+=1
+        files=("${files[@]}" "$rel")
+        srcdiff=$(diff $base.src $1/baseline/$rel.src)
+        errors=("${errors[@]}" "Mismatch stdout\n$srcdiff")
+        echo -ne "\033[31m.\033[m"
+    else
+        echo -ne "\033[32m.\033[m"
     fi
 done
 echo -e "\n\n$fails tests failed:"
