@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 # For generating the bytes tables
 find_package(PythonInterp REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror ${CMAKE_CXX_FLAGS}")
 endif()
 
@@ -61,6 +61,6 @@ install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
 # For tests
-add_custom_target(test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
+add_custom_target(pycdc_test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
                        ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-add_dependencies(test pycdc)
+add_dependencies(pycdc_test pycdc)
