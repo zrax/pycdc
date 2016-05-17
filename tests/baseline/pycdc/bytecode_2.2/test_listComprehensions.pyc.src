@@ -2,33 +2,23 @@
 # File: ../../pycdc/tests/inputs/bytecode_2.2/test_listComprehensions.pyc (Python 2.2)
 
 XXX = range(4)
-continue
 print [ i for i in XXX ]
 print 
-continue
 print [ i for i in (1, 2, 3, 4) ]
 print 
-continue
 print [ (i, 1) for i in XXX ]
 print 
-continue
 print [ i * 2 for i in range(4) ]
 print 
-continue
 print [ i * j for i in range(4) for j in range(7) ]
-continue
 print []
-continue
 print []
-continue
 print []
 seq1 = 'abc'
 seq2 = (1, 2, 3)
-continue
 [ (x, y) for x in seq1 for y in seq2 ]
 
 def flatten(seq):
-    continue
     return [ x for subseq in seq for x in subseq ]
 
 print flatten([
