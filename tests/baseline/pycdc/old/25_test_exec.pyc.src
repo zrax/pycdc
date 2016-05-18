@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/25_test_exec.pyc (Python 2.5)
+
+testcode = 'a = 12'
+exec testcode
+exec testcode in globals()
+exec testcode in globals(), locals()

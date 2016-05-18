@@ -1,0 +1,14 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/26_if_elif_else.pyc (Python 2.6)
+
+
+def test(msgtype, flags):
+    if flags == 1:
+        msgtype = 1
+    elif flags == 2:
+        msgtype = 2
+    elif flags == 3:
+        msgtype = 3
+    
+    return msgtype
+

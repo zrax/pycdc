@@ -1,0 +1,92 @@
+../../pycdc/tests/inputs/old/27_print_to.pyc (Python 2.7)
+[Code]
+    File Name: print_to.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'sys'
+        'stdout'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        -1
+        None
+        'asdf'
+        'xyz'
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        'Hello World'
+        'Goodbye'
+    [Disassembly]
+        0       LOAD_CONST              0: -1
+        3       LOAD_CONST              1: None
+        6       IMPORT_NAME             0: sys
+        9       STORE_NAME              0: sys
+        12      LOAD_NAME               0: sys
+        15      LOAD_ATTR               1: stdout
+        18      DUP_TOP                 
+        19      LOAD_CONST              2: 'asdf'
+        22      ROT_TWO                 
+        23      PRINT_ITEM_TO           
+        24      PRINT_NEWLINE_TO        
+        25      LOAD_CONST              3: 'xyz'
+        28      PRINT_ITEM              
+        29      PRINT_NEWLINE           
+        30      LOAD_NAME               0: sys
+        33      LOAD_ATTR               1: stdout
+        36      DUP_TOP                 
+        37      LOAD_CONST              4: 1
+        40      ROT_TWO                 
+        41      PRINT_ITEM_TO           
+        42      DUP_TOP                 
+        43      LOAD_CONST              5: 2
+        46      ROT_TWO                 
+        47      PRINT_ITEM_TO           
+        48      DUP_TOP                 
+        49      LOAD_CONST              6: 3
+        52      ROT_TWO                 
+        53      PRINT_ITEM_TO           
+        54      DUP_TOP                 
+        55      LOAD_CONST              7: 4
+        58      ROT_TWO                 
+        59      PRINT_ITEM_TO           
+        60      PRINT_NEWLINE_TO        
+        61      LOAD_CONST              8: 5
+        64      PRINT_ITEM              
+        65      LOAD_CONST              9: 6
+        68      PRINT_ITEM              
+        69      LOAD_CONST              10: 7
+        72      PRINT_ITEM              
+        73      LOAD_CONST              11: 8
+        76      PRINT_ITEM              
+        77      PRINT_NEWLINE           
+        78      LOAD_NAME               0: sys
+        81      LOAD_ATTR               1: stdout
+        84      PRINT_NEWLINE_TO        
+        85      LOAD_NAME               0: sys
+        88      LOAD_ATTR               1: stdout
+        91      DUP_TOP                 
+        92      LOAD_CONST              12: 'Hello World'
+        95      ROT_TWO                 
+        96      PRINT_ITEM_TO           
+        97      PRINT_NEWLINE_TO        
+        98      LOAD_NAME               0: sys
+        101     LOAD_ATTR               1: stdout
+        104     PRINT_NEWLINE_TO        
+        105     PRINT_NEWLINE           
+        106     LOAD_CONST              13: 'Goodbye'
+        109     PRINT_ITEM              
+        110     PRINT_NEWLINE           
+        111     PRINT_NEWLINE           
+        112     LOAD_CONST              1: None
+        115     RETURN_VALUE            

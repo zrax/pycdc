@@ -1,0 +1,614 @@
+../../pycdc/tests/inputs/old/31_while_loops.pyc (Python 3.1)
+[Code]
+    File Name: vtem.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 9
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'sys'
+        'width'
+        'height'
+        'int'
+        'inner_l'
+        'inner_r'
+        'stderr'
+        'write'
+        'i'
+        'j'
+        'input'
+        'SyntaxError'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        0
+        None
+        80
+        24
+        60
+        2
+        61
+        '\x1b?3l'
+        '\x1b[H'
+        '\x1b#8'
+        '\x1b[9;%dH'
+        '\x1b[1J'
+        '\x1b[18;60H'
+        '\x1b[0J'
+        '\x1b[1K'
+        '\x1b[0K'
+        10
+        16
+        '\x1b[%d;%dH'
+        1
+        '\x1b[17;30H'
+        '\x1b[2K'
+        '\x1b[%d;%df'
+        '*'
+        '\x1b[2;2H'
+        '+'
+        '\x1b[1D'
+        '\x1bD'
+        '\x1bM'
+        '\x1b[2;1H'
+        '\x1b[10D'
+        '\x1bE'
+        '\n'
+        '\x1b[2;10H'
+        '\x1b[42D'
+        '\x1b[2C'
+        3
+        '\x1b[0C'
+        '\x1b[2D'
+        '\x1b[1C'
+        '\x1b[42C'
+        '\x1b[0D'
+        '\x8'
+        '\x1b[10;%dH'
+        15
+        ' '
+        '\x1b[1B'
+        '\x1b[58D'
+        ''
+    [Disassembly]
+        0       LOAD_CONST              0: 0
+        3       LOAD_CONST              1: None
+        6       IMPORT_NAME             0: sys
+        9       STORE_NAME              0: sys
+        12      LOAD_CONST              2: 80
+        15      STORE_NAME              1: width
+        18      LOAD_CONST              3: 24
+        21      STORE_NAME              2: height
+        24      LOAD_NAME               3: int
+        27      LOAD_NAME               1: width
+        30      LOAD_CONST              4: 60
+        33      BINARY_SUBTRACT         
+        34      LOAD_CONST              5: 2
+        37      BINARY_TRUE_DIVIDE      
+        38      CALL_FUNCTION           1
+        41      STORE_NAME              4: inner_l
+        44      LOAD_CONST              6: 61
+        47      LOAD_NAME               4: inner_l
+        50      BINARY_ADD              
+        51      STORE_NAME              5: inner_r
+        54      LOAD_NAME               0: sys
+        57      LOAD_ATTR               6: stderr
+        60      LOAD_ATTR               7: write
+        63      LOAD_CONST              7: '\x1b?3l'
+        66      CALL_FUNCTION           1
+        69      POP_TOP                 
+        70      LOAD_NAME               0: sys
+        73      LOAD_ATTR               6: stderr
+        76      LOAD_ATTR               7: write
+        79      LOAD_CONST              8: '\x1b[H'
+        82      CALL_FUNCTION           1
+        85      POP_TOP                 
+        86      LOAD_NAME               0: sys
+        89      LOAD_ATTR               6: stderr
+        92      LOAD_ATTR               7: write
+        95      LOAD_CONST              9: '\x1b#8'
+        98      CALL_FUNCTION           1
+        101     POP_TOP                 
+        102     LOAD_NAME               0: sys
+        105     LOAD_ATTR               6: stderr
+        108     LOAD_ATTR               7: write
+        111     LOAD_CONST              10: '\x1b[9;%dH'
+        114     LOAD_NAME               4: inner_l
+        117     BINARY_MODULO           
+        118     CALL_FUNCTION           1
+        121     POP_TOP                 
+        122     LOAD_NAME               0: sys
+        125     LOAD_ATTR               6: stderr
+        128     LOAD_ATTR               7: write
+        131     LOAD_CONST              11: '\x1b[1J'
+        134     CALL_FUNCTION           1
+        137     POP_TOP                 
+        138     LOAD_NAME               0: sys
+        141     LOAD_ATTR               6: stderr
+        144     LOAD_ATTR               7: write
+        147     LOAD_CONST              12: '\x1b[18;60H'
+        150     CALL_FUNCTION           1
+        153     POP_TOP                 
+        154     LOAD_NAME               0: sys
+        157     LOAD_ATTR               6: stderr
+        160     LOAD_ATTR               7: write
+        163     LOAD_CONST              13: '\x1b[0J'
+        166     CALL_FUNCTION           1
+        169     POP_TOP                 
+        170     LOAD_NAME               0: sys
+        173     LOAD_ATTR               6: stderr
+        176     LOAD_ATTR               7: write
+        179     LOAD_CONST              14: '\x1b[1K'
+        182     CALL_FUNCTION           1
+        185     POP_TOP                 
+        186     LOAD_NAME               0: sys
+        189     LOAD_ATTR               6: stderr
+        192     LOAD_ATTR               7: write
+        195     LOAD_CONST              10: '\x1b[9;%dH'
+        198     LOAD_NAME               5: inner_r
+        201     BINARY_MODULO           
+        202     CALL_FUNCTION           1
+        205     POP_TOP                 
+        206     LOAD_NAME               0: sys
+        209     LOAD_ATTR               6: stderr
+        212     LOAD_ATTR               7: write
+        215     LOAD_CONST              15: '\x1b[0K'
+        218     CALL_FUNCTION           1
+        221     POP_TOP                 
+        222     LOAD_CONST              16: 10
+        225     STORE_NAME              8: i
+        228     SETUP_LOOP              110 (to 341)
+        231     LOAD_NAME               8: i
+        234     LOAD_CONST              17: 16
+        237     COMPARE_OP              1
+        240     POP_JUMP_IF_FALSE       340
+        243     LOAD_NAME               0: sys
+        246     LOAD_ATTR               6: stderr
+        249     LOAD_ATTR               7: write
+        252     LOAD_CONST              18: '\x1b[%d;%dH'
+        255     LOAD_NAME               8: i
+        258     LOAD_NAME               4: inner_l
+        261     BUILD_TUPLE             2
+        264     BINARY_MODULO           
+        265     CALL_FUNCTION           1
+        268     POP_TOP                 
+        269     LOAD_NAME               0: sys
+        272     LOAD_ATTR               6: stderr
+        275     LOAD_ATTR               7: write
+        278     LOAD_CONST              14: '\x1b[1K'
+        281     CALL_FUNCTION           1
+        284     POP_TOP                 
+        285     LOAD_NAME               0: sys
+        288     LOAD_ATTR               6: stderr
+        291     LOAD_ATTR               7: write
+        294     LOAD_CONST              18: '\x1b[%d;%dH'
+        297     LOAD_NAME               8: i
+        300     LOAD_NAME               5: inner_r
+        303     BUILD_TUPLE             2
+        306     BINARY_MODULO           
+        307     CALL_FUNCTION           1
+        310     POP_TOP                 
+        311     LOAD_NAME               0: sys
+        314     LOAD_ATTR               6: stderr
+        317     LOAD_ATTR               7: write
+        320     LOAD_CONST              15: '\x1b[0K'
+        323     CALL_FUNCTION           1
+        326     POP_TOP                 
+        327     LOAD_NAME               8: i
+        330     LOAD_CONST              19: 1
+        333     INPLACE_ADD             
+        334     STORE_NAME              8: i
+        337     JUMP_ABSOLUTE           231
+        340     POP_BLOCK               
+        341     LOAD_NAME               0: sys
+        344     LOAD_ATTR               6: stderr
+        347     LOAD_ATTR               7: write
+        350     LOAD_CONST              20: '\x1b[17;30H'
+        353     CALL_FUNCTION           1
+        356     POP_TOP                 
+        357     LOAD_NAME               0: sys
+        360     LOAD_ATTR               6: stderr
+        363     LOAD_ATTR               7: write
+        366     LOAD_CONST              21: '\x1b[2K'
+        369     CALL_FUNCTION           1
+        372     POP_TOP                 
+        373     LOAD_CONST              19: 1
+        376     STORE_NAME              8: i
+        379     SETUP_LOOP              110 (to 492)
+        382     LOAD_NAME               8: i
+        385     LOAD_NAME               1: width
+        388     COMPARE_OP              1
+        391     POP_JUMP_IF_FALSE       491
+        394     LOAD_NAME               0: sys
+        397     LOAD_ATTR               6: stderr
+        400     LOAD_ATTR               7: write
+        403     LOAD_CONST              22: '\x1b[%d;%df'
+        406     LOAD_NAME               2: height
+        409     LOAD_NAME               8: i
+        412     BUILD_TUPLE             2
+        415     BINARY_MODULO           
+        416     CALL_FUNCTION           1
+        419     POP_TOP                 
+        420     LOAD_NAME               0: sys
+        423     LOAD_ATTR               6: stderr
+        426     LOAD_ATTR               7: write
+        429     LOAD_CONST              23: '*'
+        432     CALL_FUNCTION           1
+        435     POP_TOP                 
+        436     LOAD_NAME               0: sys
+        439     LOAD_ATTR               6: stderr
+        442     LOAD_ATTR               7: write
+        445     LOAD_CONST              22: '\x1b[%d;%df'
+        448     LOAD_CONST              19: 1
+        451     LOAD_NAME               8: i
+        454     BUILD_TUPLE             2
+        457     BINARY_MODULO           
+        458     CALL_FUNCTION           1
+        461     POP_TOP                 
+        462     LOAD_NAME               0: sys
+        465     LOAD_ATTR               6: stderr
+        468     LOAD_ATTR               7: write
+        471     LOAD_CONST              23: '*'
+        474     CALL_FUNCTION           1
+        477     POP_TOP                 
+        478     LOAD_NAME               8: i
+        481     LOAD_CONST              19: 1
+        484     INPLACE_ADD             
+        485     STORE_NAME              8: i
+        488     JUMP_ABSOLUTE           382
+        491     POP_BLOCK               
+        492     LOAD_NAME               0: sys
+        495     LOAD_ATTR               6: stderr
+        498     LOAD_ATTR               7: write
+        501     LOAD_CONST              24: '\x1b[2;2H'
+        504     CALL_FUNCTION           1
+        507     POP_TOP                 
+        508     LOAD_CONST              5: 2
+        511     STORE_NAME              8: i
+        514     SETUP_LOOP              74 (to 591)
+        517     LOAD_NAME               8: i
+        520     LOAD_NAME               2: height
+        523     COMPARE_OP              0
+        526     POP_JUMP_IF_FALSE       590
+        529     LOAD_NAME               0: sys
+        532     LOAD_ATTR               6: stderr
+        535     LOAD_ATTR               7: write
+        538     LOAD_CONST              25: '+'
+        541     CALL_FUNCTION           1
+        544     POP_TOP                 
+        545     LOAD_NAME               0: sys
+        548     LOAD_ATTR               6: stderr
+        551     LOAD_ATTR               7: write
+        554     LOAD_CONST              26: '\x1b[1D'
+        557     CALL_FUNCTION           1
+        560     POP_TOP                 
+        561     LOAD_NAME               0: sys
+        564     LOAD_ATTR               6: stderr
+        567     LOAD_ATTR               7: write
+        570     LOAD_CONST              27: '\x1bD'
+        573     CALL_FUNCTION           1
+        576     POP_TOP                 
+        577     LOAD_NAME               8: i
+        580     LOAD_CONST              19: 1
+        583     INPLACE_ADD             
+        584     STORE_NAME              8: i
+        587     JUMP_ABSOLUTE           517
+        590     POP_BLOCK               
+        591     LOAD_NAME               0: sys
+        594     LOAD_ATTR               6: stderr
+        597     LOAD_ATTR               7: write
+        600     LOAD_CONST              18: '\x1b[%d;%dH'
+        603     LOAD_NAME               2: height
+        606     LOAD_CONST              19: 1
+        609     BINARY_SUBTRACT         
+        610     LOAD_NAME               1: width
+        613     LOAD_CONST              19: 1
+        616     BINARY_SUBTRACT         
+        617     BUILD_TUPLE             2
+        620     BINARY_MODULO           
+        621     CALL_FUNCTION           1
+        624     POP_TOP                 
+        625     LOAD_NAME               2: height
+        628     LOAD_CONST              19: 1
+        631     BINARY_SUBTRACT         
+        632     STORE_NAME              8: i
+        635     SETUP_LOOP              74 (to 712)
+        638     LOAD_NAME               8: i
+        641     LOAD_CONST              19: 1
+        644     COMPARE_OP              4
+        647     POP_JUMP_IF_FALSE       711
+        650     LOAD_NAME               0: sys
+        653     LOAD_ATTR               6: stderr
+        656     LOAD_ATTR               7: write
+        659     LOAD_CONST              25: '+'
+        662     CALL_FUNCTION           1
+        665     POP_TOP                 
+        666     LOAD_NAME               0: sys
+        669     LOAD_ATTR               6: stderr
+        672     LOAD_ATTR               7: write
+        675     LOAD_CONST              26: '\x1b[1D'
+        678     CALL_FUNCTION           1
+        681     POP_TOP                 
+        682     LOAD_NAME               0: sys
+        685     LOAD_ATTR               6: stderr
+        688     LOAD_ATTR               7: write
+        691     LOAD_CONST              28: '\x1bM'
+        694     CALL_FUNCTION           1
+        697     POP_TOP                 
+        698     LOAD_NAME               8: i
+        701     LOAD_CONST              19: 1
+        704     INPLACE_SUBTRACT        
+        705     STORE_NAME              8: i
+        708     JUMP_ABSOLUTE           638
+        711     POP_BLOCK               
+        712     LOAD_NAME               0: sys
+        715     LOAD_ATTR               6: stderr
+        718     LOAD_ATTR               7: write
+        721     LOAD_CONST              29: '\x1b[2;1H'
+        724     CALL_FUNCTION           1
+        727     POP_TOP                 
+        728     LOAD_CONST              5: 2
+        731     STORE_NAME              8: i
+        734     SETUP_LOOP              147 (to 884)
+        737     LOAD_NAME               8: i
+        740     LOAD_NAME               2: height
+        743     COMPARE_OP              0
+        746     POP_JUMP_IF_FALSE       883
+        749     LOAD_NAME               0: sys
+        752     LOAD_ATTR               6: stderr
+        755     LOAD_ATTR               7: write
+        758     LOAD_CONST              23: '*'
+        761     CALL_FUNCTION           1
+        764     POP_TOP                 
+        765     LOAD_NAME               0: sys
+        768     LOAD_ATTR               6: stderr
+        771     LOAD_ATTR               7: write
+        774     LOAD_CONST              18: '\x1b[%d;%dH'
+        777     LOAD_NAME               8: i
+        780     LOAD_NAME               1: width
+        783     BUILD_TUPLE             2
+        786     BINARY_MODULO           
+        787     CALL_FUNCTION           1
+        790     POP_TOP                 
+        791     LOAD_NAME               0: sys
+        794     LOAD_ATTR               6: stderr
+        797     LOAD_ATTR               7: write
+        800     LOAD_CONST              23: '*'
+        803     CALL_FUNCTION           1
+        806     POP_TOP                 
+        807     LOAD_NAME               0: sys
+        810     LOAD_ATTR               6: stderr
+        813     LOAD_ATTR               7: write
+        816     LOAD_CONST              30: '\x1b[10D'
+        819     CALL_FUNCTION           1
+        822     POP_TOP                 
+        823     LOAD_NAME               8: i
+        826     LOAD_CONST              16: 10
+        829     COMPARE_OP              0
+        832     POP_JUMP_IF_FALSE       854
+        835     LOAD_NAME               0: sys
+        838     LOAD_ATTR               6: stderr
+        841     LOAD_ATTR               7: write
+        844     LOAD_CONST              31: '\x1bE'
+        847     CALL_FUNCTION           1
+        850     POP_TOP                 
+        851     JUMP_FORWARD            16 (to 870)
+        854     LOAD_NAME               0: sys
+        857     LOAD_ATTR               6: stderr
+        860     LOAD_ATTR               7: write
+        863     LOAD_CONST              32: '\n'
+        866     CALL_FUNCTION           1
+        869     POP_TOP                 
+        870     LOAD_NAME               8: i
+        873     LOAD_CONST              19: 1
+        876     INPLACE_ADD             
+        877     STORE_NAME              8: i
+        880     JUMP_ABSOLUTE           737
+        883     POP_BLOCK               
+        884     LOAD_NAME               0: sys
+        887     LOAD_ATTR               6: stderr
+        890     LOAD_ATTR               7: write
+        893     LOAD_CONST              33: '\x1b[2;10H'
+        896     CALL_FUNCTION           1
+        899     POP_TOP                 
+        900     LOAD_NAME               0: sys
+        903     LOAD_ATTR               6: stderr
+        906     LOAD_ATTR               7: write
+        909     LOAD_CONST              34: '\x1b[42D'
+        912     CALL_FUNCTION           1
+        915     POP_TOP                 
+        916     LOAD_NAME               0: sys
+        919     LOAD_ATTR               6: stderr
+        922     LOAD_ATTR               7: write
+        925     LOAD_CONST              35: '\x1b[2C'
+        928     CALL_FUNCTION           1
+        931     POP_TOP                 
+        932     LOAD_CONST              36: 3
+        935     STORE_NAME              8: i
+        938     SETUP_LOOP              94 (to 1035)
+        941     LOAD_NAME               8: i
+        944     LOAD_NAME               1: width
+        947     LOAD_CONST              19: 1
+        950     BINARY_SUBTRACT         
+        951     COMPARE_OP              0
+        954     POP_JUMP_IF_FALSE       1034
+        957     LOAD_NAME               0: sys
+        960     LOAD_ATTR               6: stderr
+        963     LOAD_ATTR               7: write
+        966     LOAD_CONST              25: '+'
+        969     CALL_FUNCTION           1
+        972     POP_TOP                 
+        973     LOAD_NAME               0: sys
+        976     LOAD_ATTR               6: stderr
+        979     LOAD_ATTR               7: write
+        982     LOAD_CONST              37: '\x1b[0C'
+        985     CALL_FUNCTION           1
+        988     POP_TOP                 
+        989     LOAD_NAME               0: sys
+        992     LOAD_ATTR               6: stderr
+        995     LOAD_ATTR               7: write
+        998     LOAD_CONST              38: '\x1b[2D'
+        1001    CALL_FUNCTION           1
+        1004    POP_TOP                 
+        1005    LOAD_NAME               0: sys
+        1008    LOAD_ATTR               6: stderr
+        1011    LOAD_ATTR               7: write
+        1014    LOAD_CONST              39: '\x1b[1C'
+        1017    CALL_FUNCTION           1
+        1020    POP_TOP                 
+        1021    LOAD_NAME               8: i
+        1024    LOAD_CONST              19: 1
+        1027    INPLACE_ADD             
+        1028    STORE_NAME              8: i
+        1031    JUMP_ABSOLUTE           941
+        1034    POP_BLOCK               
+        1035    LOAD_NAME               0: sys
+        1038    LOAD_ATTR               6: stderr
+        1041    LOAD_ATTR               7: write
+        1044    LOAD_CONST              18: '\x1b[%d;%dH'
+        1047    LOAD_NAME               2: height
+        1050    LOAD_CONST              19: 1
+        1053    BINARY_SUBTRACT         
+        1054    LOAD_NAME               5: inner_r
+        1057    LOAD_CONST              19: 1
+        1060    BINARY_SUBTRACT         
+        1061    BUILD_TUPLE             2
+        1064    BINARY_MODULO           
+        1065    CALL_FUNCTION           1
+        1068    POP_TOP                 
+        1069    LOAD_NAME               0: sys
+        1072    LOAD_ATTR               6: stderr
+        1075    LOAD_ATTR               7: write
+        1078    LOAD_CONST              40: '\x1b[42C'
+        1081    CALL_FUNCTION           1
+        1084    POP_TOP                 
+        1085    LOAD_NAME               0: sys
+        1088    LOAD_ATTR               6: stderr
+        1091    LOAD_ATTR               7: write
+        1094    LOAD_CONST              38: '\x1b[2D'
+        1097    CALL_FUNCTION           1
+        1100    POP_TOP                 
+        1101    LOAD_NAME               1: width
+        1104    LOAD_CONST              5: 2
+        1107    BINARY_SUBTRACT         
+        1108    STORE_NAME              8: i
+        1111    SETUP_LOOP              106 (to 1220)
+        1114    LOAD_NAME               8: i
+        1117    LOAD_CONST              5: 2
+        1120    COMPARE_OP              4
+        1123    POP_JUMP_IF_FALSE       1219
+        1126    LOAD_NAME               0: sys
+        1129    LOAD_ATTR               6: stderr
+        1132    LOAD_ATTR               7: write
+        1135    LOAD_CONST              25: '+'
+        1138    CALL_FUNCTION           1
+        1141    POP_TOP                 
+        1142    LOAD_NAME               0: sys
+        1145    LOAD_ATTR               6: stderr
+        1148    LOAD_ATTR               7: write
+        1151    LOAD_CONST              26: '\x1b[1D'
+        1154    CALL_FUNCTION           1
+        1157    POP_TOP                 
+        1158    LOAD_NAME               0: sys
+        1161    LOAD_ATTR               6: stderr
+        1164    LOAD_ATTR               7: write
+        1167    LOAD_CONST              39: '\x1b[1C'
+        1170    CALL_FUNCTION           1
+        1173    POP_TOP                 
+        1174    LOAD_NAME               0: sys
+        1177    LOAD_ATTR               6: stderr
+        1180    LOAD_ATTR               7: write
+        1183    LOAD_CONST              41: '\x1b[0D'
+        1186    CALL_FUNCTION           1
+        1189    POP_TOP                 
+        1190    LOAD_NAME               0: sys
+        1193    LOAD_ATTR               6: stderr
+        1196    LOAD_ATTR               7: write
+        1199    LOAD_CONST              42: '\x8'
+        1202    CALL_FUNCTION           1
+        1205    POP_TOP                 
+        1206    LOAD_NAME               8: i
+        1209    LOAD_CONST              19: 1
+        1212    INPLACE_SUBTRACT        
+        1213    STORE_NAME              8: i
+        1216    JUMP_ABSOLUTE           1114
+        1219    POP_BLOCK               
+        1220    LOAD_NAME               0: sys
+        1223    LOAD_ATTR               6: stderr
+        1226    LOAD_ATTR               7: write
+        1229    LOAD_CONST              43: '\x1b[10;%dH'
+        1232    LOAD_CONST              5: 2
+        1235    LOAD_NAME               4: inner_l
+        1238    BINARY_ADD              
+        1239    BINARY_MODULO           
+        1240    CALL_FUNCTION           1
+        1243    POP_TOP                 
+        1244    LOAD_CONST              16: 10
+        1247    STORE_NAME              8: i
+        1250    SETUP_LOOP              117 (to 1370)
+        1253    LOAD_NAME               8: i
+        1256    LOAD_CONST              44: 15
+        1259    COMPARE_OP              1
+        1262    POP_JUMP_IF_FALSE       1369
+        1265    LOAD_CONST              5: 2
+        1268    LOAD_NAME               4: inner_l
+        1271    BINARY_ADD              
+        1272    STORE_NAME              9: j
+        1275    SETUP_LOOP              46 (to 1324)
+        1278    LOAD_NAME               9: j
+        1281    LOAD_NAME               5: inner_r
+        1284    LOAD_CONST              19: 1
+        1287    BINARY_SUBTRACT         
+        1288    COMPARE_OP              0
+        1291    POP_JUMP_IF_FALSE       1323
+        1294    LOAD_NAME               0: sys
+        1297    LOAD_ATTR               6: stderr
+        1300    LOAD_ATTR               7: write
+        1303    LOAD_CONST              45: ' '
+        1306    CALL_FUNCTION           1
+        1309    POP_TOP                 
+        1310    LOAD_NAME               9: j
+        1313    LOAD_CONST              19: 1
+        1316    INPLACE_ADD             
+        1317    STORE_NAME              9: j
+        1320    JUMP_ABSOLUTE           1278
+        1323    POP_BLOCK               
+        1324    LOAD_NAME               0: sys
+        1327    LOAD_ATTR               6: stderr
+        1330    LOAD_ATTR               7: write
+        1333    LOAD_CONST              46: '\x1b[1B'
+        1336    CALL_FUNCTION           1
+        1339    POP_TOP                 
+        1340    LOAD_NAME               0: sys
+        1343    LOAD_ATTR               6: stderr
+        1346    LOAD_ATTR               7: write
+        1349    LOAD_CONST              47: '\x1b[58D'
+        1352    CALL_FUNCTION           1
+        1355    POP_TOP                 
+        1356    LOAD_NAME               8: i
+        1359    LOAD_CONST              19: 1
+        1362    INPLACE_ADD             
+        1363    STORE_NAME              8: i
+        1366    JUMP_ABSOLUTE           1253
+        1369    POP_BLOCK               
+        1370    SETUP_EXCEPT            14 (to 1387)
+        1373    LOAD_NAME               10: input
+        1376    LOAD_CONST              48: ''
+        1379    CALL_FUNCTION           1
+        1382    POP_TOP                 
+        1383    POP_BLOCK               
+        1384    JUMP_FORWARD            18 (to 1405)
+        1387    DUP_TOP                 
+        1388    LOAD_NAME               11: SyntaxError
+        1391    COMPARE_OP              10
+        1394    POP_JUMP_IF_FALSE       1404
+        1397    POP_TOP                 
+        1398    POP_TOP                 
+        1399    POP_TOP                 
+        1400    POP_EXCEPT              
+        1401    JUMP_FORWARD            1 (to 1405)
+        1404    END_FINALLY             
+        1405    LOAD_CONST              1: None
+        1408    RETURN_VALUE            

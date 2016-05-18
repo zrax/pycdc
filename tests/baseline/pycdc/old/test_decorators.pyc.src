@@ -1,0 +1,51 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/test_decorators.pyc (Python 2.7)
+
+
+def square(n):
+    return n * n
+
+square = staticmethod(square)
+
+def synchronized(lock):
+    '''Synchronization decorator.'''
+    
+    def wrap(f):
+        
+        def new_function(*args, **kw):
+            lock.acquire()
+            
+            try:
+                return f(*args, **args)
+            finally:
+                lock.release()
+
+
+        return new_function
+
+    return wrap
+
+from threading import Lock
+cache_lock = Lock()
+
+class Cache(object):
+    
+    def __init__(self):
+        self._name = 'default'
+
+    
+    def cache(cls):
+        return cls()
+
+    cache = classmethod(synchronized(cache_lock)(cache))
+    
+    def name(self):
+        return self._name
+
+    name = property(name)
+    
+    def name(self, new_name):
+        self._name = new_name
+
+    name = name.setter(name)
+

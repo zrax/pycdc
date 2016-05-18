@@ -1,0 +1,11 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/27_try_except.pyc (Python 2.7)
+
+print 'before'
+
+try:
+    print 'try'
+except SyntaxError:
+    print 'except'
+
+print 'after'

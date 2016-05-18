@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/35_async_def.pyc (Python 3.5)
+
+
+async def foobar():
+    pass
+

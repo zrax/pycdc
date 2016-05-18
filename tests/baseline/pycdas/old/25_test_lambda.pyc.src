@@ -1,0 +1,197 @@
+../../pycdc/tests/inputs/old/25_test_lambda.pyc (Python 2.5)
+[Code]
+    File Name: test_lambda.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'map'
+        'range'
+        'palette'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: a
+                3       LOAD_FAST               0: a
+                6       LOAD_FAST               0: a
+                9       BUILD_TUPLE             3
+                12      RETURN_VALUE            
+        256
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'chr'
+            [Var Names]
+                '.0'
+                'r'
+                'g'
+                'b'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_SEQUENCE         3
+                6       STORE_FAST              1: r
+                9       STORE_FAST              2: g
+                12      STORE_FAST              3: b
+                15      LOAD_GLOBAL             0: chr
+                18      LOAD_FAST               1: r
+                21      CALL_FUNCTION           1
+                24      LOAD_GLOBAL             0: chr
+                27      LOAD_FAST               2: g
+                30      CALL_FUNCTION           1
+                33      BINARY_ADD              
+                34      LOAD_GLOBAL             0: chr
+                37      LOAD_FAST               3: b
+                40      CALL_FUNCTION           1
+                43      BINARY_ADD              
+                44      RETURN_VALUE            
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'r'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: r
+                3       RETURN_VALUE            
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                '.0'
+                'r'
+                'g'
+                'b'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_SEQUENCE         3
+                6       STORE_FAST              1: r
+                9       STORE_FAST              2: g
+                12      STORE_FAST              3: b
+                15      LOAD_FAST               1: r
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'r'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: r
+                3       RETURN_VALUE            
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'r'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: r
+                3       RETURN_VALUE            
+        [Code]
+            File Name: test_lambda.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'r'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+            [Disassembly]
+                0       LOAD_FAST               0: r
+                3       RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_NAME               0: map
+        3       LOAD_CONST              0: <CODE> <lambda>
+        6       MAKE_FUNCTION           0
+        9       LOAD_NAME               1: range
+        12      LOAD_CONST              1: 256
+        15      CALL_FUNCTION           1
+        18      CALL_FUNCTION           2
+        21      STORE_NAME              2: palette
+        24      LOAD_NAME               0: map
+        27      LOAD_CONST              2: <CODE> <lambda>
+        30      MAKE_FUNCTION           0
+        33      LOAD_NAME               2: palette
+        36      CALL_FUNCTION           2
+        39      STORE_NAME              2: palette
+        42      LOAD_NAME               0: map
+        45      LOAD_CONST              3: <CODE> <lambda>
+        48      MAKE_FUNCTION           0
+        51      LOAD_NAME               2: palette
+        54      CALL_FUNCTION           2
+        57      STORE_NAME              2: palette
+        60      LOAD_CONST              4: <CODE> <lambda>
+        63      MAKE_FUNCTION           0
+        66      STORE_NAME              2: palette
+        69      LOAD_CONST              5: <CODE> <lambda>
+        72      MAKE_FUNCTION           0
+        75      STORE_NAME              2: palette
+        78      LOAD_CONST              6: <CODE> <lambda>
+        81      MAKE_FUNCTION           0
+        84      STORE_NAME              2: palette
+        87      LOAD_CONST              7: <CODE> <lambda>
+        90      MAKE_FUNCTION           0
+        93      LOAD_NAME               2: palette
+        96      BUILD_TUPLE             2
+        99      STORE_NAME              2: palette
+        102     LOAD_CONST              8: None
+        105     RETURN_VALUE            

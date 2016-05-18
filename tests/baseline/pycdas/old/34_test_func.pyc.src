@@ -1,0 +1,49 @@
+../../pycdc/tests/inputs/old/34_test_func.pyc (Python 3.4)
+[Code]
+    File Name: test_func.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'foobar'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test_func.py
+            Object Name: foobar
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'print'
+            [Var Names]
+                'self'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'Hello, World!'
+            [Disassembly]
+                0       LOAD_GLOBAL             0: print
+                3       LOAD_CONST              1: 'Hello, World!'
+                6       CALL_FUNCTION           1
+                9       POP_TOP                 
+                10      LOAD_CONST              0: None
+                13      RETURN_VALUE            
+        'foobar'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> foobar
+        3       LOAD_CONST              1: 'foobar'
+        6       MAKE_FUNCTION           0
+        9       STORE_NAME              0: foobar
+        12      LOAD_NAME               0: foobar
+        15      CALL_FUNCTION           0
+        18      POP_TOP                 
+        19      LOAD_CONST              2: None
+        22      RETURN_VALUE            

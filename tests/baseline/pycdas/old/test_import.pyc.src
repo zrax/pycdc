@@ -1,0 +1,52 @@
+../../pycdc/tests/inputs/old/test_import.pyc (Python 2.7)
+[Code]
+    File Name: test_import.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'sys'
+        'unittest'
+        'ut'
+        'logging'
+        'Logger'
+        'LogRecord'
+        'os'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        -1
+        None
+        (
+            'Logger'
+            'LogRecord'
+        )
+        (
+            '*'
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: -1
+        3       LOAD_CONST              1: None
+        6       IMPORT_NAME             0: sys
+        9       STORE_NAME              0: sys
+        12      LOAD_CONST              0: -1
+        15      LOAD_CONST              1: None
+        18      IMPORT_NAME             1: unittest
+        21      STORE_NAME              2: ut
+        24      LOAD_CONST              0: -1
+        27      LOAD_CONST              2: ('Logger', 'LogRecord')
+        30      IMPORT_NAME             3: logging
+        33      IMPORT_FROM             4: Logger
+        36      STORE_NAME              4: Logger
+        39      IMPORT_FROM             5: LogRecord
+        42      STORE_NAME              5: LogRecord
+        45      POP_TOP                 
+        46      LOAD_CONST              0: -1
+        49      LOAD_CONST              3: ('*',)
+        52      IMPORT_NAME             6: os
+        55      IMPORT_STAR             
+        56      LOAD_CONST              1: None
+        59      RETURN_VALUE            

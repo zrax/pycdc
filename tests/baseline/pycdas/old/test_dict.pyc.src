@@ -1,0 +1,47 @@
+../../pycdc/tests/inputs/old/test_dict.pyc (Python 2.7)
+[Code]
+    File Name: dict.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'x'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        1
+        'one'
+        2
+        'two'
+        'Correct!'
+        3
+        'three'
+        None
+    [Disassembly]
+        0       BUILD_MAP               2
+        3       LOAD_CONST              0: 1
+        6       LOAD_CONST              1: 'one'
+        9       STORE_MAP               
+        10      LOAD_CONST              2: 2
+        13      LOAD_CONST              3: 'two'
+        16      STORE_MAP               
+        17      STORE_NAME              0: x
+        20      LOAD_NAME               0: x
+        23      LOAD_CONST              1: 'one'
+        26      BINARY_SUBSCR           
+        27      LOAD_CONST              0: 1
+        30      COMPARE_OP              2
+        33      POP_JUMP_IF_FALSE       44
+        36      LOAD_CONST              4: 'Correct!'
+        39      PRINT_ITEM              
+        40      PRINT_NEWLINE           
+        41      JUMP_FORWARD            0 (to 44)
+        44      LOAD_CONST              5: 3
+        47      LOAD_NAME               0: x
+        50      LOAD_CONST              6: 'three'
+        53      STORE_SUBSCR            
+        54      LOAD_CONST              7: None
+        57      RETURN_VALUE            

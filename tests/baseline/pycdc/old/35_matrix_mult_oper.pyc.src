@@ -1,0 +1,12 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/35_matrix_mult_oper.pyc (Python 3.5)
+
+break
+[
+    1,
+    2] @ [
+    3,
+    4]
+m @= [
+    5,
+    6]

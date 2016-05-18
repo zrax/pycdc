@@ -1,0 +1,9 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/test_dict.pyc (Python 2.7)
+
+x = {
+    'one': 1,
+    'two': 2 }
+if x['one'] == 1:
+    print 'Correct!'
+x['three'] = 3

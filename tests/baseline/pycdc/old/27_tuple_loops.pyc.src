@@ -1,0 +1,11 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/27_tuple_loops.pyc (Python 2.7)
+
+
+def map_with_index(func, lst):
+    res = []
+    for (i, x) in enumerate(lst):
+        res.append(func(i, x))
+    
+    return res
+

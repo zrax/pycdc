@@ -1,0 +1,48 @@
+../../pycdc/tests/inputs/old/25_test_iterators.pyc (Python 2.5)
+[Code]
+    File Name: test_iterators.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'range'
+        'i'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        20
+        10
+        'The End'
+        None
+    [Disassembly]
+        0       SETUP_LOOP              24 (to 27)
+        3       LOAD_NAME               0: range
+        6       LOAD_CONST              0: 20
+        9       CALL_FUNCTION           1
+        12      GET_ITER                
+        13      FOR_ITER                10
+        16      STORE_NAME              1: i
+        19      LOAD_NAME               1: i
+        22      PRINT_ITEM              
+        23      JUMP_ABSOLUTE           13
+        26      POP_BLOCK               
+        27      PRINT_NEWLINE           
+        28      SETUP_LOOP              29 (to 60)
+        31      LOAD_NAME               0: range
+        34      LOAD_CONST              1: 10
+        37      CALL_FUNCTION           1
+        40      GET_ITER                
+        41      FOR_ITER                10
+        44      STORE_NAME              1: i
+        47      LOAD_NAME               1: i
+        50      PRINT_ITEM              
+        51      JUMP_ABSOLUTE           41
+        54      POP_BLOCK               
+        55      LOAD_CONST              2: 'The End'
+        58      PRINT_ITEM              
+        59      PRINT_NEWLINE           
+        60      LOAD_CONST              3: None
+        63      RETURN_VALUE            

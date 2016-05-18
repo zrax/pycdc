@@ -1,0 +1,8 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/34_test_func.pyc (Python 3.4)
+
+
+def foobar(self):
+    print('Hello, World!')
+
+foobar()

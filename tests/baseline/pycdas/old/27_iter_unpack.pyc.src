@@ -1,0 +1,65 @@
+../../pycdc/tests/inputs/old/27_iter_unpack.pyc (Python 2.7)
+[Code]
+    File Name: iter_unpack.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'map_with_index'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: iter_unpack.py
+            Object Name: map_with_index
+            Arg Count: 2
+            Locals: 5
+            Stack Size: 5
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'enumerate'
+                'append'
+            [Var Names]
+                'func'
+                'lst'
+                'res'
+                'i'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       BUILD_LIST              0
+                3       STORE_FAST              2: res
+                6       SETUP_LOOP              48 (to 57)
+                9       LOAD_GLOBAL             0: enumerate
+                12      LOAD_FAST               1: lst
+                15      CALL_FUNCTION           1
+                18      GET_ITER                
+                19      FOR_ITER                34
+                22      UNPACK_SEQUENCE         2
+                25      STORE_FAST              3: i
+                28      STORE_FAST              4: x
+                31      LOAD_FAST               2: res
+                34      LOAD_ATTR               1: append
+                37      LOAD_FAST               0: func
+                40      LOAD_FAST               3: i
+                43      LOAD_FAST               4: x
+                46      CALL_FUNCTION           2
+                49      CALL_FUNCTION           1
+                52      POP_TOP                 
+                53      JUMP_ABSOLUTE           19
+                56      POP_BLOCK               
+                57      LOAD_FAST               2: res
+                60      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> map_with_index
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: map_with_index
+        9       LOAD_CONST              1: None
+        12      RETURN_VALUE            

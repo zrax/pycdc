@@ -1,0 +1,39 @@
+../../pycdc/tests/inputs/old/35_async_def.pyc (Python 3.5)
+[Code]
+    File Name: /home/zrax/dev/cpp/pycdc/tests/async_def.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'foobar'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: /home/zrax/dev/cpp/pycdc/tests/async_def.py
+            Object Name: foobar
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x000000C3 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE | CO_COROUTINE)
+            [Names]
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_CONST              0: None
+                3       RETURN_VALUE            
+        'foobar'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> foobar
+        3       LOAD_CONST              1: 'foobar'
+        6       MAKE_FUNCTION           0
+        9       STORE_NAME              0: foobar
+        12      LOAD_CONST              2: None
+        15      RETURN_VALUE            

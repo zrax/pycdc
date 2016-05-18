@@ -1,0 +1,73 @@
+../../pycdc/tests/inputs/old/26_try_except_finally.pyc (Python 2.6)
+[Code]
+    File Name: blocks.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 12
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'sys'
+        'AssertionError'
+        'ImportError'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        -1
+        None
+        'something else'
+        '...failed'
+        'Oh Noes!'
+        'Exiting'
+    [Disassembly]
+        0       SETUP_FINALLY           83 (to 86)
+        3       SETUP_EXCEPT            52 (to 58)
+        6       LOAD_CONST              0: -1
+        9       LOAD_CONST              1: None
+        12      IMPORT_NAME             0: sys
+        15      STORE_NAME              0: sys
+        18      SETUP_EXCEPT            9 (to 30)
+        21      LOAD_CONST              2: 'something else'
+        24      PRINT_ITEM              
+        25      PRINT_NEWLINE           
+        26      POP_BLOCK               
+        27      JUMP_FORWARD            24 (to 54)
+        30      DUP_TOP                 
+        31      LOAD_NAME               1: AssertionError
+        34      COMPARE_OP              10
+        37      JUMP_IF_FALSE           12 (to 52)
+        40      POP_TOP                 
+        41      POP_TOP                 
+        42      POP_TOP                 
+        43      POP_TOP                 
+        44      LOAD_CONST              3: '...failed'
+        47      PRINT_ITEM              
+        48      PRINT_NEWLINE           
+        49      JUMP_FORWARD            2 (to 54)
+        52      POP_TOP                 
+        53      END_FINALLY             
+        54      POP_BLOCK               
+        55      JUMP_FORWARD            24 (to 82)
+        58      DUP_TOP                 
+        59      LOAD_NAME               2: ImportError
+        62      COMPARE_OP              10
+        65      JUMP_IF_FALSE           12 (to 80)
+        68      POP_TOP                 
+        69      POP_TOP                 
+        70      POP_TOP                 
+        71      POP_TOP                 
+        72      LOAD_CONST              4: 'Oh Noes!'
+        75      PRINT_ITEM              
+        76      PRINT_NEWLINE           
+        77      JUMP_FORWARD            2 (to 82)
+        80      POP_TOP                 
+        81      END_FINALLY             
+        82      POP_BLOCK               
+        83      LOAD_CONST              1: None
+        86      LOAD_CONST              5: 'Exiting'
+        89      PRINT_ITEM              
+        90      PRINT_NEWLINE           
+        91      END_FINALLY             
+        92      LOAD_CONST              1: None
+        95      RETURN_VALUE            

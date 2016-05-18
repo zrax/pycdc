@@ -1,0 +1,136 @@
+../../pycdc/tests/inputs/old/test_with.pyc (Python 2.7)
+[Code]
+    File Name: test_with.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 11
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'open'
+        '__file__'
+        'True'
+        'result'
+        'f'
+        'read'
+        'readline'
+        's'
+        'False'
+        'data'
+        'None'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        None
+        'empty'
+        ''
+        'exception'
+        '\n'
+    [Disassembly]
+        0       LOAD_NAME               0: open
+        3       LOAD_NAME               1: __file__
+        6       CALL_FUNCTION           1
+        9       SETUP_WITH              11
+        12      POP_TOP                 
+        13      LOAD_NAME               2: True
+        16      STORE_NAME              3: result
+        19      POP_BLOCK               
+        20      LOAD_CONST              0: None
+        23      WITH_CLEANUP            
+        24      END_FINALLY             
+        25      LOAD_NAME               0: open
+        28      LOAD_NAME               1: __file__
+        31      CALL_FUNCTION           1
+        34      SETUP_WITH              17
+        37      STORE_NAME              4: f
+        40      LOAD_NAME               4: f
+        43      LOAD_ATTR               5: read
+        46      CALL_FUNCTION           0
+        49      POP_TOP                 
+        50      POP_BLOCK               
+        51      LOAD_CONST              0: None
+        54      WITH_CLEANUP            
+        55      END_FINALLY             
+        56      LOAD_NAME               0: open
+        59      LOAD_NAME               1: __file__
+        62      CALL_FUNCTION           1
+        65      SETUP_WITH              44
+        68      STORE_NAME              4: f
+        71      LOAD_NAME               4: f
+        74      LOAD_ATTR               6: readline
+        77      CALL_FUNCTION           0
+        80      STORE_NAME              7: s
+        83      SETUP_LOOP              22 (to 108)
+        86      LOAD_NAME               7: s
+        89      POP_JUMP_IF_FALSE       107
+        92      LOAD_NAME               4: f
+        95      LOAD_ATTR               6: readline
+        98      CALL_FUNCTION           0
+        101     STORE_NAME              7: s
+        104     JUMP_ABSOLUTE           86
+        107     POP_BLOCK               
+        108     POP_BLOCK               
+        109     LOAD_CONST              0: None
+        112     WITH_CLEANUP            
+        113     END_FINALLY             
+        114     LOAD_NAME               0: open
+        117     LOAD_NAME               1: __file__
+        120     CALL_FUNCTION           1
+        123     SETUP_WITH              46
+        126     STORE_NAME              4: f
+        129     LOAD_NAME               8: False
+        132     STORE_NAME              3: result
+        135     LOAD_NAME               4: f
+        138     LOAD_ATTR               5: read
+        141     CALL_FUNCTION           0
+        144     STORE_NAME              9: data
+        147     LOAD_NAME               9: data
+        150     POP_JUMP_IF_FALSE       162
+        153     LOAD_NAME               2: True
+        156     STORE_NAME              3: result
+        159     JUMP_FORWARD            6 (to 168)
+        162     LOAD_CONST              1: 'empty'
+        165     STORE_NAME              9: data
+        168     POP_BLOCK               
+        169     LOAD_CONST              0: None
+        172     WITH_CLEANUP            
+        173     END_FINALLY             
+        174     LOAD_NAME               0: open
+        177     LOAD_NAME               1: __file__
+        180     CALL_FUNCTION           1
+        183     SETUP_WITH              76
+        186     STORE_NAME              4: f
+        189     LOAD_CONST              0: None
+        192     STORE_NAME              3: result
+        195     SETUP_EXCEPT            37 (to 235)
+        198     LOAD_NAME               4: f
+        201     LOAD_ATTR               5: read
+        204     CALL_FUNCTION           0
+        207     STORE_NAME              9: data
+        210     LOAD_NAME               9: data
+        213     POP_JUMP_IF_FALSE       225
+        216     LOAD_NAME               9: data
+        219     STORE_NAME              3: result
+        222     JUMP_FORWARD            6 (to 231)
+        225     LOAD_CONST              2: ''
+        228     STORE_NAME              3: result
+        231     POP_BLOCK               
+        232     JUMP_FORWARD            13 (to 248)
+        235     POP_TOP                 
+        236     POP_TOP                 
+        237     POP_TOP                 
+        238     LOAD_CONST              3: 'exception'
+        241     STORE_NAME              3: result
+        244     JUMP_FORWARD            11 (to 258)
+        247     END_FINALLY             
+        248     LOAD_NAME               3: result
+        251     LOAD_CONST              4: '\n'
+        254     INPLACE_ADD             
+        255     STORE_NAME              3: result
+        258     POP_BLOCK               
+        259     LOAD_CONST              0: None
+        262     WITH_CLEANUP            
+        263     END_FINALLY             
+        264     LOAD_CONST              0: None
+        267     RETURN_VALUE            

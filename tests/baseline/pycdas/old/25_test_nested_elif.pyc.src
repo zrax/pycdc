@@ -1,0 +1,301 @@
+../../pycdc/tests/inputs/old/25_test_nested_elif.pyc (Python 2.5)
+[Code]
+    File Name: test_nested_elif.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'None'
+        'a'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        1
+        '1'
+        2
+        '2'
+        'other'
+        3
+        '3'
+        'more'
+        4
+        '4'
+        None
+    [Disassembly]
+        0       LOAD_CONST              10: None
+        3       STORE_NAME              1: a
+        6       LOAD_NAME               1: a
+        9       LOAD_CONST              0: 1
+        12      COMPARE_OP              2
+        15      JUMP_IF_FALSE           9 (to 27)
+        18      POP_TOP                 
+        19      LOAD_CONST              1: '1'
+        22      PRINT_ITEM              
+        23      PRINT_NEWLINE           
+        24      JUMP_FORWARD            23 (to 50)
+        27      POP_TOP                 
+        28      LOAD_NAME               1: a
+        31      LOAD_CONST              2: 2
+        34      COMPARE_OP              2
+        37      JUMP_IF_FALSE           9 (to 49)
+        40      POP_TOP                 
+        41      LOAD_CONST              3: '2'
+        44      PRINT_ITEM              
+        45      PRINT_NEWLINE           
+        46      JUMP_FORWARD            1 (to 50)
+        49      POP_TOP                 
+        50      LOAD_NAME               1: a
+        53      LOAD_CONST              0: 1
+        56      COMPARE_OP              2
+        59      JUMP_IF_FALSE           9 (to 71)
+        62      POP_TOP                 
+        63      LOAD_CONST              1: '1'
+        66      PRINT_ITEM              
+        67      PRINT_NEWLINE           
+        68      JUMP_FORWARD            28 (to 99)
+        71      POP_TOP                 
+        72      LOAD_NAME               1: a
+        75      LOAD_CONST              2: 2
+        78      COMPARE_OP              2
+        81      JUMP_IF_FALSE           9 (to 93)
+        84      POP_TOP                 
+        85      LOAD_CONST              3: '2'
+        88      PRINT_ITEM              
+        89      PRINT_NEWLINE           
+        90      JUMP_FORWARD            6 (to 99)
+        93      POP_TOP                 
+        94      LOAD_CONST              4: 'other'
+        97      PRINT_ITEM              
+        98      PRINT_NEWLINE           
+        99      LOAD_NAME               1: a
+        102     LOAD_CONST              0: 1
+        105     COMPARE_OP              2
+        108     JUMP_IF_FALSE           9 (to 120)
+        111     POP_TOP                 
+        112     LOAD_CONST              1: '1'
+        115     PRINT_ITEM              
+        116     PRINT_NEWLINE           
+        117     JUMP_FORWARD            50 (to 170)
+        120     POP_TOP                 
+        121     LOAD_NAME               1: a
+        124     LOAD_CONST              2: 2
+        127     COMPARE_OP              2
+        130     JUMP_IF_FALSE           9 (to 142)
+        133     POP_TOP                 
+        134     LOAD_CONST              3: '2'
+        137     PRINT_ITEM              
+        138     PRINT_NEWLINE           
+        139     JUMP_FORWARD            28 (to 170)
+        142     POP_TOP                 
+        143     LOAD_NAME               1: a
+        146     LOAD_CONST              5: 3
+        149     COMPARE_OP              2
+        152     JUMP_IF_FALSE           9 (to 164)
+        155     POP_TOP                 
+        156     LOAD_CONST              6: '3'
+        159     PRINT_ITEM              
+        160     PRINT_NEWLINE           
+        161     JUMP_FORWARD            6 (to 170)
+        164     POP_TOP                 
+        165     LOAD_CONST              4: 'other'
+        168     PRINT_ITEM              
+        169     PRINT_NEWLINE           
+        170     LOAD_NAME               1: a
+        173     LOAD_CONST              0: 1
+        176     COMPARE_OP              2
+        179     JUMP_IF_FALSE           9 (to 191)
+        182     POP_TOP                 
+        183     LOAD_CONST              1: '1'
+        186     PRINT_ITEM              
+        187     PRINT_NEWLINE           
+        188     JUMP_FORWARD            45 (to 236)
+        191     POP_TOP                 
+        192     LOAD_NAME               1: a
+        195     LOAD_CONST              2: 2
+        198     COMPARE_OP              2
+        201     JUMP_IF_FALSE           9 (to 213)
+        204     POP_TOP                 
+        205     LOAD_CONST              3: '2'
+        208     PRINT_ITEM              
+        209     PRINT_NEWLINE           
+        210     JUMP_FORWARD            23 (to 236)
+        213     POP_TOP                 
+        214     LOAD_NAME               1: a
+        217     LOAD_CONST              5: 3
+        220     COMPARE_OP              2
+        223     JUMP_IF_FALSE           9 (to 235)
+        226     POP_TOP                 
+        227     LOAD_CONST              6: '3'
+        230     PRINT_ITEM              
+        231     PRINT_NEWLINE           
+        232     JUMP_FORWARD            1 (to 236)
+        235     POP_TOP                 
+        236     LOAD_NAME               1: a
+        239     LOAD_CONST              0: 1
+        242     COMPARE_OP              2
+        245     JUMP_IF_FALSE           9 (to 257)
+        248     POP_TOP                 
+        249     LOAD_CONST              1: '1'
+        252     PRINT_ITEM              
+        253     PRINT_NEWLINE           
+        254     JUMP_FORWARD            50 (to 307)
+        257     POP_TOP                 
+        258     LOAD_NAME               1: a
+        261     LOAD_CONST              2: 2
+        264     COMPARE_OP              2
+        267     JUMP_IF_FALSE           9 (to 279)
+        270     POP_TOP                 
+        271     LOAD_CONST              3: '2'
+        274     PRINT_ITEM              
+        275     PRINT_NEWLINE           
+        276     JUMP_FORWARD            28 (to 307)
+        279     POP_TOP                 
+        280     LOAD_NAME               1: a
+        283     LOAD_CONST              5: 3
+        286     COMPARE_OP              2
+        289     JUMP_IF_FALSE           9 (to 301)
+        292     POP_TOP                 
+        293     LOAD_CONST              6: '3'
+        296     PRINT_ITEM              
+        297     PRINT_NEWLINE           
+        298     JUMP_FORWARD            6 (to 307)
+        301     POP_TOP                 
+        302     LOAD_CONST              4: 'other'
+        305     PRINT_ITEM              
+        306     PRINT_NEWLINE           
+        307     LOAD_NAME               1: a
+        310     LOAD_CONST              0: 1
+        313     COMPARE_OP              2
+        316     JUMP_IF_FALSE           9 (to 328)
+        319     POP_TOP                 
+        320     LOAD_CONST              1: '1'
+        323     PRINT_ITEM              
+        324     PRINT_NEWLINE           
+        325     JUMP_FORWARD            55 (to 383)
+        328     POP_TOP                 
+        329     LOAD_NAME               1: a
+        332     LOAD_CONST              2: 2
+        335     COMPARE_OP              2
+        338     JUMP_IF_FALSE           9 (to 350)
+        341     POP_TOP                 
+        342     LOAD_CONST              3: '2'
+        345     PRINT_ITEM              
+        346     PRINT_NEWLINE           
+        347     JUMP_FORWARD            33 (to 383)
+        350     POP_TOP                 
+        351     LOAD_CONST              7: 'more'
+        354     PRINT_ITEM              
+        355     PRINT_NEWLINE           
+        356     LOAD_NAME               1: a
+        359     LOAD_CONST              5: 3
+        362     COMPARE_OP              2
+        365     JUMP_IF_FALSE           9 (to 377)
+        368     POP_TOP                 
+        369     LOAD_CONST              6: '3'
+        372     PRINT_ITEM              
+        373     PRINT_NEWLINE           
+        374     JUMP_FORWARD            6 (to 383)
+        377     POP_TOP                 
+        378     LOAD_CONST              4: 'other'
+        381     PRINT_ITEM              
+        382     PRINT_NEWLINE           
+        383     LOAD_NAME               1: a
+        386     LOAD_CONST              0: 1
+        389     COMPARE_OP              2
+        392     JUMP_IF_FALSE           9 (to 404)
+        395     POP_TOP                 
+        396     LOAD_CONST              1: '1'
+        399     PRINT_ITEM              
+        400     PRINT_NEWLINE           
+        401     JUMP_FORWARD            55 (to 459)
+        404     POP_TOP                 
+        405     LOAD_CONST              7: 'more'
+        408     PRINT_ITEM              
+        409     PRINT_NEWLINE           
+        410     LOAD_NAME               1: a
+        413     LOAD_CONST              2: 2
+        416     COMPARE_OP              2
+        419     JUMP_IF_FALSE           9 (to 431)
+        422     POP_TOP                 
+        423     LOAD_CONST              3: '2'
+        426     PRINT_ITEM              
+        427     PRINT_NEWLINE           
+        428     JUMP_FORWARD            28 (to 459)
+        431     POP_TOP                 
+        432     LOAD_NAME               1: a
+        435     LOAD_CONST              5: 3
+        438     COMPARE_OP              2
+        441     JUMP_IF_FALSE           9 (to 453)
+        444     POP_TOP                 
+        445     LOAD_CONST              6: '3'
+        448     PRINT_ITEM              
+        449     PRINT_NEWLINE           
+        450     JUMP_FORWARD            6 (to 459)
+        453     POP_TOP                 
+        454     LOAD_CONST              4: 'other'
+        457     PRINT_ITEM              
+        458     PRINT_NEWLINE           
+        459     LOAD_NAME               1: a
+        462     LOAD_CONST              0: 1
+        465     COMPARE_OP              2
+        468     JUMP_IF_FALSE           9 (to 480)
+        471     POP_TOP                 
+        472     LOAD_CONST              1: '1'
+        475     PRINT_ITEM              
+        476     PRINT_NEWLINE           
+        477     JUMP_FORWARD            104 (to 584)
+        480     POP_TOP                 
+        481     LOAD_CONST              7: 'more'
+        484     PRINT_ITEM              
+        485     PRINT_NEWLINE           
+        486     LOAD_NAME               1: a
+        489     LOAD_CONST              2: 2
+        492     COMPARE_OP              2
+        495     JUMP_IF_FALSE           9 (to 507)
+        498     POP_TOP                 
+        499     LOAD_CONST              3: '2'
+        502     PRINT_ITEM              
+        503     PRINT_NEWLINE           
+        504     JUMP_FORWARD            77 (to 584)
+        507     POP_TOP                 
+        508     LOAD_CONST              7: 'more'
+        511     PRINT_ITEM              
+        512     PRINT_NEWLINE           
+        513     LOAD_NAME               1: a
+        516     LOAD_CONST              5: 3
+        519     COMPARE_OP              2
+        522     JUMP_IF_FALSE           9 (to 534)
+        525     POP_TOP                 
+        526     LOAD_CONST              6: '3'
+        529     PRINT_ITEM              
+        530     PRINT_NEWLINE           
+        531     JUMP_FORWARD            50 (to 584)
+        534     POP_TOP                 
+        535     LOAD_NAME               1: a
+        538     LOAD_CONST              8: 4
+        541     COMPARE_OP              2
+        544     JUMP_IF_FALSE           9 (to 556)
+        547     POP_TOP                 
+        548     LOAD_CONST              9: '4'
+        551     PRINT_ITEM              
+        552     PRINT_NEWLINE           
+        553     JUMP_FORWARD            28 (to 584)
+        556     POP_TOP                 
+        557     LOAD_NAME               1: a
+        560     LOAD_CONST              8: 4
+        563     COMPARE_OP              2
+        566     JUMP_IF_FALSE           9 (to 578)
+        569     POP_TOP                 
+        570     LOAD_CONST              9: '4'
+        573     PRINT_ITEM              
+        574     PRINT_NEWLINE           
+        575     JUMP_FORWARD            6 (to 584)
+        578     POP_TOP                 
+        579     LOAD_CONST              4: 'other'
+        582     PRINT_ITEM              
+        583     PRINT_NEWLINE           
+        584     LOAD_CONST              10: None
+        587     RETURN_VALUE            

@@ -1,0 +1,294 @@
+../../pycdc/tests/inputs/old/test_decorators.pyc (Python 2.7)
+[Code]
+    File Name: test_decorators.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'staticmethod'
+        'square'
+        'synchronized'
+        'threading'
+        'Lock'
+        'cache_lock'
+        'object'
+        'Cache'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test_decorators.py
+            Object Name: square
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'n'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: n
+                3       LOAD_FAST               0: n
+                6       BINARY_MULTIPLY         
+                7       RETURN_VALUE            
+        [Code]
+            File Name: test_decorators.py
+            Object Name: synchronized
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'lock'
+                'wrap'
+            [Free Vars]
+            [Cell Vars]
+                'lock'
+            [Constants]
+                'Synchronization decorator.'
+                [Code]
+                    File Name: test_decorators.py
+                    Object Name: wrap
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000013 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NESTED)
+                    [Names]
+                    [Var Names]
+                        'f'
+                        'new_function'
+                    [Free Vars]
+                        'lock'
+                    [Cell Vars]
+                        'f'
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test_decorators.py
+                            Object Name: new_function
+                            Arg Count: 0
+                            Locals: 2
+                            Stack Size: 4
+                            Flags: 0x0000001F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS | CO_NESTED)
+                            [Names]
+                                'acquire'
+                                'release'
+                            [Var Names]
+                                'args'
+                                'kw'
+                            [Free Vars]
+                                'lock'
+                                'f'
+                            [Cell Vars]
+                            [Constants]
+                                None
+                            [Disassembly]
+                                0       LOAD_DEREF              0: 'lock'
+                                3       LOAD_ATTR               0: acquire
+                                6       CALL_FUNCTION           0
+                                9       POP_TOP                 
+                                10      SETUP_FINALLY           17 (to 30)
+                                13      LOAD_DEREF              1: 'f'
+                                16      LOAD_FAST               0: args
+                                19      LOAD_FAST               1: kw
+                                22      CALL_FUNCTION_VAR_KW    0
+                                25      RETURN_VALUE            
+                                26      POP_BLOCK               
+                                27      LOAD_CONST              0: None
+                                30      LOAD_DEREF              0: 'lock'
+                                33      LOAD_ATTR               1: release
+                                36      CALL_FUNCTION           0
+                                39      POP_TOP                 
+                                40      END_FINALLY             
+                                41      LOAD_CONST              0: None
+                                44      RETURN_VALUE            
+                    [Disassembly]
+                        0       LOAD_CLOSURE            1: 'lock'
+                        3       LOAD_CLOSURE            0: 'f'
+                        6       BUILD_TUPLE             2
+                        9       LOAD_CONST              1: <CODE> new_function
+                        12      MAKE_CLOSURE            0
+                        15      STORE_FAST              1: new_function
+                        18      LOAD_FAST               1: new_function
+                        21      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CLOSURE            0: 'lock'
+                3       BUILD_TUPLE             1
+                6       LOAD_CONST              1: <CODE> wrap
+                9       MAKE_CLOSURE            0
+                12      STORE_FAST              1: wrap
+                15      LOAD_FAST               1: wrap
+                18      RETURN_VALUE            
+        -1
+        (
+            'Lock'
+        )
+        'Cache'
+        [Code]
+            File Name: test_decorators.py
+            Object Name: Cache
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 3
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__init__'
+                'classmethod'
+                'synchronized'
+                'cache_lock'
+                'cache'
+                'property'
+                'name'
+                'setter'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                [Code]
+                    File Name: test_decorators.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 2
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        '_name'
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'default'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'default'
+                        3       LOAD_FAST               0: self
+                        6       STORE_ATTR              0: _name
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+                [Code]
+                    File Name: test_decorators.py
+                    Object Name: cache
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'cls'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_FAST               0: cls
+                        3       CALL_FUNCTION           0
+                        6       RETURN_VALUE            
+                [Code]
+                    File Name: test_decorators.py
+                    Object Name: name
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        '_name'
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_FAST               0: self
+                        3       LOAD_ATTR               0: _name
+                        6       RETURN_VALUE            
+                [Code]
+                    File Name: test_decorators.py
+                    Object Name: name
+                    Arg Count: 2
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        '_name'
+                    [Var Names]
+                        'self'
+                        'new_name'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_FAST               1: new_name
+                        3       LOAD_FAST               0: self
+                        6       STORE_ATTR              0: _name
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: <CODE> __init__
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              2: __init__
+                15      LOAD_NAME               3: classmethod
+                18      LOAD_NAME               4: synchronized
+                21      LOAD_NAME               5: cache_lock
+                24      CALL_FUNCTION           1
+                27      LOAD_CONST              1: <CODE> cache
+                30      MAKE_FUNCTION           0
+                33      CALL_FUNCTION           1
+                36      CALL_FUNCTION           1
+                39      STORE_NAME              6: cache
+                42      LOAD_NAME               7: property
+                45      LOAD_CONST              2: <CODE> name
+                48      MAKE_FUNCTION           0
+                51      CALL_FUNCTION           1
+                54      STORE_NAME              8: name
+                57      LOAD_NAME               8: name
+                60      LOAD_ATTR               9: setter
+                63      LOAD_CONST              3: <CODE> name
+                66      MAKE_FUNCTION           0
+                69      CALL_FUNCTION           1
+                72      STORE_NAME              8: name
+                75      LOAD_LOCALS             
+                76      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_NAME               0: staticmethod
+        3       LOAD_CONST              0: <CODE> square
+        6       MAKE_FUNCTION           0
+        9       CALL_FUNCTION           1
+        12      STORE_NAME              1: square
+        15      LOAD_CONST              1: <CODE> synchronized
+        18      MAKE_FUNCTION           0
+        21      STORE_NAME              2: synchronized
+        24      LOAD_CONST              2: -1
+        27      LOAD_CONST              3: ('Lock',)
+        30      IMPORT_NAME             3: threading
+        33      IMPORT_FROM             4: Lock
+        36      STORE_NAME              4: Lock
+        39      POP_TOP                 
+        40      LOAD_NAME               4: Lock
+        43      CALL_FUNCTION           0
+        46      STORE_NAME              5: cache_lock
+        49      LOAD_CONST              4: 'Cache'
+        52      LOAD_NAME               6: object
+        55      BUILD_TUPLE             1
+        58      LOAD_CONST              5: <CODE> Cache
+        61      MAKE_FUNCTION           0
+        64      CALL_FUNCTION           0
+        67      BUILD_CLASS             
+        68      STORE_NAME              7: Cache
+        71      LOAD_CONST              6: None
+        74      RETURN_VALUE            

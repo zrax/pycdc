@@ -1,0 +1,98 @@
+../../pycdc/tests/inputs/old/27_docstrings.pyc (Python 2.7)
+[Code]
+    File Name: foo.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'foobar'
+        'FoobarClass'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'Module docstring'
+        [Code]
+            File Name: foo.py
+            Object Name: foobar
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'Function docstring'
+                42
+            [Disassembly]
+                0       LOAD_CONST              1: 42
+                3       RETURN_VALUE            
+        'FoobarClass'
+        [Code]
+            File Name: foo.py
+            Object Name: FoobarClass
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__doc__'
+                '__init__'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'Class docstring'
+                [Code]
+                    File Name: foo.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        'Member function docstring'
+                        None
+                    [Disassembly]
+                        0       LOAD_CONST              1: None
+                        3       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: 'Class docstring'
+                9       STORE_NAME              2: __doc__
+                12      LOAD_CONST              1: <CODE> __init__
+                15      MAKE_FUNCTION           0
+                18      STORE_NAME              3: __init__
+                21      LOAD_LOCALS             
+                22      RETURN_VALUE            
+        None
+        (
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: 'Module docstring'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: <CODE> foobar
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              1: foobar
+        15      LOAD_CONST              2: 'FoobarClass'
+        18      LOAD_CONST              5: ()
+        21      LOAD_CONST              3: <CODE> FoobarClass
+        24      MAKE_FUNCTION           0
+        27      CALL_FUNCTION           0
+        30      BUILD_CLASS             
+        31      STORE_NAME              2: FoobarClass
+        34      LOAD_CONST              4: None
+        37      RETURN_VALUE            

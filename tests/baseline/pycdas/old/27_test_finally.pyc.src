@@ -1,0 +1,296 @@
+../../pycdc/tests/inputs/old/27_test_finally.pyc (Python 2.7)
+[Code]
+    File Name: finally_test.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'try_finally'
+        'try_else_finally'
+        'try_except_except'
+        'try_except_except_finally'
+        'finally_if'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: finally_test.py
+            Object Name: try_finally
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 4
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'before'
+                'try'
+                'finally'
+                'after'
+            [Disassembly]
+                0       LOAD_CONST              1: 'before'
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       SETUP_FINALLY           9 (to 17)
+                8       LOAD_CONST              2: 'try'
+                11      PRINT_ITEM              
+                12      PRINT_NEWLINE           
+                13      POP_BLOCK               
+                14      LOAD_CONST              0: None
+                17      LOAD_CONST              3: 'finally'
+                20      PRINT_ITEM              
+                21      PRINT_NEWLINE           
+                22      END_FINALLY             
+                23      LOAD_CONST              4: 'after'
+                26      PRINT_ITEM              
+                27      PRINT_NEWLINE           
+                28      LOAD_CONST              0: None
+                31      RETURN_VALUE            
+        [Code]
+            File Name: finally_test.py
+            Object Name: try_else_finally
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 5
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'AttributeError'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'before'
+                'try'
+                'except'
+                'else'
+                'finally'
+                'after'
+            [Disassembly]
+                0       LOAD_CONST              1: 'before'
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       SETUP_FINALLY           43 (to 51)
+                8       SETUP_EXCEPT            9 (to 20)
+                11      LOAD_CONST              2: 'try'
+                14      PRINT_ITEM              
+                15      PRINT_NEWLINE           
+                16      POP_BLOCK               
+                17      JUMP_FORWARD            22 (to 42)
+                20      DUP_TOP                 
+                21      LOAD_GLOBAL             0: AttributeError
+                24      COMPARE_OP              10
+                27      POP_JUMP_IF_FALSE       41
+                30      POP_TOP                 
+                31      POP_TOP                 
+                32      POP_TOP                 
+                33      LOAD_CONST              3: 'except'
+                36      PRINT_ITEM              
+                37      PRINT_NEWLINE           
+                38      JUMP_FORWARD            6 (to 47)
+                41      END_FINALLY             
+                42      LOAD_CONST              4: 'else'
+                45      PRINT_ITEM              
+                46      PRINT_NEWLINE           
+                47      POP_BLOCK               
+                48      LOAD_CONST              0: None
+                51      LOAD_CONST              5: 'finally'
+                54      PRINT_ITEM              
+                55      PRINT_NEWLINE           
+                56      END_FINALLY             
+                57      LOAD_CONST              6: 'after'
+                60      PRINT_ITEM              
+                61      PRINT_NEWLINE           
+                62      LOAD_CONST              0: None
+                65      RETURN_VALUE            
+        [Code]
+            File Name: finally_test.py
+            Object Name: try_except_except
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 5
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'KeyError'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'before'
+                'try'
+                'except (1)'
+                'except (2)'
+                'else'
+                'after'
+            [Disassembly]
+                0       LOAD_CONST              1: 'before'
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       SETUP_EXCEPT            9 (to 17)
+                8       LOAD_CONST              2: 'try'
+                11      PRINT_ITEM              
+                12      PRINT_NEWLINE           
+                13      POP_BLOCK               
+                14      JUMP_FORWARD            33 (to 50)
+                17      DUP_TOP                 
+                18      LOAD_GLOBAL             0: KeyError
+                21      COMPARE_OP              10
+                24      POP_JUMP_IF_FALSE       38
+                27      POP_TOP                 
+                28      POP_TOP                 
+                29      POP_TOP                 
+                30      LOAD_CONST              3: 'except (1)'
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      JUMP_FORWARD            17 (to 55)
+                38      POP_TOP                 
+                39      POP_TOP                 
+                40      POP_TOP                 
+                41      LOAD_CONST              4: 'except (2)'
+                44      PRINT_ITEM              
+                45      PRINT_NEWLINE           
+                46      JUMP_FORWARD            6 (to 55)
+                49      END_FINALLY             
+                50      LOAD_CONST              5: 'else'
+                53      PRINT_ITEM              
+                54      PRINT_NEWLINE           
+                55      LOAD_CONST              6: 'after'
+                58      PRINT_ITEM              
+                59      PRINT_NEWLINE           
+                60      LOAD_CONST              0: None
+                63      RETURN_VALUE            
+        [Code]
+            File Name: finally_test.py
+            Object Name: try_except_except_finally
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 5
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'KeyError'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'before'
+                'try'
+                'except (1)'
+                'except (2)'
+                'else'
+                'finally'
+                'after'
+            [Disassembly]
+                0       LOAD_CONST              1: 'before'
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       SETUP_FINALLY           54 (to 62)
+                8       SETUP_EXCEPT            9 (to 20)
+                11      LOAD_CONST              2: 'try'
+                14      PRINT_ITEM              
+                15      PRINT_NEWLINE           
+                16      POP_BLOCK               
+                17      JUMP_FORWARD            33 (to 53)
+                20      DUP_TOP                 
+                21      LOAD_GLOBAL             0: KeyError
+                24      COMPARE_OP              10
+                27      POP_JUMP_IF_FALSE       41
+                30      POP_TOP                 
+                31      POP_TOP                 
+                32      POP_TOP                 
+                33      LOAD_CONST              3: 'except (1)'
+                36      PRINT_ITEM              
+                37      PRINT_NEWLINE           
+                38      JUMP_FORWARD            17 (to 58)
+                41      POP_TOP                 
+                42      POP_TOP                 
+                43      POP_TOP                 
+                44      LOAD_CONST              4: 'except (2)'
+                47      PRINT_ITEM              
+                48      PRINT_NEWLINE           
+                49      JUMP_FORWARD            6 (to 58)
+                52      END_FINALLY             
+                53      LOAD_CONST              5: 'else'
+                56      PRINT_ITEM              
+                57      PRINT_NEWLINE           
+                58      POP_BLOCK               
+                59      LOAD_CONST              0: None
+                62      LOAD_CONST              6: 'finally'
+                65      PRINT_ITEM              
+                66      PRINT_NEWLINE           
+                67      END_FINALLY             
+                68      LOAD_CONST              7: 'after'
+                71      PRINT_ITEM              
+                72      PRINT_NEWLINE           
+                73      LOAD_CONST              0: None
+                76      RETURN_VALUE            
+        [Code]
+            File Name: finally_test.py
+            Object Name: finally_if
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 4
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'before'
+                'try'
+                'if'
+                'else'
+                'after'
+            [Disassembly]
+                0       LOAD_CONST              1: 'before'
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       SETUP_FINALLY           9 (to 17)
+                8       LOAD_CONST              2: 'try'
+                11      PRINT_ITEM              
+                12      PRINT_NEWLINE           
+                13      POP_BLOCK               
+                14      LOAD_CONST              0: None
+                17      LOAD_FAST               0: a
+                20      POP_JUMP_IF_FALSE       31
+                23      LOAD_CONST              3: 'if'
+                26      PRINT_ITEM              
+                27      PRINT_NEWLINE           
+                28      JUMP_FORWARD            5 (to 36)
+                31      LOAD_CONST              4: 'else'
+                34      PRINT_ITEM              
+                35      PRINT_NEWLINE           
+                36      END_FINALLY             
+                37      LOAD_CONST              5: 'after'
+                40      PRINT_ITEM              
+                41      PRINT_NEWLINE           
+                42      LOAD_CONST              0: None
+                45      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> try_finally
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: try_finally
+        9       LOAD_CONST              1: <CODE> try_else_finally
+        12      MAKE_FUNCTION           0
+        15      STORE_NAME              1: try_else_finally
+        18      LOAD_CONST              2: <CODE> try_except_except
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              2: try_except_except
+        27      LOAD_CONST              3: <CODE> try_except_except_finally
+        30      MAKE_FUNCTION           0
+        33      STORE_NAME              3: try_except_except_finally
+        36      LOAD_CONST              4: <CODE> finally_if
+        39      MAKE_FUNCTION           0
+        42      STORE_NAME              4: finally_if
+        45      LOAD_CONST              5: None
+        48      RETURN_VALUE            

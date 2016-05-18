@@ -1,0 +1,8 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/25_test_divide_future.pyc (Python 2.5)
+
+from __future__ import division
+print '  1 // 2   =', 0
+print '1.0 // 2.0 =', 0
+print '  1 /  2   =', 0.5
+print '1.0 /  2.0 =', 0.5
