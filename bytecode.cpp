@@ -29,6 +29,7 @@ DECLARE_PYTHON(3, 2)
 DECLARE_PYTHON(3, 3)
 DECLARE_PYTHON(3, 4)
 DECLARE_PYTHON(3, 5)
+DECLARE_PYTHON(3, 6)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -72,7 +73,7 @@ const char* Pyc::OpcodeName(int opcode)
     "EXTENDED_ARG", "SETUP_WITH", "SET_ADD", "MAP_ADD", "UNPACK_EX",
     "LIST_APPEND", "LOAD_CLASSDEREF", "BUILD_LIST_UNPACK", "BUILD_MAP_UNPACK",
     "BUILD_MAP_UNPACK_WITH_CALL", "BUILD_TUPLE_UNPACK", "BUILD_SET_UNPACK",
-    "SETUP_ASYNC_WITH",
+    "SETUP_ASYNC_WITH", "FORMAT_VALUE", "BUILD_CONST_KEY_MAP",
     };
 
 #if __cplusplus >= 201103L
@@ -124,6 +125,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 3: return python_33_map(opcode);
         case 4: return python_34_map(opcode);
         case 5: return python_35_map(opcode);
+        case 6: return python_36_map(opcode);
         }
         break;
     }
@@ -293,15 +295,28 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
 {
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-    operand = 0;
-    pos += 1;
+    bool py36_opcode = (mod->majorVer() > 3 || (mod->majorVer() == 3 && mod->minorVer() >= 6));
+    if (py36_opcode) {
+        operand = source.getByte();
+        pos += 2;
+    } else {
+        operand = 0;
+        pos += 1;
+    }
 
     if (opcode == Pyc::EXTENDED_ARG_A) {
-        operand = source.get16() << 16;
-        opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-        pos += 3;
+        if (py36_opcode) {
+            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+            operand <<= 8;
+            operand |= source.getByte();
+            pos += 2;
+        } else {
+            operand = source.get16() << 16;
+            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+            pos += 3;
+        }
     }
-    if (opcode >= Pyc::PYC_HAVE_ARG) {
+    if (!py36_opcode && (opcode >= Pyc::PYC_HAVE_ARG)) {
         operand |= source.get16();
         pos += 2;
     }
