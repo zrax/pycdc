@@ -60,6 +60,7 @@ bool IsNameArg(int opcode);
 bool IsVarNameArg(int opcode);
 bool IsCellArg(int opcode);
 bool IsJumpOffsetArg(int opcode);
+bool IsCompareArg(int opcode);
 
 }
 
