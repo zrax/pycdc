@@ -2588,7 +2588,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             print_src(code, mod);
             inLambda = false;
 
-	    fprintf(pyc_output, ")");
+            fprintf(pyc_output, ")");
         }
         break;
     case ASTNode::NODE_STORE:
