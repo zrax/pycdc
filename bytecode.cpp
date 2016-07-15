@@ -332,6 +332,8 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
         "<EXCEPTION MATCH>", "<BAD>"
     };
+    static const ssize_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
+
     PycBuffer source(code->code()->value(), code->code()->length());
 
     int opcode, operand;
@@ -358,11 +360,10 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
                 fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
             } else if (Pyc::IsCompareArg(opcode)) {
-                ssize_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
                 if (operand < cmp_strings_len)
-                    fprintf(pyc_output, "%d: '%s'", operand, cmp_strings[operand]);
+                    fprintf(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
                 else
-                    fprintf(pyc_output, "%d", operand);
+                    fprintf(pyc_output, "%d (UNKNOWN)", operand);
             } else {
                 fprintf(pyc_output, "%d", operand);
             }
