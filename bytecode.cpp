@@ -3,6 +3,8 @@
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
 #endif
 
 #define DECLARE_PYTHON(maj, min) \
