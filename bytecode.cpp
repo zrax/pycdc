@@ -3,8 +3,6 @@
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
-#include <BaseTsd.h>
-typedef SSIZE_T ssize_t;
 #endif
 
 #define DECLARE_PYTHON(maj, min) \
@@ -334,7 +332,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
         "<EXCEPTION MATCH>", "<BAD>"
     };
-    static const ssize_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
+    static const size_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
 
     PycBuffer source(code->code()->value(), code->code()->length());
 
