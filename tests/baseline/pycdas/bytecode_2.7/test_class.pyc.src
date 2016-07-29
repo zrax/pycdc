@@ -1,0 +1,335 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_class.pyc (Python 2.7)
+[Code]
+    File Name: source\test_class.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'A'
+        'B'
+        'C'
+        'c'
+        'foo'
+        'bar'
+        'foobar'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_class.py -- source test pattern for class definitions\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        'A'
+        [Code]
+            File Name: source\test_class.py
+            Object Name: A
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 3
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                'A1'
+                '__init__'
+                'foo'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'A1'
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: A1
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        '__name__'
+                        '__module__'
+                        '__init__'
+                        'foo'
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        [Code]
+                            File Name: source\test_class.py
+                            Object Name: __init__
+                            Arg Count: 1
+                            Locals: 1
+                            Stack Size: 1
+                            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                            [Names]
+                            [Var Names]
+                                'self'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'A1.__init__'
+                            [Disassembly]
+                                0       LOAD_CONST              1: 'A1.__init__'
+                                3       PRINT_ITEM              
+                                4       PRINT_NEWLINE           
+                                5       LOAD_CONST              0: None
+                                8       RETURN_VALUE            
+                        [Code]
+                            File Name: source\test_class.py
+                            Object Name: foo
+                            Arg Count: 1
+                            Locals: 1
+                            Stack Size: 1
+                            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                            [Names]
+                            [Var Names]
+                                'self'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'A1.foo'
+                            [Disassembly]
+                                0       LOAD_CONST              1: 'A1.foo'
+                                3       PRINT_ITEM              
+                                4       PRINT_NEWLINE           
+                                5       LOAD_CONST              0: None
+                                8       RETURN_VALUE            
+                    [Disassembly]
+                        0       LOAD_NAME               0: __name__
+                        3       STORE_NAME              1: __module__
+                        6       LOAD_CONST              0: <CODE> __init__
+                        9       MAKE_FUNCTION           0
+                        12      STORE_NAME              2: __init__
+                        15      LOAD_CONST              1: <CODE> foo
+                        18      MAKE_FUNCTION           0
+                        21      STORE_NAME              3: foo
+                        24      LOAD_LOCALS             
+                        25      RETURN_VALUE            
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'A.__init__'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'A.__init__'
+                        3       PRINT_ITEM              
+                        4       PRINT_NEWLINE           
+                        5       LOAD_CONST              0: None
+                        8       RETURN_VALUE            
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: foo
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'A.foo'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'A.foo'
+                        3       PRINT_ITEM              
+                        4       PRINT_NEWLINE           
+                        5       LOAD_CONST              0: None
+                        8       RETURN_VALUE            
+                (
+                )
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: 'A1'
+                9       LOAD_CONST              4: ()
+                12      LOAD_CONST              1: <CODE> A1
+                15      MAKE_FUNCTION           0
+                18      CALL_FUNCTION           0
+                21      BUILD_CLASS             
+                22      STORE_NAME              2: A1
+                25      LOAD_CONST              2: <CODE> __init__
+                28      MAKE_FUNCTION           0
+                31      STORE_NAME              3: __init__
+                34      LOAD_CONST              3: <CODE> foo
+                37      MAKE_FUNCTION           0
+                40      STORE_NAME              4: foo
+                43      LOAD_LOCALS             
+                44      RETURN_VALUE            
+        'B'
+        [Code]
+            File Name: source\test_class.py
+            Object Name: B
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__init__'
+                'bar'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'B.__init__'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'B.__init__'
+                        3       PRINT_ITEM              
+                        4       PRINT_NEWLINE           
+                        5       LOAD_CONST              0: None
+                        8       RETURN_VALUE            
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: bar
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'B.bar'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'B.bar'
+                        3       PRINT_ITEM              
+                        4       PRINT_NEWLINE           
+                        5       LOAD_CONST              0: None
+                        8       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: <CODE> __init__
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              2: __init__
+                15      LOAD_CONST              1: <CODE> bar
+                18      MAKE_FUNCTION           0
+                21      STORE_NAME              3: bar
+                24      LOAD_LOCALS             
+                25      RETURN_VALUE            
+        'C'
+        [Code]
+            File Name: source\test_class.py
+            Object Name: C
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                'foobar'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                [Code]
+                    File Name: source\test_class.py
+                    Object Name: foobar
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'C.foobar'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'C.foobar'
+                        3       PRINT_ITEM              
+                        4       PRINT_NEWLINE           
+                        5       LOAD_CONST              0: None
+                        8       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: <CODE> foobar
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              2: foobar
+                15      LOAD_LOCALS             
+                16      RETURN_VALUE            
+        None
+        (
+        )
+        (
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_class.py -- source test pattern for class definitions\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: 'A'
+        9       LOAD_CONST              8: ()
+        12      LOAD_CONST              2: <CODE> A
+        15      MAKE_FUNCTION           0
+        18      CALL_FUNCTION           0
+        21      BUILD_CLASS             
+        22      STORE_NAME              1: A
+        25      LOAD_CONST              3: 'B'
+        28      LOAD_CONST              9: ()
+        31      LOAD_CONST              4: <CODE> B
+        34      MAKE_FUNCTION           0
+        37      CALL_FUNCTION           0
+        40      BUILD_CLASS             
+        41      STORE_NAME              2: B
+        44      LOAD_CONST              5: 'C'
+        47      LOAD_NAME               1: A
+        50      LOAD_NAME               2: B
+        53      BUILD_TUPLE             2
+        56      LOAD_CONST              6: <CODE> C
+        59      MAKE_FUNCTION           0
+        62      CALL_FUNCTION           0
+        65      BUILD_CLASS             
+        66      STORE_NAME              3: C
+        69      LOAD_NAME               3: C
+        72      CALL_FUNCTION           0
+        75      STORE_NAME              4: c
+        78      LOAD_NAME               4: c
+        81      LOAD_ATTR               5: foo
+        84      CALL_FUNCTION           0
+        87      POP_TOP                 
+        88      LOAD_NAME               4: c
+        91      LOAD_ATTR               6: bar
+        94      CALL_FUNCTION           0
+        97      POP_TOP                 
+        98      LOAD_NAME               4: c
+        101     LOAD_ATTR               7: foobar
+        104     CALL_FUNCTION           0
+        107     POP_TOP                 
+        108     LOAD_CONST              7: None
+        111     RETURN_VALUE            

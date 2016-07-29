@@ -1,0 +1,32 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/25_test_tuple_params.pyc (Python 2.5)
+
+'''
+test_tuple_params.py -- source test pattern for formal parameters of type tuple
+
+This source is part of the decompyle test suite.
+
+decompyle is a Python byte-code decompiler
+See http://www.goebel-consult.de/decompyle/ for download and
+for further information
+'''
+
+def A(a, b, .2, c):
+    (x, y, z) = .2
+
+
+def B(a, b = 42, .2 = (1, 2, 3), c = 17):
+    (x, y, z) = .2
+
+
+def C(.0):
+    (x, y, z) = .0
+
+
+def D(.0):
+    (x,) = .0
+
+
+def E(x):
+    pass
+

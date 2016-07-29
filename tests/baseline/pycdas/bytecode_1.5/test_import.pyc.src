@@ -1,0 +1,85 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_import.pyc (Python 1.5)
+[Code]
+    File Name: test/test_import.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'os'
+        'BaseHTTPServer'
+        'test.test_MimeWriter'
+        'test'
+        'rfc822'
+        'Message'
+        'mimetools'
+        'decode'
+        'choose_boundary'
+        '*'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+    [Constants]
+        '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        0
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      IMPORT_NAME             1: sys
+        18      STORE_NAME              1: sys
+        21      SET_LINENO              12
+        24      IMPORT_NAME             2: os
+        27      STORE_NAME              2: os
+        30      IMPORT_NAME             1: sys
+        33      STORE_NAME              1: sys
+        36      IMPORT_NAME             3: BaseHTTPServer
+        39      STORE_NAME              3: BaseHTTPServer
+        42      SET_LINENO              14
+        45      IMPORT_NAME             4: test.test_MimeWriter
+        48      STORE_NAME              5: test
+        51      SET_LINENO              16
+        54      IMPORT_NAME             6: rfc822
+        57      IMPORT_FROM             7: Message
+        60      POP_TOP                 
+        61      SET_LINENO              17
+        64      IMPORT_NAME             8: mimetools
+        67      IMPORT_FROM             7: Message
+        70      IMPORT_FROM             9: decode
+        73      IMPORT_FROM             10: choose_boundary
+        76      POP_TOP                 
+        77      SET_LINENO              18
+        80      IMPORT_NAME             2: os
+        83      IMPORT_FROM             11: *
+        86      POP_TOP                 
+        87      SET_LINENO              20
+        90      SETUP_LOOP              47 (to 140)
+        93      LOAD_NAME               12: globals
+        96      CALL_FUNCTION           0
+        99      LOAD_ATTR               13: items
+        102     CALL_FUNCTION           0
+        105     LOAD_CONST              1: 0
+        108     SET_LINENO              20
+        111     FOR_LOOP                25 (to 139)
+        114     UNPACK_TUPLE            2
+        117     STORE_NAME              14: k
+        120     STORE_NAME              15: v
+        123     SET_LINENO              21
+        126     LOAD_NAME               14: k
+        129     UNARY_CONVERT           
+        130     PRINT_ITEM              
+        131     LOAD_NAME               15: v
+        134     PRINT_ITEM              
+        135     PRINT_NEWLINE           
+        136     JUMP_ABSOLUTE           108
+        139     POP_BLOCK               
+        140     LOAD_CONST              2: None
+        143     RETURN_VALUE            

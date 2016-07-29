@@ -1,0 +1,831 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_nested_scopes.pyo (Python 2.1)
+[Code]
+    File Name: test/test_nested_scopes.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000010 (CO_NESTED)
+    [Names]
+        '__future__'
+        'nested_scopes'
+        'blurb'
+        'k0'
+        'x0'
+        'x1'
+        'x2'
+        'x3a'
+        'x3'
+        'x3b'
+        'x4'
+        'x'
+        'func_with_tuple_args6'
+        'find'
+    [Var Names]
+        'find'
+        'x1'
+        'x0'
+        'x'
+        'x2'
+        'x3a'
+        'x3b'
+        'k0'
+        'x4'
+        'x3'
+        'nested_scopes'
+        'func_with_tuple_args6'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        (
+            'nested_scopes'
+        )
+        1
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: k0
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'l0'
+            [Var Names]
+                'l0'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: l0
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'm'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       PRINT_NEWLINE           
+                        1       LOAD_CONST              0: None
+                        4       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CONST              1: 1
+                3       LOAD_CONST              2: <CODE> l0
+                6       MAKE_FUNCTION           1
+                9       STORE_FAST              0: l0
+                12      LOAD_FAST               0: l0
+                15      CALL_FUNCTION           0
+                18      POP_TOP                 
+                19      LOAD_CONST              0: None
+                22      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x0
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y0'
+            [Var Names]
+                'y0'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y0
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       PRINT_NEWLINE           
+                        1       LOAD_CONST              0: None
+                        4       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> y0
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              0: y0
+                9       LOAD_FAST               0: y0
+                12      CALL_FUNCTION           0
+                15      POP_TOP                 
+                16      LOAD_CONST              0: None
+                19      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x1
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y1'
+            [Var Names]
+                'y1'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y1
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'blurb'
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'y-blurb ='
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'y-blurb ='
+                        3       PRINT_ITEM              
+                        4       LOAD_GLOBAL             0: blurb
+                        7       PRINT_ITEM              
+                        8       PRINT_NEWLINE           
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> y1
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              0: y1
+                9       LOAD_FAST               0: y1
+                12      CALL_FUNCTION           0
+                15      POP_TOP                 
+                16      LOAD_CONST              0: None
+                19      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x2
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y2'
+                'blurb'
+            [Var Names]
+                'y2'
+                'blurb'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y2
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       PRINT_NEWLINE           
+                        1       LOAD_CONST              0: None
+                        4       RETURN_VALUE            
+                2
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> y2
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              0: y2
+                9       LOAD_CONST              2: 2
+                12      STORE_FAST              1: blurb
+                15      LOAD_FAST               0: y2
+                18      CALL_FUNCTION           0
+                21      POP_TOP                 
+                22      LOAD_CONST              0: None
+                25      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x3a
+            Arg Count: 0
+            Locals: 3
+            Stack Size: 4
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y3a'
+                'blurb'
+                'flurb'
+            [Var Names]
+                'blurb'
+                'y3a'
+                'flurb'
+            [Free Vars]
+            [Cell Vars]
+                'blurb'
+                'flurb'
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y3a
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'blurb'
+                        'flurb'
+                    [Var Names]
+                        'x'
+                    [Free Vars]
+                        'blurb'
+                        'flurb'
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'y-blurb ='
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'y-blurb ='
+                        3       PRINT_ITEM              
+                        4       LOAD_DEREF              0: 'blurb'
+                        7       PRINT_ITEM              
+                        8       LOAD_DEREF              1: 'flurb'
+                        11      PRINT_ITEM              
+                        12      PRINT_NEWLINE           
+                        13      LOAD_CONST              0: None
+                        16      RETURN_VALUE            
+                3
+                7
+                1
+                'x3a-blurb ='
+            [Disassembly]
+                0       LOAD_CLOSURE            0: 'blurb'
+                3       LOAD_CLOSURE            1: 'flurb'
+                6       LOAD_CONST              1: <CODE> y3a
+                9       MAKE_CLOSURE            0
+                12      STORE_FAST              1: y3a
+                15      PRINT_NEWLINE           
+                16      LOAD_CONST              2: 3
+                19      STORE_DEREF             0: 'blurb'
+                22      LOAD_CONST              3: 7
+                25      STORE_DEREF             1: 'flurb'
+                28      LOAD_FAST               1: y3a
+                31      LOAD_CONST              4: 1
+                34      CALL_FUNCTION           1
+                37      POP_TOP                 
+                38      LOAD_CONST              5: 'x3a-blurb ='
+                41      PRINT_ITEM              
+                42      LOAD_DEREF              0: 'blurb'
+                45      PRINT_ITEM              
+                46      PRINT_NEWLINE           
+                47      LOAD_CONST              0: None
+                50      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x3
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y3'
+                'blurb'
+            [Var Names]
+                'y3'
+                'blurb'
+            [Free Vars]
+            [Cell Vars]
+                'blurb'
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y3
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'z'
+                        'blurb'
+                    [Var Names]
+                        'x'
+                        'z'
+                    [Free Vars]
+                        'blurb'
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test/test_nested_scopes.py
+                            Object Name: z
+                            Arg Count: 0
+                            Locals: 1
+                            Stack Size: 1
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                                'blurb'
+                            [Var Names]
+                                'blurb'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                25
+                                'z-blurb ='
+                            [Disassembly]
+                                0       LOAD_CONST              1: 25
+                                3       STORE_FAST              0: blurb
+                                6       LOAD_CONST              2: 'z-blurb ='
+                                9       PRINT_ITEM              
+                                10      LOAD_FAST               0: blurb
+                                13      PRINT_ITEM              
+                                14      LOAD_CONST              0: None
+                                17      RETURN_VALUE            
+                        'y-blurb ='
+                    [Disassembly]
+                        0       LOAD_CONST              1: <CODE> z
+                        3       MAKE_FUNCTION           0
+                        6       STORE_FAST              1: z
+                        9       LOAD_FAST               1: z
+                        12      CALL_FUNCTION           0
+                        15      POP_TOP                 
+                        16      LOAD_CONST              2: 'y-blurb ='
+                        19      PRINT_ITEM              
+                        20      LOAD_DEREF              0: 'blurb'
+                        23      PRINT_ITEM              
+                        24      LOAD_CONST              0: None
+                        27      RETURN_VALUE            
+                3
+                1
+                'x3-blurb ='
+            [Disassembly]
+                0       LOAD_CLOSURE            0: 'blurb'
+                3       LOAD_CONST              1: <CODE> y3
+                6       MAKE_CLOSURE            0
+                9       STORE_FAST              0: y3
+                12      PRINT_NEWLINE           
+                13      LOAD_CONST              2: 3
+                16      STORE_DEREF             0: 'blurb'
+                19      LOAD_FAST               0: y3
+                22      LOAD_CONST              3: 1
+                25      CALL_FUNCTION           1
+                28      POP_TOP                 
+                29      LOAD_CONST              4: 'x3-blurb ='
+                32      PRINT_ITEM              
+                33      LOAD_DEREF              0: 'blurb'
+                36      PRINT_ITEM              
+                37      PRINT_NEWLINE           
+                38      LOAD_CONST              0: None
+                41      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x3b
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y3b'
+                'blurb'
+            [Var Names]
+                'blurb'
+                'y3b'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y3b
+                    Arg Count: 1
+                    Locals: 3
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'z'
+                        'blurb'
+                    [Var Names]
+                        'x'
+                        'blurb'
+                        'z'
+                    [Free Vars]
+                    [Cell Vars]
+                        'blurb'
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test/test_nested_scopes.py
+                            Object Name: z
+                            Arg Count: 0
+                            Locals: 0
+                            Stack Size: 1
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                                'blurb'
+                            [Var Names]
+                            [Free Vars]
+                                'blurb'
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'z-blurb ='
+                            [Disassembly]
+                                0       LOAD_CONST              1: 'z-blurb ='
+                                3       PRINT_ITEM              
+                                4       LOAD_DEREF              0: 'blurb'
+                                7       PRINT_ITEM              
+                                8       LOAD_CONST              0: None
+                                11      RETURN_VALUE            
+                        25
+                        'y-blurb ='
+                    [Disassembly]
+                        0       LOAD_CLOSURE            0: 'blurb'
+                        3       LOAD_CONST              1: <CODE> z
+                        6       MAKE_CLOSURE            0
+                        9       STORE_FAST              2: z
+                        12      LOAD_CONST              2: 25
+                        15      STORE_DEREF             0: 'blurb'
+                        18      LOAD_FAST               2: z
+                        21      CALL_FUNCTION           0
+                        24      POP_TOP                 
+                        25      LOAD_CONST              3: 'y-blurb ='
+                        28      PRINT_ITEM              
+                        29      LOAD_DEREF              0: 'blurb'
+                        32      PRINT_ITEM              
+                        33      LOAD_CONST              0: None
+                        36      RETURN_VALUE            
+                3
+                1
+                'x3-blurb ='
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> y3b
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              1: y3b
+                9       PRINT_NEWLINE           
+                10      LOAD_CONST              2: 3
+                13      STORE_FAST              0: blurb
+                16      LOAD_FAST               1: y3b
+                19      LOAD_CONST              3: 1
+                22      CALL_FUNCTION           1
+                25      POP_TOP                 
+                26      LOAD_CONST              4: 'x3-blurb ='
+                29      PRINT_ITEM              
+                30      LOAD_FAST               0: blurb
+                33      PRINT_ITEM              
+                34      PRINT_NEWLINE           
+                35      LOAD_CONST              0: None
+                38      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x4
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y4'
+                'blurb'
+            [Var Names]
+                'y4'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y4
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'z'
+                    [Var Names]
+                        'x'
+                        'z'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test/test_nested_scopes.py
+                            Object Name: z
+                            Arg Count: 0
+                            Locals: 0
+                            Stack Size: 1
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                                'blurb'
+                            [Var Names]
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'z-blurb ='
+                            [Disassembly]
+                                0       LOAD_CONST              1: 'z-blurb ='
+                                3       PRINT_ITEM              
+                                4       LOAD_GLOBAL             0: blurb
+                                7       PRINT_ITEM              
+                                8       PRINT_NEWLINE           
+                                9       LOAD_CONST              0: None
+                                12      RETURN_VALUE            
+                    [Disassembly]
+                        0       LOAD_CONST              1: <CODE> z
+                        3       MAKE_FUNCTION           0
+                        6       STORE_FAST              1: z
+                        9       LOAD_FAST               1: z
+                        12      CALL_FUNCTION           0
+                        15      POP_TOP                 
+                        16      LOAD_CONST              0: None
+                        19      RETURN_VALUE            
+                3
+                1
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> y4
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              0: y4
+                9       LOAD_CONST              2: 3
+                12      STORE_GLOBAL            1: blurb
+                15      LOAD_FAST               0: y4
+                18      LOAD_CONST              3: 1
+                21      CALL_FUNCTION           1
+                24      POP_TOP                 
+                25      LOAD_CONST              0: None
+                28      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: x
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'y'
+                'blurb'
+            [Var Names]
+                'blurb'
+                'y'
+            [Free Vars]
+            [Cell Vars]
+                'blurb'
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'blurb'
+                    [Var Names]
+                        'x'
+                    [Free Vars]
+                        'blurb'
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'y-blurb ='
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'y-blurb ='
+                        3       PRINT_ITEM              
+                        4       LOAD_DEREF              0: 'blurb'
+                        7       PRINT_ITEM              
+                        8       PRINT_NEWLINE           
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+                2
+                1
+            [Disassembly]
+                0       LOAD_CLOSURE            0: 'blurb'
+                3       LOAD_CONST              1: <CODE> y
+                6       MAKE_CLOSURE            0
+                9       STORE_FAST              1: y
+                12      LOAD_CONST              2: 2
+                15      STORE_DEREF             0: 'blurb'
+                18      LOAD_FAST               1: y
+                21      LOAD_CONST              3: 1
+                24      CALL_FUNCTION           1
+                27      POP_TOP                 
+                28      LOAD_CONST              0: None
+                31      RETURN_VALUE            
+        2
+        3
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: func_with_tuple_args6
+            Arg Count: 2
+            Locals: 9
+            Stack Size: 2
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'd'
+                'y'
+            [Var Names]
+                '.0'
+                '.2'
+                'args'
+                'kwargs'
+                'a'
+                'b'
+                'c'
+                'd'
+                'y'
+            [Free Vars]
+            [Cell Vars]
+                'a'
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: y
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'a'
+                    [Var Names]
+                        'x'
+                    [Free Vars]
+                        'a'
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'y-a ='
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'y-a ='
+                        3       PRINT_ITEM              
+                        4       LOAD_DEREF              0: 'a'
+                        7       PRINT_ITEM              
+                        8       PRINT_NEWLINE           
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_SEQUENCE         2
+                6       STORE_DEREF             0: 'a'
+                9       STORE_FAST              5: b
+                12      LOAD_FAST               1: .2
+                15      UNPACK_SEQUENCE         2
+                18      STORE_FAST              6: c
+                21      STORE_FAST              7: d
+                24      LOAD_CLOSURE            0: 'a'
+                27      LOAD_CONST              1: <CODE> y
+                30      MAKE_CLOSURE            0
+                33      STORE_FAST              8: y
+                36      LOAD_FAST               6: c
+                39      PRINT_ITEM              
+                40      PRINT_NEWLINE           
+                41      LOAD_CONST              0: None
+                44      RETURN_VALUE            
+        [Code]
+            File Name: test/test_nested_scopes.py
+            Object Name: find
+            Arg Count: 2
+            Locals: 3
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'filter'
+                'self'
+                'list_attribute'
+                'L'
+            [Var Names]
+                'self'
+                'name'
+                'L'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_nested_scopes.py
+                    Object Name: <lambda>
+                    Arg Count: 2
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'x'
+                        'name'
+                    [Var Names]
+                        'x'
+                        'name'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_FAST               0: x
+                        3       LOAD_FAST               1: name
+                        6       COMPARE_OP              2
+                        9       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_GLOBAL             0: filter
+                3       LOAD_CONST              1: <CODE> <lambda>
+                6       MAKE_FUNCTION           0
+                9       LOAD_FAST               0: self
+                12      LOAD_ATTR               2: list_attribute
+                15      CALL_FUNCTION           2
+                18      STORE_FAST              2: L
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        'blurb ='
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: ('nested_scopes',)
+        3       IMPORT_NAME             0: __future__
+        6       IMPORT_FROM             1: nested_scopes
+        9       STORE_NAME              1: nested_scopes
+        12      POP_TOP                 
+        13      LOAD_CONST              1: 1
+        16      STORE_GLOBAL            2: blurb
+        19      LOAD_CONST              2: <CODE> k0
+        22      MAKE_FUNCTION           0
+        25      STORE_NAME              3: k0
+        28      LOAD_CONST              3: <CODE> x0
+        31      MAKE_FUNCTION           0
+        34      STORE_NAME              4: x0
+        37      LOAD_CONST              4: <CODE> x1
+        40      MAKE_FUNCTION           0
+        43      STORE_NAME              5: x1
+        46      LOAD_CONST              5: <CODE> x2
+        49      MAKE_FUNCTION           0
+        52      STORE_NAME              6: x2
+        55      LOAD_CONST              6: <CODE> x3a
+        58      MAKE_FUNCTION           0
+        61      STORE_NAME              7: x3a
+        64      LOAD_CONST              7: <CODE> x3
+        67      MAKE_FUNCTION           0
+        70      STORE_NAME              8: x3
+        73      LOAD_CONST              8: <CODE> x3b
+        76      MAKE_FUNCTION           0
+        79      STORE_NAME              9: x3b
+        82      LOAD_CONST              9: <CODE> x4
+        85      MAKE_FUNCTION           0
+        88      STORE_NAME              10: x4
+        91      LOAD_CONST              10: <CODE> x
+        94      MAKE_FUNCTION           0
+        97      STORE_NAME              11: x
+        100     LOAD_CONST              11: 2
+        103     LOAD_CONST              12: 3
+        106     BUILD_TUPLE             2
+        109     LOAD_CONST              13: <CODE> func_with_tuple_args6
+        112     MAKE_FUNCTION           1
+        115     STORE_NAME              12: func_with_tuple_args6
+        118     LOAD_CONST              14: <CODE> find
+        121     MAKE_FUNCTION           0
+        124     STORE_NAME              13: find
+        127     LOAD_NAME               4: x0
+        130     CALL_FUNCTION           0
+        133     POP_TOP                 
+        134     LOAD_NAME               5: x1
+        137     CALL_FUNCTION           0
+        140     POP_TOP                 
+        141     LOAD_NAME               6: x2
+        144     CALL_FUNCTION           0
+        147     POP_TOP                 
+        148     LOAD_NAME               8: x3
+        151     CALL_FUNCTION           0
+        154     POP_TOP                 
+        155     LOAD_NAME               7: x3a
+        158     CALL_FUNCTION           0
+        161     POP_TOP                 
+        162     LOAD_NAME               9: x3b
+        165     CALL_FUNCTION           0
+        168     POP_TOP                 
+        169     LOAD_NAME               10: x4
+        172     CALL_FUNCTION           0
+        175     POP_TOP                 
+        176     LOAD_NAME               11: x
+        179     CALL_FUNCTION           0
+        182     POP_TOP                 
+        183     LOAD_CONST              15: 'blurb ='
+        186     PRINT_ITEM              
+        187     LOAD_GLOBAL             2: blurb
+        190     PRINT_ITEM              
+        191     PRINT_NEWLINE           
+        192     LOAD_CONST              16: None
+        195     RETURN_VALUE            

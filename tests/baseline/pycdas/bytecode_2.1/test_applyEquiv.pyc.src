@@ -1,0 +1,222 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_applyEquiv.pyc (Python 2.1)
+[Code]
+    File Name: test/test_applyEquiv.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 11
+    Flags: 0x00000000
+    [Names]
+        'kwfunc'
+        'argsfunc'
+        'no_apply'
+    [Var Names]
+        'argsfunc'
+        'no_apply'
+        'kwfunc'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test/test_applyEquiv.py
+            Object Name: kwfunc
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x0000000B (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARKEYWORDS)
+            [Names]
+                'kwargs'
+                'items'
+            [Var Names]
+                'kwargs'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              9
+                3       SET_LINENO              10
+                6       LOAD_FAST               0: kwargs
+                9       LOAD_ATTR               1: items
+                12      CALL_FUNCTION           0
+                15      PRINT_ITEM              
+                16      PRINT_NEWLINE           
+                17      LOAD_CONST              0: None
+                20      RETURN_VALUE            
+        [Code]
+            File Name: test/test_applyEquiv.py
+            Object Name: argsfunc
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000007 (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS)
+            [Names]
+                'args'
+            [Var Names]
+                'args'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              12
+                3       SET_LINENO              13
+                6       LOAD_FAST               0: args
+                9       PRINT_ITEM              
+                10      PRINT_NEWLINE           
+                11      LOAD_CONST              0: None
+                14      RETURN_VALUE            
+        [Code]
+            File Name: test/test_applyEquiv.py
+            Object Name: no_apply
+            Arg Count: 0
+            Locals: 3
+            Stack Size: 7
+            Flags: 0x0000000F (CO_OPTIMIZED | CO_NEWLOCALS | CO_VARARGS | CO_VARKEYWORDS)
+            [Names]
+                'args'
+                'kwargs'
+                'items'
+                'argsfunc'
+                'foo'
+                'kwfunc'
+                'no_apply'
+            [Var Names]
+                'args'
+                'kwargs'
+                'foo'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                34
+                'x'
+                11
+                42
+            [Disassembly]
+                0       SET_LINENO              15
+                3       SET_LINENO              16
+                6       LOAD_FAST               0: args
+                9       PRINT_ITEM              
+                10      PRINT_NEWLINE           
+                11      SET_LINENO              17
+                14      LOAD_FAST               1: kwargs
+                17      LOAD_ATTR               2: items
+                20      CALL_FUNCTION           0
+                23      PRINT_ITEM              
+                24      PRINT_NEWLINE           
+                25      SET_LINENO              18
+                28      LOAD_GLOBAL             3: argsfunc
+                31      LOAD_CONST              1: 34
+                34      CALL_FUNCTION           1
+                37      POP_TOP                 
+                38      SET_LINENO              19
+                41      LOAD_GLOBAL             3: argsfunc
+                44      LOAD_FAST               0: args
+                47      CALL_FUNCTION_VAR       0
+                50      STORE_FAST              2: foo
+                53      SET_LINENO              20
+                56      LOAD_GLOBAL             3: argsfunc
+                59      LOAD_FAST               0: args
+                62      CALL_FUNCTION_VAR       0
+                65      POP_TOP                 
+                66      SET_LINENO              21
+                69      LOAD_GLOBAL             3: argsfunc
+                72      LOAD_CONST              1: 34
+                75      LOAD_FAST               0: args
+                78      CALL_FUNCTION_VAR       1
+                81      POP_TOP                 
+                82      SET_LINENO              22
+                85      LOAD_GLOBAL             5: kwfunc
+                88      LOAD_FAST               1: kwargs
+                91      CALL_FUNCTION_KW        0
+                94      POP_TOP                 
+                95      SET_LINENO              23
+                98      LOAD_GLOBAL             5: kwfunc
+                101     LOAD_CONST              2: 'x'
+                104     LOAD_CONST              3: 11
+                107     LOAD_FAST               1: kwargs
+                110     CALL_FUNCTION_KW        256
+                113     POP_TOP                 
+                114     SET_LINENO              24
+                117     LOAD_GLOBAL             6: no_apply
+                120     LOAD_FAST               0: args
+                123     LOAD_FAST               1: kwargs
+                126     CALL_FUNCTION_VAR_KW    0
+                129     POP_TOP                 
+                130     SET_LINENO              25
+                133     LOAD_GLOBAL             6: no_apply
+                136     LOAD_CONST              1: 34
+                139     LOAD_FAST               0: args
+                142     LOAD_FAST               1: kwargs
+                145     CALL_FUNCTION_VAR_KW    1
+                148     POP_TOP                 
+                149     SET_LINENO              26
+                152     LOAD_GLOBAL             6: no_apply
+                155     LOAD_CONST              2: 'x'
+                158     LOAD_CONST              3: 11
+                161     LOAD_FAST               0: args
+                164     LOAD_FAST               1: kwargs
+                167     CALL_FUNCTION_VAR_KW    256
+                170     POP_TOP                 
+                171     SET_LINENO              27
+                174     LOAD_GLOBAL             6: no_apply
+                177     LOAD_CONST              1: 34
+                180     LOAD_CONST              2: 'x'
+                183     LOAD_CONST              3: 11
+                186     LOAD_FAST               0: args
+                189     LOAD_FAST               1: kwargs
+                192     CALL_FUNCTION_VAR_KW    257
+                195     POP_TOP                 
+                196     SET_LINENO              28
+                199     LOAD_GLOBAL             6: no_apply
+                202     LOAD_CONST              4: 42
+                205     LOAD_CONST              1: 34
+                208     LOAD_CONST              2: 'x'
+                211     LOAD_CONST              3: 11
+                214     LOAD_FAST               0: args
+                217     LOAD_FAST               1: kwargs
+                220     CALL_FUNCTION_VAR_KW    258
+                223     POP_TOP                 
+                224     LOAD_CONST              0: None
+                227     RETURN_VALUE            
+        1
+        2
+        4
+        8
+        'a'
+        'b'
+        3
+        'c'
+        5
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: <CODE> kwfunc
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              0: kwfunc
+        15      SET_LINENO              12
+        18      LOAD_CONST              1: <CODE> argsfunc
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              1: argsfunc
+        27      SET_LINENO              15
+        30      LOAD_CONST              2: <CODE> no_apply
+        33      MAKE_FUNCTION           0
+        36      STORE_NAME              2: no_apply
+        39      SET_LINENO              30
+        42      LOAD_NAME               2: no_apply
+        45      LOAD_CONST              3: 1
+        48      LOAD_CONST              4: 2
+        51      LOAD_CONST              5: 4
+        54      LOAD_CONST              6: 8
+        57      LOAD_CONST              7: 'a'
+        60      LOAD_CONST              4: 2
+        63      LOAD_CONST              8: 'b'
+        66      LOAD_CONST              9: 3
+        69      LOAD_CONST              10: 'c'
+        72      LOAD_CONST              11: 5
+        75      CALL_FUNCTION           772
+        78      POP_TOP                 
+        79      LOAD_CONST              12: None
+        82      RETURN_VALUE            

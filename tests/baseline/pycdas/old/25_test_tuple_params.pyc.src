@@ -1,0 +1,173 @@
+../../pycdc/tests/inputs/old/25_test_tuple_params.pyc (Python 2.5)
+[Code]
+    File Name: test_tuple_params.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'A'
+        'B'
+        'C'
+        'D'
+        'E'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        [Code]
+            File Name: test_tuple_params.py
+            Object Name: A
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.2'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               2: .2
+                3       UNPACK_SEQUENCE         3
+                6       STORE_FAST              4: x
+                9       STORE_FAST              5: y
+                12      STORE_FAST              6: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        42
+        1
+        2
+        3
+        17
+        [Code]
+            File Name: test_tuple_params.py
+            Object Name: B
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.2'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               2: .2
+                3       UNPACK_SEQUENCE         3
+                6       STORE_FAST              4: x
+                9       STORE_FAST              5: y
+                12      STORE_FAST              6: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test_tuple_params.py
+            Object Name: C
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+                'y'
+                'z'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_SEQUENCE         3
+                6       STORE_FAST              1: x
+                9       STORE_FAST              2: y
+                12      STORE_FAST              3: z
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test_tuple_params.py
+            Object Name: D
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: .0
+                3       UNPACK_SEQUENCE         1
+                6       STORE_FAST              1: x
+                9       LOAD_CONST              0: None
+                12      RETURN_VALUE            
+        [Code]
+            File Name: test_tuple_params.py
+            Object Name: E
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_CONST              0: None
+                3       RETURN_VALUE            
+        None
+        (
+            1
+            2
+            3
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: <CODE> A
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              1: A
+        15      LOAD_CONST              2: 42
+        18      LOAD_CONST              12: (1, 2, 3)
+        21      LOAD_CONST              6: 17
+        24      LOAD_CONST              7: <CODE> B
+        27      MAKE_FUNCTION           3
+        30      STORE_NAME              2: B
+        33      LOAD_CONST              8: <CODE> C
+        36      MAKE_FUNCTION           0
+        39      STORE_NAME              3: C
+        42      LOAD_CONST              9: <CODE> D
+        45      MAKE_FUNCTION           0
+        48      STORE_NAME              4: D
+        51      LOAD_CONST              10: <CODE> E
+        54      MAKE_FUNCTION           0
+        57      STORE_NAME              5: E
+        60      LOAD_CONST              11: None
+        63      RETURN_VALUE            

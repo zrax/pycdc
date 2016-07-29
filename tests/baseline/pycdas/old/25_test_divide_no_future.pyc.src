@@ -1,0 +1,51 @@
+../../pycdc/tests/inputs/old/25_test_divide_no_future.pyc (Python 2.5)
+[Code]
+    File Name: test_divide_no_future.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '  1 // 2   ='
+        1
+        2
+        '1.0 // 2.0 ='
+        1
+        2
+        '  1 /  2   ='
+        '1.0 /  2.0 ='
+        None
+        0
+        0
+    [Disassembly]
+        0       LOAD_CONST              0: '  1 // 2   ='
+        3       PRINT_ITEM              
+        4       LOAD_CONST              9: 0
+        7       PRINT_ITEM              
+        8       PRINT_NEWLINE           
+        9       LOAD_CONST              3: '1.0 // 2.0 ='
+        12      PRINT_ITEM              
+        13      LOAD_CONST              10: 0
+        16      PRINT_ITEM              
+        17      PRINT_NEWLINE           
+        18      LOAD_CONST              6: '  1 /  2   ='
+        21      PRINT_ITEM              
+        22      LOAD_CONST              1: 1
+        25      LOAD_CONST              2: 2
+        28      BINARY_DIVIDE           
+        29      PRINT_ITEM              
+        30      PRINT_NEWLINE           
+        31      LOAD_CONST              7: '1.0 /  2.0 ='
+        34      PRINT_ITEM              
+        35      LOAD_CONST              4: 1
+        38      LOAD_CONST              5: 2
+        41      BINARY_DIVIDE           
+        42      PRINT_ITEM              
+        43      PRINT_NEWLINE           
+        44      LOAD_CONST              8: None
+        47      RETURN_VALUE            

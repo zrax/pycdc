@@ -1,0 +1,321 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_augmentedAssign.pyo (Python 2.1)
+[Code]
+    File Name: test/test_augmentedAssign.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 8
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'a'
+        'b'
+        'l'
+        'value'
+        'val'
+        'range'
+        'i'
+        'lj'
+        'j'
+        'lk'
+        'k'
+        'append'
+        'f'
+    [Var Names]
+        'l'
+        'lj'
+        'j'
+        'k'
+        'f'
+        'lk'
+        'b'
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\naugmentedAssign.py -- source test pattern for augmented assigns\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        "This program can't be run"
+        1
+        2
+        7
+        3
+        9
+        4
+        42
+        43
+        0
+        [Code]
+            File Name: test/test_augmentedAssign.py
+            Object Name: f
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'i'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+            [Disassembly]
+                0       LOAD_GLOBAL             0: i
+                3       LOAD_CONST              1: 1
+                6       INPLACE_ADD             
+                7       STORE_GLOBAL            0: i
+                10      LOAD_GLOBAL             0: i
+                13      RETURN_VALUE            
+                14      LOAD_CONST              0: None
+                17      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '\naugmentedAssign.py -- source test pattern for augmented assigns\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: "This program can't be run"
+        9       RAISE_VARARGS           1
+        12      LOAD_CONST              2: 1
+        15      STORE_NAME              1: a
+        18      LOAD_CONST              3: 2
+        21      STORE_NAME              2: b
+        24      LOAD_NAME               1: a
+        27      LOAD_NAME               2: b
+        30      INPLACE_ADD             
+        31      STORE_NAME              1: a
+        34      LOAD_NAME               1: a
+        37      PRINT_ITEM              
+        38      PRINT_NEWLINE           
+        39      LOAD_NAME               1: a
+        42      LOAD_NAME               2: b
+        45      INPLACE_SUBTRACT        
+        46      STORE_NAME              1: a
+        49      LOAD_NAME               1: a
+        52      PRINT_ITEM              
+        53      PRINT_NEWLINE           
+        54      LOAD_NAME               1: a
+        57      LOAD_NAME               2: b
+        60      INPLACE_MULTIPLY        
+        61      STORE_NAME              1: a
+        64      LOAD_NAME               1: a
+        67      PRINT_ITEM              
+        68      PRINT_NEWLINE           
+        69      LOAD_NAME               1: a
+        72      LOAD_NAME               1: a
+        75      INPLACE_SUBTRACT        
+        76      STORE_NAME              1: a
+        79      LOAD_NAME               1: a
+        82      PRINT_ITEM              
+        83      PRINT_NEWLINE           
+        84      LOAD_NAME               1: a
+        87      LOAD_CONST              4: 7
+        90      LOAD_CONST              5: 3
+        93      BINARY_MULTIPLY         
+        94      INPLACE_ADD             
+        95      STORE_NAME              1: a
+        98      LOAD_NAME               1: a
+        101     PRINT_ITEM              
+        102     PRINT_NEWLINE           
+        103     LOAD_CONST              2: 1
+        106     LOAD_CONST              3: 2
+        109     LOAD_CONST              5: 3
+        112     BUILD_LIST              3
+        115     STORE_NAME              3: l
+        118     LOAD_NAME               3: l
+        121     LOAD_CONST              2: 1
+        124     DUP_TOPX                2
+        127     BINARY_SUBSCR           
+        128     LOAD_CONST              5: 3
+        131     INPLACE_MULTIPLY        
+        132     ROT_THREE               
+        133     STORE_SUBSCR            
+        134     LOAD_NAME               3: l
+        137     LOAD_CONST              2: 1
+        140     BINARY_SUBSCR           
+        141     PRINT_ITEM              
+        142     PRINT_NEWLINE           
+        143     LOAD_CONST              4: 7
+        146     LOAD_NAME               3: l
+        149     LOAD_CONST              2: 1
+        152     BINARY_SUBSCR           
+        153     LOAD_CONST              3: 2
+        156     BINARY_SUBSCR           
+        157     LOAD_CONST              5: 3
+        160     STORE_SUBSCR            
+        161     LOAD_NAME               3: l
+        164     LOAD_CONST              2: 1
+        167     BINARY_SUBSCR           
+        168     LOAD_CONST              3: 2
+        171     BINARY_SUBSCR           
+        172     LOAD_CONST              5: 3
+        175     DUP_TOPX                2
+        178     BINARY_SUBSCR           
+        179     LOAD_CONST              5: 3
+        182     INPLACE_MULTIPLY        
+        183     ROT_THREE               
+        184     STORE_SUBSCR            
+        185     LOAD_NAME               3: l
+        188     DUP_TOP                 
+        189     SLICE_0                 
+        190     LOAD_CONST              6: 9
+        193     BUILD_LIST              1
+        196     INPLACE_ADD             
+        197     ROT_TWO                 
+        198     STORE_SLICE_0           
+        199     LOAD_NAME               3: l
+        202     PRINT_ITEM              
+        203     PRINT_NEWLINE           
+        204     LOAD_NAME               3: l
+        207     LOAD_CONST              3: 2
+        210     DUP_TOPX                2
+        213     SLICE_2                 
+        214     LOAD_CONST              6: 9
+        217     BUILD_LIST              1
+        220     INPLACE_ADD             
+        221     ROT_THREE               
+        222     STORE_SLICE_2           
+        223     LOAD_NAME               3: l
+        226     PRINT_ITEM              
+        227     PRINT_NEWLINE           
+        228     LOAD_NAME               3: l
+        231     LOAD_CONST              2: 1
+        234     DUP_TOPX                2
+        237     SLICE_1                 
+        238     LOAD_CONST              6: 9
+        241     BUILD_LIST              1
+        244     INPLACE_ADD             
+        245     ROT_THREE               
+        246     STORE_SLICE_1           
+        247     LOAD_NAME               3: l
+        250     PRINT_ITEM              
+        251     PRINT_NEWLINE           
+        252     LOAD_NAME               3: l
+        255     LOAD_CONST              2: 1
+        258     LOAD_CONST              7: 4
+        261     DUP_TOPX                3
+        264     SLICE_3                 
+        265     LOAD_CONST              6: 9
+        268     BUILD_LIST              1
+        271     INPLACE_ADD             
+        272     ROT_FOUR                
+        273     STORE_SLICE_3           
+        274     LOAD_NAME               3: l
+        277     PRINT_ITEM              
+        278     PRINT_NEWLINE           
+        279     LOAD_NAME               3: l
+        282     LOAD_CONST              8: 42
+        285     LOAD_CONST              9: 43
+        288     BUILD_LIST              2
+        291     INPLACE_ADD             
+        292     STORE_NAME              3: l
+        295     LOAD_NAME               3: l
+        298     PRINT_ITEM              
+        299     PRINT_NEWLINE           
+        300     LOAD_CONST              2: 1
+        303     LOAD_NAME               1: a
+        306     STORE_ATTR              4: value
+        309     LOAD_NAME               1: a
+        312     DUP_TOP                 
+        313     LOAD_ATTR               4: value
+        316     LOAD_CONST              2: 1
+        319     INPLACE_ADD             
+        320     ROT_TWO                 
+        321     STORE_ATTR              4: value
+        324     LOAD_CONST              2: 1
+        327     LOAD_NAME               1: a
+        330     LOAD_ATTR               2: b
+        333     STORE_ATTR              5: val
+        336     LOAD_NAME               1: a
+        339     LOAD_ATTR               2: b
+        342     DUP_TOP                 
+        343     LOAD_ATTR               5: val
+        346     LOAD_CONST              2: 1
+        349     INPLACE_ADD             
+        350     ROT_TWO                 
+        351     STORE_ATTR              5: val
+        354     BUILD_LIST              0
+        357     STORE_NAME              3: l
+        360     SETUP_LOOP              123 (to 486)
+        363     LOAD_NAME               6: range
+        366     LOAD_CONST              5: 3
+        369     CALL_FUNCTION           1
+        372     LOAD_CONST              10: 0
+        375     FOR_LOOP                107 (to 485)
+        378     STORE_GLOBAL            7: i
+        381     BUILD_LIST              0
+        384     STORE_NAME              8: lj
+        387     SETUP_LOOP              79 (to 469)
+        390     LOAD_NAME               6: range
+        393     LOAD_CONST              5: 3
+        396     CALL_FUNCTION           1
+        399     LOAD_CONST              10: 0
+        402     FOR_LOOP                63 (to 468)
+        405     STORE_NAME              9: j
+        408     BUILD_LIST              0
+        411     STORE_NAME              10: lk
+        414     SETUP_LOOP              35 (to 452)
+        417     LOAD_NAME               6: range
+        420     LOAD_CONST              5: 3
+        423     CALL_FUNCTION           1
+        426     LOAD_CONST              10: 0
+        429     FOR_LOOP                19 (to 451)
+        432     STORE_NAME              11: k
+        435     LOAD_NAME               10: lk
+        438     LOAD_ATTR               12: append
+        441     LOAD_CONST              10: 0
+        444     CALL_FUNCTION           1
+        447     POP_TOP                 
+        448     JUMP_ABSOLUTE           429
+        451     POP_BLOCK               
+        452     LOAD_NAME               8: lj
+        455     LOAD_ATTR               12: append
+        458     LOAD_NAME               10: lk
+        461     CALL_FUNCTION           1
+        464     POP_TOP                 
+        465     JUMP_ABSOLUTE           402
+        468     POP_BLOCK               
+        469     LOAD_NAME               3: l
+        472     LOAD_ATTR               12: append
+        475     LOAD_NAME               8: lj
+        478     CALL_FUNCTION           1
+        481     POP_TOP                 
+        482     JUMP_ABSOLUTE           375
+        485     POP_BLOCK               
+        486     LOAD_CONST              2: 1
+        489     DUP_TOP                 
+        490     STORE_GLOBAL            7: i
+        493     DUP_TOP                 
+        494     STORE_NAME              9: j
+        497     STORE_NAME              11: k
+        500     LOAD_CONST              11: <CODE> f
+        503     MAKE_FUNCTION           0
+        506     STORE_NAME              13: f
+        509     LOAD_CONST              2: 1
+        512     LOAD_NAME               3: l
+        515     LOAD_GLOBAL             7: i
+        518     BINARY_SUBSCR           
+        519     LOAD_NAME               9: j
+        522     BINARY_SUBSCR           
+        523     LOAD_NAME               11: k
+        526     STORE_SUBSCR            
+        527     LOAD_CONST              2: 1
+        530     STORE_GLOBAL            7: i
+        533     LOAD_NAME               3: l
+        536     LOAD_NAME               13: f
+        539     CALL_FUNCTION           0
+        542     BINARY_SUBSCR           
+        543     LOAD_NAME               9: j
+        546     BINARY_SUBSCR           
+        547     LOAD_NAME               11: k
+        550     DUP_TOPX                2
+        553     BINARY_SUBSCR           
+        554     LOAD_CONST              2: 1
+        557     INPLACE_ADD             
+        558     ROT_THREE               
+        559     STORE_SUBSCR            
+        560     LOAD_GLOBAL             7: i
+        563     PRINT_ITEM              
+        564     LOAD_NAME               3: l
+        567     PRINT_ITEM              
+        568     PRINT_NEWLINE           
+        569     LOAD_CONST              12: None
+        572     RETURN_VALUE            

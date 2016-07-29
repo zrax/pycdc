@@ -1,0 +1,74 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_import.pyo (Python 1.5)
+[Code]
+    File Name: test/test_import.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'os'
+        'BaseHTTPServer'
+        'test.test_MimeWriter'
+        'test'
+        'rfc822'
+        'Message'
+        'mimetools'
+        'decode'
+        'choose_boundary'
+        '*'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+    [Constants]
+        '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        0
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       IMPORT_NAME             1: sys
+        9       STORE_NAME              1: sys
+        12      IMPORT_NAME             2: os
+        15      STORE_NAME              2: os
+        18      IMPORT_NAME             1: sys
+        21      STORE_NAME              1: sys
+        24      IMPORT_NAME             3: BaseHTTPServer
+        27      STORE_NAME              3: BaseHTTPServer
+        30      IMPORT_NAME             4: test.test_MimeWriter
+        33      STORE_NAME              5: test
+        36      IMPORT_NAME             6: rfc822
+        39      IMPORT_FROM             7: Message
+        42      POP_TOP                 
+        43      IMPORT_NAME             8: mimetools
+        46      IMPORT_FROM             7: Message
+        49      IMPORT_FROM             9: decode
+        52      IMPORT_FROM             10: choose_boundary
+        55      POP_TOP                 
+        56      IMPORT_NAME             2: os
+        59      IMPORT_FROM             11: *
+        62      POP_TOP                 
+        63      SETUP_LOOP              41 (to 107)
+        66      LOAD_NAME               12: globals
+        69      CALL_FUNCTION           0
+        72      LOAD_ATTR               13: items
+        75      CALL_FUNCTION           0
+        78      LOAD_CONST              1: 0
+        81      FOR_LOOP                22 (to 106)
+        84      UNPACK_TUPLE            2
+        87      STORE_NAME              14: k
+        90      STORE_NAME              15: v
+        93      LOAD_NAME               14: k
+        96      UNARY_CONVERT           
+        97      PRINT_ITEM              
+        98      LOAD_NAME               15: v
+        101     PRINT_ITEM              
+        102     PRINT_NEWLINE           
+        103     JUMP_ABSOLUTE           81
+        106     POP_BLOCK               
+        107     LOAD_CONST              2: None
+        110     RETURN_VALUE            

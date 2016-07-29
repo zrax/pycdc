@@ -1,0 +1,179 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_tuple_params.pyc (Python 1.5)
+[Code]
+    File Name: test/test_tuple_params.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'A'
+        'B'
+        'C'
+        'D'
+        'E'
+    [Var Names]
+    [Constants]
+        '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: A
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.4'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              11
+                3       LOAD_FAST               2: .4
+                6       UNPACK_TUPLE            3
+                9       STORE_FAST              4: x
+                12      STORE_FAST              5: y
+                15      STORE_FAST              6: z
+                18      SET_LINENO              12
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: B
+            Arg Count: 4
+            Locals: 7
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                'a'
+                'b'
+                '.6'
+                'c'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              14
+                3       LOAD_FAST               2: .6
+                6       UNPACK_TUPLE            3
+                9       STORE_FAST              4: x
+                12      STORE_FAST              5: y
+                15      STORE_FAST              6: z
+                18      SET_LINENO              15
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        42
+        1
+        2
+        3
+        17
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: C
+            Arg Count: 1
+            Locals: 4
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+                'y'
+                'z'
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              17
+                3       LOAD_FAST               0: .0
+                6       UNPACK_TUPLE            3
+                9       STORE_FAST              1: x
+                12      STORE_FAST              2: y
+                15      STORE_FAST              3: z
+                18      SET_LINENO              18
+                21      LOAD_CONST              0: None
+                24      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: D
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              20
+                3       LOAD_FAST               0: .0
+                6       UNPACK_TUPLE            1
+                9       STORE_FAST              1: x
+                12      SET_LINENO              21
+                15      LOAD_CONST              0: None
+                18      RETURN_VALUE            
+        [Code]
+            File Name: test/test_tuple_params.py
+            Object Name: E
+            Arg Count: 1
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+            [Var Names]
+                '.0'
+                'x'
+            [Constants]
+                None
+            [Disassembly]
+                0       SET_LINENO              23
+                3       LOAD_FAST               0: .0
+                6       STORE_FAST              1: x
+                9       SET_LINENO              24
+                12      LOAD_CONST              0: None
+                15      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: <CODE> A
+        18      MAKE_FUNCTION           0
+        21      STORE_NAME              1: A
+        24      SET_LINENO              14
+        27      LOAD_CONST              3: 42
+        30      LOAD_CONST              4: 1
+        33      LOAD_CONST              5: 2
+        36      LOAD_CONST              6: 3
+        39      BUILD_TUPLE             3
+        42      LOAD_CONST              7: 17
+        45      LOAD_CONST              2: <CODE> B
+        48      MAKE_FUNCTION           3
+        51      STORE_NAME              2: B
+        54      SET_LINENO              17
+        57      LOAD_CONST              8: <CODE> C
+        60      MAKE_FUNCTION           0
+        63      STORE_NAME              3: C
+        66      SET_LINENO              20
+        69      LOAD_CONST              9: <CODE> D
+        72      MAKE_FUNCTION           0
+        75      STORE_NAME              4: D
+        78      SET_LINENO              23
+        81      LOAD_CONST              10: <CODE> E
+        84      MAKE_FUNCTION           0
+        87      STORE_NAME              5: E
+        90      LOAD_CONST              11: None
+        93      RETURN_VALUE            

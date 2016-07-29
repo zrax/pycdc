@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_2.7/test_extendedPrint.pyc (Python 2.7)
+
+import sys
+print >>sys.stdout, 'Hello World'
+print >>sys.stdout, 1, 2, 3
+print >>sys.stdout, 1, 2, 3

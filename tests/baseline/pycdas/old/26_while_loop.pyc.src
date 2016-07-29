@@ -1,0 +1,120 @@
+../../pycdc/tests/inputs/old/26_while_loop.pyc (Python 2.6)
+[Code]
+    File Name: pycdc_while.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'Test2'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'Test2'
+        [Code]
+            File Name: pycdc_while.py
+            Object Name: Test2
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                'count'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                [Code]
+                    File Name: pycdc_while.py
+                    Object Name: count
+                    Arg Count: 1
+                    Locals: 3
+                    Stack Size: 10
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        'len'
+                    [Var Names]
+                        'self'
+                        'a'
+                        'i'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        1
+                        2
+                        3
+                        4
+                        5
+                        6
+                        7
+                        8
+                        9
+                        10
+                        0
+                        'done'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 1
+                        3       LOAD_CONST              2: 2
+                        6       LOAD_CONST              3: 3
+                        9       LOAD_CONST              4: 4
+                        12      LOAD_CONST              5: 5
+                        15      LOAD_CONST              6: 6
+                        18      LOAD_CONST              7: 7
+                        21      LOAD_CONST              8: 8
+                        24      LOAD_CONST              9: 9
+                        27      LOAD_CONST              10: 10
+                        30      BUILD_LIST              10
+                        33      STORE_FAST              1: a
+                        36      LOAD_CONST              11: 0
+                        39      STORE_FAST              2: i
+                        42      SETUP_LOOP              43 (to 88)
+                        45      LOAD_FAST               2: i
+                        48      LOAD_GLOBAL             0: len
+                        51      LOAD_FAST               1: a
+                        54      CALL_FUNCTION           1
+                        57      COMPARE_OP              0
+                        60      JUMP_IF_FALSE           23 (to 86)
+                        63      POP_TOP                 
+                        64      LOAD_FAST               1: a
+                        67      LOAD_FAST               2: i
+                        70      BINARY_SUBSCR           
+                        71      PRINT_ITEM              
+                        72      PRINT_NEWLINE           
+                        73      LOAD_FAST               2: i
+                        76      LOAD_CONST              1: 1
+                        79      INPLACE_ADD             
+                        80      STORE_FAST              2: i
+                        83      JUMP_ABSOLUTE           45
+                        86      POP_TOP                 
+                        87      POP_BLOCK               
+                        88      LOAD_CONST              12: 'done'
+                        91      PRINT_ITEM              
+                        92      PRINT_NEWLINE           
+                        93      LOAD_CONST              0: None
+                        96      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: <CODE> count
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              2: count
+                15      LOAD_LOCALS             
+                16      RETURN_VALUE            
+        None
+        (
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: 'Test2'
+        3       LOAD_CONST              3: ()
+        6       LOAD_CONST              1: <CODE> Test2
+        9       MAKE_FUNCTION           0
+        12      CALL_FUNCTION           0
+        15      BUILD_CLASS             
+        16      STORE_NAME              0: Test2
+        19      LOAD_CONST              2: None
+        22      RETURN_VALUE            

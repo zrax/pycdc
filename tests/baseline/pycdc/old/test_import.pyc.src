@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/test_import.pyc (Python 2.7)
+
+import sys
+import unittest as ut
+from logging import Logger, LogRecord
+from os import *

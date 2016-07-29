@@ -1,0 +1,58 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_divide_no_future.pyc (Python 2.2)
+[Code]
+    File Name: test/test_divide_no_future.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '  1 // 2   ='
+        1
+        2
+        '1.0 // 2.0 ='
+        1.0
+        2.0
+        '  1 /  2   ='
+        '1.0 /  2.0 ='
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              3
+        6       LOAD_CONST              0: '  1 // 2   ='
+        9       PRINT_ITEM              
+        10      LOAD_CONST              1: 1
+        13      LOAD_CONST              2: 2
+        16      BINARY_FLOOR_DIVIDE     
+        17      PRINT_ITEM              
+        18      PRINT_NEWLINE           
+        19      SET_LINENO              4
+        22      LOAD_CONST              3: '1.0 // 2.0 ='
+        25      PRINT_ITEM              
+        26      LOAD_CONST              4: 1.0
+        29      LOAD_CONST              5: 2.0
+        32      BINARY_FLOOR_DIVIDE     
+        33      PRINT_ITEM              
+        34      PRINT_NEWLINE           
+        35      SET_LINENO              5
+        38      LOAD_CONST              6: '  1 /  2   ='
+        41      PRINT_ITEM              
+        42      LOAD_CONST              1: 1
+        45      LOAD_CONST              2: 2
+        48      BINARY_DIVIDE           
+        49      PRINT_ITEM              
+        50      PRINT_NEWLINE           
+        51      SET_LINENO              6
+        54      LOAD_CONST              7: '1.0 /  2.0 ='
+        57      PRINT_ITEM              
+        58      LOAD_CONST              4: 1.0
+        61      LOAD_CONST              5: 2.0
+        64      BINARY_DIVIDE           
+        65      PRINT_ITEM              
+        66      PRINT_NEWLINE           
+        67      LOAD_CONST              8: None
+        70      RETURN_VALUE            

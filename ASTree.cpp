@@ -244,20 +244,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::BUILD_CLASS:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> class_code = stack.top();
                 stack.pop();
                 PycRef<ASTNode> bases = stack.top();
                 stack.pop();
                 PycRef<ASTNode> name = stack.top();
                 stack.pop();
-                stack.push(new ASTClass(code, bases, name));
+                stack.push(new ASTClass(class_code, bases, name));
             }
             break;
         case Pyc::BUILD_FUNCTION:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> function_code = stack.top();
                 stack.pop();
-                stack.push(new ASTFunction(code, ASTFunction::defarg_t()));
+                stack.push(new ASTFunction(function_code, ASTFunction::defarg_t()));
             }
             break;
         case Pyc::BUILD_LIST_A:
@@ -423,17 +423,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> param = stack.top();
                     stack.pop();
                     if (param->type() == ASTNode::NODE_FUNCTION) {
-                        PycRef<ASTNode> code = param.cast<ASTFunction>()->code();
-                        PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+                        PycRef<ASTNode> function_code = param.cast<ASTFunction>()->code();
+                        PycRef<PycCode> code_src = function_code.cast<ASTObject>()->object().cast<PycCode>();
                         PycRef<PycString> function_name = code_src->name();
                         if (function_name->isEqual("<lambda>")) {
                             pparamList.push_front(param);
                         } else {
                             // Decorator used
-                            PycRef<ASTNode> name = new ASTName(function_name);
-                            curblock->append(new ASTStore(param, name));
+                            PycRef<ASTNode> decorator_name = new ASTName(function_name);
+                            curblock->append(new ASTStore(param, decorator_name));
 
-                            pparamList.push_front(name);
+                            pparamList.push_front(decorator_name);
                         }
                     } else {
                         pparamList.push_front(param);
@@ -1016,6 +1016,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_OR);
                     }
                     ifblk = new ASTCondBlock(top->blktype(), offs, newcond, neg);
+                } else if (curblock->blktype() == ASTBlock::BLK_FOR &&
+                    curblock.cast<ASTIterBlock>()->isComprehension() &&
+                    mod->verCompare(2, 7) >= 0) {
+                    /* comprehension condition */
+                    curblock.cast<ASTIterBlock>()->setCondition(cond);
+                    stack_hist.pop();
+                    // TODO: Handle older python versions 2.7, where condition
+                    // is laid out a little differently.
+                    break;
                 } else {
                     /* Plain old if statement */
                     ifblk = new ASTCondBlock(ASTBlock::BLK_IF, offs, cond, neg);
@@ -1043,7 +1052,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
-                    } if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                    } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
                         stack = stack_hist.top();
                         stack_hist.pop();
 
@@ -1258,6 +1267,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (curblock->blktype() == ASTBlock::BLK_FOR
                         && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                    stack.pop();
                     stack.push(new ASTComprehension(value));
                 } else {
                     stack.push(new ASTSubscr(list, value)); /* Total hack */
@@ -1313,14 +1323,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> function_code = stack.top();
                 stack.pop();
 
                 /* Test for the qualified name of the function (at TOS) */
-                int tos_type = code.cast<ASTObject>()->object()->type();
+                int tos_type = function_code.cast<ASTObject>()->object()->type();
                 if (tos_type != PycObject::TYPE_CODE &&
                     tos_type != PycObject::TYPE_CODE2) {
-                    code = stack.top();
+                    function_code = stack.top();
                     stack.pop();
                 }
 
@@ -1329,7 +1339,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     defArgs.push_front(stack.top());
                     stack.pop();
                 }
-                stack.push(new ASTFunction(code, defArgs));
+                stack.push(new ASTFunction(function_code, defArgs));
             }
             break;
         case Pyc::POP_BLOCK:
@@ -1704,12 +1714,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        curblock->append(new ASTStore(seq, lastTup));
                     }
                 } else {
                     PycRef<ASTNode> name = stack.top();
@@ -1740,12 +1750,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        curblock->append(new ASTStore(seq, lastTup));
                     }
                 } else {
                     PycRef<ASTNode> value = stack.top();
@@ -1778,16 +1788,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
-                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                            curblock.cast<ASTIterBlock>()->setIndex(lastTup);
                         } else {
-                            curblock->append(new ASTStore(seq, tup));
+                            curblock->append(new ASTStore(seq, lastTup));
                         }
                     }
                 } else {
@@ -1837,16 +1847,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
-                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                            curblock.cast<ASTIterBlock>()->setIndex(lastTup);
                         } else {
-                            curblock->append(new ASTStore(seq, tup));
+                            curblock->append(new ASTStore(seq, lastTup));
                         }
                     }
                 } else {
@@ -1877,16 +1887,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
-                            curblock.cast<ASTIterBlock>()->setIndex(tup);
+                            curblock.cast<ASTIterBlock>()->setIndex(lastTup);
                         } else {
-                            curblock->append(new ASTStore(seq, tup));
+                            curblock->append(new ASTStore(seq, lastTup));
                         }
                     }
                 } else {
@@ -1992,12 +2002,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
+                        PycRef<ASTNode> lastTup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        curblock->append(new ASTStore(seq, lastTup));
                     }
                 } else {
                     PycRef<ASTNode> subscr = stack.top();
@@ -2347,6 +2357,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src((*it)->index(), mod);
                 fprintf(pyc_output, " in ");
                 print_src((*it)->iter(), mod);
+                if ((*it)->condition()) {
+                    fprintf(pyc_output, " if ");
+                    print_src((*it)->condition(), mod);
+                }
             }
             fprintf(pyc_output, " ]");
         }

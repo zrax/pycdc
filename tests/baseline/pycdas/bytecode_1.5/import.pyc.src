@@ -1,0 +1,80 @@
+../../pycdc/tests/inputs/bytecode_1.5/import.pyc (Python 1.5)
+[Code]
+    File Name: import.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000000
+    [Names]
+        'sys'
+        'os'
+        'BaseHTTPServer'
+        'test.test_MimeWriter'
+        'test'
+        'rfc822'
+        'Message'
+        'mimetools'
+        'decode'
+        'choose_boundary'
+        '*'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+    [Constants]
+        0
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       IMPORT_NAME             0: sys
+        9       STORE_NAME              0: sys
+        12      SET_LINENO              10
+        15      IMPORT_NAME             1: os
+        18      STORE_NAME              1: os
+        21      IMPORT_NAME             0: sys
+        24      STORE_NAME              0: sys
+        27      IMPORT_NAME             2: BaseHTTPServer
+        30      STORE_NAME              2: BaseHTTPServer
+        33      SET_LINENO              12
+        36      IMPORT_NAME             3: test.test_MimeWriter
+        39      STORE_NAME              4: test
+        42      SET_LINENO              14
+        45      IMPORT_NAME             5: rfc822
+        48      IMPORT_FROM             6: Message
+        51      POP_TOP                 
+        52      SET_LINENO              15
+        55      IMPORT_NAME             7: mimetools
+        58      IMPORT_FROM             6: Message
+        61      IMPORT_FROM             8: decode
+        64      IMPORT_FROM             9: choose_boundary
+        67      POP_TOP                 
+        68      SET_LINENO              16
+        71      IMPORT_NAME             1: os
+        74      IMPORT_FROM             10: *
+        77      POP_TOP                 
+        78      SET_LINENO              18
+        81      SETUP_LOOP              47 (to 131)
+        84      LOAD_NAME               11: globals
+        87      CALL_FUNCTION           0
+        90      LOAD_ATTR               12: items
+        93      CALL_FUNCTION           0
+        96      LOAD_CONST              0: 0
+        99      SET_LINENO              18
+        102     FOR_LOOP                25 (to 130)
+        105     UNPACK_TUPLE            2
+        108     STORE_NAME              13: k
+        111     STORE_NAME              14: v
+        114     SET_LINENO              19
+        117     LOAD_NAME               13: k
+        120     UNARY_CONVERT           
+        121     PRINT_ITEM              
+        122     LOAD_NAME               14: v
+        125     PRINT_ITEM              
+        126     PRINT_NEWLINE           
+        127     JUMP_ABSOLUTE           99
+        130     POP_BLOCK               
+        131     LOAD_CONST              1: None
+        134     RETURN_VALUE            

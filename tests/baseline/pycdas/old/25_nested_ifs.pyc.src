@@ -1,0 +1,86 @@
+../../pycdc/tests/inputs/old/25_nested_ifs.pyc (Python 2.5)
+[Code]
+    File Name: nested_ifs.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 4
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'random'
+        'randint'
+        'i'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        -1
+        None
+        0
+        5
+        1
+        '%d is 1'
+        '%d less than 5'
+        3
+        '%d = 3'
+        '%d != 3'
+        '%d is 5'
+    [Disassembly]
+        0       LOAD_CONST              0: -1
+        3       LOAD_CONST              1: None
+        6       IMPORT_NAME             0: random
+        9       STORE_NAME              0: random
+        12      LOAD_NAME               0: random
+        15      LOAD_ATTR               1: randint
+        18      LOAD_CONST              2: 0
+        21      LOAD_CONST              3: 5
+        24      CALL_FUNCTION           2
+        27      STORE_NAME              2: i
+        30      LOAD_NAME               2: i
+        33      LOAD_CONST              4: 1
+        36      COMPARE_OP              8
+        39      JUMP_IF_FALSE           13 (to 55)
+        42      POP_TOP                 
+        43      LOAD_CONST              5: '%d is 1'
+        46      LOAD_NAME               2: i
+        49      BINARY_MODULO           
+        50      PRINT_ITEM              
+        51      PRINT_NEWLINE           
+        52      JUMP_FORWARD            71 (to 126)
+        55      POP_TOP                 
+        56      LOAD_NAME               2: i
+        59      LOAD_CONST              3: 5
+        62      COMPARE_OP              0
+        65      JUMP_IF_FALSE           48 (to 116)
+        68      POP_TOP                 
+        69      LOAD_CONST              6: '%d less than 5'
+        72      LOAD_NAME               2: i
+        75      BINARY_MODULO           
+        76      PRINT_ITEM              
+        77      PRINT_NEWLINE           
+        78      LOAD_NAME               2: i
+        81      LOAD_CONST              7: 3
+        84      COMPARE_OP              8
+        87      JUMP_IF_FALSE           13 (to 103)
+        90      POP_TOP                 
+        91      LOAD_CONST              8: '%d = 3'
+        94      LOAD_NAME               2: i
+        97      BINARY_MODULO           
+        98      PRINT_ITEM              
+        99      PRINT_NEWLINE           
+        100     JUMP_ABSOLUTE           126
+        103     POP_TOP                 
+        104     LOAD_CONST              9: '%d != 3'
+        107     LOAD_NAME               2: i
+        110     BINARY_MODULO           
+        111     PRINT_ITEM              
+        112     PRINT_NEWLINE           
+        113     JUMP_FORWARD            10 (to 126)
+        116     POP_TOP                 
+        117     LOAD_CONST              10: '%d is 5'
+        120     LOAD_NAME               2: i
+        123     BINARY_MODULO           
+        124     PRINT_ITEM              
+        125     PRINT_NEWLINE           
+        126     LOAD_CONST              1: None
+        129     RETURN_VALUE            

@@ -1,0 +1,4 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/25_test_single_stmt.pyc (Python 2.5)
+
+print 5

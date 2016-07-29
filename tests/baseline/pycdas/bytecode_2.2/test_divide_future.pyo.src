@@ -1,0 +1,64 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_divide_future.pyo (Python 2.2)
+[Code]
+    File Name: test/test_divide_future.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00002000 (CO_FUTURE_DIVISION)
+    [Names]
+        '__future__'
+        'division'
+    [Var Names]
+        'division'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        (
+            'division'
+        )
+        '  1 // 2   ='
+        1
+        2
+        '1.0 // 2.0 ='
+        1.0
+        2.0
+        '  1 /  2   ='
+        '1.0 /  2.0 ='
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: ('division',)
+        3       IMPORT_NAME             0: __future__
+        6       IMPORT_FROM             1: division
+        9       STORE_NAME              1: division
+        12      POP_TOP                 
+        13      LOAD_CONST              1: '  1 // 2   ='
+        16      PRINT_ITEM              
+        17      LOAD_CONST              2: 1
+        20      LOAD_CONST              3: 2
+        23      BINARY_FLOOR_DIVIDE     
+        24      PRINT_ITEM              
+        25      PRINT_NEWLINE           
+        26      LOAD_CONST              4: '1.0 // 2.0 ='
+        29      PRINT_ITEM              
+        30      LOAD_CONST              5: 1.0
+        33      LOAD_CONST              6: 2.0
+        36      BINARY_FLOOR_DIVIDE     
+        37      PRINT_ITEM              
+        38      PRINT_NEWLINE           
+        39      LOAD_CONST              7: '  1 /  2   ='
+        42      PRINT_ITEM              
+        43      LOAD_CONST              2: 1
+        46      LOAD_CONST              3: 2
+        49      BINARY_TRUE_DIVIDE      
+        50      PRINT_ITEM              
+        51      PRINT_NEWLINE           
+        52      LOAD_CONST              8: '1.0 /  2.0 ='
+        55      PRINT_ITEM              
+        56      LOAD_CONST              5: 1.0
+        59      LOAD_CONST              6: 2.0
+        62      BINARY_TRUE_DIVIDE      
+        63      PRINT_ITEM              
+        64      PRINT_NEWLINE           
+        65      LOAD_CONST              9: None
+        68      RETURN_VALUE            

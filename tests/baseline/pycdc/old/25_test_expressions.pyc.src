@@ -1,0 +1,7 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/25_test_expressions.pyc (Python 2.5)
+
+
+def _lsbStrToInt(str):
+    return ord(str[0]) + (ord(str[1]) << 8) + (ord(str[2]) << 16) + (ord(str[3]) << 24)
+

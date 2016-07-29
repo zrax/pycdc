@@ -1,0 +1,362 @@
+../../pycdc/tests/inputs/bytecode_2.1/nested_elif.pyc (Python 2.1)
+[Code]
+    File Name: nested_elif.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        'None'
+        'a'
+    [Var Names]
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        1
+        '1'
+        2
+        '2'
+        'other'
+        3
+        '3'
+        'more'
+        4
+        '4'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_NAME               0: None
+        9       STORE_NAME              1: a
+        12      SET_LINENO              11
+        15      LOAD_NAME               1: a
+        18      LOAD_CONST              0: 1
+        21      COMPARE_OP              2
+        24      JUMP_IF_FALSE           12 (to 39)
+        27      POP_TOP                 
+        28      SET_LINENO              12
+        31      LOAD_CONST              1: '1'
+        34      PRINT_ITEM              
+        35      PRINT_NEWLINE           
+        36      JUMP_FORWARD            29 (to 68)
+        39      POP_TOP                 
+        40      SET_LINENO              13
+        43      LOAD_NAME               1: a
+        46      LOAD_CONST              2: 2
+        49      COMPARE_OP              2
+        52      JUMP_IF_FALSE           12 (to 67)
+        55      POP_TOP                 
+        56      SET_LINENO              14
+        59      LOAD_CONST              3: '2'
+        62      PRINT_ITEM              
+        63      PRINT_NEWLINE           
+        64      JUMP_FORWARD            1 (to 68)
+        67      POP_TOP                 
+        68      SET_LINENO              16
+        71      LOAD_NAME               1: a
+        74      LOAD_CONST              0: 1
+        77      COMPARE_OP              2
+        80      JUMP_IF_FALSE           12 (to 95)
+        83      POP_TOP                 
+        84      SET_LINENO              17
+        87      LOAD_CONST              1: '1'
+        90      PRINT_ITEM              
+        91      PRINT_NEWLINE           
+        92      JUMP_FORWARD            37 (to 132)
+        95      POP_TOP                 
+        96      SET_LINENO              18
+        99      LOAD_NAME               1: a
+        102     LOAD_CONST              2: 2
+        105     COMPARE_OP              2
+        108     JUMP_IF_FALSE           12 (to 123)
+        111     POP_TOP                 
+        112     SET_LINENO              19
+        115     LOAD_CONST              3: '2'
+        118     PRINT_ITEM              
+        119     PRINT_NEWLINE           
+        120     JUMP_FORWARD            9 (to 132)
+        123     POP_TOP                 
+        124     SET_LINENO              21
+        127     LOAD_CONST              4: 'other'
+        130     PRINT_ITEM              
+        131     PRINT_NEWLINE           
+        132     SET_LINENO              23
+        135     LOAD_NAME               1: a
+        138     LOAD_CONST              0: 1
+        141     COMPARE_OP              2
+        144     JUMP_IF_FALSE           12 (to 159)
+        147     POP_TOP                 
+        148     SET_LINENO              24
+        151     LOAD_CONST              1: '1'
+        154     PRINT_ITEM              
+        155     PRINT_NEWLINE           
+        156     JUMP_FORWARD            65 (to 224)
+        159     POP_TOP                 
+        160     SET_LINENO              25
+        163     LOAD_NAME               1: a
+        166     LOAD_CONST              2: 2
+        169     COMPARE_OP              2
+        172     JUMP_IF_FALSE           12 (to 187)
+        175     POP_TOP                 
+        176     SET_LINENO              26
+        179     LOAD_CONST              3: '2'
+        182     PRINT_ITEM              
+        183     PRINT_NEWLINE           
+        184     JUMP_FORWARD            37 (to 224)
+        187     POP_TOP                 
+        188     SET_LINENO              27
+        191     LOAD_NAME               1: a
+        194     LOAD_CONST              5: 3
+        197     COMPARE_OP              2
+        200     JUMP_IF_FALSE           12 (to 215)
+        203     POP_TOP                 
+        204     SET_LINENO              28
+        207     LOAD_CONST              6: '3'
+        210     PRINT_ITEM              
+        211     PRINT_NEWLINE           
+        212     JUMP_FORWARD            9 (to 224)
+        215     POP_TOP                 
+        216     SET_LINENO              30
+        219     LOAD_CONST              4: 'other'
+        222     PRINT_ITEM              
+        223     PRINT_NEWLINE           
+        224     SET_LINENO              32
+        227     LOAD_NAME               1: a
+        230     LOAD_CONST              0: 1
+        233     COMPARE_OP              2
+        236     JUMP_IF_FALSE           12 (to 251)
+        239     POP_TOP                 
+        240     SET_LINENO              33
+        243     LOAD_CONST              1: '1'
+        246     PRINT_ITEM              
+        247     PRINT_NEWLINE           
+        248     JUMP_FORWARD            57 (to 308)
+        251     POP_TOP                 
+        252     SET_LINENO              34
+        255     LOAD_NAME               1: a
+        258     LOAD_CONST              2: 2
+        261     COMPARE_OP              2
+        264     JUMP_IF_FALSE           12 (to 279)
+        267     POP_TOP                 
+        268     SET_LINENO              35
+        271     LOAD_CONST              3: '2'
+        274     PRINT_ITEM              
+        275     PRINT_NEWLINE           
+        276     JUMP_FORWARD            29 (to 308)
+        279     POP_TOP                 
+        280     SET_LINENO              36
+        283     LOAD_NAME               1: a
+        286     LOAD_CONST              5: 3
+        289     COMPARE_OP              2
+        292     JUMP_IF_FALSE           12 (to 307)
+        295     POP_TOP                 
+        296     SET_LINENO              37
+        299     LOAD_CONST              6: '3'
+        302     PRINT_ITEM              
+        303     PRINT_NEWLINE           
+        304     JUMP_FORWARD            1 (to 308)
+        307     POP_TOP                 
+        308     SET_LINENO              39
+        311     LOAD_NAME               1: a
+        314     LOAD_CONST              0: 1
+        317     COMPARE_OP              2
+        320     JUMP_IF_FALSE           12 (to 335)
+        323     POP_TOP                 
+        324     SET_LINENO              40
+        327     LOAD_CONST              1: '1'
+        330     PRINT_ITEM              
+        331     PRINT_NEWLINE           
+        332     JUMP_FORWARD            65 (to 400)
+        335     POP_TOP                 
+        336     SET_LINENO              42
+        339     LOAD_NAME               1: a
+        342     LOAD_CONST              2: 2
+        345     COMPARE_OP              2
+        348     JUMP_IF_FALSE           12 (to 363)
+        351     POP_TOP                 
+        352     SET_LINENO              43
+        355     LOAD_CONST              3: '2'
+        358     PRINT_ITEM              
+        359     PRINT_NEWLINE           
+        360     JUMP_FORWARD            37 (to 400)
+        363     POP_TOP                 
+        364     SET_LINENO              45
+        367     LOAD_NAME               1: a
+        370     LOAD_CONST              5: 3
+        373     COMPARE_OP              2
+        376     JUMP_IF_FALSE           12 (to 391)
+        379     POP_TOP                 
+        380     SET_LINENO              46
+        383     LOAD_CONST              6: '3'
+        386     PRINT_ITEM              
+        387     PRINT_NEWLINE           
+        388     JUMP_FORWARD            9 (to 400)
+        391     POP_TOP                 
+        392     SET_LINENO              48
+        395     LOAD_CONST              4: 'other'
+        398     PRINT_ITEM              
+        399     PRINT_NEWLINE           
+        400     SET_LINENO              50
+        403     LOAD_NAME               1: a
+        406     LOAD_CONST              0: 1
+        409     COMPARE_OP              2
+        412     JUMP_IF_FALSE           12 (to 427)
+        415     POP_TOP                 
+        416     SET_LINENO              51
+        419     LOAD_CONST              1: '1'
+        422     PRINT_ITEM              
+        423     PRINT_NEWLINE           
+        424     JUMP_FORWARD            73 (to 500)
+        427     POP_TOP                 
+        428     SET_LINENO              53
+        431     LOAD_NAME               1: a
+        434     LOAD_CONST              2: 2
+        437     COMPARE_OP              2
+        440     JUMP_IF_FALSE           12 (to 455)
+        443     POP_TOP                 
+        444     SET_LINENO              54
+        447     LOAD_CONST              3: '2'
+        450     PRINT_ITEM              
+        451     PRINT_NEWLINE           
+        452     JUMP_FORWARD            45 (to 500)
+        455     POP_TOP                 
+        456     SET_LINENO              56
+        459     LOAD_CONST              7: 'more'
+        462     PRINT_ITEM              
+        463     PRINT_NEWLINE           
+        464     SET_LINENO              57
+        467     LOAD_NAME               1: a
+        470     LOAD_CONST              5: 3
+        473     COMPARE_OP              2
+        476     JUMP_IF_FALSE           12 (to 491)
+        479     POP_TOP                 
+        480     SET_LINENO              58
+        483     LOAD_CONST              6: '3'
+        486     PRINT_ITEM              
+        487     PRINT_NEWLINE           
+        488     JUMP_FORWARD            9 (to 500)
+        491     POP_TOP                 
+        492     SET_LINENO              60
+        495     LOAD_CONST              4: 'other'
+        498     PRINT_ITEM              
+        499     PRINT_NEWLINE           
+        500     SET_LINENO              62
+        503     LOAD_NAME               1: a
+        506     LOAD_CONST              0: 1
+        509     COMPARE_OP              2
+        512     JUMP_IF_FALSE           12 (to 527)
+        515     POP_TOP                 
+        516     SET_LINENO              63
+        519     LOAD_CONST              1: '1'
+        522     PRINT_ITEM              
+        523     PRINT_NEWLINE           
+        524     JUMP_FORWARD            73 (to 600)
+        527     POP_TOP                 
+        528     SET_LINENO              65
+        531     LOAD_CONST              7: 'more'
+        534     PRINT_ITEM              
+        535     PRINT_NEWLINE           
+        536     SET_LINENO              66
+        539     LOAD_NAME               1: a
+        542     LOAD_CONST              2: 2
+        545     COMPARE_OP              2
+        548     JUMP_IF_FALSE           12 (to 563)
+        551     POP_TOP                 
+        552     SET_LINENO              67
+        555     LOAD_CONST              3: '2'
+        558     PRINT_ITEM              
+        559     PRINT_NEWLINE           
+        560     JUMP_FORWARD            37 (to 600)
+        563     POP_TOP                 
+        564     SET_LINENO              69
+        567     LOAD_NAME               1: a
+        570     LOAD_CONST              5: 3
+        573     COMPARE_OP              2
+        576     JUMP_IF_FALSE           12 (to 591)
+        579     POP_TOP                 
+        580     SET_LINENO              70
+        583     LOAD_CONST              6: '3'
+        586     PRINT_ITEM              
+        587     PRINT_NEWLINE           
+        588     JUMP_FORWARD            9 (to 600)
+        591     POP_TOP                 
+        592     SET_LINENO              72
+        595     LOAD_CONST              4: 'other'
+        598     PRINT_ITEM              
+        599     PRINT_NEWLINE           
+        600     SET_LINENO              74
+        603     LOAD_NAME               1: a
+        606     LOAD_CONST              0: 1
+        609     COMPARE_OP              2
+        612     JUMP_IF_FALSE           12 (to 627)
+        615     POP_TOP                 
+        616     SET_LINENO              75
+        619     LOAD_CONST              1: '1'
+        622     PRINT_ITEM              
+        623     PRINT_NEWLINE           
+        624     JUMP_FORWARD            137 (to 764)
+        627     POP_TOP                 
+        628     SET_LINENO              77
+        631     LOAD_CONST              7: 'more'
+        634     PRINT_ITEM              
+        635     PRINT_NEWLINE           
+        636     SET_LINENO              78
+        639     LOAD_NAME               1: a
+        642     LOAD_CONST              2: 2
+        645     COMPARE_OP              2
+        648     JUMP_IF_FALSE           12 (to 663)
+        651     POP_TOP                 
+        652     SET_LINENO              79
+        655     LOAD_CONST              3: '2'
+        658     PRINT_ITEM              
+        659     PRINT_NEWLINE           
+        660     JUMP_FORWARD            101 (to 764)
+        663     POP_TOP                 
+        664     SET_LINENO              81
+        667     LOAD_CONST              7: 'more'
+        670     PRINT_ITEM              
+        671     PRINT_NEWLINE           
+        672     SET_LINENO              82
+        675     LOAD_NAME               1: a
+        678     LOAD_CONST              5: 3
+        681     COMPARE_OP              2
+        684     JUMP_IF_FALSE           12 (to 699)
+        687     POP_TOP                 
+        688     SET_LINENO              83
+        691     LOAD_CONST              6: '3'
+        694     PRINT_ITEM              
+        695     PRINT_NEWLINE           
+        696     JUMP_FORWARD            65 (to 764)
+        699     POP_TOP                 
+        700     SET_LINENO              84
+        703     LOAD_NAME               1: a
+        706     LOAD_CONST              8: 4
+        709     COMPARE_OP              2
+        712     JUMP_IF_FALSE           12 (to 727)
+        715     POP_TOP                 
+        716     SET_LINENO              85
+        719     LOAD_CONST              9: '4'
+        722     PRINT_ITEM              
+        723     PRINT_NEWLINE           
+        724     JUMP_FORWARD            37 (to 764)
+        727     POP_TOP                 
+        728     SET_LINENO              86
+        731     LOAD_NAME               1: a
+        734     LOAD_CONST              8: 4
+        737     COMPARE_OP              2
+        740     JUMP_IF_FALSE           12 (to 755)
+        743     POP_TOP                 
+        744     SET_LINENO              87
+        747     LOAD_CONST              9: '4'
+        750     PRINT_ITEM              
+        751     PRINT_NEWLINE           
+        752     JUMP_FORWARD            9 (to 764)
+        755     POP_TOP                 
+        756     SET_LINENO              89
+        759     LOAD_CONST              4: 'other'
+        762     PRINT_ITEM              
+        763     PRINT_NEWLINE           
+        764     LOAD_CONST              10: None
+        767     RETURN_VALUE            

@@ -1,0 +1,673 @@
+../../pycdc/tests/inputs/bytecode_1.5/exceptions.pyc (Python 1.5)
+[Code]
+    File Name: exceptions.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        'dis'
+        'x11'
+        'x12'
+        'x13'
+        'x21'
+        'x22'
+        'x23'
+        'x31'
+        'x32'
+        'x33'
+        'x41'
+        'x42'
+        '__name__'
+        'xx'
+    [Var Names]
+    [Constants]
+        [Code]
+            File Name: exceptions.py
+            Object Name: x11
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try except'
+                2
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              37
+                3       SET_LINENO              38
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              39
+                12      LOAD_CONST              1: 'try except'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            19 (to 41)
+                22      SET_LINENO              40
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      POP_TOP                 
+                28      SET_LINENO              41
+                31      LOAD_CONST              2: 2
+                34      STORE_FAST              0: a
+                37      JUMP_FORWARD            1 (to 41)
+                40      END_FINALLY             
+                41      SET_LINENO              43
+                44      LOAD_CONST              3: '--------'
+                47      STORE_FAST              1: b
+                50      LOAD_CONST              0: None
+                53      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x12
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try except else(pass)'
+                2
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              45
+                3       SET_LINENO              46
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              47
+                12      LOAD_CONST              1: 'try except else(pass)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            19 (to 41)
+                22      SET_LINENO              48
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      POP_TOP                 
+                28      SET_LINENO              49
+                31      LOAD_CONST              2: 2
+                34      STORE_FAST              0: a
+                37      JUMP_FORWARD            4 (to 44)
+                40      END_FINALLY             
+                41      SET_LINENO              51
+                44      SET_LINENO              53
+                47      LOAD_CONST              3: '--------'
+                50      STORE_FAST              1: b
+                53      LOAD_CONST              0: None
+                56      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x13
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try except else(a=3)'
+                2
+                3
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              55
+                3       SET_LINENO              56
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              57
+                12      LOAD_CONST              1: 'try except else(a=3)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            19 (to 41)
+                22      SET_LINENO              58
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      POP_TOP                 
+                28      SET_LINENO              59
+                31      LOAD_CONST              2: 2
+                34      STORE_FAST              0: a
+                37      JUMP_FORWARD            10 (to 50)
+                40      END_FINALLY             
+                41      SET_LINENO              61
+                44      LOAD_CONST              3: 3
+                47      STORE_FAST              0: a
+                50      SET_LINENO              63
+                53      LOAD_CONST              4: '--------'
+                56      STORE_FAST              1: b
+                59      LOAD_CONST              0: None
+                62      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x21
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try KeyError'
+                8
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              65
+                3       SET_LINENO              66
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              67
+                12      LOAD_CONST              1: 'try KeyError'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            31 (to 53)
+                22      SET_LINENO              68
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: KeyError
+                29      COMPARE_OP              10
+                32      JUMP_IF_FALSE           16 (to 51)
+                35      POP_TOP                 
+                36      POP_TOP                 
+                37      POP_TOP                 
+                38      POP_TOP                 
+                39      SET_LINENO              69
+                42      LOAD_CONST              2: 8
+                45      STORE_FAST              0: a
+                48      JUMP_FORWARD            2 (to 53)
+                51      POP_TOP                 
+                52      END_FINALLY             
+                53      SET_LINENO              71
+                56      LOAD_CONST              3: '--------'
+                59      STORE_FAST              1: b
+                62      LOAD_CONST              0: None
+                65      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x22
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 6
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'IndexError'
+                'KeyError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try (IdxErr, KeyError) else(pass)'
+                8
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              73
+                3       SET_LINENO              74
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              75
+                12      LOAD_CONST              1: 'try (IdxErr, KeyError) else(pass)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            37 (to 59)
+                22      SET_LINENO              76
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: IndexError
+                29      LOAD_GLOBAL             2: KeyError
+                32      BUILD_TUPLE             2
+                35      COMPARE_OP              10
+                38      JUMP_IF_FALSE           16 (to 57)
+                41      POP_TOP                 
+                42      POP_TOP                 
+                43      POP_TOP                 
+                44      POP_TOP                 
+                45      SET_LINENO              77
+                48      LOAD_CONST              2: 8
+                51      STORE_FAST              0: a
+                54      JUMP_FORWARD            5 (to 62)
+                57      POP_TOP                 
+                58      END_FINALLY             
+                59      SET_LINENO              79
+                62      SET_LINENO              81
+                65      LOAD_CONST              3: '--------'
+                68      STORE_FAST              1: b
+                71      LOAD_CONST              0: None
+                74      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x23
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try KeyError else(a=9)'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              83
+                3       SET_LINENO              84
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              85
+                12      LOAD_CONST              1: 'try KeyError else(a=9)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            31 (to 53)
+                22      SET_LINENO              86
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: KeyError
+                29      COMPARE_OP              10
+                32      JUMP_IF_FALSE           16 (to 51)
+                35      POP_TOP                 
+                36      POP_TOP                 
+                37      POP_TOP                 
+                38      POP_TOP                 
+                39      SET_LINENO              87
+                42      LOAD_CONST              2: 8
+                45      STORE_FAST              0: a
+                48      JUMP_FORWARD            11 (to 62)
+                51      POP_TOP                 
+                52      END_FINALLY             
+                53      SET_LINENO              89
+                56      LOAD_CONST              3: 9
+                59      STORE_FAST              0: a
+                62      SET_LINENO              91
+                65      LOAD_CONST              4: '--------'
+                68      STORE_FAST              1: b
+                71      LOAD_CONST              0: None
+                74      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x31
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try KeyError IndexError'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              93
+                3       SET_LINENO              94
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              95
+                12      LOAD_CONST              1: 'try KeyError IndexError'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            61 (to 83)
+                22      SET_LINENO              96
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: KeyError
+                29      COMPARE_OP              10
+                32      JUMP_IF_FALSE           16 (to 51)
+                35      POP_TOP                 
+                36      POP_TOP                 
+                37      POP_TOP                 
+                38      POP_TOP                 
+                39      SET_LINENO              97
+                42      LOAD_CONST              2: 8
+                45      STORE_FAST              0: a
+                48      JUMP_FORWARD            32 (to 83)
+                51      POP_TOP                 
+                52      SET_LINENO              98
+                55      DUP_TOP                 
+                56      LOAD_GLOBAL             2: IndexError
+                59      COMPARE_OP              10
+                62      JUMP_IF_FALSE           16 (to 81)
+                65      POP_TOP                 
+                66      POP_TOP                 
+                67      POP_TOP                 
+                68      POP_TOP                 
+                69      SET_LINENO              99
+                72      LOAD_CONST              3: 9
+                75      STORE_FAST              0: a
+                78      JUMP_FORWARD            2 (to 83)
+                81      POP_TOP                 
+                82      END_FINALLY             
+                83      SET_LINENO              101
+                86      LOAD_CONST              4: '--------'
+                89      STORE_FAST              1: b
+                92      LOAD_CONST              0: None
+                95      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x32
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try KeyError IndexError else(pass)'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SET_LINENO              103
+                3       SET_LINENO              104
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              105
+                12      LOAD_CONST              1: 'try KeyError IndexError else(pass)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            61 (to 83)
+                22      SET_LINENO              106
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: KeyError
+                29      COMPARE_OP              10
+                32      JUMP_IF_FALSE           16 (to 51)
+                35      POP_TOP                 
+                36      POP_TOP                 
+                37      POP_TOP                 
+                38      POP_TOP                 
+                39      SET_LINENO              107
+                42      LOAD_CONST              2: 8
+                45      STORE_FAST              0: a
+                48      JUMP_FORWARD            35 (to 86)
+                51      POP_TOP                 
+                52      SET_LINENO              108
+                55      DUP_TOP                 
+                56      LOAD_GLOBAL             2: IndexError
+                59      COMPARE_OP              10
+                62      JUMP_IF_FALSE           16 (to 81)
+                65      POP_TOP                 
+                66      POP_TOP                 
+                67      POP_TOP                 
+                68      POP_TOP                 
+                69      SET_LINENO              109
+                72      LOAD_CONST              3: 9
+                75      STORE_FAST              0: a
+                78      JUMP_FORWARD            5 (to 86)
+                81      POP_TOP                 
+                82      END_FINALLY             
+                83      SET_LINENO              111
+                86      SET_LINENO              113
+                89      LOAD_CONST              4: '--------'
+                92      STORE_FAST              1: b
+                95      LOAD_CONST              0: None
+                98      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x33
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'a'
+                'b'
+            [Constants]
+                None
+                'try KeyError IndexError else(a=9)'
+                8
+                9
+                '#################'
+            [Disassembly]
+                0       SET_LINENO              115
+                3       SET_LINENO              116
+                6       SETUP_EXCEPT            13 (to 22)
+                9       SET_LINENO              117
+                12      LOAD_CONST              1: 'try KeyError IndexError else(a=9)'
+                15      STORE_FAST              0: a
+                18      POP_BLOCK               
+                19      JUMP_FORWARD            61 (to 83)
+                22      SET_LINENO              118
+                25      DUP_TOP                 
+                26      LOAD_GLOBAL             1: KeyError
+                29      COMPARE_OP              10
+                32      JUMP_IF_FALSE           16 (to 51)
+                35      POP_TOP                 
+                36      POP_TOP                 
+                37      POP_TOP                 
+                38      POP_TOP                 
+                39      SET_LINENO              119
+                42      LOAD_CONST              2: 8
+                45      STORE_FAST              0: a
+                48      JUMP_FORWARD            41 (to 92)
+                51      POP_TOP                 
+                52      SET_LINENO              120
+                55      DUP_TOP                 
+                56      LOAD_GLOBAL             2: IndexError
+                59      COMPARE_OP              10
+                62      JUMP_IF_FALSE           16 (to 81)
+                65      POP_TOP                 
+                66      POP_TOP                 
+                67      POP_TOP                 
+                68      POP_TOP                 
+                69      SET_LINENO              121
+                72      LOAD_CONST              3: 9
+                75      STORE_FAST              0: a
+                78      JUMP_FORWARD            11 (to 92)
+                81      POP_TOP                 
+                82      END_FINALLY             
+                83      SET_LINENO              123
+                86      LOAD_CONST              3: 9
+                89      STORE_FAST              0: a
+                92      SET_LINENO              125
+                95      LOAD_CONST              4: '#################'
+                98      STORE_FAST              1: b
+                101     LOAD_CONST              0: None
+                104     RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x41
+            Arg Count: 0
+            Locals: 3
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+                'c'
+            [Var Names]
+                'a'
+                'b'
+                'c'
+            [Constants]
+                None
+                1
+                '#################'
+            [Disassembly]
+                0       SET_LINENO              127
+                3       SET_LINENO              128
+                6       LOAD_FAST               0: a
+                9       LOAD_CONST              1: 1
+                12      COMPARE_OP              2
+                15      JUMP_IF_FALSE           13 (to 31)
+                18      POP_TOP                 
+                19      SET_LINENO              129
+                22      LOAD_CONST              1: 1
+                25      STORE_FAST              0: a
+                28      JUMP_FORWARD            39 (to 70)
+                31      POP_TOP                 
+                32      SET_LINENO              130
+                35      LOAD_FAST               1: b
+                38      LOAD_CONST              1: 1
+                41      COMPARE_OP              2
+                44      JUMP_IF_FALSE           13 (to 60)
+                47      POP_TOP                 
+                48      SET_LINENO              131
+                51      LOAD_CONST              1: 1
+                54      STORE_FAST              1: b
+                57      JUMP_FORWARD            10 (to 70)
+                60      POP_TOP                 
+                61      SET_LINENO              133
+                64      LOAD_CONST              1: 1
+                67      STORE_FAST              2: c
+                70      SET_LINENO              134
+                73      LOAD_CONST              2: '#################'
+                76      STORE_FAST              1: b
+                79      LOAD_CONST              0: None
+                82      RETURN_VALUE            
+        [Code]
+            File Name: exceptions.py
+            Object Name: x42
+            Arg Count: 0
+            Locals: 4
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'xxx'
+            [Var Names]
+                'a'
+                'b'
+                'c'
+                'xxx'
+            [Constants]
+                None
+                1
+                'mmm'
+            [Disassembly]
+                0       SET_LINENO              136
+                3       SET_LINENO              137
+                6       LOAD_FAST               0: a
+                9       LOAD_CONST              1: 1
+                12      COMPARE_OP              2
+                15      JUMP_IF_FALSE           13 (to 31)
+                18      POP_TOP                 
+                19      SET_LINENO              138
+                22      LOAD_CONST              1: 1
+                25      STORE_FAST              0: a
+                28      JUMP_FORWARD            39 (to 70)
+                31      POP_TOP                 
+                32      SET_LINENO              140
+                35      LOAD_FAST               1: b
+                38      LOAD_CONST              1: 1
+                41      COMPARE_OP              2
+                44      JUMP_IF_FALSE           13 (to 60)
+                47      POP_TOP                 
+                48      SET_LINENO              141
+                51      LOAD_CONST              1: 1
+                54      STORE_FAST              1: b
+                57      JUMP_FORWARD            10 (to 70)
+                60      POP_TOP                 
+                61      SET_LINENO              143
+                64      LOAD_CONST              1: 1
+                67      STORE_FAST              2: c
+                70      SET_LINENO              145
+                73      LOAD_CONST              2: 'mmm'
+                76      STORE_FAST              3: xxx
+                79      LOAD_CONST              0: None
+                82      RETURN_VALUE            
+        '__main__'
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       IMPORT_NAME             0: dis
+        9       STORE_NAME              0: dis
+        12      SET_LINENO              35
+        15      SET_LINENO              37
+        18      LOAD_CONST              0: <CODE> x11
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              1: x11
+        27      SET_LINENO              45
+        30      LOAD_CONST              1: <CODE> x12
+        33      MAKE_FUNCTION           0
+        36      STORE_NAME              2: x12
+        39      SET_LINENO              55
+        42      LOAD_CONST              2: <CODE> x13
+        45      MAKE_FUNCTION           0
+        48      STORE_NAME              3: x13
+        51      SET_LINENO              65
+        54      LOAD_CONST              3: <CODE> x21
+        57      MAKE_FUNCTION           0
+        60      STORE_NAME              4: x21
+        63      SET_LINENO              73
+        66      LOAD_CONST              4: <CODE> x22
+        69      MAKE_FUNCTION           0
+        72      STORE_NAME              5: x22
+        75      SET_LINENO              83
+        78      LOAD_CONST              5: <CODE> x23
+        81      MAKE_FUNCTION           0
+        84      STORE_NAME              6: x23
+        87      SET_LINENO              93
+        90      LOAD_CONST              6: <CODE> x31
+        93      MAKE_FUNCTION           0
+        96      STORE_NAME              7: x31
+        99      SET_LINENO              103
+        102     LOAD_CONST              7: <CODE> x32
+        105     MAKE_FUNCTION           0
+        108     STORE_NAME              8: x32
+        111     SET_LINENO              115
+        114     LOAD_CONST              8: <CODE> x33
+        117     MAKE_FUNCTION           0
+        120     STORE_NAME              9: x33
+        123     SET_LINENO              127
+        126     LOAD_CONST              9: <CODE> x41
+        129     MAKE_FUNCTION           0
+        132     STORE_NAME              10: x41
+        135     SET_LINENO              136
+        138     LOAD_CONST              10: <CODE> x42
+        141     MAKE_FUNCTION           0
+        144     STORE_NAME              11: x42
+        147     SET_LINENO              148
+        150     LOAD_NAME               12: __name__
+        153     LOAD_CONST              11: '__main__'
+        156     COMPARE_OP              2
+        159     JUMP_IF_FALSE           20 (to 182)
+        162     POP_TOP                 
+        163     SET_LINENO              149
+        166     LOAD_NAME               0: dis
+        169     LOAD_ATTR               0: dis
+        172     LOAD_NAME               13: xx
+        175     CALL_FUNCTION           1
+        178     POP_TOP                 
+        179     JUMP_FORWARD            1 (to 183)
+        182     POP_TOP                 
+        183     LOAD_CONST              12: None
+        186     RETURN_VALUE            

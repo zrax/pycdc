@@ -1,0 +1,127 @@
+../../pycdc/tests/inputs/old/25_test_del.pyc (Python 2.5)
+[Code]
+    File Name: test_del.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'b'
+        'a'
+        'testme'
+        'None'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_del.py -- source test pattern for 'del' statements\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        "This program can't be run"
+        0
+        5
+        1
+        2
+        3
+        4
+        '4a'
+        42
+        '4b'
+        40
+        1024
+        10
+        '5a'
+        41
+        6
+        None
+        <TYPE: 46>
+        24
+        100
+        7
+        (
+            40
+            41
+            42
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: "\ntest_del.py -- source test pattern for 'del' statements\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: "This program can't be run"
+        9       RAISE_VARARGS           1
+        12      LOAD_CONST              2: 0
+        15      PRINT_ITEM              
+        16      PRINT_NEWLINE           
+        17      LOAD_NAME               1: b
+        20      LOAD_CONST              3: 5
+        23      BINARY_SUBSCR           
+        24      STORE_NAME              2: a
+        27      LOAD_CONST              4: 1
+        30      PRINT_ITEM              
+        31      PRINT_NEWLINE           
+        32      DELETE_NAME             2: a
+        35      LOAD_CONST              5: 2
+        38      PRINT_ITEM              
+        39      PRINT_NEWLINE           
+        40      LOAD_NAME               1: b
+        43      LOAD_CONST              3: 5
+        46      DELETE_SUBSCR           
+        47      LOAD_CONST              6: 3
+        50      PRINT_ITEM              
+        51      PRINT_NEWLINE           
+        52      LOAD_NAME               3: testme
+        55      LOAD_CONST              4: 1
+        58      DELETE_SUBSCR           
+        59      LOAD_CONST              7: 4
+        62      PRINT_ITEM              
+        63      PRINT_NEWLINE           
+        64      LOAD_NAME               3: testme
+        67      DELETE_SLICE_0          
+        68      LOAD_CONST              8: '4a'
+        71      PRINT_ITEM              
+        72      PRINT_NEWLINE           
+        73      LOAD_NAME               3: testme
+        76      LOAD_CONST              9: 42
+        79      DELETE_SLICE_2          
+        80      LOAD_CONST              10: '4b'
+        83      PRINT_ITEM              
+        84      PRINT_NEWLINE           
+        85      LOAD_NAME               3: testme
+        88      LOAD_CONST              11: 40
+        91      LOAD_CONST              9: 42
+        94      DELETE_SLICE_3          
+        95      LOAD_CONST              3: 5
+        98      PRINT_ITEM              
+        99      PRINT_NEWLINE           
+        100     LOAD_NAME               3: testme
+        103     LOAD_CONST              5: 2
+        106     LOAD_CONST              12: 1024
+        109     LOAD_CONST              13: 10
+        112     BUILD_SLICE             3
+        115     DELETE_SUBSCR           
+        116     LOAD_CONST              14: '5a'
+        119     PRINT_ITEM              
+        120     PRINT_NEWLINE           
+        121     LOAD_NAME               3: testme
+        124     LOAD_CONST              22: (40, 41, 42)
+        127     DELETE_SUBSCR           
+        128     LOAD_CONST              16: 6
+        131     PRINT_ITEM              
+        132     PRINT_NEWLINE           
+        133     LOAD_NAME               3: testme
+        136     LOAD_CONST              17: None
+        139     LOAD_CONST              9: 42
+        142     BUILD_SLICE             2
+        145     LOAD_CONST              18: 
+        148     LOAD_CONST              17: None
+        151     LOAD_CONST              19: 24
+        154     LOAD_CONST              17: None
+        157     BUILD_SLICE             3
+        160     LOAD_CONST              19: 24
+        163     LOAD_CONST              20: 100
+        166     BUILD_TUPLE             5
+        169     DELETE_SUBSCR           
+        170     LOAD_CONST              21: 7
+        173     PRINT_ITEM              
+        174     PRINT_NEWLINE           
+        175     LOAD_CONST              17: None
+        178     RETURN_VALUE            

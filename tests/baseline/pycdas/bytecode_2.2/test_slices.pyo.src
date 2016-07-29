@@ -1,0 +1,187 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_slices.pyo (Python 2.2)
+[Code]
+    File Name: test/test_slices.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 7
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'testme'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_slices.py -- source test pattern for slices\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        "This program can't be run"
+        1
+        42
+        'The Answer'
+        2
+        1024
+        None
+        10
+        'A lot'
+        <TYPE: 46>
+        24
+        100
+        'Strange'
+        'Take all'
+        40
+        'Three'
+        41
+        'Another Three'
+    [Disassembly]
+        0       LOAD_CONST              0: "\ntest_slices.py -- source test pattern for slices\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs's test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: "This program can't be run"
+        9       RAISE_VARARGS           1
+        12      LOAD_NAME               1: testme
+        15      LOAD_CONST              2: 1
+        18      BINARY_SUBSCR           
+        19      POP_TOP                 
+        20      LOAD_CONST              2: 1
+        23      LOAD_NAME               1: testme
+        26      LOAD_CONST              2: 1
+        29      STORE_SUBSCR            
+        30      LOAD_NAME               1: testme
+        33      LOAD_CONST              2: 1
+        36      DELETE_SUBSCR           
+        37      LOAD_NAME               1: testme
+        40      LOAD_CONST              3: 42
+        43      SLICE_2                 
+        44      POP_TOP                 
+        45      LOAD_CONST              4: 'The Answer'
+        48      LOAD_NAME               1: testme
+        51      LOAD_CONST              3: 42
+        54      STORE_SLICE_2           
+        55      LOAD_NAME               1: testme
+        58      LOAD_CONST              3: 42
+        61      DELETE_SLICE_2          
+        62      LOAD_NAME               1: testme
+        65      LOAD_CONST              5: 2
+        68      LOAD_CONST              6: 1024
+        71      LOAD_CONST              7: None
+        74      BUILD_SLICE             3
+        77      BINARY_SUBSCR           
+        78      POP_TOP                 
+        79      LOAD_NAME               1: testme
+        82      LOAD_CONST              7: None
+        85      LOAD_CONST              6: 1024
+        88      LOAD_CONST              8: 10
+        91      BUILD_SLICE             3
+        94      BINARY_SUBSCR           
+        95      POP_TOP                 
+        96      LOAD_NAME               1: testme
+        99      LOAD_CONST              7: None
+        102     LOAD_CONST              7: None
+        105     LOAD_CONST              7: None
+        108     BUILD_SLICE             3
+        111     BINARY_SUBSCR           
+        112     POP_TOP                 
+        113     LOAD_NAME               1: testme
+        116     LOAD_CONST              5: 2
+        119     LOAD_CONST              6: 1024
+        122     LOAD_CONST              8: 10
+        125     BUILD_SLICE             3
+        128     BINARY_SUBSCR           
+        129     POP_TOP                 
+        130     LOAD_CONST              9: 'A lot'
+        133     LOAD_NAME               1: testme
+        136     LOAD_CONST              5: 2
+        139     LOAD_CONST              6: 1024
+        142     LOAD_CONST              8: 10
+        145     BUILD_SLICE             3
+        148     STORE_SUBSCR            
+        149     LOAD_NAME               1: testme
+        152     LOAD_CONST              5: 2
+        155     LOAD_CONST              6: 1024
+        158     LOAD_CONST              8: 10
+        161     BUILD_SLICE             3
+        164     DELETE_SUBSCR           
+        165     LOAD_NAME               1: testme
+        168     LOAD_CONST              7: None
+        171     LOAD_CONST              3: 42
+        174     BUILD_SLICE             2
+        177     LOAD_CONST              10: 
+        180     LOAD_CONST              7: None
+        183     LOAD_CONST              11: 24
+        186     LOAD_CONST              7: None
+        189     BUILD_SLICE             3
+        192     LOAD_CONST              11: 24
+        195     LOAD_CONST              12: 100
+        198     BUILD_TUPLE             5
+        201     BINARY_SUBSCR           
+        202     POP_TOP                 
+        203     LOAD_CONST              13: 'Strange'
+        206     LOAD_NAME               1: testme
+        209     LOAD_CONST              7: None
+        212     LOAD_CONST              3: 42
+        215     BUILD_SLICE             2
+        218     LOAD_CONST              10: 
+        221     LOAD_CONST              7: None
+        224     LOAD_CONST              11: 24
+        227     LOAD_CONST              7: None
+        230     BUILD_SLICE             3
+        233     LOAD_CONST              11: 24
+        236     LOAD_CONST              12: 100
+        239     BUILD_TUPLE             5
+        242     STORE_SUBSCR            
+        243     LOAD_NAME               1: testme
+        246     LOAD_CONST              7: None
+        249     LOAD_CONST              3: 42
+        252     BUILD_SLICE             2
+        255     LOAD_CONST              10: 
+        258     LOAD_CONST              7: None
+        261     LOAD_CONST              11: 24
+        264     LOAD_CONST              7: None
+        267     BUILD_SLICE             3
+        270     LOAD_CONST              11: 24
+        273     LOAD_CONST              12: 100
+        276     BUILD_TUPLE             5
+        279     DELETE_SUBSCR           
+        280     LOAD_NAME               1: testme
+        283     SLICE_0                 
+        284     POP_TOP                 
+        285     LOAD_CONST              14: 'Take all'
+        288     LOAD_NAME               1: testme
+        291     STORE_SLICE_0           
+        292     LOAD_NAME               1: testme
+        295     DELETE_SLICE_0          
+        296     LOAD_NAME               1: testme
+        299     LOAD_CONST              15: 40
+        302     LOAD_CONST              3: 42
+        305     SLICE_3                 
+        306     POP_TOP                 
+        307     LOAD_CONST              16: 'Three'
+        310     LOAD_NAME               1: testme
+        313     LOAD_CONST              15: 40
+        316     LOAD_CONST              3: 42
+        319     STORE_SLICE_3           
+        320     LOAD_NAME               1: testme
+        323     LOAD_CONST              15: 40
+        326     LOAD_CONST              3: 42
+        329     DELETE_SLICE_3          
+        330     LOAD_NAME               1: testme
+        333     LOAD_CONST              15: 40
+        336     LOAD_CONST              17: 41
+        339     LOAD_CONST              3: 42
+        342     BUILD_TUPLE             3
+        345     BINARY_SUBSCR           
+        346     POP_TOP                 
+        347     LOAD_CONST              18: 'Another Three'
+        350     LOAD_NAME               1: testme
+        353     LOAD_CONST              15: 40
+        356     LOAD_CONST              17: 41
+        359     LOAD_CONST              3: 42
+        362     BUILD_TUPLE             3
+        365     STORE_SUBSCR            
+        366     LOAD_NAME               1: testme
+        369     LOAD_CONST              15: 40
+        372     LOAD_CONST              17: 41
+        375     LOAD_CONST              3: 42
+        378     BUILD_TUPLE             3
+        381     DELETE_SUBSCR           
+        382     LOAD_CONST              7: None
+        385     RETURN_VALUE            

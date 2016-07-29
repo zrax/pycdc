@@ -1,0 +1,142 @@
+../../pycdc/tests/inputs/old/25_test_tuples.pyc (Python 2.5)
+[Code]
+    File Name: test_tuples.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 8
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'a'
+        'b'
+        'x'
+        'AssertionError'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        1
+        2
+        3
+        4
+        5
+        42
+        None
+        (
+            1
+        )
+        (
+            2
+            3
+        )
+        (
+            1
+            2
+        )
+        (
+            1
+            2
+        )
+        (
+            3
+            4
+            5
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+        (
+            1
+            2
+            3
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              8: (1,)
+        9       STORE_NAME              1: a
+        12      LOAD_CONST              9: (2, 3)
+        15      STORE_NAME              2: b
+        18      LOAD_CONST              10: (1, 2)
+        21      UNPACK_SEQUENCE         2
+        24      STORE_NAME              1: a
+        27      STORE_NAME              2: b
+        30      LOAD_CONST              11: (1, 2)
+        33      LOAD_CONST              12: (3, 4, 5)
+        36      ROT_TWO                 
+        37      STORE_NAME              1: a
+        40      STORE_NAME              2: b
+        43      BUILD_MAP               0
+        46      STORE_NAME              3: x
+        49      SETUP_EXCEPT            12 (to 64)
+        52      LOAD_NAME               3: x
+        55      LOAD_CONST              13: (1, 2, 3)
+        58      BINARY_SUBSCR           
+        59      POP_TOP                 
+        60      POP_BLOCK               
+        61      JUMP_FORWARD            7 (to 71)
+        64      POP_TOP                 
+        65      POP_TOP                 
+        66      POP_TOP                 
+        67      JUMP_FORWARD            1 (to 71)
+        70      END_FINALLY             
+        71      LOAD_CONST              6: 42
+        74      LOAD_NAME               3: x
+        77      LOAD_CONST              14: (1, 2, 3)
+        80      STORE_SUBSCR            
+        81      LOAD_NAME               3: x
+        84      LOAD_CONST              15: (1, 2, 3)
+        87      BINARY_SUBSCR           
+        88      PRINT_ITEM              
+        89      PRINT_NEWLINE           
+        90      LOAD_NAME               3: x
+        93      LOAD_CONST              16: (1, 2, 3)
+        96      BINARY_SUBSCR           
+        97      PRINT_ITEM              
+        98      PRINT_NEWLINE           
+        99      LOAD_NAME               3: x
+        102     LOAD_CONST              17: (1, 2, 3)
+        105     BINARY_SUBSCR           
+        106     LOAD_NAME               3: x
+        109     LOAD_CONST              18: (1, 2, 3)
+        112     BINARY_SUBSCR           
+        113     COMPARE_OP              2
+        116     JUMP_IF_TRUE            7 (to 126)
+        119     POP_TOP                 
+        120     LOAD_GLOBAL             4: AssertionError
+        123     RAISE_VARARGS           1
+        126     POP_TOP                 
+        127     LOAD_NAME               3: x
+        130     LOAD_CONST              19: (1, 2, 3)
+        133     DELETE_SUBSCR           
+        134     LOAD_CONST              7: None
+        137     RETURN_VALUE            

@@ -1,0 +1,134 @@
+../../pycdc/tests/inputs/old/27_test_print_to.pyc (Python 2.7)
+[Code]
+    File Name: test_print_to.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'sys'
+        'stdout'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\nprint_to.py -- source test pattern for 'print >> ...' statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        -1
+        None
+        1
+        2
+        3
+        4
+        5
+    [Disassembly]
+        0       LOAD_CONST              0: "\nprint_to.py -- source test pattern for 'print >> ...' statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: -1
+        9       LOAD_CONST              2: None
+        12      IMPORT_NAME             1: sys
+        15      STORE_NAME              1: sys
+        18      LOAD_NAME               1: sys
+        21      LOAD_ATTR               2: stdout
+        24      DUP_TOP                 
+        25      LOAD_CONST              3: 1
+        28      ROT_TWO                 
+        29      PRINT_ITEM_TO           
+        30      DUP_TOP                 
+        31      LOAD_CONST              4: 2
+        34      ROT_TWO                 
+        35      PRINT_ITEM_TO           
+        36      DUP_TOP                 
+        37      LOAD_CONST              5: 3
+        40      ROT_TWO                 
+        41      PRINT_ITEM_TO           
+        42      DUP_TOP                 
+        43      LOAD_CONST              6: 4
+        46      ROT_TWO                 
+        47      PRINT_ITEM_TO           
+        48      DUP_TOP                 
+        49      LOAD_CONST              7: 5
+        52      ROT_TWO                 
+        53      PRINT_ITEM_TO           
+        54      PRINT_NEWLINE_TO        
+        55      LOAD_NAME               1: sys
+        58      LOAD_ATTR               2: stdout
+        61      DUP_TOP                 
+        62      LOAD_CONST              3: 1
+        65      ROT_TWO                 
+        66      PRINT_ITEM_TO           
+        67      DUP_TOP                 
+        68      LOAD_CONST              4: 2
+        71      ROT_TWO                 
+        72      PRINT_ITEM_TO           
+        73      DUP_TOP                 
+        74      LOAD_CONST              5: 3
+        77      ROT_TWO                 
+        78      PRINT_ITEM_TO           
+        79      DUP_TOP                 
+        80      LOAD_CONST              6: 4
+        83      ROT_TWO                 
+        84      PRINT_ITEM_TO           
+        85      DUP_TOP                 
+        86      LOAD_CONST              7: 5
+        89      ROT_TWO                 
+        90      PRINT_ITEM_TO           
+        91      POP_TOP                 
+        92      LOAD_NAME               1: sys
+        95      LOAD_ATTR               2: stdout
+        98      PRINT_NEWLINE_TO        
+        99      LOAD_NAME               1: sys
+        102     LOAD_ATTR               2: stdout
+        105     DUP_TOP                 
+        106     LOAD_CONST              3: 1
+        109     ROT_TWO                 
+        110     PRINT_ITEM_TO           
+        111     DUP_TOP                 
+        112     LOAD_CONST              4: 2
+        115     ROT_TWO                 
+        116     PRINT_ITEM_TO           
+        117     DUP_TOP                 
+        118     LOAD_CONST              5: 3
+        121     ROT_TWO                 
+        122     PRINT_ITEM_TO           
+        123     DUP_TOP                 
+        124     LOAD_CONST              6: 4
+        127     ROT_TWO                 
+        128     PRINT_ITEM_TO           
+        129     DUP_TOP                 
+        130     LOAD_CONST              7: 5
+        133     ROT_TWO                 
+        134     PRINT_ITEM_TO           
+        135     POP_TOP                 
+        136     LOAD_NAME               1: sys
+        139     LOAD_ATTR               2: stdout
+        142     DUP_TOP                 
+        143     LOAD_CONST              3: 1
+        146     ROT_TWO                 
+        147     PRINT_ITEM_TO           
+        148     DUP_TOP                 
+        149     LOAD_CONST              4: 2
+        152     ROT_TWO                 
+        153     PRINT_ITEM_TO           
+        154     DUP_TOP                 
+        155     LOAD_CONST              5: 3
+        158     ROT_TWO                 
+        159     PRINT_ITEM_TO           
+        160     DUP_TOP                 
+        161     LOAD_CONST              6: 4
+        164     ROT_TWO                 
+        165     PRINT_ITEM_TO           
+        166     DUP_TOP                 
+        167     LOAD_CONST              7: 5
+        170     ROT_TWO                 
+        171     PRINT_ITEM_TO           
+        172     POP_TOP                 
+        173     LOAD_NAME               1: sys
+        176     LOAD_ATTR               2: stdout
+        179     PRINT_NEWLINE_TO        
+        180     LOAD_NAME               1: sys
+        183     LOAD_ATTR               2: stdout
+        186     PRINT_NEWLINE_TO        
+        187     LOAD_CONST              2: None
+        190     RETURN_VALUE            

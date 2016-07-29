@@ -1,0 +1,153 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_global.pyc (Python 2.1)
+[Code]
+    File Name: test/test_global.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'i'
+        'j'
+        'a'
+    [Var Names]
+        'a'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        "\ntest_global.py -- source test pattern for 'global' statement\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        1
+        7
+        [Code]
+            File Name: test/test_global.py
+            Object Name: a
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'b'
+                'i'
+                'j'
+            [Var Names]
+                'b'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_global.py
+                    Object Name: b
+                    Arg Count: 0
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'c'
+                        'l'
+                        'j'
+                    [Var Names]
+                        'l'
+                        'c'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test/test_global.py
+                            Object Name: c
+                            Arg Count: 0
+                            Locals: 1
+                            Stack Size: 2
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                                'k'
+                                'i'
+                            [Var Names]
+                                'k'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                34
+                            [Disassembly]
+                                0       SET_LINENO              14
+                                3       SET_LINENO              15
+                                6       LOAD_CONST              1: 34
+                                9       STORE_FAST              0: k
+                                12      SET_LINENO              16
+                                15      SET_LINENO              17
+                                18      LOAD_GLOBAL             1: i
+                                21      LOAD_FAST               0: k
+                                24      BINARY_ADD              
+                                25      STORE_GLOBAL            1: i
+                                28      LOAD_CONST              0: None
+                                31      RETURN_VALUE            
+                        42
+                    [Disassembly]
+                        0       SET_LINENO              13
+                        3       SET_LINENO              14
+                        6       LOAD_CONST              1: <CODE> c
+                        9       MAKE_FUNCTION           0
+                        12      STORE_FAST              1: c
+                        15      SET_LINENO              18
+                        18      LOAD_CONST              2: 42
+                        21      STORE_FAST              0: l
+                        24      SET_LINENO              19
+                        27      LOAD_FAST               1: c
+                        30      CALL_FUNCTION           0
+                        33      POP_TOP                 
+                        34      SET_LINENO              20
+                        37      SET_LINENO              21
+                        40      LOAD_GLOBAL             2: j
+                        43      LOAD_FAST               0: l
+                        46      BINARY_ADD              
+                        47      STORE_GLOBAL            2: j
+                        50      LOAD_CONST              0: None
+                        53      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              12
+                3       SET_LINENO              13
+                6       LOAD_CONST              1: <CODE> b
+                9       MAKE_FUNCTION           0
+                12      STORE_FAST              0: b
+                15      SET_LINENO              22
+                18      LOAD_FAST               0: b
+                21      CALL_FUNCTION           0
+                24      POP_TOP                 
+                25      SET_LINENO              23
+                28      LOAD_GLOBAL             1: i
+                31      PRINT_ITEM              
+                32      LOAD_GLOBAL             2: j
+                35      PRINT_ITEM              
+                36      PRINT_NEWLINE           
+                37      LOAD_CONST              0: None
+                40      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: "\ntest_global.py -- source test pattern for 'global' statement\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n"
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: 1
+        18      STORE_GLOBAL            1: i
+        21      LOAD_CONST              2: 7
+        24      STORE_GLOBAL            2: j
+        27      SET_LINENO              12
+        30      LOAD_CONST              3: <CODE> a
+        33      MAKE_FUNCTION           0
+        36      STORE_NAME              3: a
+        39      SET_LINENO              25
+        42      LOAD_NAME               3: a
+        45      CALL_FUNCTION           0
+        48      POP_TOP                 
+        49      SET_LINENO              26
+        52      LOAD_GLOBAL             1: i
+        55      PRINT_ITEM              
+        56      LOAD_GLOBAL             2: j
+        59      PRINT_ITEM              
+        60      PRINT_NEWLINE           
+        61      LOAD_CONST              4: None
+        64      RETURN_VALUE            

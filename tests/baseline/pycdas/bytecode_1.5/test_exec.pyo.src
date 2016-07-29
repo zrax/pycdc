@@ -1,0 +1,36 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_exec.pyo (Python 1.5)
+[Code]
+    File Name: test/test_exec.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        'testcode'
+        'globals'
+        'locals'
+    [Var Names]
+    [Constants]
+        'a = 12'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: 'a = 12'
+        3       STORE_NAME              0: testcode
+        6       LOAD_NAME               0: testcode
+        9       LOAD_CONST              1: None
+        12      DUP_TOP                 
+        13      EXEC_STMT               
+        14      LOAD_NAME               0: testcode
+        17      LOAD_NAME               1: globals
+        20      CALL_FUNCTION           0
+        23      DUP_TOP                 
+        24      EXEC_STMT               
+        25      LOAD_NAME               0: testcode
+        28      LOAD_NAME               1: globals
+        31      CALL_FUNCTION           0
+        34      LOAD_NAME               2: locals
+        37      CALL_FUNCTION           0
+        40      EXEC_STMT               
+        41      LOAD_CONST              1: None
+        44      RETURN_VALUE            

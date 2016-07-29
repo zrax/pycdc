@@ -1,0 +1,142 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_tuples.pyc (Python 2.2)
+[Code]
+    File Name: test/test_tuples.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'a'
+        'b'
+        'x'
+        '__debug__'
+        'AssertionError'
+    [Var Names]
+        'a'
+        'x'
+        'b'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        1
+        2
+        3
+        4
+        5
+        42
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: 1
+        18      BUILD_TUPLE             1
+        21      STORE_NAME              1: a
+        24      SET_LINENO              12
+        27      LOAD_CONST              2: 2
+        30      LOAD_CONST              3: 3
+        33      BUILD_TUPLE             2
+        36      STORE_NAME              2: b
+        39      SET_LINENO              13
+        42      LOAD_CONST              1: 1
+        45      LOAD_CONST              2: 2
+        48      BUILD_TUPLE             2
+        51      UNPACK_SEQUENCE         2
+        54      STORE_NAME              1: a
+        57      STORE_NAME              2: b
+        60      SET_LINENO              14
+        63      LOAD_CONST              1: 1
+        66      LOAD_CONST              2: 2
+        69      BUILD_TUPLE             2
+        72      LOAD_CONST              3: 3
+        75      LOAD_CONST              4: 4
+        78      LOAD_CONST              5: 5
+        81      BUILD_TUPLE             3
+        84      BUILD_TUPLE             2
+        87      UNPACK_SEQUENCE         2
+        90      STORE_NAME              1: a
+        93      STORE_NAME              2: b
+        96      SET_LINENO              16
+        99      BUILD_MAP               0
+        102     STORE_NAME              3: x
+        105     SET_LINENO              17
+        108     SETUP_EXCEPT            24 (to 135)
+        111     SET_LINENO              18
+        114     LOAD_NAME               3: x
+        117     LOAD_CONST              1: 1
+        120     LOAD_CONST              2: 2
+        123     LOAD_CONST              3: 3
+        126     BUILD_TUPLE             3
+        129     BINARY_SUBSCR           
+        130     POP_TOP                 
+        131     POP_BLOCK               
+        132     JUMP_FORWARD            13 (to 148)
+        135     SET_LINENO              19
+        138     POP_TOP                 
+        139     POP_TOP                 
+        140     POP_TOP                 
+        141     SET_LINENO              20
+        144     JUMP_FORWARD            1 (to 148)
+        147     END_FINALLY             
+        148     SET_LINENO              21
+        151     LOAD_CONST              6: 42
+        154     LOAD_NAME               3: x
+        157     LOAD_CONST              1: 1
+        160     LOAD_CONST              2: 2
+        163     LOAD_CONST              3: 3
+        166     BUILD_TUPLE             3
+        169     STORE_SUBSCR            
+        170     SET_LINENO              22
+        173     LOAD_NAME               3: x
+        176     LOAD_CONST              1: 1
+        179     LOAD_CONST              2: 2
+        182     LOAD_CONST              3: 3
+        185     BUILD_TUPLE             3
+        188     BINARY_SUBSCR           
+        189     PRINT_ITEM              
+        190     PRINT_NEWLINE           
+        191     SET_LINENO              23
+        194     LOAD_NAME               3: x
+        197     LOAD_CONST              1: 1
+        200     LOAD_CONST              2: 2
+        203     LOAD_CONST              3: 3
+        206     BUILD_TUPLE             3
+        209     BINARY_SUBSCR           
+        210     PRINT_ITEM              
+        211     PRINT_NEWLINE           
+        212     SET_LINENO              24
+        215     LOAD_GLOBAL             4: __debug__
+        218     JUMP_IF_FALSE           46 (to 267)
+        221     POP_TOP                 
+        222     LOAD_NAME               3: x
+        225     LOAD_CONST              1: 1
+        228     LOAD_CONST              2: 2
+        231     LOAD_CONST              3: 3
+        234     BUILD_TUPLE             3
+        237     BINARY_SUBSCR           
+        238     LOAD_NAME               3: x
+        241     LOAD_CONST              1: 1
+        244     LOAD_CONST              2: 2
+        247     LOAD_CONST              3: 3
+        250     BUILD_TUPLE             3
+        253     BINARY_SUBSCR           
+        254     COMPARE_OP              2
+        257     JUMP_IF_TRUE            7 (to 267)
+        260     POP_TOP                 
+        261     LOAD_GLOBAL             5: AssertionError
+        264     RAISE_VARARGS           1
+        267     POP_TOP                 
+        268     SET_LINENO              25
+        271     LOAD_NAME               3: x
+        274     LOAD_CONST              1: 1
+        277     LOAD_CONST              2: 2
+        280     LOAD_CONST              3: 3
+        283     BUILD_TUPLE             3
+        286     DELETE_SUBSCR           
+        287     LOAD_CONST              7: None
+        290     RETURN_VALUE            

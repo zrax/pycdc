@@ -1,0 +1,153 @@
+../../pycdc/tests/inputs/old/27_lambdas_assignment.pyc (Python 2.7)
+[Code]
+    File Name: lambdas.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 11
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'test_logger'
+        'asdf'
+        'filter'
+        'mult3'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: lambdas.py
+            Object Name: test_logger
+            Arg Count: 2
+            Locals: 2
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'arg'
+                'var'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+            [Disassembly]
+                0       LOAD_FAST               0: arg
+                3       PRINT_ITEM              
+                4       PRINT_NEWLINE           
+                5       LOAD_FAST               1: var
+                8       PRINT_ITEM              
+                9       PRINT_NEWLINE           
+                10      LOAD_CONST              0: None
+                13      RETURN_VALUE            
+        [Code]
+            File Name: lambdas.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'test_logger'
+            [Var Names]
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+            [Disassembly]
+                0       LOAD_GLOBAL             0: test_logger
+                3       LOAD_CONST              1: 1
+                6       LOAD_FAST               0: x
+                9       CALL_FUNCTION           2
+                12      RETURN_VALUE            
+        'a'
+        [Code]
+            File Name: lambdas.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 3
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                'test_logger'
+            [Var Names]
+                'y'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                2
+            [Disassembly]
+                0       LOAD_GLOBAL             0: test_logger
+                3       LOAD_CONST              1: 2
+                6       LOAD_FAST               0: y
+                9       CALL_FUNCTION           2
+                12      RETURN_VALUE            
+        'b'
+        [Code]
+            File Name: lambdas.py
+            Object Name: <lambda>
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'x'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                3
+                0
+            [Disassembly]
+                0       LOAD_FAST               0: x
+                3       LOAD_CONST              1: 3
+                6       BINARY_MODULO           
+                7       LOAD_CONST              2: 0
+                10      COMPARE_OP              2
+                13      RETURN_VALUE            
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> test_logger
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: test_logger
+        9       BUILD_MAP               0
+        12      STORE_NAME              1: asdf
+        15      LOAD_CONST              1: <CODE> <lambda>
+        18      MAKE_FUNCTION           0
+        21      LOAD_NAME               1: asdf
+        24      LOAD_CONST              2: 'a'
+        27      STORE_SUBSCR            
+        28      LOAD_CONST              3: <CODE> <lambda>
+        31      MAKE_FUNCTION           0
+        34      LOAD_NAME               1: asdf
+        37      LOAD_CONST              4: 'b'
+        40      STORE_SUBSCR            
+        41      LOAD_NAME               2: filter
+        44      LOAD_CONST              5: <CODE> <lambda>
+        47      MAKE_FUNCTION           0
+        50      LOAD_CONST              6: 1
+        53      LOAD_CONST              7: 2
+        56      LOAD_CONST              8: 3
+        59      LOAD_CONST              9: 4
+        62      LOAD_CONST              10: 5
+        65      LOAD_CONST              11: 6
+        68      LOAD_CONST              12: 7
+        71      LOAD_CONST              13: 8
+        74      LOAD_CONST              14: 9
+        77      BUILD_LIST              9
+        80      CALL_FUNCTION           2
+        83      STORE_NAME              3: mult3
+        86      LOAD_CONST              15: None
+        89      RETURN_VALUE            

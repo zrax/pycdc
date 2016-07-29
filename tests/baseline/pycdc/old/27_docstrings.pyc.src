@@ -1,0 +1,18 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/27_docstrings.pyc (Python 2.7)
+
+'''Module docstring'''
+
+def foobar():
+    '''Function docstring'''
+    return 42
+
+
+class FoobarClass:
+    '''Class docstring'''
+    
+    def __init__(self):
+        '''Member function docstring'''
+        pass
+
+

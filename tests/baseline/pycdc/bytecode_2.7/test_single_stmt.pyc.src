@@ -1,0 +1,4 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_2.7/test_single_stmt.pyc (Python 2.7)
+
+print 5

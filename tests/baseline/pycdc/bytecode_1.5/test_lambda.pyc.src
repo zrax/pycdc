@@ -1,0 +1,13 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/bytecode_1.5/test_lambda.pyc (Python 1.5)
+
+palette = map(lambda a: (a, a, a), range(256))
+palette = map(lambda .0: (r, g, b) = .0chr(r) + chr(g) + chr(b), palette)
+palette = map(lambda r: r, palette)
+
+palette = lambda .0: (r, g, b) = .0r
+
+palette = lambda .0: r = .0r
+
+palette = lambda r: r
+palette = (lambda .0: r = .0r, palette)

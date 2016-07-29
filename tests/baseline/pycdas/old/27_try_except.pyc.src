@@ -1,0 +1,46 @@
+../../pycdc/tests/inputs/old/27_try_except.pyc (Python 2.7)
+[Code]
+    File Name: tef2.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'SyntaxError'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'before'
+        'try'
+        'except'
+        'after'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: 'before'
+        3       PRINT_ITEM              
+        4       PRINT_NEWLINE           
+        5       SETUP_EXCEPT            9 (to 17)
+        8       LOAD_CONST              1: 'try'
+        11      PRINT_ITEM              
+        12      PRINT_NEWLINE           
+        13      POP_BLOCK               
+        14      JUMP_FORWARD            22 (to 39)
+        17      DUP_TOP                 
+        18      LOAD_NAME               0: SyntaxError
+        21      COMPARE_OP              10
+        24      POP_JUMP_IF_FALSE       38
+        27      POP_TOP                 
+        28      POP_TOP                 
+        29      POP_TOP                 
+        30      LOAD_CONST              2: 'except'
+        33      PRINT_ITEM              
+        34      PRINT_NEWLINE           
+        35      JUMP_FORWARD            1 (to 39)
+        38      END_FINALLY             
+        39      LOAD_CONST              3: 'after'
+        42      PRINT_ITEM              
+        43      PRINT_NEWLINE           
+        44      LOAD_CONST              4: None
+        47      RETURN_VALUE            

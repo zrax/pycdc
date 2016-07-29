@@ -1,0 +1,214 @@
+../../pycdc/tests/inputs/old/34_loadbuild_class.pyc (Python 3.4)
+[Code]
+    File Name: loadbuildclass.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'C'
+        'B'
+        'F'
+        'foobar'
+        'raboof'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: loadbuildclass.py
+            Object Name: C
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 2
+            Flags: 0x00000040 (CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__qualname__'
+                'foobar'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'C'
+                [Code]
+                    File Name: loadbuildclass.py
+                    Object Name: foobar
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                        'a'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        1
+                    [Disassembly]
+                        0       LOAD_CONST              1: 1
+                        3       STORE_FAST              1: a
+                        6       LOAD_CONST              0: None
+                        9       RETURN_VALUE            
+                'C.foobar'
+                None
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: 'C'
+                9       STORE_NAME              2: __qualname__
+                12      LOAD_CONST              1: <CODE> foobar
+                15      LOAD_CONST              2: 'C.foobar'
+                18      MAKE_FUNCTION           0
+                21      STORE_NAME              3: foobar
+                24      LOAD_CONST              3: None
+                27      RETURN_VALUE            
+        'C'
+        [Code]
+            File Name: loadbuildclass.py
+            Object Name: B
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 2
+            Flags: 0x00000040 (CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__qualname__'
+                'barfoo'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'B'
+                [Code]
+                    File Name: loadbuildclass.py
+                    Object Name: barfoo
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                        'd'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        1
+                    [Disassembly]
+                        0       LOAD_CONST              1: 1
+                        3       STORE_FAST              1: d
+                        6       LOAD_CONST              0: None
+                        9       RETURN_VALUE            
+                'B.barfoo'
+                None
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: 'B'
+                9       STORE_NAME              2: __qualname__
+                12      LOAD_CONST              1: <CODE> barfoo
+                15      LOAD_CONST              2: 'B.barfoo'
+                18      MAKE_FUNCTION           0
+                21      STORE_NAME              3: barfoo
+                24      LOAD_CONST              3: None
+                27      RETURN_VALUE            
+        'B'
+        [Code]
+            File Name: loadbuildclass.py
+            Object Name: F
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 2
+            Flags: 0x00000040 (CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__qualname__'
+                'raboof'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'F'
+                [Code]
+                    File Name: loadbuildclass.py
+                    Object Name: raboof
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'self'
+                        'e'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        1
+                    [Disassembly]
+                        0       LOAD_CONST              1: 1
+                        3       STORE_FAST              1: e
+                        6       LOAD_CONST              0: None
+                        9       RETURN_VALUE            
+                'F.raboof'
+                None
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: 'F'
+                9       STORE_NAME              2: __qualname__
+                12      LOAD_CONST              1: <CODE> raboof
+                15      LOAD_CONST              2: 'F.raboof'
+                18      MAKE_FUNCTION           0
+                21      STORE_NAME              3: raboof
+                24      LOAD_CONST              3: None
+                27      RETURN_VALUE            
+        'F'
+        None
+    [Disassembly]
+        0       LOAD_BUILD_CLASS        
+        1       LOAD_CONST              0: <CODE> C
+        4       LOAD_CONST              1: 'C'
+        7       MAKE_FUNCTION           0
+        10      LOAD_CONST              1: 'C'
+        13      CALL_FUNCTION           2
+        16      STORE_NAME              0: C
+        19      LOAD_BUILD_CLASS        
+        20      LOAD_CONST              2: <CODE> B
+        23      LOAD_CONST              3: 'B'
+        26      MAKE_FUNCTION           0
+        29      LOAD_CONST              3: 'B'
+        32      LOAD_NAME               0: C
+        35      CALL_FUNCTION           3
+        38      STORE_NAME              1: B
+        41      LOAD_BUILD_CLASS        
+        42      LOAD_CONST              4: <CODE> F
+        45      LOAD_CONST              5: 'F'
+        48      MAKE_FUNCTION           0
+        51      LOAD_CONST              5: 'F'
+        54      LOAD_NAME               1: B
+        57      LOAD_NAME               0: C
+        60      CALL_FUNCTION           4
+        63      STORE_NAME              2: F
+        66      LOAD_NAME               0: C
+        69      LOAD_ATTR               3: foobar
+        72      CALL_FUNCTION           0
+        75      POP_TOP                 
+        76      LOAD_NAME               2: F
+        79      LOAD_ATTR               4: raboof
+        82      CALL_FUNCTION           0
+        85      POP_TOP                 
+        86      LOAD_NAME               1: B
+        89      LOAD_ATTR               3: foobar
+        92      CALL_FUNCTION           0
+        95      POP_TOP                 
+        96      LOAD_CONST              6: None
+        99      RETURN_VALUE            

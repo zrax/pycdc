@@ -4,8 +4,21 @@ cmake_minimum_required(VERSION 2.8)
 # For generating the bytes tables
 find_package(PythonInterp REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror ${CMAKE_CXX_FLAGS}")
+elseif(MSVC)
+    # Make MSVC treat compiler warnings as errors
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+
+    # Increase warning levels to 4
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+
+    # Disable CRT secure warnings (This project isn't windows specific)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 set(PYTHON_VERSIONS
@@ -61,6 +74,6 @@ install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
 # For tests
-add_custom_target(test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
+add_custom_target(pycdc_test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
                        ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-add_dependencies(test pycdc)
+add_dependencies(pycdc_test pycdc)

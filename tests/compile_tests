@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+"""
+compile_tests -- compile test patterns for the decompyle test suite
+
+This source (was) part of the decompyle test suite.
+
+decompyle is a Python byte-code decompiler
+See http://www.goebel-consult.de/decompyle/ for download and
+for further information
+
+This test suite was repurposed for pycdc (16-May-2015)
+"""
+
+import py_compile, os, sys, getopt
+
+work_dir = os.path.dirname(sys.argv[0])
+src_dir = work_dir + 'source'
+out_dir = work_dir + 'inputs'
+
+opts, args = getopt.getopt(sys.argv[1:], 's:o:')
+
+for opt, val in opts:
+    if opt == '-s':
+        src_dir = val
+    elif opt == '-o':
+        out_dir = val
+    else:
+        raise ValueError( "Unknown Option '%s'" % opt )
+if args:
+    raise ValueError('This tool does not want any arguments')
+
+print "Using files in dir %s" % src_dir
+print "Compiling into dir %s" % out_dir
+
+tests = {}
+
+tests['1.5'] = ["class", "del", "docstring", 'empty', "exec",
+                "exceptions", "expressions", "functions", "global",
+                "globals", "import", "integers", "lambda", "loops",
+                "misc", "nested_elif", "prettyprint", "print",
+                'single_stmt', "slices", "tuple_params", 'tuples']
+
+tests['1.6'] = ["applyEquiv", ] + tests['1.5']
+
+tests['2.0'] = ["augmentedAssign", "extendedImport", "extendedPrint",
+                "import_as", "listComprehensions", 'print_to'] + \
+                tests['1.6'] # [ "--extendedarg", ]
+
+tests['2.1'] = ['loops2', 'nested_scopes'] + tests['2.0']
+
+tests['2.2'] = ['divide_future', 'divide_no_future', 'iterators',
+                'yield'] + tests['2.1']
+
+tests['2.7'] = tests['2.1']
+total_tests = len(tests['2.7'])
+
+extension = '.py' + (__debug__ and 'c' or 'o')
+
+def compile(file, target_dir):
+    sfile = os.path.join(src_dir,    'test_%s.py' % file)
+    cfile = os.path.join(target_dir, 'test_%s%s' % (file,  extension) )
+    py_compile.compile(sfile, cfile=cfile)
+
+def compile_for_version(version):
+    target_dir = os.path.join(out_dir, 'bytecode_' + version)
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
+    for file in tests[version]:
+        compile(file, target_dir)
+    
+try:
+    version = '%i.%i' % sys.version_info[:2]
+except AttributeError:
+    version = sys.version[:3]
+
+print 'Compiling test files for Python', version,
+print '(%i/%i files)' % (len(tests[version]), total_tests)
+compile_for_version(version)
+print 'Done.'

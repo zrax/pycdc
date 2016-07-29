@@ -1,0 +1,17 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/26_try_except_finally.pyc (Python 2.6)
+
+
+try:
+    import sys
+    
+    try:
+        print 'something else'
+    except AssertionError:
+        print '...failed'
+
+except ImportError:
+    print 'Oh Noes!'
+finally:
+    print 'Exiting'
+

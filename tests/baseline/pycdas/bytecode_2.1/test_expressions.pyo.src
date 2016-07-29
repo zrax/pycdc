@@ -1,0 +1,78 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_expressions.pyo (Python 2.1)
+[Code]
+    File Name: test/test_expressions.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+        '_lsbStrToInt'
+    [Var Names]
+        '_lsbStrToInt'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: test/test_expressions.py
+            Object Name: _lsbStrToInt
+            Arg Count: 1
+            Locals: 1
+            Stack Size: 4
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'ord'
+                'str'
+            [Var Names]
+                'str'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                0
+                1
+                8
+                2
+                16
+                3
+                24
+            [Disassembly]
+                0       LOAD_GLOBAL             0: ord
+                3       LOAD_FAST               0: str
+                6       LOAD_CONST              1: 0
+                9       BINARY_SUBSCR           
+                10      CALL_FUNCTION           1
+                13      LOAD_GLOBAL             0: ord
+                16      LOAD_FAST               0: str
+                19      LOAD_CONST              2: 1
+                22      BINARY_SUBSCR           
+                23      CALL_FUNCTION           1
+                26      LOAD_CONST              3: 8
+                29      BINARY_LSHIFT           
+                30      BINARY_ADD              
+                31      LOAD_GLOBAL             0: ord
+                34      LOAD_FAST               0: str
+                37      LOAD_CONST              4: 2
+                40      BINARY_SUBSCR           
+                41      CALL_FUNCTION           1
+                44      LOAD_CONST              5: 16
+                47      BINARY_LSHIFT           
+                48      BINARY_ADD              
+                49      LOAD_GLOBAL             0: ord
+                52      LOAD_FAST               0: str
+                55      LOAD_CONST              6: 3
+                58      BINARY_SUBSCR           
+                59      CALL_FUNCTION           1
+                62      LOAD_CONST              7: 24
+                65      BINARY_LSHIFT           
+                66      BINARY_ADD              
+                67      RETURN_VALUE            
+                68      LOAD_CONST              0: None
+                71      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> _lsbStrToInt
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: _lsbStrToInt
+        9       LOAD_CONST              1: None
+        12      RETURN_VALUE            

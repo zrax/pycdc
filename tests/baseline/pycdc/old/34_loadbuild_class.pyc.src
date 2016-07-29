@@ -1,0 +1,30 @@
+# Source Generated with Decompyle++
+# File: ../../pycdc/tests/inputs/old/34_loadbuild_class.pyc (Python 3.4)
+
+
+class C:
+    __qualname__ = 'C'
+    
+    def foobar(self):
+        a = 1
+
+
+
+class B(C):
+    __qualname__ = 'B'
+    
+    def barfoo(self):
+        d = 1
+
+
+
+class F(C, B):
+    __qualname__ = 'F'
+    
+    def raboof(self):
+        e = 1
+
+
+C.foobar()
+F.raboof()
+B.foobar()

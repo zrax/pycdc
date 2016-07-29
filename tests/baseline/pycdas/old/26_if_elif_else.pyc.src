@@ -1,0 +1,69 @@
+../../pycdc/tests/inputs/old/26_if_elif_else.pyc (Python 2.6)
+[Code]
+    File Name: cond.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'test'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        [Code]
+            File Name: cond.py
+            Object Name: test
+            Arg Count: 2
+            Locals: 2
+            Stack Size: 2
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'msgtype'
+                'flags'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+                2
+                3
+            [Disassembly]
+                0       LOAD_FAST               1: flags
+                3       LOAD_CONST              1: 1
+                6       COMPARE_OP              2
+                9       JUMP_IF_FALSE           10 (to 22)
+                12      POP_TOP                 
+                13      LOAD_CONST              1: 1
+                16      STORE_FAST              0: msgtype
+                19      JUMP_FORWARD            47 (to 69)
+                22      POP_TOP                 
+                23      LOAD_FAST               1: flags
+                26      LOAD_CONST              2: 2
+                29      COMPARE_OP              2
+                32      JUMP_IF_FALSE           10 (to 45)
+                35      POP_TOP                 
+                36      LOAD_CONST              2: 2
+                39      STORE_FAST              0: msgtype
+                42      JUMP_FORWARD            24 (to 69)
+                45      POP_TOP                 
+                46      LOAD_FAST               1: flags
+                49      LOAD_CONST              3: 3
+                52      COMPARE_OP              2
+                55      JUMP_IF_FALSE           10 (to 68)
+                58      POP_TOP                 
+                59      LOAD_CONST              3: 3
+                62      STORE_FAST              0: msgtype
+                65      JUMP_FORWARD            1 (to 69)
+                68      POP_TOP                 
+                69      LOAD_FAST               0: msgtype
+                72      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: <CODE> test
+        3       MAKE_FUNCTION           0
+        6       STORE_NAME              0: test
+        9       LOAD_CONST              1: None
+        12      RETURN_VALUE            

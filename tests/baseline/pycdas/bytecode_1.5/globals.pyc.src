@@ -1,0 +1,69 @@
+../../pycdc/tests/inputs/bytecode_1.5/globals.pyc (Python 1.5)
+[Code]
+    File Name: globals.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 1
+    Flags: 0x00000000
+    [Names]
+        'f'
+        'x'
+    [Var Names]
+    [Constants]
+        [Code]
+            File Name: globals.py
+            Object Name: f
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'x'
+            [Var Names]
+                'x'
+            [Constants]
+                None
+                1
+            [Disassembly]
+                0       SET_LINENO              9
+                3       SET_LINENO              10
+                6       LOAD_FAST               0: x
+                9       PRINT_ITEM              
+                10      PRINT_NEWLINE           
+                11      SET_LINENO              11
+                14      LOAD_FAST               0: x
+                17      LOAD_CONST              1: 1
+                20      BINARY_ADD              
+                21      STORE_FAST              0: x
+                24      SET_LINENO              12
+                27      LOAD_FAST               0: x
+                30      PRINT_ITEM              
+                31      PRINT_NEWLINE           
+                32      LOAD_CONST              0: None
+                35      RETURN_VALUE            
+        "This program can't be run"
+        1
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              9
+        6       LOAD_CONST              0: <CODE> f
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              0: f
+        15      SET_LINENO              14
+        18      LOAD_CONST              1: "This program can't be run"
+        21      RAISE_VARARGS           1
+        24      SET_LINENO              16
+        27      LOAD_CONST              2: 1
+        30      STORE_NAME              1: x
+        33      SET_LINENO              17
+        36      LOAD_NAME               0: f
+        39      CALL_FUNCTION           0
+        42      POP_TOP                 
+        43      SET_LINENO              18
+        46      LOAD_NAME               1: x
+        49      PRINT_ITEM              
+        50      PRINT_NEWLINE           
+        51      LOAD_CONST              3: None
+        54      RETURN_VALUE            

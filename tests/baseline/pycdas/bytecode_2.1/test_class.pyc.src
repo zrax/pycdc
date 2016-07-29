@@ -1,0 +1,356 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_class.pyc (Python 2.1)
+[Code]
+    File Name: test/test_class.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 5
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'A'
+        'B'
+        'C'
+        'c'
+        'foo'
+        'bar'
+        'foobar'
+    [Var Names]
+        'c'
+        'B'
+        'C'
+        'A'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_class.py -- source test pattern for class definitions\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        'A'
+        [Code]
+            File Name: test/test_class.py
+            Object Name: A
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 3
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                'A1'
+                '__init__'
+                'foo'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'A1'
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: A1
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000002 (CO_NEWLOCALS)
+                    [Names]
+                        '__init__'
+                        'foo'
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: test/test_class.py
+                            Object Name: __init__
+                            Arg Count: 1
+                            Locals: 1
+                            Stack Size: 1
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                            [Var Names]
+                                'self'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'A1.__init__'
+                            [Disassembly]
+                                0       SET_LINENO              14
+                                3       SET_LINENO              15
+                                6       LOAD_CONST              1: 'A1.__init__'
+                                9       PRINT_ITEM              
+                                10      PRINT_NEWLINE           
+                                11      LOAD_CONST              0: None
+                                14      RETURN_VALUE            
+                        [Code]
+                            File Name: test/test_class.py
+                            Object Name: foo
+                            Arg Count: 1
+                            Locals: 1
+                            Stack Size: 1
+                            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                            [Names]
+                            [Var Names]
+                                'self'
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                                'A1.foo'
+                            [Disassembly]
+                                0       SET_LINENO              17
+                                3       SET_LINENO              18
+                                6       LOAD_CONST              1: 'A1.foo'
+                                9       PRINT_ITEM              
+                                10      PRINT_NEWLINE           
+                                11      LOAD_CONST              0: None
+                                14      RETURN_VALUE            
+                    [Disassembly]
+                        0       SET_LINENO              13
+                        3       SET_LINENO              14
+                        6       LOAD_CONST              1: <CODE> __init__
+                        9       MAKE_FUNCTION           0
+                        12      STORE_NAME              0: __init__
+                        15      SET_LINENO              17
+                        18      LOAD_CONST              2: <CODE> foo
+                        21      MAKE_FUNCTION           0
+                        24      STORE_NAME              1: foo
+                        27      LOAD_LOCALS             
+                        28      RETURN_VALUE            
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'A.__init__'
+                    [Disassembly]
+                        0       SET_LINENO              20
+                        3       SET_LINENO              21
+                        6       LOAD_CONST              1: 'A.__init__'
+                        9       PRINT_ITEM              
+                        10      PRINT_NEWLINE           
+                        11      LOAD_CONST              0: None
+                        14      RETURN_VALUE            
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: foo
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'A.foo'
+                    [Disassembly]
+                        0       SET_LINENO              23
+                        3       SET_LINENO              24
+                        6       LOAD_CONST              1: 'A.foo'
+                        9       PRINT_ITEM              
+                        10      PRINT_NEWLINE           
+                        11      LOAD_CONST              0: None
+                        14      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              11
+                3       SET_LINENO              13
+                6       LOAD_CONST              1: 'A1'
+                9       BUILD_TUPLE             0
+                12      LOAD_CONST              2: <CODE> A1
+                15      MAKE_FUNCTION           0
+                18      CALL_FUNCTION           0
+                21      BUILD_CLASS             
+                22      STORE_NAME              0: A1
+                25      SET_LINENO              20
+                28      LOAD_CONST              3: <CODE> __init__
+                31      MAKE_FUNCTION           0
+                34      STORE_NAME              1: __init__
+                37      SET_LINENO              23
+                40      LOAD_CONST              4: <CODE> foo
+                43      MAKE_FUNCTION           0
+                46      STORE_NAME              2: foo
+                49      LOAD_LOCALS             
+                50      RETURN_VALUE            
+        'B'
+        [Code]
+            File Name: test/test_class.py
+            Object Name: B
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                '__init__'
+                'bar'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'B.__init__'
+                    [Disassembly]
+                        0       SET_LINENO              28
+                        3       SET_LINENO              29
+                        6       LOAD_CONST              1: 'B.__init__'
+                        9       PRINT_ITEM              
+                        10      PRINT_NEWLINE           
+                        11      LOAD_CONST              0: None
+                        14      RETURN_VALUE            
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: bar
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'B.bar'
+                    [Disassembly]
+                        0       SET_LINENO              31
+                        3       SET_LINENO              32
+                        6       LOAD_CONST              1: 'B.bar'
+                        9       PRINT_ITEM              
+                        10      PRINT_NEWLINE           
+                        11      LOAD_CONST              0: None
+                        14      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              27
+                3       SET_LINENO              28
+                6       LOAD_CONST              1: <CODE> __init__
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              0: __init__
+                15      SET_LINENO              31
+                18      LOAD_CONST              2: <CODE> bar
+                21      MAKE_FUNCTION           0
+                24      STORE_NAME              1: bar
+                27      LOAD_LOCALS             
+                28      RETURN_VALUE            
+        'C'
+        [Code]
+            File Name: test/test_class.py
+            Object Name: C
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                'foobar'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_class.py
+                    Object Name: foobar
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                    [Var Names]
+                        'self'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'C.foobar'
+                    [Disassembly]
+                        0       SET_LINENO              36
+                        3       SET_LINENO              37
+                        6       LOAD_CONST              1: 'C.foobar'
+                        9       PRINT_ITEM              
+                        10      PRINT_NEWLINE           
+                        11      LOAD_CONST              0: None
+                        14      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              35
+                3       SET_LINENO              36
+                6       LOAD_CONST              1: <CODE> foobar
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              0: foobar
+                15      LOAD_LOCALS             
+                16      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_class.py -- source test pattern for class definitions\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: 'A'
+        18      BUILD_TUPLE             0
+        21      LOAD_CONST              2: <CODE> A
+        24      MAKE_FUNCTION           0
+        27      CALL_FUNCTION           0
+        30      BUILD_CLASS             
+        31      STORE_NAME              1: A
+        34      SET_LINENO              27
+        37      LOAD_CONST              3: 'B'
+        40      BUILD_TUPLE             0
+        43      LOAD_CONST              4: <CODE> B
+        46      MAKE_FUNCTION           0
+        49      CALL_FUNCTION           0
+        52      BUILD_CLASS             
+        53      STORE_NAME              2: B
+        56      SET_LINENO              35
+        59      LOAD_CONST              5: 'C'
+        62      LOAD_NAME               1: A
+        65      LOAD_NAME               2: B
+        68      BUILD_TUPLE             2
+        71      LOAD_CONST              6: <CODE> C
+        74      MAKE_FUNCTION           0
+        77      CALL_FUNCTION           0
+        80      BUILD_CLASS             
+        81      STORE_NAME              3: C
+        84      SET_LINENO              40
+        87      LOAD_NAME               3: C
+        90      CALL_FUNCTION           0
+        93      STORE_NAME              4: c
+        96      SET_LINENO              41
+        99      LOAD_NAME               4: c
+        102     LOAD_ATTR               5: foo
+        105     CALL_FUNCTION           0
+        108     POP_TOP                 
+        109     SET_LINENO              42
+        112     LOAD_NAME               4: c
+        115     LOAD_ATTR               6: bar
+        118     CALL_FUNCTION           0
+        121     POP_TOP                 
+        122     SET_LINENO              43
+        125     LOAD_NAME               4: c
+        128     LOAD_ATTR               7: foobar
+        131     CALL_FUNCTION           0
+        134     POP_TOP                 
+        135     LOAD_CONST              7: None
+        138     RETURN_VALUE            

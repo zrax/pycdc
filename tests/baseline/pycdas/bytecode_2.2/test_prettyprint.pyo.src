@@ -1,0 +1,429 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_prettyprint.pyo (Python 2.2)
+[Code]
+    File Name: test/test_prettyprint.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'pprint'
+        'aa'
+        'dict0'
+        'None'
+        'dict'
+        'list1'
+        'list2'
+        'tuple1'
+        'tuple2'
+        'funcA'
+    [Var Names]
+        'aa'
+        'tuple1'
+        'funcA'
+        'dict'
+        'dict0'
+        'pprint'
+        'list1'
+        'tuple2'
+        'list2'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_prettyprint.py --\tsource test pattern for tesing the prettyprint\n\t\t\tfuncionality of decompyle\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        None
+        'aa'
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        'a'
+        1234
+        'b'
+        'd'
+        'aaa'
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        'ca'
+        'cb'
+        'cc'
+        'c'
+        '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        '1ccccccccccccccccccccccccccccccccccccccccccc'
+        '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        '22ccccccccccccccccccccccccccccccccccccccccccc'
+        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        'ccccccccccccccccccccccccccccccccccccccccccc'
+        [Code]
+            File Name: test/test_prettyprint.py
+            Object Name: funcA
+            Arg Count: 0
+            Locals: 6
+            Stack Size: 6
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'None'
+                'aa'
+                'dict'
+                'list1'
+                'list2'
+                'tuple1'
+                'tuple2'
+                'funcAB'
+            [Var Names]
+                'tuple1'
+                'dict'
+                'funcAB'
+                'list1'
+                'tuple2'
+                'list2'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'aaa'
+                'a'
+                1234
+                'b'
+                'ca'
+                'cb'
+                'cc'
+                'c'
+                'd'
+                '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                '1ccccccccccccccccccccccccccccccccccccccccccc'
+                '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                '22ccccccccccccccccccccccccccccccccccccccccccc'
+                'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                'ccccccccccccccccccccccccccccccccccccccccccc'
+                [Code]
+                    File Name: test/test_prettyprint.py
+                    Object Name: funcAB
+                    Arg Count: 0
+                    Locals: 5
+                    Stack Size: 6
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'None'
+                        'aa'
+                        'dict'
+                        'list1'
+                        'list2'
+                        'tuple1'
+                        'tuple2'
+                    [Var Names]
+                        'tuple1'
+                        'dict'
+                        'list1'
+                        'tuple2'
+                        'list2'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'aaa'
+                        'a'
+                        1234
+                        'b'
+                        'ca'
+                        'cb'
+                        'cc'
+                        'c'
+                        'd'
+                        '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        '1ccccccccccccccccccccccccccccccccccccccccccc'
+                        '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        '22ccccccccccccccccccccccccccccccccccccccccccc'
+                        'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        'ccccccccccccccccccccccccccccccccccccccccccc'
+                    [Disassembly]
+                        0       BUILD_MAP               0
+                        3       DUP_TOP                 
+                        4       LOAD_CONST              1: 'aaa'
+                        7       ROT_TWO                 
+                        8       LOAD_CONST              2: 'a'
+                        11      STORE_SUBSCR            
+                        12      DUP_TOP                 
+                        13      LOAD_CONST              3: 1234
+                        16      ROT_TWO                 
+                        17      LOAD_CONST              4: 'b'
+                        20      STORE_SUBSCR            
+                        21      DUP_TOP                 
+                        22      BUILD_MAP               0
+                        25      DUP_TOP                 
+                        26      LOAD_CONST              1: 'aaa'
+                        29      ROT_TWO                 
+                        30      LOAD_CONST              5: 'ca'
+                        33      STORE_SUBSCR            
+                        34      DUP_TOP                 
+                        35      LOAD_CONST              3: 1234
+                        38      ROT_TWO                 
+                        39      LOAD_CONST              6: 'cb'
+                        42      STORE_SUBSCR            
+                        43      DUP_TOP                 
+                        44      LOAD_GLOBAL             0: None
+                        47      ROT_TWO                 
+                        48      LOAD_CONST              7: 'cc'
+                        51      STORE_SUBSCR            
+                        52      ROT_TWO                 
+                        53      LOAD_CONST              8: 'c'
+                        56      STORE_SUBSCR            
+                        57      DUP_TOP                 
+                        58      LOAD_GLOBAL             1: aa
+                        61      ROT_TWO                 
+                        62      LOAD_CONST              9: 'd'
+                        65      STORE_SUBSCR            
+                        66      DUP_TOP                 
+                        67      LOAD_GLOBAL             1: aa
+                        70      ROT_TWO                 
+                        71      LOAD_GLOBAL             1: aa
+                        74      STORE_SUBSCR            
+                        75      STORE_FAST              1: dict
+                        78      LOAD_CONST              10: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        81      LOAD_CONST              11: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        84      LOAD_CONST              12: '1ccccccccccccccccccccccccccccccccccccccccccc'
+                        87      BUILD_LIST              3
+                        90      STORE_FAST              2: list1
+                        93      LOAD_CONST              13: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        96      LOAD_CONST              14: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        99      LOAD_CONST              15: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        102     LOAD_CONST              16: '22ccccccccccccccccccccccccccccccccccccccccccc'
+                        105     BUILD_LIST              3
+                        108     LOAD_CONST              17: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        111     LOAD_CONST              18: 'ccccccccccccccccccccccccccccccccccccccccccc'
+                        114     BUILD_LIST              4
+                        117     STORE_FAST              4: list2
+                        120     LOAD_CONST              10: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        123     LOAD_CONST              11: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        126     LOAD_CONST              12: '1ccccccccccccccccccccccccccccccccccccccccccc'
+                        129     BUILD_TUPLE             3
+                        132     STORE_FAST              0: tuple1
+                        135     LOAD_CONST              13: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        138     LOAD_CONST              14: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                        141     LOAD_CONST              15: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        144     LOAD_CONST              16: '22ccccccccccccccccccccccccccccccccccccccccccc'
+                        147     BUILD_TUPLE             3
+                        150     LOAD_CONST              17: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                        153     LOAD_CONST              18: 'ccccccccccccccccccccccccccccccccccccccccccc'
+                        156     BUILD_TUPLE             4
+                        159     STORE_FAST              3: tuple2
+                        162     LOAD_CONST              0: None
+                        165     RETURN_VALUE            
+            [Disassembly]
+                0       BUILD_MAP               0
+                3       DUP_TOP                 
+                4       LOAD_CONST              1: 'aaa'
+                7       ROT_TWO                 
+                8       LOAD_CONST              2: 'a'
+                11      STORE_SUBSCR            
+                12      DUP_TOP                 
+                13      LOAD_CONST              3: 1234
+                16      ROT_TWO                 
+                17      LOAD_CONST              4: 'b'
+                20      STORE_SUBSCR            
+                21      DUP_TOP                 
+                22      BUILD_MAP               0
+                25      DUP_TOP                 
+                26      LOAD_CONST              1: 'aaa'
+                29      ROT_TWO                 
+                30      LOAD_CONST              5: 'ca'
+                33      STORE_SUBSCR            
+                34      DUP_TOP                 
+                35      LOAD_CONST              3: 1234
+                38      ROT_TWO                 
+                39      LOAD_CONST              6: 'cb'
+                42      STORE_SUBSCR            
+                43      DUP_TOP                 
+                44      LOAD_GLOBAL             0: None
+                47      ROT_TWO                 
+                48      LOAD_CONST              7: 'cc'
+                51      STORE_SUBSCR            
+                52      ROT_TWO                 
+                53      LOAD_CONST              8: 'c'
+                56      STORE_SUBSCR            
+                57      DUP_TOP                 
+                58      LOAD_GLOBAL             1: aa
+                61      ROT_TWO                 
+                62      LOAD_CONST              9: 'd'
+                65      STORE_SUBSCR            
+                66      DUP_TOP                 
+                67      LOAD_GLOBAL             1: aa
+                70      ROT_TWO                 
+                71      LOAD_GLOBAL             1: aa
+                74      STORE_SUBSCR            
+                75      STORE_FAST              1: dict
+                78      LOAD_CONST              10: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                81      LOAD_CONST              11: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                84      LOAD_GLOBAL             1: aa
+                87      LOAD_CONST              12: '1ccccccccccccccccccccccccccccccccccccccccccc'
+                90      BUILD_LIST              4
+                93      STORE_FAST              3: list1
+                96      LOAD_CONST              13: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                99      LOAD_CONST              14: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                102     LOAD_GLOBAL             1: aa
+                105     LOAD_CONST              15: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                108     LOAD_CONST              16: '22ccccccccccccccccccccccccccccccccccccccccccc'
+                111     BUILD_LIST              4
+                114     LOAD_CONST              17: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                117     LOAD_CONST              18: 'ccccccccccccccccccccccccccccccccccccccccccc'
+                120     BUILD_LIST              4
+                123     STORE_FAST              5: list2
+                126     LOAD_CONST              10: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                129     LOAD_CONST              11: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                132     LOAD_GLOBAL             1: aa
+                135     LOAD_CONST              12: '1ccccccccccccccccccccccccccccccccccccccccccc'
+                138     BUILD_TUPLE             4
+                141     STORE_FAST              0: tuple1
+                144     LOAD_CONST              13: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                147     LOAD_CONST              14: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+                150     LOAD_GLOBAL             1: aa
+                153     LOAD_CONST              15: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                156     LOAD_CONST              16: '22ccccccccccccccccccccccccccccccccccccccccccc'
+                159     BUILD_TUPLE             4
+                162     LOAD_CONST              17: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+                165     LOAD_CONST              18: 'ccccccccccccccccccccccccccccccccccccccccccc'
+                168     BUILD_TUPLE             4
+                171     STORE_FAST              4: tuple2
+                174     LOAD_CONST              19: <CODE> funcAB
+                177     MAKE_FUNCTION           0
+                180     STORE_FAST              2: funcAB
+                183     LOAD_CONST              0: None
+                186     RETURN_VALUE            
+    [Disassembly]
+        0       LOAD_CONST              0: '\ntest_prettyprint.py --\tsource test pattern for tesing the prettyprint\n\t\t\tfuncionality of decompyle\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: None
+        9       IMPORT_NAME             1: pprint
+        12      STORE_NAME              1: pprint
+        15      LOAD_CONST              2: 'aa'
+        18      STORE_NAME              2: aa
+        21      BUILD_MAP               0
+        24      DUP_TOP                 
+        25      LOAD_CONST              3: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        28      ROT_TWO                 
+        29      LOAD_CONST              4: 'a'
+        32      STORE_SUBSCR            
+        33      DUP_TOP                 
+        34      LOAD_CONST              5: 1234
+        37      ROT_TWO                 
+        38      LOAD_CONST              6: 'b'
+        41      STORE_SUBSCR            
+        42      DUP_TOP                 
+        43      LOAD_NAME               2: aa
+        46      ROT_TWO                 
+        47      LOAD_CONST              7: 'd'
+        50      STORE_SUBSCR            
+        51      DUP_TOP                 
+        52      LOAD_NAME               2: aa
+        55      ROT_TWO                 
+        56      LOAD_NAME               2: aa
+        59      STORE_SUBSCR            
+        60      STORE_NAME              3: dict0
+        63      BUILD_MAP               0
+        66      DUP_TOP                 
+        67      LOAD_CONST              8: 'aaa'
+        70      ROT_TWO                 
+        71      LOAD_CONST              4: 'a'
+        74      STORE_SUBSCR            
+        75      DUP_TOP                 
+        76      LOAD_CONST              5: 1234
+        79      ROT_TWO                 
+        80      LOAD_CONST              6: 'b'
+        83      STORE_SUBSCR            
+        84      DUP_TOP                 
+        85      BUILD_MAP               0
+        88      DUP_TOP                 
+        89      LOAD_CONST              9: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        92      ROT_TWO                 
+        93      LOAD_CONST              10: 'ca'
+        96      STORE_SUBSCR            
+        97      DUP_TOP                 
+        98      LOAD_CONST              5: 1234
+        101     ROT_TWO                 
+        102     LOAD_CONST              11: 'cb'
+        105     STORE_SUBSCR            
+        106     DUP_TOP                 
+        107     LOAD_NAME               4: None
+        110     ROT_TWO                 
+        111     LOAD_CONST              12: 'cc'
+        114     STORE_SUBSCR            
+        115     ROT_TWO                 
+        116     LOAD_CONST              13: 'c'
+        119     STORE_SUBSCR            
+        120     DUP_TOP                 
+        121     LOAD_NAME               2: aa
+        124     ROT_TWO                 
+        125     LOAD_CONST              7: 'd'
+        128     STORE_SUBSCR            
+        129     DUP_TOP                 
+        130     LOAD_NAME               2: aa
+        133     ROT_TWO                 
+        134     LOAD_NAME               2: aa
+        137     STORE_SUBSCR            
+        138     STORE_NAME              5: dict
+        141     LOAD_CONST              14: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        144     LOAD_NAME               2: aa
+        147     LOAD_CONST              15: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        150     LOAD_CONST              16: '1ccccccccccccccccccccccccccccccccccccccccccc'
+        153     BUILD_LIST              4
+        156     STORE_NAME              6: list1
+        159     LOAD_CONST              17: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        162     LOAD_CONST              18: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        165     LOAD_NAME               2: aa
+        168     LOAD_CONST              19: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        171     LOAD_CONST              20: '22ccccccccccccccccccccccccccccccccccccccccccc'
+        174     BUILD_LIST              4
+        177     LOAD_CONST              21: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        180     LOAD_CONST              22: 'ccccccccccccccccccccccccccccccccccccccccccc'
+        183     BUILD_LIST              4
+        186     STORE_NAME              7: list2
+        189     LOAD_CONST              14: '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        192     LOAD_NAME               2: aa
+        195     LOAD_CONST              15: '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        198     LOAD_CONST              16: '1ccccccccccccccccccccccccccccccccccccccccccc'
+        201     BUILD_TUPLE             4
+        204     STORE_NAME              8: tuple1
+        207     LOAD_CONST              17: '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        210     LOAD_CONST              18: '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        213     LOAD_NAME               2: aa
+        216     LOAD_CONST              19: '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        219     LOAD_CONST              20: '22ccccccccccccccccccccccccccccccccccccccccccc'
+        222     BUILD_TUPLE             4
+        225     LOAD_CONST              21: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+        228     LOAD_CONST              22: 'ccccccccccccccccccccccccccccccccccccccccccc'
+        231     BUILD_TUPLE             4
+        234     STORE_NAME              9: tuple2
+        237     LOAD_CONST              23: <CODE> funcA
+        240     MAKE_FUNCTION           0
+        243     STORE_NAME              10: funcA
+        246     LOAD_NAME               1: pprint
+        249     LOAD_ATTR               1: pprint
+        252     LOAD_NAME               3: dict0
+        255     CALL_FUNCTION           1
+        258     POP_TOP                 
+        259     PRINT_NEWLINE           
+        260     LOAD_NAME               1: pprint
+        263     LOAD_ATTR               1: pprint
+        266     LOAD_NAME               5: dict
+        269     CALL_FUNCTION           1
+        272     POP_TOP                 
+        273     PRINT_NEWLINE           
+        274     LOAD_NAME               1: pprint
+        277     LOAD_ATTR               1: pprint
+        280     LOAD_NAME               6: list1
+        283     CALL_FUNCTION           1
+        286     POP_TOP                 
+        287     PRINT_NEWLINE           
+        288     LOAD_NAME               1: pprint
+        291     LOAD_ATTR               1: pprint
+        294     LOAD_NAME               7: list2
+        297     CALL_FUNCTION           1
+        300     POP_TOP                 
+        301     LOAD_CONST              1: None
+        304     RETURN_VALUE            

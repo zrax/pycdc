@@ -1,0 +1,614 @@
+../../pycdc/tests/inputs/bytecode_2.1/test_exceptions.pyo (Python 2.1)
+[Code]
+    File Name: test/test_exceptions.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 2
+    Flags: 0x00000000
+    [Names]
+        'dis'
+        'x11'
+        'x12'
+        'x13'
+        'x21'
+        'x22'
+        'x23'
+        'x31'
+        'x32'
+        'x33'
+        'x41'
+        'x42'
+        '__name__'
+        'xx'
+    [Var Names]
+        'dis'
+        'x23'
+        'x21'
+        'x13'
+        'x12'
+        'x11'
+        'x22'
+        'x41'
+        'x42'
+        'x31'
+        'x33'
+        'x32'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        None
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x11
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try except'
+                2
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try except'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            13 (to 26)
+                13      POP_TOP                 
+                14      POP_TOP                 
+                15      POP_TOP                 
+                16      LOAD_CONST              2: 2
+                19      STORE_FAST              1: a
+                22      JUMP_FORWARD            1 (to 26)
+                25      END_FINALLY             
+                26      LOAD_CONST              3: '--------'
+                29      STORE_FAST              0: b
+                32      LOAD_CONST              0: None
+                35      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x12
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try except else(pass)'
+                2
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try except else(pass)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            13 (to 26)
+                13      POP_TOP                 
+                14      POP_TOP                 
+                15      POP_TOP                 
+                16      LOAD_CONST              2: 2
+                19      STORE_FAST              1: a
+                22      JUMP_FORWARD            1 (to 26)
+                25      END_FINALLY             
+                26      LOAD_CONST              3: '--------'
+                29      STORE_FAST              0: b
+                32      LOAD_CONST              0: None
+                35      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x13
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 3
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try except else(a=3)'
+                2
+                3
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try except else(a=3)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            13 (to 26)
+                13      POP_TOP                 
+                14      POP_TOP                 
+                15      POP_TOP                 
+                16      LOAD_CONST              2: 2
+                19      STORE_FAST              1: a
+                22      JUMP_FORWARD            7 (to 32)
+                25      END_FINALLY             
+                26      LOAD_CONST              3: 3
+                29      STORE_FAST              1: a
+                32      LOAD_CONST              4: '--------'
+                35      STORE_FAST              0: b
+                38      LOAD_CONST              0: None
+                41      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x21
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try KeyError'
+                8
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try KeyError'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            25 (to 38)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: KeyError
+                17      COMPARE_OP              10
+                20      JUMP_IF_FALSE           13 (to 36)
+                23      POP_TOP                 
+                24      POP_TOP                 
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      LOAD_CONST              2: 8
+                30      STORE_FAST              1: a
+                33      JUMP_FORWARD            2 (to 38)
+                36      POP_TOP                 
+                37      END_FINALLY             
+                38      LOAD_CONST              3: '--------'
+                41      STORE_FAST              0: b
+                44      LOAD_CONST              0: None
+                47      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x22
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 6
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'IndexError'
+                'KeyError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try (IdxErr, KeyError) else(pass)'
+                8
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try (IdxErr, KeyError) else(pass)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            31 (to 44)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: IndexError
+                17      LOAD_GLOBAL             2: KeyError
+                20      BUILD_TUPLE             2
+                23      COMPARE_OP              10
+                26      JUMP_IF_FALSE           13 (to 42)
+                29      POP_TOP                 
+                30      POP_TOP                 
+                31      POP_TOP                 
+                32      POP_TOP                 
+                33      LOAD_CONST              2: 8
+                36      STORE_FAST              1: a
+                39      JUMP_FORWARD            2 (to 44)
+                42      POP_TOP                 
+                43      END_FINALLY             
+                44      LOAD_CONST              3: '--------'
+                47      STORE_FAST              0: b
+                50      LOAD_CONST              0: None
+                53      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x23
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try KeyError else(a=9)'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try KeyError else(a=9)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            25 (to 38)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: KeyError
+                17      COMPARE_OP              10
+                20      JUMP_IF_FALSE           13 (to 36)
+                23      POP_TOP                 
+                24      POP_TOP                 
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      LOAD_CONST              2: 8
+                30      STORE_FAST              1: a
+                33      JUMP_FORWARD            8 (to 44)
+                36      POP_TOP                 
+                37      END_FINALLY             
+                38      LOAD_CONST              3: 9
+                41      STORE_FAST              1: a
+                44      LOAD_CONST              4: '--------'
+                47      STORE_FAST              0: b
+                50      LOAD_CONST              0: None
+                53      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x31
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try KeyError IndexError'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try KeyError IndexError'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            49 (to 62)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: KeyError
+                17      COMPARE_OP              10
+                20      JUMP_IF_FALSE           13 (to 36)
+                23      POP_TOP                 
+                24      POP_TOP                 
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      LOAD_CONST              2: 8
+                30      STORE_FAST              1: a
+                33      JUMP_FORWARD            26 (to 62)
+                36      POP_TOP                 
+                37      DUP_TOP                 
+                38      LOAD_GLOBAL             2: IndexError
+                41      COMPARE_OP              10
+                44      JUMP_IF_FALSE           13 (to 60)
+                47      POP_TOP                 
+                48      POP_TOP                 
+                49      POP_TOP                 
+                50      POP_TOP                 
+                51      LOAD_CONST              3: 9
+                54      STORE_FAST              1: a
+                57      JUMP_FORWARD            2 (to 62)
+                60      POP_TOP                 
+                61      END_FINALLY             
+                62      LOAD_CONST              4: '--------'
+                65      STORE_FAST              0: b
+                68      LOAD_CONST              0: None
+                71      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x32
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try KeyError IndexError else(pass)'
+                8
+                9
+                '--------'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try KeyError IndexError else(pass)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            49 (to 62)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: KeyError
+                17      COMPARE_OP              10
+                20      JUMP_IF_FALSE           13 (to 36)
+                23      POP_TOP                 
+                24      POP_TOP                 
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      LOAD_CONST              2: 8
+                30      STORE_FAST              1: a
+                33      JUMP_FORWARD            26 (to 62)
+                36      POP_TOP                 
+                37      DUP_TOP                 
+                38      LOAD_GLOBAL             2: IndexError
+                41      COMPARE_OP              10
+                44      JUMP_IF_FALSE           13 (to 60)
+                47      POP_TOP                 
+                48      POP_TOP                 
+                49      POP_TOP                 
+                50      POP_TOP                 
+                51      LOAD_CONST              3: 9
+                54      STORE_FAST              1: a
+                57      JUMP_FORWARD            2 (to 62)
+                60      POP_TOP                 
+                61      END_FINALLY             
+                62      LOAD_CONST              4: '--------'
+                65      STORE_FAST              0: b
+                68      LOAD_CONST              0: None
+                71      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x33
+            Arg Count: 0
+            Locals: 2
+            Stack Size: 5
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'KeyError'
+                'IndexError'
+                'b'
+            [Var Names]
+                'b'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                'try KeyError IndexError else(a=9)'
+                8
+                9
+                '#################'
+            [Disassembly]
+                0       SETUP_EXCEPT            10 (to 13)
+                3       LOAD_CONST              1: 'try KeyError IndexError else(a=9)'
+                6       STORE_FAST              1: a
+                9       POP_BLOCK               
+                10      JUMP_FORWARD            49 (to 62)
+                13      DUP_TOP                 
+                14      LOAD_GLOBAL             1: KeyError
+                17      COMPARE_OP              10
+                20      JUMP_IF_FALSE           13 (to 36)
+                23      POP_TOP                 
+                24      POP_TOP                 
+                25      POP_TOP                 
+                26      POP_TOP                 
+                27      LOAD_CONST              2: 8
+                30      STORE_FAST              1: a
+                33      JUMP_FORWARD            32 (to 68)
+                36      POP_TOP                 
+                37      DUP_TOP                 
+                38      LOAD_GLOBAL             2: IndexError
+                41      COMPARE_OP              10
+                44      JUMP_IF_FALSE           13 (to 60)
+                47      POP_TOP                 
+                48      POP_TOP                 
+                49      POP_TOP                 
+                50      POP_TOP                 
+                51      LOAD_CONST              3: 9
+                54      STORE_FAST              1: a
+                57      JUMP_FORWARD            8 (to 68)
+                60      POP_TOP                 
+                61      END_FINALLY             
+                62      LOAD_CONST              3: 9
+                65      STORE_FAST              1: a
+                68      LOAD_CONST              4: '#################'
+                71      STORE_FAST              0: b
+                74      LOAD_CONST              0: None
+                77      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x41
+            Arg Count: 0
+            Locals: 3
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+                'c'
+            [Var Names]
+                'b'
+                'c'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+                '#################'
+            [Disassembly]
+                0       LOAD_FAST               2: a
+                3       LOAD_CONST              1: 1
+                6       COMPARE_OP              2
+                9       JUMP_IF_FALSE           10 (to 22)
+                12      POP_TOP                 
+                13      LOAD_CONST              1: 1
+                16      STORE_FAST              2: a
+                19      JUMP_FORWARD            30 (to 52)
+                22      POP_TOP                 
+                23      LOAD_FAST               0: b
+                26      LOAD_CONST              1: 1
+                29      COMPARE_OP              2
+                32      JUMP_IF_FALSE           10 (to 45)
+                35      POP_TOP                 
+                36      LOAD_CONST              1: 1
+                39      STORE_FAST              0: b
+                42      JUMP_FORWARD            7 (to 52)
+                45      POP_TOP                 
+                46      LOAD_CONST              1: 1
+                49      STORE_FAST              1: c
+                52      LOAD_CONST              2: '#################'
+                55      STORE_FAST              0: b
+                58      LOAD_CONST              0: None
+                61      RETURN_VALUE            
+        [Code]
+            File Name: test/test_exceptions.py
+            Object Name: x42
+            Arg Count: 0
+            Locals: 4
+            Stack Size: 2
+            Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+            [Names]
+                'a'
+                'b'
+                'c'
+                'xxx'
+            [Var Names]
+                'b'
+                'c'
+                'xxx'
+                'a'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                1
+                'mmm'
+            [Disassembly]
+                0       LOAD_FAST               3: a
+                3       LOAD_CONST              1: 1
+                6       COMPARE_OP              2
+                9       JUMP_IF_FALSE           10 (to 22)
+                12      POP_TOP                 
+                13      LOAD_CONST              1: 1
+                16      STORE_FAST              3: a
+                19      JUMP_FORWARD            30 (to 52)
+                22      POP_TOP                 
+                23      LOAD_FAST               0: b
+                26      LOAD_CONST              1: 1
+                29      COMPARE_OP              2
+                32      JUMP_IF_FALSE           10 (to 45)
+                35      POP_TOP                 
+                36      LOAD_CONST              1: 1
+                39      STORE_FAST              0: b
+                42      JUMP_FORWARD            7 (to 52)
+                45      POP_TOP                 
+                46      LOAD_CONST              1: 1
+                49      STORE_FAST              1: c
+                52      LOAD_CONST              2: 'mmm'
+                55      STORE_FAST              2: xxx
+                58      LOAD_CONST              0: None
+                61      RETURN_VALUE            
+        '__main__'
+    [Disassembly]
+        0       LOAD_CONST              0: None
+        3       IMPORT_NAME             0: dis
+        6       STORE_NAME              0: dis
+        9       LOAD_CONST              1: <CODE> x11
+        12      MAKE_FUNCTION           0
+        15      STORE_NAME              1: x11
+        18      LOAD_CONST              2: <CODE> x12
+        21      MAKE_FUNCTION           0
+        24      STORE_NAME              2: x12
+        27      LOAD_CONST              3: <CODE> x13
+        30      MAKE_FUNCTION           0
+        33      STORE_NAME              3: x13
+        36      LOAD_CONST              4: <CODE> x21
+        39      MAKE_FUNCTION           0
+        42      STORE_NAME              4: x21
+        45      LOAD_CONST              5: <CODE> x22
+        48      MAKE_FUNCTION           0
+        51      STORE_NAME              5: x22
+        54      LOAD_CONST              6: <CODE> x23
+        57      MAKE_FUNCTION           0
+        60      STORE_NAME              6: x23
+        63      LOAD_CONST              7: <CODE> x31
+        66      MAKE_FUNCTION           0
+        69      STORE_NAME              7: x31
+        72      LOAD_CONST              8: <CODE> x32
+        75      MAKE_FUNCTION           0
+        78      STORE_NAME              8: x32
+        81      LOAD_CONST              9: <CODE> x33
+        84      MAKE_FUNCTION           0
+        87      STORE_NAME              9: x33
+        90      LOAD_CONST              10: <CODE> x41
+        93      MAKE_FUNCTION           0
+        96      STORE_NAME              10: x41
+        99      LOAD_CONST              11: <CODE> x42
+        102     MAKE_FUNCTION           0
+        105     STORE_NAME              11: x42
+        108     LOAD_NAME               12: __name__
+        111     LOAD_CONST              12: '__main__'
+        114     COMPARE_OP              2
+        117     JUMP_IF_FALSE           17 (to 137)
+        120     POP_TOP                 
+        121     LOAD_NAME               0: dis
+        124     LOAD_ATTR               0: dis
+        127     LOAD_NAME               13: xx
+        130     CALL_FUNCTION           1
+        133     POP_TOP                 
+        134     JUMP_FORWARD            1 (to 138)
+        137     POP_TOP                 
+        138     LOAD_CONST              0: None
+        141     RETURN_VALUE            

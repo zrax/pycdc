@@ -1,0 +1,248 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_docstring.pyc (Python 2.7)
+[Code]
+    File Name: source\test_docstring.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        '__doc__'
+        'Doc_Test'
+        'XXX'
+        'Y11'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\nThis is a doc string\n'
+        [Code]
+            File Name: source\test_docstring.py
+            Object Name: Doc_Test
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                'This has to be present'
+                None
+            [Disassembly]
+                0       LOAD_CONST              1: None
+                3       RETURN_VALUE            
+        'XXX'
+        [Code]
+            File Name: source\test_docstring.py
+            Object Name: XXX
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000042 (CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+                '__name__'
+                '__module__'
+                '__init__'
+                'XXX11'
+                'XXX12'
+                'XXX13'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                [Code]
+                    File Name: source\test_docstring.py
+                    Object Name: __init__
+                    Arg Count: 1
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                        'a'
+                    [Var Names]
+                        'self'
+                        'XXX22'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        '__init__: This has to be present'
+                        1
+                        [Code]
+                            File Name: source\test_docstring.py
+                            Object Name: XXX22
+                            Arg Count: 0
+                            Locals: 0
+                            Stack Size: 1
+                            Flags: 0x00000053 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NESTED | CO_NOFREE)
+                            [Names]
+                            [Var Names]
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                'XXX22: This has to be present'
+                                None
+                            [Disassembly]
+                                0       LOAD_CONST              1: None
+                                3       RETURN_VALUE            
+                        None
+                    [Disassembly]
+                        0       LOAD_CONST              1: 1
+                        3       LOAD_FAST               0: self
+                        6       STORE_ATTR              0: a
+                        9       LOAD_CONST              2: <CODE> XXX22
+                        12      MAKE_FUNCTION           0
+                        15      STORE_FAST              1: XXX22
+                        18      LOAD_CONST              3: None
+                        21      RETURN_VALUE            
+                [Code]
+                    File Name: source\test_docstring.py
+                    Object Name: XXX11
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        'XXX22: This has to be present'
+                        None
+                    [Disassembly]
+                        0       LOAD_CONST              1: None
+                        3       RETURN_VALUE            
+                [Code]
+                    File Name: source\test_docstring.py
+                    Object Name: XXX12
+                    Arg Count: 0
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'foo'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        'XXX22: This has to be present'
+                    [Disassembly]
+                        0       LOAD_CONST              1: 'XXX22: This has to be present'
+                        3       STORE_FAST              0: foo
+                        6       LOAD_CONST              0: None
+                        9       RETURN_VALUE            
+                [Code]
+                    File Name: source\test_docstring.py
+                    Object Name: XXX13
+                    Arg Count: 0
+                    Locals: 0
+                    Stack Size: 1
+                    Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_CONST              0: None
+                        3       RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_NAME               0: __name__
+                3       STORE_NAME              1: __module__
+                6       LOAD_CONST              0: <CODE> __init__
+                9       MAKE_FUNCTION           0
+                12      STORE_NAME              2: __init__
+                15      LOAD_CONST              1: <CODE> XXX11
+                18      MAKE_FUNCTION           0
+                21      STORE_NAME              3: XXX11
+                24      LOAD_CONST              2: <CODE> XXX12
+                27      MAKE_FUNCTION           0
+                30      STORE_NAME              4: XXX12
+                33      LOAD_CONST              3: <CODE> XXX13
+                36      MAKE_FUNCTION           0
+                39      STORE_NAME              5: XXX13
+                42      LOAD_LOCALS             
+                43      RETURN_VALUE            
+        [Code]
+            File Name: source\test_docstring.py
+            Object Name: Y11
+            Arg Count: 0
+            Locals: 1
+            Stack Size: 1
+            Flags: 0x00000043 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE)
+            [Names]
+            [Var Names]
+                'Y22'
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: source\test_docstring.py
+                    Object Name: Y22
+                    Arg Count: 0
+                    Locals: 1
+                    Stack Size: 1
+                    Flags: 0x00000053 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NESTED | CO_NOFREE)
+                    [Names]
+                    [Var Names]
+                        'Y33'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        [Code]
+                            File Name: source\test_docstring.py
+                            Object Name: Y33
+                            Arg Count: 0
+                            Locals: 0
+                            Stack Size: 1
+                            Flags: 0x00000053 (CO_OPTIMIZED | CO_NEWLOCALS | CO_NESTED | CO_NOFREE)
+                            [Names]
+                            [Var Names]
+                            [Free Vars]
+                            [Cell Vars]
+                            [Constants]
+                                None
+                            [Disassembly]
+                                0       LOAD_CONST              0: None
+                                3       RETURN_VALUE            
+                    [Disassembly]
+                        0       LOAD_CONST              1: <CODE> Y33
+                        3       MAKE_FUNCTION           0
+                        6       STORE_FAST              0: Y33
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> Y22
+                3       MAKE_FUNCTION           0
+                6       STORE_FAST              0: Y22
+                9       LOAD_CONST              0: None
+                12      RETURN_VALUE            
+        None
+        (
+        )
+    [Disassembly]
+        0       LOAD_CONST              0: '\nThis is a doc string\n'
+        3       STORE_NAME              0: __doc__
+        6       LOAD_CONST              1: <CODE> Doc_Test
+        9       MAKE_FUNCTION           0
+        12      STORE_NAME              1: Doc_Test
+        15      LOAD_CONST              2: 'XXX'
+        18      LOAD_CONST              6: ()
+        21      LOAD_CONST              3: <CODE> XXX
+        24      MAKE_FUNCTION           0
+        27      CALL_FUNCTION           0
+        30      BUILD_CLASS             
+        31      STORE_NAME              2: XXX
+        34      LOAD_CONST              4: <CODE> Y11
+        37      MAKE_FUNCTION           0
+        40      STORE_NAME              3: Y11
+        43      LOAD_NAME               0: __doc__
+        46      PRINT_ITEM              
+        47      PRINT_NEWLINE           
+        48      LOAD_CONST              5: None
+        51      RETURN_VALUE            

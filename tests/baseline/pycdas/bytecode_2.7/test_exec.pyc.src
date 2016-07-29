@@ -1,0 +1,38 @@
+../../pycdc/tests/inputs/bytecode_2.7/test_exec.pyc (Python 2.7)
+[Code]
+    File Name: source\test_exec.py
+    Object Name: <module>
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000040 (CO_NOFREE)
+    [Names]
+        'testcode'
+        'globals'
+        'locals'
+    [Var Names]
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'a = 12'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: 'a = 12'
+        3       STORE_NAME              0: testcode
+        6       LOAD_NAME               0: testcode
+        9       LOAD_CONST              1: None
+        12      DUP_TOP                 
+        13      EXEC_STMT               
+        14      LOAD_NAME               0: testcode
+        17      LOAD_NAME               1: globals
+        20      CALL_FUNCTION           0
+        23      DUP_TOP                 
+        24      EXEC_STMT               
+        25      LOAD_NAME               0: testcode
+        28      LOAD_NAME               1: globals
+        31      CALL_FUNCTION           0
+        34      LOAD_NAME               2: locals
+        37      CALL_FUNCTION           0
+        40      EXEC_STMT               
+        41      LOAD_CONST              1: None
+        44      RETURN_VALUE            

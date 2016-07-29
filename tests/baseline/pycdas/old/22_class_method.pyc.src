@@ -1,0 +1,109 @@
+../../pycdc/tests/inputs/old/22_class_method.pyc (Python 2.2)
+[Code]
+    File Name: ./test.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        'MyClass'
+    [Var Names]
+        'MyClass'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        'MyClass'
+        [Code]
+            File Name: ./test.py
+            Object Name: MyClass
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                '__name__'
+                '__module__'
+                'method'
+            [Var Names]
+            [Free Vars]
+            [Cell Vars]
+            [Constants]
+                None
+                [Code]
+                    File Name: ./test.py
+                    Object Name: method
+                    Arg Count: 2
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'i'
+                    [Var Names]
+                        'self'
+                        'i'
+                    [Free Vars]
+                    [Cell Vars]
+                    [Constants]
+                        None
+                        5
+                        'five'
+                        2
+                        'not two'
+                        '2'
+                    [Disassembly]
+                        0       SET_LINENO              2
+                        3       SET_LINENO              3
+                        6       LOAD_FAST               1: i
+                        9       LOAD_CONST              1: 5
+                        12      COMPARE_OP              8
+                        15      JUMP_IF_FALSE           12 (to 30)
+                        18      POP_TOP                 
+                        19      SET_LINENO              4
+                        22      LOAD_CONST              2: 'five'
+                        25      PRINT_ITEM              
+                        26      PRINT_NEWLINE           
+                        27      JUMP_FORWARD            38 (to 68)
+                        30      POP_TOP                 
+                        31      SET_LINENO              5
+                        34      LOAD_FAST               1: i
+                        37      LOAD_CONST              3: 2
+                        40      COMPARE_OP              8
+                        43      UNARY_NOT               
+                        44      JUMP_IF_FALSE           12 (to 59)
+                        47      POP_TOP                 
+                        48      SET_LINENO              6
+                        51      LOAD_CONST              4: 'not two'
+                        54      PRINT_ITEM              
+                        55      PRINT_NEWLINE           
+                        56      JUMP_FORWARD            9 (to 68)
+                        59      POP_TOP                 
+                        60      SET_LINENO              8
+                        63      LOAD_CONST              5: '2'
+                        66      PRINT_ITEM              
+                        67      PRINT_NEWLINE           
+                        68      LOAD_CONST              0: None
+                        71      RETURN_VALUE            
+            [Disassembly]
+                0       SET_LINENO              1
+                3       LOAD_GLOBAL             0: __name__
+                6       STORE_NAME              1: __module__
+                9       SET_LINENO              2
+                12      LOAD_CONST              1: <CODE> method
+                15      MAKE_FUNCTION           0
+                18      STORE_NAME              2: method
+                21      LOAD_LOCALS             
+                22      RETURN_VALUE            
+        None
+    [Disassembly]
+        0       SET_LINENO              0
+        3       SET_LINENO              1
+        6       LOAD_CONST              0: 'MyClass'
+        9       BUILD_TUPLE             0
+        12      LOAD_CONST              1: <CODE> MyClass
+        15      MAKE_FUNCTION           0
+        18      CALL_FUNCTION           0
+        21      BUILD_CLASS             
+        22      STORE_NAME              0: MyClass
+        25      LOAD_CONST              2: None
+        28      RETURN_VALUE            

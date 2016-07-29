@@ -1,0 +1,116 @@
+../../pycdc/tests/inputs/bytecode_2.2/test_import.pyc (Python 2.2)
+[Code]
+    File Name: test/test_import.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 3
+    Flags: 0x00000000
+    [Names]
+        '__doc__'
+        'sys'
+        'os'
+        'BaseHTTPServer'
+        'test.test_MimeWriter'
+        'test'
+        'rfc822'
+        'Message'
+        'mimetools'
+        'decode'
+        'choose_boundary'
+        'globals'
+        'items'
+        'k'
+        'v'
+    [Var Names]
+        'sys'
+        'test'
+        'choose_boundary'
+        'BaseHTTPServer'
+        'Message'
+        'v'
+        'os'
+        'k'
+        'decode'
+    [Free Vars]
+    [Cell Vars]
+    [Constants]
+        '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        None
+        (
+            'Message'
+        )
+        (
+            'Message'
+            'decode'
+            'choose_boundary'
+        )
+        (
+            '*'
+        )
+    [Disassembly]
+        0       SET_LINENO              0
+        3       LOAD_CONST              0: '\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n'
+        6       STORE_NAME              0: __doc__
+        9       SET_LINENO              9
+        12      SET_LINENO              11
+        15      LOAD_CONST              1: None
+        18      IMPORT_NAME             1: sys
+        21      STORE_NAME              1: sys
+        24      SET_LINENO              12
+        27      LOAD_CONST              1: None
+        30      IMPORT_NAME             2: os
+        33      STORE_NAME              2: os
+        36      LOAD_CONST              1: None
+        39      IMPORT_NAME             1: sys
+        42      STORE_NAME              1: sys
+        45      LOAD_CONST              1: None
+        48      IMPORT_NAME             3: BaseHTTPServer
+        51      STORE_NAME              3: BaseHTTPServer
+        54      SET_LINENO              14
+        57      LOAD_CONST              1: None
+        60      IMPORT_NAME             4: test.test_MimeWriter
+        63      STORE_NAME              5: test
+        66      SET_LINENO              16
+        69      LOAD_CONST              2: ('Message',)
+        72      IMPORT_NAME             6: rfc822
+        75      IMPORT_FROM             7: Message
+        78      STORE_NAME              7: Message
+        81      POP_TOP                 
+        82      SET_LINENO              17
+        85      LOAD_CONST              3: ('Message', 'decode', 'choose_boundary')
+        88      IMPORT_NAME             8: mimetools
+        91      IMPORT_FROM             7: Message
+        94      STORE_NAME              7: Message
+        97      IMPORT_FROM             9: decode
+        100     STORE_NAME              9: decode
+        103     IMPORT_FROM             10: choose_boundary
+        106     STORE_NAME              10: choose_boundary
+        109     POP_TOP                 
+        110     SET_LINENO              18
+        113     LOAD_CONST              4: ('*',)
+        116     IMPORT_NAME             2: os
+        119     IMPORT_STAR             
+        120     SET_LINENO              20
+        123     SETUP_LOOP              45 (to 171)
+        126     LOAD_NAME               11: globals
+        129     CALL_FUNCTION           0
+        132     LOAD_ATTR               12: items
+        135     CALL_FUNCTION           0
+        138     GET_ITER                
+        139     SET_LINENO              20
+        142     FOR_ITER                25
+        145     UNPACK_SEQUENCE         2
+        148     STORE_NAME              13: k
+        151     STORE_NAME              14: v
+        154     SET_LINENO              21
+        157     LOAD_NAME               13: k
+        160     UNARY_CONVERT           
+        161     PRINT_ITEM              
+        162     LOAD_NAME               14: v
+        165     PRINT_ITEM              
+        166     PRINT_NEWLINE           
+        167     JUMP_ABSOLUTE           139
+        170     POP_BLOCK               
+        171     LOAD_CONST              1: None
+        174     RETURN_VALUE            

@@ -1,0 +1,191 @@
+../../pycdc/tests/inputs/bytecode_1.5/test_misc.pyo (Python 1.5)
+[Code]
+    File Name: test/test_misc.py
+    Object Name: ?
+    Arg Count: 0
+    Locals: 0
+    Stack Size: 6
+    Flags: 0x00000000
+    [Names]
+        'A'
+        'b'
+        'range'
+        'i'
+        'append'
+        'len'
+        'None'
+        'p2'
+    [Var Names]
+    [Constants]
+        "This program can't be run"
+        'A'
+        [Code]
+            File Name: test/test_misc.py
+            Object Name: A
+            Arg Count: 0
+            Locals: 0
+            Stack Size: 1
+            Flags: 0x00000002 (CO_NEWLOCALS)
+            [Names]
+                '__init__'
+                '__repr__'
+            [Var Names]
+            [Constants]
+                None
+                [Code]
+                    File Name: test/test_misc.py
+                    Object Name: __init__
+                    Arg Count: 2
+                    Locals: 2
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'num'
+                        'self'
+                    [Var Names]
+                        'self'
+                        'num'
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_FAST               1: num
+                        3       LOAD_FAST               0: self
+                        6       STORE_ATTR              0: num
+                        9       LOAD_CONST              0: None
+                        12      RETURN_VALUE            
+                [Code]
+                    File Name: test/test_misc.py
+                    Object Name: __repr__
+                    Arg Count: 1
+                    Locals: 1
+                    Stack Size: 2
+                    Flags: 0x00000003 (CO_OPTIMIZED | CO_NEWLOCALS)
+                    [Names]
+                        'str'
+                        'self'
+                        'num'
+                    [Var Names]
+                        'self'
+                    [Constants]
+                        None
+                    [Disassembly]
+                        0       LOAD_GLOBAL             0: str
+                        3       LOAD_FAST               0: self
+                        6       LOAD_ATTR               2: num
+                        9       CALL_FUNCTION           1
+                        12      RETURN_VALUE            
+                        13      LOAD_CONST              0: None
+                        16      RETURN_VALUE            
+            [Disassembly]
+                0       LOAD_CONST              1: <CODE> __init__
+                3       MAKE_FUNCTION           0
+                6       STORE_NAME              0: __init__
+                9       LOAD_CONST              2: <CODE> __repr__
+                12      MAKE_FUNCTION           0
+                15      STORE_NAME              1: __repr__
+                18      LOAD_LOCALS             
+                19      RETURN_VALUE            
+        10
+        0
+        'CALL_FUNCTION'
+        'CALL_FUNCTION_VAR'
+        'CALL_FUNCTION_VAR_KW'
+        'CALL_FUNCTION_KW'
+        '\t'
+        3
+        2
+        'has value'
+        ' no value'
+        None
+    [Disassembly]
+        0       LOAD_CONST              0: "This program can't be run"
+        3       RAISE_VARARGS           1
+        6       LOAD_CONST              1: 'A'
+        9       BUILD_TUPLE             0
+        12      LOAD_CONST              2: <CODE> A
+        15      MAKE_FUNCTION           0
+        18      CALL_FUNCTION           0
+        21      BUILD_CLASS             
+        22      STORE_NAME              0: A
+        25      BUILD_LIST              0
+        28      STORE_NAME              1: b
+        31      SETUP_LOOP              41 (to 75)
+        34      LOAD_NAME               2: range
+        37      LOAD_CONST              3: 10
+        40      CALL_FUNCTION           1
+        43      LOAD_CONST              4: 0
+        46      FOR_LOOP                25 (to 74)
+        49      STORE_NAME              3: i
+        52      LOAD_NAME               1: b
+        55      LOAD_ATTR               4: append
+        58      LOAD_NAME               0: A
+        61      LOAD_NAME               3: i
+        64      CALL_FUNCTION           1
+        67      CALL_FUNCTION           1
+        70      POP_TOP                 
+        71      JUMP_ABSOLUTE           46
+        74      POP_BLOCK               
+        75      SETUP_LOOP              105 (to 183)
+        78      LOAD_CONST              5: 'CALL_FUNCTION'
+        81      LOAD_CONST              6: 'CALL_FUNCTION_VAR'
+        84      LOAD_CONST              7: 'CALL_FUNCTION_VAR_KW'
+        87      LOAD_CONST              8: 'CALL_FUNCTION_KW'
+        90      BUILD_TUPLE             4
+        93      LOAD_CONST              4: 0
+        96      FOR_LOOP                83 (to 182)
+        99      STORE_NAME              3: i
+        102     LOAD_NAME               3: i
+        105     PRINT_ITEM              
+        106     LOAD_CONST              9: '\t'
+        109     PRINT_ITEM              
+        110     LOAD_NAME               5: len
+        113     LOAD_NAME               3: i
+        116     CALL_FUNCTION           1
+        119     PRINT_ITEM              
+        120     LOAD_NAME               5: len
+        123     LOAD_NAME               3: i
+        126     CALL_FUNCTION           1
+        129     LOAD_NAME               5: len
+        132     LOAD_CONST              5: 'CALL_FUNCTION'
+        135     CALL_FUNCTION           1
+        138     BINARY_SUBTRACT         
+        139     PRINT_ITEM              
+        140     LOAD_NAME               5: len
+        143     LOAD_NAME               3: i
+        146     CALL_FUNCTION           1
+        149     LOAD_NAME               5: len
+        152     LOAD_CONST              5: 'CALL_FUNCTION'
+        155     CALL_FUNCTION           1
+        158     BINARY_SUBTRACT         
+        159     LOAD_CONST              10: 3
+        162     BINARY_DIVIDE           
+        163     PRINT_ITEM              
+        164     LOAD_NAME               3: i
+        167     LOAD_NAME               5: len
+        170     LOAD_CONST              5: 'CALL_FUNCTION'
+        173     CALL_FUNCTION           1
+        176     SLICE_1                 
+        177     PRINT_ITEM              
+        178     PRINT_NEWLINE           
+        179     JUMP_ABSOLUTE           96
+        182     POP_BLOCK               
+        183     LOAD_CONST              4: 0
+        186     LOAD_CONST              4: 0
+        189     LOAD_NAME               6: None
+        192     BUILD_TUPLE             3
+        195     STORE_NAME              7: p2
+        198     LOAD_NAME               7: p2
+        201     LOAD_CONST              11: 2
+        204     BINARY_SUBSCR           
+        205     JUMP_IF_FALSE           9 (to 217)
+        208     POP_TOP                 
+        209     LOAD_CONST              12: 'has value'
+        212     PRINT_ITEM              
+        213     PRINT_NEWLINE           
+        214     JUMP_FORWARD            6 (to 223)
+        217     POP_TOP                 
+        218     LOAD_CONST              13: ' no value'
+        221     PRINT_ITEM              
+        222     PRINT_NEWLINE           
+        223     LOAD_CONST              14: None
+        226     RETURN_VALUE            
