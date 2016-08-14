@@ -55,7 +55,7 @@ const char* ASTCompare::op_str() const
 const char* ASTKeyword::word_str() const
 {
     static const char* s_word_strings[] = {
-        "break", "continue"
+        "break", "continue", /*Seems that await and yield from can go here. Although I hope I am not wrong on this.*/ "await", "yield from"
     };
     return s_word_strings[key()];
 }
