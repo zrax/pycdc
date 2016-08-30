@@ -61,6 +61,10 @@ install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
 # For tests
+if(POLICY CMP0037)
+    # Don't complain about adding a target named "test"
+    cmake_policy(SET CMP0037 OLD)
+endif()
 add_custom_target(test "${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh"
                        "${CMAKE_CURRENT_SOURCE_DIR}/tests"
                   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
