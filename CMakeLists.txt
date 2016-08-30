@@ -61,6 +61,7 @@ install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
 # For tests
-add_custom_target(test ${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh
-                       ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_custom_target(test "${CMAKE_CURRENT_SOURCE_DIR}/pycdc_test.sh"
+                       "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 add_dependencies(test pycdc)
