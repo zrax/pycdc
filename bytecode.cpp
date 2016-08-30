@@ -269,6 +269,9 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_FALSE:
         fprintf(pyc_output, "False");
         break;
+    case PycObject::TYPE_ELLIPSIS:
+        fprintf(pyc_output, "...");
+        break;
     case PycObject::TYPE_INT:
         fprintf(pyc_output, "%d", obj.cast<PycInt>()->value());
         break;

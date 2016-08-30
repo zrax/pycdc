@@ -185,6 +185,9 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_TRUE:
         iprintf(indent, "True\n");
         break;
+    case PycObject::TYPE_ELLIPSIS:
+        iprintf(indent, "...\n");
+        break;
     case PycObject::TYPE_INT:
         iprintf(indent, "%d\n", obj.cast<PycInt>()->value());
         break;
