@@ -73,7 +73,16 @@ errors=()
 
 set +e
 
-for srcf in "$testdir"/*.pyc.src; do
+shopt -s nullglob
+rtsources=("$testdir"/*.pyc.src.py)
+shopt -u nullglob
+
+if (( ${#rtsources[@]} == 0 )); then
+    echo "No decompyled sources found in $testdir"
+    exit 1
+fi
+
+for srcf in "${rtsources[@]}"; do
     # There's probably a better way...
     srcver=$(grep '# File: .* (Python [0-9]\.[0-9]\+)$' "$srcf" | sed -e 's/.* (Python //' -e 's/)//')
 

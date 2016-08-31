@@ -16,7 +16,7 @@ errors=()
 for f in "$testdir"/*.pyc
 do
     base="tests/$(basename "$f")"
-    ./pycdc "$f" 2>"$base.err" 1>"$base.src"
+    ./pycdc "$f" 2>"$base.err" 1>"$base.src.py"
     if (( $? )) || [[ -s "$base.err" ]]
     then
         let fails+=1
