@@ -1,6 +1,13 @@
 #!/bin/bash
 
 testdir="$1"
+
+if [[ -z "$testdir" ]]
+then
+    echo "Missing required parameter: testdir" >&2
+    exit 1
+fi
+
 mkdir -p tests
 
 fails=0

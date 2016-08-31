@@ -1,0 +1,40 @@
+diff --git a/Objects/fileobject.c b/Objects/fileobject.c
+index b0eb332..e1aa559 100644
+--- a/Objects/fileobject.c
++++ b/Objects/fileobject.c
+@@ -587,7 +587,7 @@ file_readinto(f, args)
+ */
+ 
+ static PyObject *
+-getline(f, n)
++_py_getline(f, n)
+ 	PyFileObject *f;
+ 	int n;
+ {
+@@ -709,7 +709,7 @@ PyFile_GetLine(f, n)
+ 	}
+ 	if (((PyFileObject*)f)->f_fp == NULL)
+ 		return err_closed();
+-	return getline((PyFileObject *)f, n);
++	return _py_getline((PyFileObject *)f, n);
+ }
+ 
+ /* Python method */
+@@ -729,7 +729,7 @@ file_readline(f, args)
+ 		return PyString_FromString("");
+ 	if (n < 0)
+ 		n = 0;
+-	return getline(f, n);
++	return _py_getline(f, n);
+ }
+ 
+ static PyObject *
+@@ -823,7 +823,7 @@ file_readlines(f, args)
+ 			goto error;
+ 		if (sizehint > 0) {
+ 			/* Need to complete the last line */
+-			PyObject *rest = getline(f, 0);
++			PyObject *rest = _py_getline(f, 0);
+ 			if (rest == NULL) {
+ 				Py_DECREF(line);
+ 				goto error;
