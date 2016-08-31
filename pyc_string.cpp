@@ -141,7 +141,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
             } else if (*ch == '\t') {
                 fprintf(F, "\\t");
             } else {
-                fprintf(F, "\\x%x", (*ch & 0xFF));
+                fprintf(F, "\\x%02x", (*ch & 0xFF));
             }
         } else if ((unsigned char)(*ch) >= 0x80) {
             if (str->type() == PycObject::TYPE_UNICODE) {
