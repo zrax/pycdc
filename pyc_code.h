@@ -58,10 +58,11 @@ public:
     PycRef<PycString> getVarName(int idx) const
     { return m_varNames->get(idx).cast<PycString>(); }
 
-    PycRef<PycObject> getCellVar(int idx) const
+    PycRef<PycString> getCellVar(int idx) const
     {
-        return (idx >= m_cellVars->size()) ? m_freeVars->get(idx - m_cellVars->size())
-                                           : m_cellVars->get(idx);
+        return (idx >= m_cellVars->size())
+            ? m_freeVars->get(idx - m_cellVars->size()).cast<PycString>()
+            : m_cellVars->get(idx).cast<PycString>();
     }
 
     const globals_t& getGlobals() const { return m_globalsUsed; }
