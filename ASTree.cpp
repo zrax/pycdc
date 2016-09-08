@@ -2816,6 +2816,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
                 if (src->name()->isEqual("__name__") &&
                     dest->name()->isEqual("__module__")) {
                     // __module__ = __name__
+                    // Automatically added by Python 2.2.1 and later
                     clean->removeFirst();
                 }
             }
