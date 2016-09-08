@@ -164,7 +164,7 @@ bool Pyc::IsJumpOffsetArg(int opcode)
     return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
            (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
            (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A) ||
-           (opcode == Pyc::FOR_LOOP_A);
+           (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A);
 }
 
 bool Pyc::IsCompareArg(int opcode)
