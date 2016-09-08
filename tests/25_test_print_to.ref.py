@@ -7,15 +7,13 @@ decompyle is a Python byte-code decompiler
 See http://www.goebel-consult.de/decompyle/ for download and
 for further information
 """
+
 import sys
 
 print >>sys.stdout, 1, 2, 3, 4, 5
-
 print >>sys.stdout, 1, 2, 3, 4, 5,
 print >>sys.stdout
-
 print >>sys.stdout, 1, 2, 3, 4, 5,
 print >>sys.stdout, 1, 2, 3, 4, 5,
 print >>sys.stdout
-
 print >>sys.stdout
