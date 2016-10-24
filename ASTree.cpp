@@ -1332,6 +1332,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTFunction(code, defArgs));
             }
             break;
+        case Pyc::NOP:
+            break;
         case Pyc::POP_BLOCK:
             {
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER ||
