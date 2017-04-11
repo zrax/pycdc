@@ -125,6 +125,9 @@ void PycModule::setVersion(unsigned int magic)
         break;
 
     case MAGIC_3_5:
+	/* fall through */
+
+    case MAGIC_3_5_3:
         m_maj = 3;
         m_min = 5;
         m_unicode = true;
