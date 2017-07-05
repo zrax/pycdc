@@ -151,7 +151,8 @@ bool PycComplex::isEqual(PycRef<PycObject> obj) const
 /* PycCFloat */
 void PycCFloat::load(PycData* stream, PycModule*)
 {
-    m_value_i64 = stream->get64();
+    Pyc_INT64 bits = stream->get64();
+    memcpy(&m_value, &bits, sizeof(bits));
 }
 
 
@@ -159,5 +160,6 @@ void PycCFloat::load(PycData* stream, PycModule*)
 void PycCComplex::load(PycData* stream, PycModule* mod)
 {
     PycCFloat::load(stream, mod);
-    m_imag_i64 = stream->get64();
+    Pyc_INT64 bits = stream->get64();
+    memcpy(&m_imag, &bits, sizeof(bits));
 }

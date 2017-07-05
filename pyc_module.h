@@ -40,8 +40,8 @@ public:
     void loadFromFile(const char* filename);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
 
-    unsigned int majorVer() const { return m_maj; }
-    unsigned int minorVer() const { return m_min; }
+    int majorVer() const { return m_maj; }
+    int minorVer() const { return m_min; }
 
     int verCompare(int maj, int min) const
     {
@@ -64,7 +64,7 @@ private:
     void setVersion(unsigned int magic);
 
 private:
-    short m_maj, m_min;
+    int m_maj, m_min;
     bool m_unicode;
 
     PycRef<PycCode> m_code;

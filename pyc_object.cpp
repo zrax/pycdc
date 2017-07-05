@@ -28,19 +28,19 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_ELLIPSIS:
         return Pyc_Ellipsis;
     case PycObject::TYPE_INT:
-        return new PycInt();
+        return new PycInt(type);
     case PycObject::TYPE_INT64:
         return new PycLong(type);
     case PycObject::TYPE_FLOAT:
-        return new PycFloat();
+        return new PycFloat(type);
     case PycObject::TYPE_BINARY_FLOAT:
-        return new PycCFloat();
+        return new PycCFloat(type);
     case PycObject::TYPE_COMPLEX:
-        return new PycComplex();
+        return new PycComplex(type);
     case PycObject::TYPE_BINARY_COMPLEX:
-        return new PycCComplex();
+        return new PycCComplex(type);
     case PycObject::TYPE_LONG:
-        return new PycLong();
+        return new PycLong(type);
     case PycObject::TYPE_STRING:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_STRINGREF:
@@ -54,12 +54,12 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_SMALL_TUPLE:
         return new PycTuple(type);
     case PycObject::TYPE_LIST:
-        return new PycList();
+        return new PycList(type);
     case PycObject::TYPE_DICT:
-        return new PycDict();
+        return new PycDict(type);
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
-        return new PycCode();
+        return new PycCode(type);
     case PycObject::TYPE_SET:
     case PycObject::TYPE_FROZENSET:
         return new PycSet(type);

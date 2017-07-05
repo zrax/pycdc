@@ -94,11 +94,7 @@ public:
     double value() const { return m_value; }
 
 private:
-    union
-    {
-        Pyc_INT64 m_value_i64;
-        double m_value;
-    };
+    double m_value;
 };
 
 class PycCComplex : public PycCFloat {
@@ -117,11 +113,7 @@ public:
     double imag() const { return m_imag; }
 
 private:
-    union
-    {
-        Pyc_INT64 m_imag_i64;
-        double m_imag;
-    };
+    double m_imag;
 };
 
 #endif
