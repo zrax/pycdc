@@ -239,6 +239,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_MAT_MULTIPLY));
             }
+            break;
         case Pyc::BREAK_LOOP:
             curblock->append(new ASTKeyword(ASTKeyword::KW_BREAK));
             break;
