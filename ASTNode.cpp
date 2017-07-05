@@ -1,7 +1,5 @@
 #include "ASTNode.h"
 
-PycRef<ASTNode> Node_NULL = (ASTNode*)0;
-
 /* ASTNodeList */
 void ASTNodeList::removeLast()
 {

@@ -17,7 +17,7 @@ void PycTuple::load(PycData* stream, PycModule* mod)
 
 bool PycTuple::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycTuple> tupleObj = obj.cast<PycTuple>();
@@ -44,7 +44,7 @@ void PycList::load(PycData* stream, PycModule* mod)
 
 bool PycList::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycList> listObj = obj.cast<PycList>();
@@ -67,7 +67,7 @@ void PycDict::load(PycData* stream, PycModule* mod)
     PycRef<PycObject> key, val;
     for (;;) {
         key = LoadObject(stream, mod);
-        if (key == Pyc_NULL)
+        if (key == NULL)
             break;
         val = LoadObject(stream, mod);
         m_keys.push_back(key);
@@ -77,7 +77,7 @@ void PycDict::load(PycData* stream, PycModule* mod)
 
 bool PycDict::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycDict> dictObj = obj.cast<PycDict>();
@@ -111,7 +111,7 @@ PycRef<PycObject> PycDict::get(PycRef<PycObject> key) const
             return *vi;
         ++ki, ++vi;
     }
-    return Pyc_NULL; // Disassembly shouldn't get non-existant keys
+    return NULL; // Disassembly shouldn't get non-existant keys
 }
 
 
@@ -125,7 +125,7 @@ void PycSet::load(PycData* stream, PycModule* mod)
 
 bool PycSet::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycSet> setObj = obj.cast<PycSet>();

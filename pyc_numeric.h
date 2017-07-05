@@ -13,7 +13,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const
     {
-        return (type() == obj->type()) &&
+        return (type() == obj.type()) &&
                (m_value == obj.cast<PycInt>()->m_value);
     }
 
@@ -85,7 +85,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const
     {
-        return (type() == obj->type()) &&
+        return (type() == obj.type()) &&
                (m_value == obj.cast<PycCFloat>()->m_value);
     }
 

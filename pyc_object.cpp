@@ -5,7 +5,6 @@
 #include "data.h"
 #include <cstdio>
 
-PycRef<PycObject> Pyc_NULL = (PycObject*)0;
 PycRef<PycObject> Pyc_None = new PycObject(PycObject::TYPE_NONE);
 PycRef<PycObject> Pyc_Ellipsis = new PycObject(PycObject::TYPE_ELLIPSIS);
 PycRef<PycObject> Pyc_StopIteration = new PycObject(PycObject::TYPE_STOPITER);
@@ -16,7 +15,7 @@ PycRef<PycObject> CreateObject(int type)
 {
     switch (type) {
     case PycObject::TYPE_NULL:
-        return Pyc_NULL;
+        return NULL;
     case PycObject::TYPE_NONE:
         return Pyc_None;
     case PycObject::TYPE_FALSE:
@@ -65,7 +64,7 @@ PycRef<PycObject> CreateObject(int type)
         return new PycSet(type);
     default:
         fprintf(stderr, "CreateObject: Got unsupported type 0x%X\n", type);
-        return Pyc_NULL;
+        return NULL;
     }
 }
 
@@ -79,7 +78,7 @@ PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod)
         obj = mod->getRef(index);
     } else {
         obj = CreateObject(type & 0x7F);
-        if (obj != Pyc_NULL) {
+        if (obj != NULL) {
             if (type & 0x80)
                 mod->refObject(obj);
             obj->load(stream, mod);

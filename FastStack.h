@@ -35,7 +35,7 @@ public:
 
     void pop() {
         if (m_ptr > -1)
-            m_stack[m_ptr--] = Node_NULL;
+            m_stack[m_ptr--] = NULL;
     }
 
     PycRef<ASTNode> top() const
@@ -43,7 +43,7 @@ public:
         if (m_ptr > -1)
             return m_stack[m_ptr];
         else
-            return Node_NULL;
+            return NULL;
     }
 
     void replace(const FastStack& copy)

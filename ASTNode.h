@@ -52,9 +52,6 @@ public:
     void delRef() { internalDelRef(this); }
 };
 
-/* A NULL node for comparison */
-extern PycRef<ASTNode> Node_NULL;
-
 
 class ASTNodeList : public ASTNode {
 public:
@@ -157,8 +154,8 @@ public:
         SLICE0, SLICE1, SLICE2, SLICE3
     };
 
-    ASTSlice(int op, PycRef<ASTNode> left = Node_NULL,
-            PycRef<ASTNode> right = Node_NULL)
+    ASTSlice(int op, PycRef<ASTNode> left = NULL,
+             PycRef<ASTNode> right = NULL)
         : ASTBinary(left, right, op, NODE_SLICE) { }
 };
 
@@ -258,7 +255,7 @@ public:
 
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
         : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams),
-            m_var(Node_NULL), m_kw(Node_NULL) { }
+          m_var(), m_kw() { }
 
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
@@ -266,8 +263,8 @@ public:
     PycRef<ASTNode> var() const { return m_var; }
     PycRef<ASTNode> kw() const { return m_kw; }
 
-    bool hasVar() const { return m_var != Node_NULL; }
-    bool hasKW() const { return m_kw != Node_NULL; }
+    bool hasVar() const { return m_var != NULL; }
+    bool hasKW() const { return m_kw != NULL; }
 
     void setVar(PycRef<ASTNode> var) { m_var = var; }
     void setKW(PycRef<ASTNode> kw) { m_kw = kw; }
@@ -363,7 +360,7 @@ private:
 
 class ASTPrint : public ASTNode {
 public:
-    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = Node_NULL)
+    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = NULL)
         : ASTNode(NODE_PRINT), m_value(value), m_stream(stream) { }
 
     PycRef<ASTNode> value() const { return m_value; }

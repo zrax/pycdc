@@ -53,9 +53,13 @@ public:
     _Obj* operator->() const { return m_obj; }
     operator _Obj*() const { return m_obj; }
 
+    inline int type() const;
+
     /* This is just for coding convenience -- no type checking is done! */
     template <class _Cast>
     PycRef<_Cast> cast() const { return static_cast<_Cast*>(m_obj); }
+
+    bool isIdent(const _Obj* obj) { return m_obj == obj; }
 
 private:
     _Obj* m_obj;
@@ -106,10 +110,10 @@ public:
     PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }
     virtual ~PycObject() { }
 
-    int type() const { return internalGetType(this); }
+    int type() const { return m_type; }
 
     virtual bool isEqual(PycRef<PycObject> obj) const
-    { return (this == (PycObject*)obj); }
+    { return obj.isIdent(this); }
 
     virtual void load(PycData*, PycModule*) { }
 
@@ -117,22 +121,19 @@ private:
     int m_refs;
     int m_type;
 
-    // Hack to make clang happy :(
-    static int internalGetType(const PycObject *obj)
-    {
-        return obj ? obj->m_type : TYPE_NULL;
-    }
-
 public:
     void addRef() { ++m_refs; }
     void delRef() { if (--m_refs == 0) delete this; }
 };
 
+template <class _Obj>
+int PycRef<_Obj>::type() const
+{ return m_obj ? m_obj->type() : PycObject::TYPE_NULL; }
+
 PycRef<PycObject> CreateObject(int type);
 PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod);
 
 /* Static Singleton objects */
-extern PycRef<PycObject> Pyc_NULL;
 extern PycRef<PycObject> Pyc_None;
 extern PycRef<PycObject> Pyc_Ellipsis;
 extern PycRef<PycObject> Pyc_StopIteration;

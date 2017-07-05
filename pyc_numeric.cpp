@@ -35,7 +35,7 @@ void PycLong::load(PycData* stream, PycModule*)
 
 bool PycLong::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycLong> longObj = obj.cast<PycLong>();
@@ -110,7 +110,7 @@ void PycFloat::load(PycData* stream, PycModule*)
 
 bool PycFloat::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj->type())
+    if (type() != obj.type())
         return false;
 
     PycRef<PycFloat> floatObj = obj.cast<PycFloat>();

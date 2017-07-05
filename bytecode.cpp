@@ -141,6 +141,11 @@ bool Pyc::IsCompareArg(int opcode)
 
 void print_const(PycRef<PycObject> obj, PycModule* mod)
 {
+    if (obj == NULL) {
+        fprintf(pyc_output, "<NULL>");
+        return;
+    }
+
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
         OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);

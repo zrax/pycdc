@@ -65,6 +65,11 @@ static void iprintf(int indent, const char* fmt, ...)
 
 void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
 {
+    if (obj == NULL) {
+        iprintf(indent, "<NULL>");
+        return;
+    }
+
     switch (obj->type()) {
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
@@ -81,31 +86,31 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent + 1, "Flags: 0x%08X", codeObj->flags());
             print_coflags(codeObj->flags());
 
-            if (codeObj->names() != Pyc_NULL) {
+            if (codeObj->names() != NULL) {
                 iprintf(indent + 1, "[Names]\n");
                 for (int i=0; i<codeObj->names()->size(); i++)
                     output_object(codeObj->names()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->varNames() != Pyc_NULL) {
+            if (codeObj->varNames() != NULL) {
                 iprintf(indent + 1, "[Var Names]\n");
                 for (int i=0; i<codeObj->varNames()->size(); i++)
                     output_object(codeObj->varNames()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->freeVars() != Pyc_NULL) {
+            if (codeObj->freeVars() != NULL) {
                 iprintf(indent + 1, "[Free Vars]\n");
                 for (int i=0; i<codeObj->freeVars()->size(); i++)
                     output_object(codeObj->freeVars()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->cellVars() != Pyc_NULL) {
+            if (codeObj->cellVars() != NULL) {
                 iprintf(indent + 1, "[Cell Vars]\n");
                 for (int i=0; i<codeObj->cellVars()->size(); i++)
                     output_object(codeObj->cellVars()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->consts() != Pyc_NULL) {
+            if (codeObj->consts() != NULL) {
                 iprintf(indent + 1, "[Constants]\n");
                 for (int i=0; i<codeObj->consts()->size(); i++)
                     output_object(codeObj->consts()->get(i), mod, indent + 2);
