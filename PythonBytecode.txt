@@ -7,6 +7,7 @@ Python  MAGIC           Python  MAGIC           Python  MAGIC
 1.5     0x0A0D4E99      2.5     0x0A0DF2B3      3.5     0x0A0D0D16
 1.6     0x0A0DC4FC      2.6     0x0A0DF2D1      3.5.3   0x0A0D0D17
                         2.7     0x0A0DF303      3.6     0x0A0D0D33
+                                                3.7     0x0A0D0D3F
 
 
                         1.0     1.1     1.2     1.3     1.4     1.5     1.6
@@ -346,174 +347,178 @@ MAP_ADD                 [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     
   .
 
 
-                            3.0     3.1     3.2     3.3     3.4     3.5     3.6
-STOP_CODE                   [X]     [X]     [X]     [ ]     [ ]     [ ]     [ ]
-POP_TOP                     [X]     [X]     [X]     [X]     [X]     [X]     [X]
-ROT_TWO                     [X]     [X]     [X]     [X]     [X]     [X]     [X]
-ROT_THREE                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DUP_TOP                     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+                            3.0     3.1     3.2     3.3     3.4     3.5     3.6     3.7
+STOP_CODE                   [X]     [X]     [X]     [ ]     [ ]     [ ]     [ ]     [ ]
+POP_TOP                     [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+ROT_TWO                     [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+ROT_THREE                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DUP_TOP                     [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 ROT_FOUR                  ! [X]     [X]
-DUP_TOP_TWO               !                 [X]     [X]     [X]     [X]     [X]
-<6>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<7>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<8>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-NOP                         [X]     [X]     [X]     [X]     [X]     [X]     [X]
-UNARY_POSITIVE              [X]     [X]     [X]     [X]     [X]     [X]     [X]
-UNARY_NEGATIVE              [X]     [X]     [X]     [X]     [X]     [X]     [X]
-UNARY_NOT                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<13>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<14>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-UNARY_INVERT                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_MATRIX_MULTIPLY      [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+DUP_TOP_TWO               !                 [X]     [X]     [X]     [X]     [X]     [X]
+<6>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<7>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<8>                         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+NOP                         [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+UNARY_POSITIVE              [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+UNARY_NEGATIVE              [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+UNARY_NOT                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<13>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<14>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+UNARY_INVERT                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_MATRIX_MULTIPLY      [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
 SET_ADD                   ! [X]     [ ]     [ ]     [ ]     [ ]
-INPLACE_MATRIX_MULTIPLY   !                                         [X]     [X]
-LIST_APPEND                 [X]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-BINARY_POWER                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_MULTIPLY             [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<21>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-BINARY_MODULO               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_ADD                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_SUBTRACT             [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_SUBSCR               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_FLOOR_DIVIDE         [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_TRUE_DIVIDE          [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_FLOOR_DIVIDE        [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_TRUE_DIVIDE         [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<30>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<31>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<32>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<33>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<34>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<35>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<36>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<37>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<38>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<39>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<40>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<41>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<42>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<43>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<44>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<45>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<46>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<47>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<48>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<49>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-GET_AITER                   [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-GET_ANEXT                   [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-BEFORE_ASYNC_WITH           [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-<53>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-STORE_MAP                   [X]     [X]     [X]     [X]     [X]     [ ]     [ ]
-INPLACE_ADD                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_SUBTRACT            [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_MULTIPLY            [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<58>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-INPLACE_MODULO              [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_SUBSCR                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_SUBSCR               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_LSHIFT               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_RSHIFT               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_AND                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_XOR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BINARY_OR                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_POWER               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-GET_ITER                    [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_MATRIX_MULTIPLY   !                                         [X]     [X]     [X]
+LIST_APPEND                 [X]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+BINARY_POWER                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_MULTIPLY             [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<21>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+BINARY_MODULO               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_ADD                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_SUBTRACT             [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_SUBSCR               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_FLOOR_DIVIDE         [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_TRUE_DIVIDE          [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_FLOOR_DIVIDE        [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_TRUE_DIVIDE         [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<30>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<31>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<32>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<33>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<34>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<35>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<36>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<37>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<38>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<39>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<40>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<41>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<42>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<43>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<44>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<45>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<46>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<47>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<48>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<49>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+GET_AITER                   [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+GET_ANEXT                   [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+BEFORE_ASYNC_WITH           [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+<53>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+STORE_MAP                   [X]     [X]     [X]     [X]     [X]     [ ]     [ ]     [ ]
+INPLACE_ADD                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_SUBTRACT            [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_MULTIPLY            [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<58>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+INPLACE_MODULO              [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_SUBSCR                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_SUBSCR               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_LSHIFT               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_RSHIFT               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_AND                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_XOR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BINARY_OR                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_POWER               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+GET_ITER                    [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 STORE_LOCALS              ! [X]     [X]     [X]     [X]     [ ]
-GET_YIELD_FROM_ITER       !                                         [X]     [X]
-PRINT_EXPR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_BUILD_CLASS            [X]     [X]     [X]     [X]     [X]     [X]     [X]
-YIELD_FROM                  [ ]     [ ]     [ ]     [X]     [X]     [X]     [X]
-GET_AWAITABLE               [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-<74>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-INPLACE_LSHIFT              [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_RSHIFT              [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_AND                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_XOR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-INPLACE_OR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BREAK_LOOP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
+GET_YIELD_FROM_ITER       !                                         [X]     [X]     [X]
+PRINT_EXPR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_BUILD_CLASS            [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+YIELD_FROM                  [ ]     [ ]     [ ]     [X]     [X]     [X]     [X]     [X]
+GET_AWAITABLE               [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+<74>                        [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+INPLACE_LSHIFT              [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_RSHIFT              [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_AND                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_XOR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+INPLACE_OR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BREAK_LOOP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 WITH_CLEANUP              ! [X]     [X]     [X]     [X]     [X]
-WITH_CLEANUP_START        !                                         [X]     [X]
-WITH_CLEANUP_FINISH         [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-RETURN_VALUE                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-IMPORT_STAR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-SETUP_ANNOTATIONS           [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-YIELD_VALUE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-POP_BLOCK                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-END_FINALLY                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-POP_EXCEPT                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_NAME                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_NAME                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-UNPACK_SEQUENCE             [X]     [X]     [X]     [X]     [X]     [X]     [X]
-FOR_ITER                    [X]     [X]     [X]     [X]     [X]     [X]     [X]
-UNPACK_EX                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_ATTR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_ATTR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_GLOBAL                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_GLOBAL               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DUP_TOPX                    [X]     [X]     [ ]     [ ]     [ ]     [ ]     [ ]
-LOAD_CONST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_NAME                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BUILD_TUPLE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BUILD_LIST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BUILD_SET                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BUILD_MAP                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_ATTR                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-COMPARE_OP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-IMPORT_NAME                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-IMPORT_FROM                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-JUMP_FORWARD                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-JUMP_IF_FALSE (_OR_POP)     [X]     [X]     [+]     [+]     [+]     [+]     [+]
-JUMP_IF_TRUE (_OR_POP)      [X]     [X]     [+]     [+]     [+]     [+]     [+]
-JUMP_ABSOLUTE               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-POP_JUMP_IF_FALSE           [ ]     [X]     [X]     [X]     [X]     [X]     [X]
-POP_JUMP_IF_TRUE            [ ]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_GLOBAL                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<117>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<118>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-CONTINUE_LOOP               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-SETUP_LOOP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-SETUP_EXCEPT                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-SETUP_FINALLY               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-<123>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-LOAD_FAST                   [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_FAST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_FAST                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_ANNOTATION            [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-<128>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-<129>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-RAISE_VARARGS               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-CALL_FUNCTION               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-MAKE_FUNCTION               [X]     [X]     [X]     [X]     [X]     [X]     [X]
-BUILD_SLICE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-MAKE_CLOSURE                [X]     [X]     [X]     [X]     [X]     [X]     [ ]
-LOAD_CLOSURE                [X]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_DEREF                  [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_DEREF                 [X]     [X]     [X]     [X]     [X]     [X]     [X]
-DELETE_DEREF                [ ]     [ ]     [X]     [X]     [X]     [X]     [X]
-<139>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
-CALL_FUNCTION_VAR           [X]     [X]     [X]     [X]     [X]     [X]     [ ]
-CALL_FUNCTION_KW            [X]     [X]     [X]     [X]     [X]     [X]     [X]
+WITH_CLEANUP_START        !                                         [X]     [X]     [X]
+WITH_CLEANUP_FINISH         [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+RETURN_VALUE                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+IMPORT_STAR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+SETUP_ANNOTATIONS           [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+YIELD_VALUE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+POP_BLOCK                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+END_FINALLY                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+POP_EXCEPT                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_NAME                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_NAME                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+UNPACK_SEQUENCE             [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+FOR_ITER                    [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+UNPACK_EX                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_ATTR                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_ATTR                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_GLOBAL                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_GLOBAL               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DUP_TOPX                    [X]     [X]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+LOAD_CONST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_NAME                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BUILD_TUPLE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BUILD_LIST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BUILD_SET                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BUILD_MAP                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_ATTR                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+COMPARE_OP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+IMPORT_NAME                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+IMPORT_FROM                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+JUMP_FORWARD                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+JUMP_IF_FALSE (_OR_POP)     [X]     [X]     [+]     [+]     [+]     [+]     [+]     [+]
+JUMP_IF_TRUE (_OR_POP)      [X]     [X]     [+]     [+]     [+]     [+]     [+]     [+]
+JUMP_ABSOLUTE               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+POP_JUMP_IF_FALSE           [ ]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+POP_JUMP_IF_TRUE            [ ]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_GLOBAL                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<117>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<118>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+CONTINUE_LOOP               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+SETUP_LOOP                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+SETUP_EXCEPT                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+SETUP_FINALLY               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+<123>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+LOAD_FAST                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_FAST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_FAST                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_ANNOTATION            [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+<128>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<129>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+RAISE_VARARGS               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+CALL_FUNCTION               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+MAKE_FUNCTION               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+BUILD_SLICE                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+MAKE_CLOSURE                [X]     [X]     [X]     [X]     [X]     [X]     [ ]     [ ]
+LOAD_CLOSURE                [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_DEREF                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+STORE_DEREF                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+DELETE_DEREF                [ ]     [ ]     [X]     [X]     [X]     [X]     [X]     [X]
+<139>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+CALL_FUNCTION_VAR           [X]     [X]     [X]     [X]     [X]     [X]     [ ]     [ ]
+CALL_FUNCTION_KW            [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 CALL_FUNCTION_VAR_KW      ! [X]     [X]     [X]     [X]     [X]     [X]
-CALL_FUNCTION_EX          !                                                 [X]
+CALL_FUNCTION_EX          !                                                 [X]     [X]
 EXTENDED_ARG              ! [X]     [X]
-SETUP_WITH                !                 [X]     [X]     [X]     [X]     [X]
+SETUP_WITH                !                 [X]     [X]     [X]     [X]     [X]     [X]
 <144>                     ! [ ]     [ ]
-EXTENDED_ARG              !                 [X]     [X]     [X]     [X]     [X]
-LIST_APPEND                 [ ]     [X]     [X]     [X]     [X]     [X]     [X]
-SET_ADD                     [ ]     [X]     [X]     [X]     [X]     [X]     [X]
-MAP_ADD                     [ ]     [X]     [X]     [X]     [X]     [X]     [X]
-LOAD_CLASSDEREF             [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
-BUILD_LIST_UNPACK           [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-BUILD_MAP_UNPACK            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-BUILD_MAP_UNPACK_WITH_CALL  [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-BUILD_TUPLE_UNPACK          [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-BUILD_SET_UNPACK            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-SETUP_ASYNC_WITH            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
-FORMAT_VALUE                [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-BUILD_CONST_KEY_MAP         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-BUILD_STRING                [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-BUILD_TUPLE_UNPACK_WITH_CALL[ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
-<159>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+EXTENDED_ARG              !                 [X]     [X]     [X]     [X]     [X]     [X]
+LIST_APPEND                 [ ]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+SET_ADD                     [ ]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+MAP_ADD                     [ ]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
+LOAD_CLASSDEREF             [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]     [X]
+BUILD_LIST_UNPACK           [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+BUILD_MAP_UNPACK            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+BUILD_MAP_UNPACK_WITH_CALL  [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+BUILD_TUPLE_UNPACK          [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+BUILD_SET_UNPACK            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+SETUP_ASYNC_WITH            [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]     [X]
+FORMAT_VALUE                [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+BUILD_CONST_KEY_MAP         [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+BUILD_STRING                [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+BUILD_TUPLE_UNPACK_WITH_CALL[ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+<159>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+LOAD_METHOD                 [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
+CALL_METHOD                 [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]
+<162>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
+<163>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
   .
   .
   .
@@ -564,36 +569,36 @@ TYPE_SET                                                        '<'     '<'     
 TYPE_FROZENSET                                                  '>'     '>'     '>'
 
 
-                        3.0     3.1     3.2     3.3     3.4     3.5     3.6
-TYPE_NULL               '0'     '0'     '0'     '0'     '0'     '0'     '0'
-TYPE_NONE               'N'     'N'     'N'     'N'     'N'     'N'     'N'
-TYPE_FALSE              'F'     'F'     'F'     'F'     'F'     'F'     'F'
-TYPE_TRUE               'T'     'T'     'T'     'T'     'T'     'T'     'T'
-TYPE_STOPITER           'S'     'S'     'S'     'S'     'S'     'S'     'S'
-TYPE_ELLIPSIS           '.'     '.'     '.'     '.'     '.'     '.'     '.'
-TYPE_INT                'i'     'i'     'i'     'i'     'i'     'i'     'i'
+                        3.0     3.1     3.2     3.3     3.4     3.5     3.6     3.7
+TYPE_NULL               '0'     '0'     '0'     '0'     '0'     '0'     '0'     '0'
+TYPE_NONE               'N'     'N'     'N'     'N'     'N'     'N'     'N'     'N'
+TYPE_FALSE              'F'     'F'     'F'     'F'     'F'     'F'     'F'     'F'
+TYPE_TRUE               'T'     'T'     'T'     'T'     'T'     'T'     'T'     'T'
+TYPE_STOPITER           'S'     'S'     'S'     'S'     'S'     'S'     'S'     'S'
+TYPE_ELLIPSIS           '.'     '.'     '.'     '.'     '.'     '.'     '.'     '.'
+TYPE_INT                'i'     'i'     'i'     'i'     'i'     'i'     'i'     'i'
 TYPE_INT64              'I'     'I'     'I'     'I'
-TYPE_FLOAT              'f'     'f'     'f'     'f'     'f'     'f'     'f'
-TYPE_BINARY_FLOAT       'g'     'g'     'g'     'g'     'g'     'g'     'g'
-TYPE_COMPLEX            'x'     'x'     'x'     'x'     'x'     'x'     'x'
-TYPE_BINARY_COMPLEX     'y'     'y'     'y'     'y'     'y'     'y'     'y'
-TYPE_LONG               'l'     'l'     'l'     'l'     'l'     'l'     'l'
-TYPE_STRING             's'     's'     's'     's'     's'     's'     's'
-TYPE_INTERNED                                           't'     't'     't'
-TYPE_REF                                                'r'     'r'     'r'
-TYPE_TUPLE              '('     '('     '('     '('     '('     '('     '('
-TYPE_LIST               '['     '['     '['     '['     '['     '['     '['
-TYPE_DICT               '{'     '{'     '{'     '{'     '{'     '{'     '{'
-TYPE_CODE               'c'     'c'     'c'     'c'     'c'     'c'     'c'
-TYPE_UNICODE            'u'     'u'     'u'     'u'     'u'     'u'     'u'
-TYPE_UNKNOWN            '?'     '?'     '?'     '?'     '?'     '?'     '?'
-TYPE_SET                '<'     '<'     '<'     '<'     '<'     '<'     '<'
-TYPE_FROZENSET          '>'     '>'     '>'     '>'     '>'     '>'     '>'
-TYPE_ASCII                                              'a'     'a'     'a'
-TYPE_ASCII_INTERNED                                     'A'     'A'     'A'
-TYPE_SMALL_TUPLE                                        ')'     ')'     ')'
-TYPE_SHORT_ASCII                                        'z'     'z'     'z'
-TYPE_SHORT_ASCII_INTERNED                               'Z'     'Z'     'Z'
+TYPE_FLOAT              'f'     'f'     'f'     'f'     'f'     'f'     'f'     'f'
+TYPE_BINARY_FLOAT       'g'     'g'     'g'     'g'     'g'     'g'     'g'     'g'
+TYPE_COMPLEX            'x'     'x'     'x'     'x'     'x'     'x'     'x'     'x'
+TYPE_BINARY_COMPLEX     'y'     'y'     'y'     'y'     'y'     'y'     'y'     'y'
+TYPE_LONG               'l'     'l'     'l'     'l'     'l'     'l'     'l'     'l'
+TYPE_STRING             's'     's'     's'     's'     's'     's'     's'     's'
+TYPE_INTERNED                                           't'     't'     't'     't'
+TYPE_REF                                                'r'     'r'     'r'     'r'
+TYPE_TUPLE              '('     '('     '('     '('     '('     '('     '('     '('
+TYPE_LIST               '['     '['     '['     '['     '['     '['     '['     '['
+TYPE_DICT               '{'     '{'     '{'     '{'     '{'     '{'     '{'     '{'
+TYPE_CODE               'c'     'c'     'c'     'c'     'c'     'c'     'c'     'c'
+TYPE_UNICODE            'u'     'u'     'u'     'u'     'u'     'u'     'u'     'u'
+TYPE_UNKNOWN            '?'     '?'     '?'     '?'     '?'     '?'     '?'     '?'
+TYPE_SET                '<'     '<'     '<'     '<'     '<'     '<'     '<'     '<'
+TYPE_FROZENSET          '>'     '>'     '>'     '>'     '>'     '>'     '>'     '>'
+TYPE_ASCII                                              'a'     'a'     'a'     'a'
+TYPE_ASCII_INTERNED                                     'A'     'A'     'A'     'A'
+TYPE_SMALL_TUPLE                                        ')'     ')'     ')'     ')'
+TYPE_SHORT_ASCII                                        'z'     'z'     'z'     'z'
+TYPE_SHORT_ASCII_INTERNED                               'Z'     'Z'     'Z'     'Z'
 
 
 [TYPE_CODE] 1.0     1.3     1.5     2.1     2.3     3.0

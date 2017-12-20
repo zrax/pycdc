@@ -30,6 +30,7 @@ DECLARE_PYTHON(3, 3)
 DECLARE_PYTHON(3, 4)
 DECLARE_PYTHON(3, 5)
 DECLARE_PYTHON(3, 6)
+DECLARE_PYTHON(3, 7)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -93,6 +94,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 4: return python_34_map(opcode);
         case 5: return python_35_map(opcode);
         case 6: return python_36_map(opcode);
+        case 7: return python_37_map(opcode);
         }
         break;
     }
@@ -111,7 +113,8 @@ bool Pyc::IsNameArg(int opcode)
            (opcode == Pyc::IMPORT_NAME_A) || (opcode == Pyc::LOAD_ATTR_A) ||
            (opcode == Pyc::LOAD_GLOBAL_A) || (opcode == Pyc::LOAD_LOCAL_A) ||
            (opcode == Pyc::LOAD_NAME_A) || (opcode == Pyc::STORE_ATTR_A) ||
-           (opcode == Pyc::STORE_GLOBAL_A) || (opcode == Pyc::STORE_NAME_A);
+           (opcode == Pyc::STORE_GLOBAL_A) || (opcode == Pyc::STORE_NAME_A) ||
+           (opcode == Pyc::LOAD_METHOD_A);
 }
 
 bool Pyc::IsVarNameArg(int opcode)
