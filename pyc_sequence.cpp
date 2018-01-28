@@ -1,6 +1,7 @@
 #include "pyc_sequence.h"
 #include "pyc_module.h"
 #include "data.h"
+#include <stdexcept>
 
 /* PycTuple */
 void PycTuple::load(PycData* stream, PycModule* mod)
@@ -60,6 +61,20 @@ bool PycList::isEqual(PycRef<PycObject> obj) const
     return true;
 }
 
+PycRef<PycObject> PycList::get(int idx) const
+{
+    if (idx < 0)
+        throw std::out_of_range("List index out of range");
+
+    value_t::const_iterator it = m_values.begin();
+    while (idx-- && it != m_values.end())
+        ++it;
+    if (it == m_values.end())
+        throw std::out_of_range("List index out of range");
+    return *it;
+}
+
+
 
 /* PycDict */
 void PycDict::load(PycData* stream, PycModule* mod)
@@ -114,6 +129,19 @@ PycRef<PycObject> PycDict::get(PycRef<PycObject> key) const
     return NULL; // Disassembly shouldn't get non-existant keys
 }
 
+PycRef<PycObject> PycDict::get(int idx) const
+{
+    if (idx < 0)
+        throw std::out_of_range("Dict index out of range");
+
+    value_t::const_iterator it = m_values.begin();
+    while (idx-- && it != m_values.end())
+        ++it;
+    if (it == m_values.end())
+        throw std::out_of_range("Dict index out of range");
+    return *it;
+}
+
 
 /* PycSet */
 void PycSet::load(PycData* stream, PycModule* mod)
@@ -139,4 +167,17 @@ bool PycSet::isEqual(PycRef<PycObject> obj) const
         ++it1, ++it2;
     }
     return true;
+}
+
+PycRef<PycObject> PycSet::get(int idx) const
+{
+    if (idx < 0)
+        throw std::out_of_range("Set index out of range");
+
+    value_t::const_iterator it = m_values.begin();
+    while (idx-- && it != m_values.end())
+        ++it;
+    if (it == m_values.end())
+        throw std::out_of_range("Set index out of range");
+    return *it;
 }

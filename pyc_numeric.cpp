@@ -64,12 +64,12 @@ std::string PycLong::repr() const
     std::list<int>::const_iterator bit;
     int shift = 0, temp = 0;
     for (bit = m_value.begin(); bit != m_value.end(); ++bit) {
-        temp |= *bit << shift;
+        temp |= unsigned(*bit & 0xFFFF) << shift;
         shift += 15;
         if (shift >= 32) {
             bits.push_back(temp);
             shift -= 32;
-            temp = *bit >> (15 - shift);
+            temp = unsigned(*bit & 0xFFFF) >> (15 - shift);
         }
     }
     if (temp)
@@ -89,7 +89,7 @@ std::string PycLong::repr() const
     while (iter != bits.rend())
         aptr += snprintf(aptr, 9, "%08X", *iter++);
     *aptr++ = 'L';
-    *aptr++ = 0;
+    *aptr = 0;
     return accum;
 }
 

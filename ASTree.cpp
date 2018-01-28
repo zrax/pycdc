@@ -65,7 +65,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             /* Store the current stack for the except/finally statement(s) */
             stack_hist.push(stack);
             PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, curblock->end(), true);
-            blocks.push(tryblock.cast<ASTBlock>());
+            blocks.push(tryblock);
             curblock = blocks.top();
         } else if (else_pop
                 && opcode != Pyc::JUMP_FORWARD_A
@@ -555,7 +555,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<PycString> varname = code->getName(operand);
 
-                if (varname->value()[0] == '_' && varname->value()[1] == '[') {
+                if (varname->length() >= 2 && varname->value()[0] == '_'
+                        && varname->value()[1] == '[') {
                     /* Don't show deletes that are a result of list comps. */
                     break;
                 }
@@ -1294,7 +1295,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_DEREF_A:
-            stack.push(new ASTName(code->getCellVar(operand).cast<PycString>()));
+            stack.push(new ASTName(code->getCellVar(operand)));
             break;
         case Pyc::LOAD_FAST_A:
             if (mod->verCompare(1, 3) < 0)
@@ -1441,7 +1442,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                     } else {
-                        curblock.cast<ASTCondBlock>()->init();
+                        curblock->init();
                     }
                     break;
                 } else if (value.type() == ASTNode::NODE_INVALID
@@ -1728,7 +1729,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::STORE_DEREF_A:
             {
                 if (unpack) {
-                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand).cast<PycString>());
+                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand));
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE) {
@@ -1753,7 +1754,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
-                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand).cast<PycString>());
+                    PycRef<ASTNode> name = new ASTName(code->getCellVar(operand));
                     curblock->append(new ASTStore(value, name));
                 }
             }
@@ -1897,7 +1898,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
 
                     PycRef<PycString> varname = code->getName(operand);
-                    if (varname->value()[0] == '_' && varname->value()[1] == '[') {
+                    if (varname->length() >= 2 && varname->value()[0] == '_'
+                            && varname->value()[1] == '[') {
                         /* Don't show stores of list comp append objects. */
                         break;
                     }
@@ -2270,7 +2272,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             for (ASTCall::kwparam_t::const_iterator p = call->kwparams().begin(); p != call->kwparams().end(); ++p) {
                 if (!first)
                     fputs(", ", pyc_output);
-                fprintf(pyc_output, "%s = ", p->first.cast<ASTName>()->name()->value());
+                if (p->first.type() == ASTNode::NODE_NAME) {
+                    fprintf(pyc_output, "%s = ", p->first.cast<ASTName>()->name()->value());
+                } else {
+                    PycRef<PycString> str_name = p->first.cast<ASTObject>()->object().require_cast<PycString>();
+                    fprintf(pyc_output, "%s = ", str_name->value());
+                }
                 print_src(p->second, mod);
                 first = false;
             }

@@ -53,16 +53,16 @@ public:
     { return m_consts->get(idx); }
 
     PycRef<PycString> getName(int idx) const
-    { return m_names->get(idx).cast<PycString>(); }
+    { return m_names->get(idx).require_cast<PycString>(); }
 
     PycRef<PycString> getVarName(int idx) const
-    { return m_varNames->get(idx).cast<PycString>(); }
+    { return m_varNames->get(idx).require_cast<PycString>(); }
 
     PycRef<PycString> getCellVar(int idx) const
     {
         return (idx >= m_cellVars->size())
-            ? m_freeVars->get(idx - m_cellVars->size()).cast<PycString>()
-            : m_cellVars->get(idx).cast<PycString>();
+            ? m_freeVars->get(idx - m_cellVars->size()).require_cast<PycString>()
+            : m_cellVars->get(idx).require_cast<PycString>();
     }
 
     const globals_t& getGlobals() const { return m_globalsUsed; }

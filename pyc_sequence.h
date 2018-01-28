@@ -28,7 +28,7 @@ public:
     void load(class PycData* stream, class PycModule* mod);
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const { return m_values[idx]; }
+    PycRef<PycObject> get(int idx) const { return m_values.at(idx); }
 
 private:
     value_t m_values;
@@ -45,12 +45,7 @@ public:
     void load(class PycData* stream, class PycModule* mod);
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const
-    {
-        value_t::const_iterator it = m_values.begin();
-        for (int i=0; i<idx; i++) ++it;
-        return *it;
-    }
+    PycRef<PycObject> get(int idx) const;
 
 private:
     value_t m_values;
@@ -71,12 +66,7 @@ public:
     const key_t& keys() const { return m_keys; }
     const value_t& values() const { return m_values; }
 
-    PycRef<PycObject> get(int idx) const
-    {
-        value_t::const_iterator it = m_values.begin();
-        for (int i=0; i<idx; i++) ++it;
-        return *it;
-    }
+    PycRef<PycObject> get(int idx) const;
 
 private:
     key_t m_keys;
@@ -94,12 +84,7 @@ public:
     void load(class PycData* stream, class PycModule* mod);
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const
-    {
-        value_t::const_iterator it = m_values.begin();
-        for (int i=0; i<idx; i++) ++it;
-        return *it;
-    }
+    PycRef<PycObject> get(int idx) const;
 
 private:
     value_t m_values;

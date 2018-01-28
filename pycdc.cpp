@@ -15,7 +15,12 @@ int main(int argc, char* argv[])
     }
 
     PycModule mod;
-    mod.loadFromFile(argv[1]);
+    try {
+        mod.loadFromFile(argv[1]);
+    } catch (std::exception& ex) {
+        fprintf(stderr, "Error loading file %s: %s\n", argv[1], ex.what());
+        return 1;
+    }
     if (!mod.isValid()) {
         fprintf(stderr, "Could not load file %s\n", argv[1]);
         return 1;
@@ -25,7 +30,12 @@ int main(int argc, char* argv[])
     fputs("# Source Generated with Decompyle++\n", pyc_output);
     fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
             (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
-    decompyle(mod.code(), &mod);
+    try {
+        decompyle(mod.code(), &mod);
+    } catch (std::exception& ex) {
+        fprintf(stderr, "Error decompyling %s: %s\n", argv[1], ex.what());
+        return 1;
+    }
 
     return 0;
 }

@@ -78,6 +78,7 @@ int PycBuffer::getBuffer(int bytes, void* buffer)
 {
     if (m_pos + bytes > m_size)
         bytes = m_size - m_pos;
-    memcpy(buffer, (m_buffer + m_pos), bytes);
+    if (bytes != 0)
+        memcpy(buffer, (m_buffer + m_pos), bytes);
     return bytes;
 }

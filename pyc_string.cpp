@@ -2,6 +2,7 @@
 #include "pyc_module.h"
 #include "data.h"
 #include <cstring>
+#include <limits>
 
 static void ascii_to_utf8(char** data)
 {
@@ -64,6 +65,9 @@ void PycString::load(PycData* stream, PycModule* mod)
         else
             m_length = stream->get32();
 
+        if (m_length < 0 || (m_length > std::numeric_limits<int>::max() - 1))
+            throw std::bad_alloc();
+
         if (m_length) {
             m_value = new char[m_length+1];
             stream->getBuffer(m_length, m_value);
@@ -95,6 +99,8 @@ bool PycString::isEqual(const char* str) const
 {
     if (m_value == str)
         return true;
+    if (!m_value)
+        return false;
     return (strcmp(m_value, str) == 0);
 }
 

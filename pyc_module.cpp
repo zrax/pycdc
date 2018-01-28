@@ -1,5 +1,6 @@
 #include "pyc_module.h"
 #include "data.h"
+#include <stdexcept>
 
 void PycModule::setVersion(unsigned int magic)
 {
@@ -125,7 +126,7 @@ void PycModule::setVersion(unsigned int magic)
         break;
 
     case MAGIC_3_5:
-	/* fall through */
+        /* fall through */
 
     case MAGIC_3_5_3:
         m_maj = 3;
@@ -169,21 +170,31 @@ void PycModule::loadFromFile(const char* filename)
     if (verCompare(3, 3) >= 0)
         in.get32(); // Size parameter added in Python 3.3
 
-    m_code = LoadObject(&in, this).cast<PycCode>();
+    m_code = LoadObject(&in, this).require_cast<PycCode>();
 }
 
 PycRef<PycString> PycModule::getIntern(int ref) const
 {
+    if (ref < 0)
+        throw std::out_of_range("Intern index out of range");
+
     std::list<PycRef<PycString> >::const_iterator it = m_interns.begin();
-    while (ref--)
+    while (ref-- && it != m_interns.end())
         ++it;
+    if (it == m_interns.end())
+        throw std::out_of_range("Intern index out of range");
     return *it;
 }
 
 PycRef<PycObject> PycModule::getRef(int ref) const
 {
+    if (ref < 0)
+        throw std::out_of_range("Ref index out of range");
+
     std::list<PycRef<PycObject> >::const_iterator it = m_refs.begin();
-    while (ref--)
+    while (ref-- && it != m_refs.end())
         ++it;
+    if (it == m_refs.end())
+        throw std::out_of_range("Ref index out of range");
     return *it;
 }

@@ -235,12 +235,22 @@ int main(int argc, char* argv[])
     }
 
     PycModule mod;
-    mod.loadFromFile(argv[1]);
+    try {
+        mod.loadFromFile(argv[1]);
+    } catch (std::exception& ex) {
+        fprintf(stderr, "Error disassembling %s: %s\n", argv[1], ex.what());
+        return 1;
+    }
     const char* dispname = strrchr(argv[1], PATHSEP);
     dispname = (dispname == NULL) ? argv[1] : dispname + 1;
     fprintf(pyc_output, "%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
            (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
-    output_object(mod.code().cast<PycObject>(), &mod, 0);
+    try {
+        output_object(mod.code().cast<PycObject>(), &mod, 0);
+    } catch (std::exception& ex) {
+        fprintf(stderr, "Error disassembling %s: %s\n", argv[1], ex.what());
+        return 1;
+    }
 
     return 0;
 }

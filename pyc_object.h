@@ -1,6 +1,8 @@
 #ifndef _PYC_OBJECT_H
 #define _PYC_OBJECT_H
 
+#include <typeinfo>
+
 template <class _Obj>
 class PycRef {
 public:
@@ -55,11 +57,19 @@ public:
 
     inline int type() const;
 
-    /* This is just for coding convenience -- no type checking is done! */
     template <class _Cast>
-    PycRef<_Cast> cast() const { return static_cast<_Cast*>(m_obj); }
+    PycRef<_Cast> cast() const { return dynamic_cast<_Cast*>(m_obj); }
 
-    bool isIdent(const _Obj* obj) { return m_obj == obj; }
+    template <class _Cast>
+    PycRef<_Cast> require_cast() const
+    {
+        _Cast* result = dynamic_cast<_Cast*>(m_obj);
+        if (!result)
+            throw std::bad_cast();
+        return result;
+    }
+
+    bool isIdent(const _Obj* obj) const { return m_obj == obj; }
 
 private:
     _Obj* m_obj;
