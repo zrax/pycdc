@@ -161,7 +161,7 @@ void PycModule::loadFromFile(const char* filename)
     }
     setVersion(in.get32());
     if (!isValid()) {
-        fprintf(stderr, "Bad MAGIC!\n");
+        fputs("Bad MAGIC!\n", stderr);
         return;
     }
     in.get32(); // Timestamp -- who cares?

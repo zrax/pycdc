@@ -106,7 +106,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
     const char* ch = str->value();
     int len = str->length();
     if (ch == 0) {
-        fprintf(F, "''");
+        fputs("''", F);
         return;
     }
 
@@ -126,20 +126,20 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
 
     // Output the string
     if (triple)
-        fprintf(F, useQuotes ? "\"\"\"" : "'''");
+        fputs(useQuotes ? "\"\"\"" : "'''", F);
     else
         fputc(useQuotes ? '"' : '\'', F);
     while (len--) {
         if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
-                fprintf(F, "\\r");
+                fputs("\\r", F);
             } else if (*ch == '\n') {
                 if (triple)
                     fputc('\n', F);
                 else
-                    fprintf(F, "\\n");
+                    fputs("\\n", F);
             } else if (*ch == '\t') {
-                fprintf(F, "\\t");
+                fputs("\\t", F);
             } else {
                 fprintf(F, "\\x%02x", (*ch & 0xFF));
             }
@@ -152,18 +152,18 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
             }
         } else {
             if (!useQuotes && *ch == '\'')
-                fprintf(F, "\\'");
+                fputs("\\'", F);
             else if (useQuotes && *ch == '"')
-                fprintf(F, "\\\"");
+                fputs("\\\"", F);
             else if (*ch == '\\')
-                fprintf(F, "\\\\");
+                fputs("\\\\", F);
             else
                 fputc(*ch, F);
         }
         ch++;
     }
     if (triple)
-        fprintf(F, useQuotes ? "\"\"\"" : "'''");
+        fputs(useQuotes ? "\"\"\"" : "'''", F);
     else
         fputc(useQuotes ? '"' : '\'', F);
 }

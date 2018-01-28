@@ -27,31 +27,38 @@ static const char* flag_names[] = {
 static void print_coflags(unsigned long flags)
 {
     if (flags == 0) {
-        fprintf(pyc_output, "\n");
+        fputs("\n", pyc_output);
         return;
     }
 
-    fprintf(pyc_output, " (");
+    fputs(" (", pyc_output);
     unsigned long f = 1;
     int k = 0;
     while (k < 32) {
         if ((flags & f) != 0) {
             flags &= ~f;
             if (flags == 0)
-                fprintf(pyc_output, "%s", flag_names[k]);
+                fputs(flag_names[k], pyc_output);
             else
                 fprintf(pyc_output, "%s | ", flag_names[k]);
         }
         ++k;
         f <<= 1;
     }
-    fprintf(pyc_output, ")\n");
+    fputs(")\n", pyc_output);
+}
+
+static void iputs(int indent, const char* text)
+{
+    for (int i=0; i<indent; i++)
+        fputs("    ", pyc_output);
+    fputs(text, pyc_output);
 }
 
 static void ivprintf(int indent, const char* fmt, va_list varargs)
 {
     for (int i=0; i<indent; i++)
-        fprintf(pyc_output, "    ");
+        fputs("    ", pyc_output);
     vprintf(fmt, varargs);
 }
 
@@ -66,7 +73,7 @@ static void iprintf(int indent, const char* fmt, ...)
 void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
 {
     if (obj == NULL) {
-        iprintf(indent, "<NULL>");
+        iputs(indent, "<NULL>");
         return;
     }
 
@@ -75,7 +82,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_CODE2:
         {
             PycRef<PycCode> codeObj = obj.cast<PycCode>();
-            iprintf(indent, "[Code]\n");
+            iputs(indent, "[Code]\n");
             iprintf(indent + 1, "File Name: %s\n", codeObj->fileName()->value());
             iprintf(indent + 1, "Object Name: %s\n", codeObj->name()->value());
             iprintf(indent + 1, "Arg Count: %d\n", codeObj->argCount());
@@ -87,48 +94,48 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             print_coflags(codeObj->flags());
 
             if (codeObj->names() != NULL) {
-                iprintf(indent + 1, "[Names]\n");
+                iputs(indent + 1, "[Names]\n");
                 for (int i=0; i<codeObj->names()->size(); i++)
                     output_object(codeObj->names()->get(i), mod, indent + 2);
             }
 
             if (codeObj->varNames() != NULL) {
-                iprintf(indent + 1, "[Var Names]\n");
+                iputs(indent + 1, "[Var Names]\n");
                 for (int i=0; i<codeObj->varNames()->size(); i++)
                     output_object(codeObj->varNames()->get(i), mod, indent + 2);
             }
 
             if (codeObj->freeVars() != NULL) {
-                iprintf(indent + 1, "[Free Vars]\n");
+                iputs(indent + 1, "[Free Vars]\n");
                 for (int i=0; i<codeObj->freeVars()->size(); i++)
                     output_object(codeObj->freeVars()->get(i), mod, indent + 2);
             }
 
             if (codeObj->cellVars() != NULL) {
-                iprintf(indent + 1, "[Cell Vars]\n");
+                iputs(indent + 1, "[Cell Vars]\n");
                 for (int i=0; i<codeObj->cellVars()->size(); i++)
                     output_object(codeObj->cellVars()->get(i), mod, indent + 2);
             }
 
             if (codeObj->consts() != NULL) {
-                iprintf(indent + 1, "[Constants]\n");
+                iputs(indent + 1, "[Constants]\n");
                 for (int i=0; i<codeObj->consts()->size(); i++)
                     output_object(codeObj->consts()->get(i), mod, indent + 2);
             }
 
-            iprintf(indent + 1, "[Disassembly]\n");
+            iputs(indent + 1, "[Disassembly]\n");
             bc_disasm(codeObj, mod, indent + 2);
         }
         break;
     case PycObject::TYPE_STRING:
-        iprintf(indent, "");
+        iputs(indent, "");
         OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
-        fprintf(pyc_output, "\n");
+        fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_UNICODE:
-        iprintf(indent, "");
+        iputs(indent, "");
         OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
-        fprintf(pyc_output, "\n");
+        fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
@@ -136,32 +143,32 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        iprintf(indent, "");
+        iputs(indent, "");
         OutputString(obj.cast<PycString>(), 0);
-        fprintf(pyc_output, "\n");
+        fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
         {
-            iprintf(indent, "(\n");
+            iputs(indent, "(\n");
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
             for (PycTuple::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
-            iprintf(indent, ")\n");
+            iputs(indent, ")\n");
         }
         break;
     case PycObject::TYPE_LIST:
         {
-            iprintf(indent, "[\n");
+            iputs(indent, "[\n");
             PycList::value_t values = obj.cast<PycList>()->values();
             for (PycList::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
-            iprintf(indent, "]\n");
+            iputs(indent, "]\n");
         }
         break;
     case PycObject::TYPE_DICT:
         {
-            iprintf(indent, "{\n");
+            iputs(indent, "{\n");
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
             PycDict::key_t::const_iterator ki = keys.begin();
@@ -171,29 +178,29 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
                 output_object(*vi, mod, indent + 2);
                 ++ki, ++vi;
             }
-            iprintf(indent, "}\n");
+            iputs(indent, "}\n");
         }
         break;
     case PycObject::TYPE_SET:
         {
-            iprintf(indent, "{\n");
+            iputs(indent, "{\n");
             PycSet::value_t values = obj.cast<PycSet>()->values();
             for (PycSet::value_t::const_iterator i = values.begin(); i != values.end(); i++)
                 output_object(*i, mod, indent + 1);
-            iprintf(indent, "}\n");
+            iputs(indent, "}\n");
         }
         break;
     case PycObject::TYPE_NONE:
-        iprintf(indent, "None\n");
+        iputs(indent, "None\n");
         break;
     case PycObject::TYPE_FALSE:
-        iprintf(indent, "False\n");
+        iputs(indent, "False\n");
         break;
     case PycObject::TYPE_TRUE:
-        iprintf(indent, "True\n");
+        iputs(indent, "True\n");
         break;
     case PycObject::TYPE_ELLIPSIS:
-        iprintf(indent, "...\n");
+        iputs(indent, "...\n");
         break;
     case PycObject::TYPE_INT:
         iprintf(indent, "%d\n", obj.cast<PycInt>()->value());
@@ -223,7 +230,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
-        fprintf(stderr, "No input file specified\n");
+        fputs("No input file specified\n", stderr);
         return 1;
     }
 
