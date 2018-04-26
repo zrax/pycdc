@@ -165,10 +165,21 @@ void PycModule::loadFromFile(const char* filename)
         fputs("Bad MAGIC!\n", stderr);
         return;
     }
-    in.get32(); // Timestamp -- who cares?
 
-    if (verCompare(3, 3) >= 0)
-        in.get32(); // Size parameter added in Python 3.3
+    int flags = 0;
+    if (verCompare(3, 7) >= 0)
+        flags = in.get32();
+
+    if (flags & 0x1) {
+        // Optional checksum added in Python 3.7
+        in.get32();
+        in.get32();
+    } else {
+        in.get32(); // Timestamp -- who cares?
+
+        if (verCompare(3, 3) >= 0)
+            in.get32(); // Size parameter added in Python 3.3
+    }
 
     m_code = LoadObject(&in, this).require_cast<PycCode>();
 }

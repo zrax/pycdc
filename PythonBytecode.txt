@@ -7,7 +7,7 @@ Python  MAGIC           Python  MAGIC           Python  MAGIC
 1.5     0x0A0D4E99      2.5     0x0A0DF2B3      3.5     0x0A0D0D16
 1.6     0x0A0DC4FC      2.6     0x0A0DF2D1      3.5.3   0x0A0D0D17
                         2.7     0x0A0DF303      3.6     0x0A0D0D33
-                                                3.7     0x0A0D0D3F
+                                                3.7     0x0A0D0D41
 
 
                         1.0     1.1     1.2     1.3     1.4     1.5     1.6
@@ -479,7 +479,7 @@ SETUP_FINALLY               [X]     [X]     [X]     [X]     [X]     [X]     [X] 
 LOAD_FAST                   [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 STORE_FAST                  [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
 DELETE_FAST                 [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]
-STORE_ANNOTATION            [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [X]
+STORE_ANNOTATION            [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [X]     [ ]
 <128>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
 <129>                       [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]     [ ]
 RAISE_VARARGS               [X]     [X]     [X]     [X]     [X]     [X]     [X]     [X]

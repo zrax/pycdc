@@ -29,7 +29,7 @@ enum PycMagic {
     MAGIC_3_5 = 0x0A0D0D16,
     MAGIC_3_5_3 = 0x0A0D0D17,
     MAGIC_3_6 = 0x0A0D0D33,
-    MAGIC_3_7 = 0x0A0D0D3F,
+    MAGIC_3_7 = 0x0A0D0D41,
 };
 
 #define PYC_VERSION(maj, min)  MAGIC_##maj##_##min
