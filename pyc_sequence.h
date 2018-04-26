@@ -30,6 +30,8 @@ public:
     const value_t& values() const { return m_values; }
     PycRef<PycObject> get(int idx) const { return m_values.at(idx); }
 
+    static PycRef<PycTuple> fromList(const PycRef<class PycList>& obj);
+
 private:
     value_t m_values;
 };

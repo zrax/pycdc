@@ -36,8 +36,14 @@ void PycCode::load(PycData* stream, PycModule* mod)
         m_flags = 0;
 
     m_code = LoadObject(stream, mod).require_cast<PycString>();
-    m_consts = LoadObject(stream, mod).require_cast<PycTuple>();
-    m_names = LoadObject(stream, mod).require_cast<PycTuple>();
+
+    if (mod->verCompare(1, 1) < 0) {
+        m_consts = PycTuple::fromList(LoadObject(stream, mod).require_cast<PycList>());
+        m_names = PycTuple::fromList(LoadObject(stream, mod).require_cast<PycList>());
+    } else {
+        m_consts = LoadObject(stream, mod).require_cast<PycTuple>();
+        m_names = LoadObject(stream, mod).require_cast<PycTuple>();
+    }
 
     if (mod->verCompare(1, 3) >= 0)
         m_varNames = LoadObject(stream, mod).require_cast<PycTuple>();
