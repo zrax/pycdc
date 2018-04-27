@@ -1,0 +1,39 @@
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index 4485a81..54a7e8d 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -499,7 +499,7 @@ Modules/getbuildinfo.o: $(PARSER_OBJS) \
+ 		$(SIGNAL_OBJS) \
+ 		$(MODOBJS) \
+ 		$(srcdir)/Modules/getbuildinfo.c
+-	$(CC) -c $(PY_CFLAGS) -DSVNVERSION=\"`LC_ALL=C $(SVNVERSION)`\" -o $@ $(srcdir)/Modules/getbuildinfo.c
++	$(CC) -c $(PY_CFLAGS) -DSVNVERSION="\"`LC_ALL=C $(SVNVERSION)`\"" -o $@ $(srcdir)/Modules/getbuildinfo.c
+ 
+ Modules/getpath.o: $(srcdir)/Modules/getpath.c Makefile
+ 	$(CC) -c $(PY_CFLAGS) -DPYTHONPATH='"$(PYTHONPATH)"' \
+diff --git a/setup.py b/setup.py
+index e1d5984..9051d09 100644
+--- a/setup.py
++++ b/setup.py
+@@ -357,7 +357,8 @@ class PyBuildExt(build_ext):
+         # if a file is found in one of those directories, it can
+         # be assumed that no additional -I,-L directives are needed.
+         lib_dirs = self.compiler.library_dirs + [
+-            '/lib64', '/usr/lib64',
++            '/lib/x86_64-linux-gnu',
++            '/usr/lib/x86_64-linux-gnu',
+             '/lib', '/usr/lib',
+             ]
+         inc_dirs = self.compiler.include_dirs + ['/usr/include']
+@@ -725,9 +726,9 @@ class PyBuildExt(build_ext):
+ 
+         if sqlite_incdir:
+             sqlite_dirs_to_check = [
+-                os.path.join(sqlite_incdir, '..', 'lib64'),
++                os.path.join(sqlite_incdir, '..', 'lib', 'x86_64-linux-gnu'),
+                 os.path.join(sqlite_incdir, '..', 'lib'),
+-                os.path.join(sqlite_incdir, '..', '..', 'lib64'),
++                os.path.join(sqlite_incdir, '..', '..', 'lib', 'x86_64-linux-gnu'),
+                 os.path.join(sqlite_incdir, '..', '..', 'lib'),
+             ]
+             sqlite_libfile = self.compiler.find_library_file(

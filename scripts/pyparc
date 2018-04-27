@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+# PyParC - Python Parallel Compiler
+
+import os
+import sys
+import subprocess
+import shutil
+
+pythons1 = [
+    'Python-1.0.1',
+    'Python-1.1',
+    'Python-1.2',
+    'Python-1.3',
+    'Python-1.4',
+    'Python-1.5.2',
+    'Python-1.6.1',
+]
+
+pythons2 = [
+    'Python-2.0.1',
+    'Python-2.1.3',
+    'Python-2.2.3',
+    'Python-2.3.7',
+    'Python-2.4.6',
+    'Python-2.5.6',
+    'Python-2.6.9',
+    'Python-2.7.14',
+]
+
+pythons3 = [
+    'Python-3.0.1',
+    'Python-3.1.5',
+    'Python-3.2.6',
+    'Python-3.3.7',
+    'Python-3.4.8',
+    'Python-3.5.5',
+    'Python-3.6.5',
+]
+
+if len(sys.argv) < 2:
+    print('Usage: {} [options] input.py'.format(sys.argv[0]))
+    print('Compile input.py for many pythons')
+    print('Output is written to input.<version>.pyc for each version successfully compiled')
+    print()
+    print('Options:')
+    print('  -1    Compile for Python 1.x only')
+    print('  -2    Compile for Python 2.x only')
+    print('  -12   Compile for Python 1.x and 2.x versions (default)')
+    print('  -3    Compile for Python 3.x only')
+    print('  -23   Compile for Python 2.x and 3.x versions')
+    print('  -A    Attempt to compile for all known python versions')
+    sys.exit(1)
+
+pythons = pythons1 + pythons2
+infile = None
+for arg in sys.argv[1:]:
+    if arg == '-1':
+        pythons = pythons1
+    elif arg == '-2':
+        pythons = pythons2
+    elif arg == '-12':
+        pythons = pythons1 + pythons2
+    elif arg == '-3':
+        pythons = pythons3
+    elif arg == '-23':
+        pythons = pythons2 + pythons3
+    elif arg == '-A':
+        pythons = pythons1 + pythons2 + pythons3
+    else:
+        infile = arg
+
+if infile is None:
+    print('No input file specified')
+    sys.exit(1)
+elif not os.path.exists(infile):
+    print('Error: Input file {} does not exist'.format(infile))
+    sys.exit(1)
+
+snekdir = os.path.dirname(os.path.realpath(__file__))
+for snek in pythons:
+    pyexe = os.path.join(snekdir, snek, 'python')
+    proc = subprocess.Popen([pyexe, '-c', 'import sys; print(sys.version)'],
+                            stdout=subprocess.PIPE)
+    out, _ = proc.communicate()
+    if proc.returncode != 0:
+        print('Could not determine Python version for {}'.format(snek))
+        continue
+
+    bcver = str(out[:3], 'iso-8859-1')
+    if '.py' in infile:
+        outfile = infile.replace('.py', '.{}.pyc'.format(bcver))
+    else:
+        outfile = infile + '.{}.pyc'.format(bcver)
+    if os.path.exists(outfile):
+        os.unlink(outfile)
+
+    print('*** Compiling for {}'.format(snek))
+    if bcver in {'1.0', '1.1', '1.2', '1.3', '1.4'}:
+        # The hard way -- hope your code is safe...
+        srcdir = os.path.dirname(os.path.realpath(infile))
+        comptmp = os.path.join(srcdir, 'pyparc_temp.py')
+        if os.path.exists(comptmp):
+            os.unlink(comptmp)
+        shutil.copyfile(infile, comptmp)
+        cwdsave = os.getcwd()
+        os.chdir(srcdir)
+        proc = subprocess.Popen([pyexe, '-c', 'import pyparc_temp'])
+        proc.communicate()
+        os.chdir(cwdsave)
+        if os.path.exists(comptmp + 'o'):
+            shutil.copyfile(comptmp + 'o', outfile)
+            os.unlink(comptmp + 'o')
+        elif os.path.exists(comptmp + 'c'):
+            shutil.copyfile(comptmp + 'c', outfile)
+            os.unlink(comptmp + 'c')
+        os.unlink(comptmp)
+    else:
+        # The easy way
+        proc = subprocess.Popen([pyexe, '-c',
+                    "import py_compile; py_compile.compile('{}', '{}')" \
+                    .format(infile, outfile)])
+        proc.communicate()

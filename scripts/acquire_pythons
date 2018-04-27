@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# NOTE: This script has only been tested on a Debian 9 x86_64 system -- it
+# is probably not as robust as it should be...
+
+old_pythons=('1.0.1' '1.1' '1.2' '1.3' '1.4' '1.5.2')
+old_pyurl='https://legacy.python.org/download/releases/src'
+
+pythons=('2.0.1' '2.1.3' '2.2.3' '2.3.7' '2.4.6' '2.5.6' '2.6.9' '2.7.14'
+         '3.0.1' '3.1.5' '3.2.6' '3.3.7' '3.4.8' '3.5.5' '3.6.5')
+py_url='https://www.python.org/ftp/python'
+
+
+set -e
+
+srcdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+startdir="$(pwd)"
+
+fetch_python() {
+    local url="$1"
+    local tarball="${url##*/}"
+    local version="$2"
+
+    if [[ ! -d "Python-${version}" ]]; then
+        local tarfile="${srcdir}/tarballs/${tarball}"
+        if [[ ! -f "$tarfile" ]]; then
+            if [[ "$version" == "1.6.1" ]]; then
+                echo "Python 1.6.1 cannot be downloaded automatically due to a license agreement"
+                echo "which must be manually accepted."
+                echo "Please download it from https://www.python.org/download/releases/1.6.1/download/"
+                echo "and place the tarball in ${srcdir}/tarballs"
+                exit 1
+            fi
+            echo "Downloading Python-${version}..."
+            ( cd "${srcdir}/tarballs" && curl -LfO# "$url" )
+        fi
+        echo "Extracting Python-${version}..."
+        tar xaf "${srcdir}/tarballs/${tarball}"
+        [[ -d "python-${version}" ]] && mv "python-${version}" "Python-${version}"
+        if [[ -f "${srcdir}/python-builds/Python-${version}.patch" ]]; then
+            (
+                cd "Python-${version}" &&
+                patch -p1 -i "${srcdir}/python-builds/Python-${version}.patch"
+            )
+        fi
+    fi
+}
+
+build_python() {
+    local version="$1"
+
+    if [[ ! -x "Python-${version}/python" ]]; then
+        echo "Configuring Python-${version}..."
+        rm -f "${startdir}/Python-${version}.conf.log"
+        (
+            cd "Python-${version}"
+            if ! ./configure > "${startdir}/Python-${version}.conf.log" 2>&1; then
+                echo "... Configuration failed.  See Python-${version}.conf.log for details"
+                exit 1
+            fi
+        )
+
+        echo "Building Python-${version}..."
+        rm -f "${startdir}/Python-${version}.build.log"
+        (
+            cd "Python-${version}"
+            if ! make > "${startdir}/Python-${version}.build.log" 2>&1; then
+                echo "... Configuration failed.  See Python-${version}.build.log for details"
+                exit 1
+            fi
+        )
+    fi
+}
+
+mkdir -p "${startdir}/tarballs"
+
+for ver in ${old_pythons[@]:0:2}; do
+    fetch_python "${old_pyurl}/python${ver}.tar.gz" "$ver"
+    build_python "$ver"
+done
+for ver in ${old_pythons[@]:2}; do
+    fetch_python "${old_pyurl}/python-${ver}.tar.gz" "$ver"
+    build_python "$ver"
+done
+
+# 1.6.1 must be downloaded manually
+fetch_python "https://INVALID_URL_FOR/Python-1.6.1.tar.gz" "1.6.1"
+build_python "1.6.1"
+
+for ver in ${pythons[@]}; do
+    fetch_python "${py_url}/${ver}/Python-${ver}.tgz" "$ver"
+    build_python "$ver"
+done

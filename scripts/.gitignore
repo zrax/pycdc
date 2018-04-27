@@ -1,0 +1,4 @@
+tarballs/
+Python-*/
+Python-*.conf.log
+Python-*.build.log

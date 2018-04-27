@@ -22,11 +22,11 @@ fetch_python() {
 
     if [[ ! -d "Python-${version}" ]]; then
         echo "Downloading Python ${version}"
-        curl -LO# "$url"
+        curl -LfO# "$url"
         tar xzf "$tarball"
-        if [[ -f "${srcdir}/tests/python-builds/Python-${version}.patch" ]]; then
+        if [[ -f "${srcdir}/scripts/python-builds/Python-${version}.patch" ]]; then
             cd "Python-${version}"
-            patch -p1 < "${srcdir}/tests/python-builds/Python-${version}.patch"
+            patch -p1 < "${srcdir}/scripts/python-builds/Python-${version}.patch"
             cd ..
         fi
     fi

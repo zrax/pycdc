@@ -1,0 +1,51 @@
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index 25a82af..9700faa 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -458,7 +458,7 @@ Modules/getbuildinfo.o: $(PARSER_OBJS) \
+ 		$(SIGNAL_OBJS) \
+ 		$(MODOBJS) \
+ 		$(srcdir)/Modules/getbuildinfo.c
+-	$(CC) -c $(PY_CFLAGS) -DSVNVERSION=\"`LC_ALL=C $(SVNVERSION)`\" -o $@ $(srcdir)/Modules/getbuildinfo.c
++	$(CC) -c $(PY_CFLAGS) -DSVNVERSION="\"`LC_ALL=C $(SVNVERSION)`\"" -o $@ $(srcdir)/Modules/getbuildinfo.c
+ 
+ Modules/getpath.o: $(srcdir)/Modules/getpath.c Makefile
+ 	$(CC) -c $(PY_CFLAGS) -DPYTHONPATH='"$(PYTHONPATH)"' \
+diff --git a/setup.py b/setup.py
+index fbae8df..92a7a08 100644
+--- a/setup.py
++++ b/setup.py
+@@ -296,7 +296,8 @@ class PyBuildExt(build_ext):
+         # if a file is found in one of those directories, it can
+         # be assumed that no additional -I,-L directives are needed.
+         lib_dirs = self.compiler.library_dirs + [
+-            '/lib64', '/usr/lib64',
++            '/usr/lib/x86_64-linux-gnu',
++            '/lib/x86_64-linux-gnu',
+             '/lib', '/usr/lib',
+             ]
+         inc_dirs = self.compiler.include_dirs + ['/usr/include']
+@@ -711,9 +712,9 @@ class PyBuildExt(build_ext):
+ 
+                 # check lib directories parallel to the location of the header
+                 db_dirs_to_check = [
+-                    os.path.join(db_incdir, '..', 'lib64'),
++                    os.path.join(db_incdir, '..', 'lib/x86_64-linux-gnu'),
+                     os.path.join(db_incdir, '..', 'lib'),
+-                    os.path.join(db_incdir, '..', '..', 'lib64'),
++                    os.path.join(db_incdir, '..', '..', 'lib/x86_64-linux-gnu'),
+                     os.path.join(db_incdir, '..', '..', 'lib'),
+                 ]
+                 db_dirs_to_check = filter(os.path.isdir, db_dirs_to_check)
+@@ -800,9 +801,9 @@ class PyBuildExt(build_ext):
+ 
+         if sqlite_incdir:
+             sqlite_dirs_to_check = [
+-                os.path.join(sqlite_incdir, '..', 'lib64'),
++                os.path.join(sqlite_incdir, '..', 'lib/x86_64-linux-gnu'),
+                 os.path.join(sqlite_incdir, '..', 'lib'),
+-                os.path.join(sqlite_incdir, '..', '..', 'lib64'),
++                os.path.join(sqlite_incdir, '..', '..', 'lib/x86_64-linux-gnu'),
+                 os.path.join(sqlite_incdir, '..', '..', 'lib'),
+             ]
+             sqlite_libfile = self.compiler.find_library_file(
