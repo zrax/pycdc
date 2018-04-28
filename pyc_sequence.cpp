@@ -34,20 +34,6 @@ bool PycTuple::isEqual(PycRef<PycObject> obj) const
     return true;
 }
 
-PycRef<PycTuple> PycTuple::fromList(const PycRef<PycList>& obj)
-{
-    PycRef<PycTuple> tuple = new PycTuple;
-    if (!tuple)
-        return tuple;
-
-    tuple->m_values.reserve(obj->values().size());
-    for (PycList::value_t::const_iterator it = obj->values().begin();
-            it != obj->values().end(); ++it) {
-        tuple->m_values.push_back(*it);
-    }
-    return tuple;
-}
-
 
 /* PycList */
 void PycList::load(PycData* stream, PycModule* mod)

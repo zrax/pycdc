@@ -36,27 +36,21 @@ void PycCode::load(PycData* stream, PycModule* mod)
         m_flags = 0;
 
     m_code = LoadObject(stream, mod).require_cast<PycString>();
-
-    if (mod->verCompare(1, 1) < 0) {
-        m_consts = PycTuple::fromList(LoadObject(stream, mod).require_cast<PycList>());
-        m_names = PycTuple::fromList(LoadObject(stream, mod).require_cast<PycList>());
-    } else {
-        m_consts = LoadObject(stream, mod).require_cast<PycTuple>();
-        m_names = LoadObject(stream, mod).require_cast<PycTuple>();
-    }
+    m_consts = LoadObject(stream, mod).require_cast<PycSequence>();
+    m_names = LoadObject(stream, mod).require_cast<PycSequence>();
 
     if (mod->verCompare(1, 3) >= 0)
-        m_varNames = LoadObject(stream, mod).require_cast<PycTuple>();
+        m_varNames = LoadObject(stream, mod).require_cast<PycSequence>();
     else
         m_varNames = new PycTuple;
 
     if (mod->verCompare(2, 1) >= 0)
-        m_freeVars = LoadObject(stream, mod).require_cast<PycTuple>();
+        m_freeVars = LoadObject(stream, mod).require_cast<PycSequence>();
     else
         m_freeVars = new PycTuple;
 
     if (mod->verCompare(2, 1) >= 0)
-        m_cellVars = LoadObject(stream, mod).require_cast<PycTuple>();
+        m_cellVars = LoadObject(stream, mod).require_cast<PycSequence>();
     else
         m_cellVars = new PycTuple;
 
