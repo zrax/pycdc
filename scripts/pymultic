@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# PyParC - Python Parallel Compiler
+# PyMultiC - Python Multiple Compiler
 
 import os
 import sys
@@ -98,13 +98,13 @@ for snek in pythons:
     if bcver in {'1.0', '1.1', '1.2', '1.3', '1.4'}:
         # The hard way -- hope your code is safe...
         srcdir = os.path.dirname(os.path.realpath(infile))
-        comptmp = os.path.join(srcdir, 'pyparc_temp.py')
+        comptmp = os.path.join(srcdir, 'pymc_temp.py')
         if os.path.exists(comptmp):
             os.unlink(comptmp)
         shutil.copyfile(infile, comptmp)
         cwdsave = os.getcwd()
         os.chdir(srcdir)
-        proc = subprocess.Popen([pyexe, '-c', 'import pyparc_temp'])
+        proc = subprocess.Popen([pyexe, '-c', 'import pymc_temp'])
         proc.communicate()
         os.chdir(cwdsave)
         if os.path.exists(comptmp + 'o'):
