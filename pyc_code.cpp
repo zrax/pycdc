@@ -9,6 +9,11 @@ void PycCode::load(PycData* stream, PycModule* mod)
     else if (mod->verCompare(2, 3) >= 0)
         m_argCount = stream->get32();
 
+    if (mod->verCompare(3, 8) >= 0)
+        m_posOnlyArgCount = stream->get32();
+    else
+        m_posOnlyArgCount = 0;
+
     if (mod->majorVer() >= 3)
         m_kwOnlyArgCount = stream->get32();
     else

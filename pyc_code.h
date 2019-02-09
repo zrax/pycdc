@@ -28,12 +28,13 @@ public:
     };
 
     PycCode(int type = TYPE_CODE)
-        : PycObject(type), m_argCount(0), m_kwOnlyArgCount(0), m_numLocals(0),
-          m_stackSize(0), m_flags(0), m_firstLine(0) { }
+        : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
+          m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
 
     void load(class PycData* stream, class PycModule* mod) override;
 
     int argCount() const { return m_argCount; }
+    int posOnlyArgCount() const { return m_posOnlyArgCount; }
     int kwOnlyArgCount() const { return m_kwOnlyArgCount; }
     int numLocals() const { return m_numLocals; }
     int stackSize() const { return m_stackSize; }
@@ -50,13 +51,19 @@ public:
     PycRef<PycString> lnTable() const { return m_lnTable; }
 
     PycRef<PycObject> getConst(int idx) const
-    { return m_consts->get(idx); }
+    {
+        return m_consts->get(idx);
+    }
 
     PycRef<PycString> getName(int idx) const
-    { return m_names->get(idx).require_cast<PycString>(); }
+    {
+        return m_names->get(idx).require_cast<PycString>();
+    }
 
     PycRef<PycString> getVarName(int idx) const
-    { return m_varNames->get(idx).require_cast<PycString>(); }
+    {
+        return m_varNames->get(idx).require_cast<PycString>();
+    }
 
     PycRef<PycString> getCellVar(int idx) const
     {
@@ -74,7 +81,8 @@ public:
     }
 
 private:
-    int m_argCount, m_kwOnlyArgCount, m_numLocals, m_stackSize, m_flags;
+    int m_argCount, m_posOnlyArgCount, m_kwOnlyArgCount, m_numLocals;
+    int m_stackSize, m_flags;
     PycRef<PycString> m_code;
     PycRef<PycSequence> m_consts;
     PycRef<PycSequence> m_names;

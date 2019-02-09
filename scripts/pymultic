@@ -31,6 +31,7 @@ PYVERS = {
     '3.5': '3.5.7',
     '3.6': '3.6.9',
     '3.7': '3.7.4',
+    '3.8': '3.8.0',
 }
 
 OLD_PYTHONS = ('1.0', '1.1', '1.2', '1.3', '1.4', '1.5')
@@ -53,7 +54,7 @@ def fetch_python(snekdir, version):
         tarball = 'Python-{}.tgz'.format(realver)
         url = '{}/{}/{}'.format(PYURL, realver, tarball)
 
-    pyver_dir = 'Python-{}'.format(realver)
+    pyver_dir = os.path.join(snekdir, 'Python-{}'.format(realver))
     if os.path.exists(pyver_dir):
         return
 
@@ -72,16 +73,16 @@ def fetch_python(snekdir, version):
             sys.exit(1)
 
     print('Extracting Python {}...'.format(realver))
-    if subprocess.call(['tar', 'xaf', tarfile]) != 0:
+    if subprocess.call(['tar', 'xaf', tarfile], cwd=snekdir) != 0:
         sys.exit(1)
 
-    if os.path.exists('python-{}'.format(realver)) \
+    if os.path.exists(os.path.join(snekdir, 'python-{}'.format(realver))) \
             and not os.path.exists(pyver_dir):
         # The dual check prevents useless renames on case-insensitive
         # file systems
-        os.rename('python-{}'.format(realver), pyver_dir)
+        os.rename(os.path.join(snekdir, 'python-{}'.format(realver)), pyver_dir)
 
-    patch_file = '{}/python-builds/Python-{}.patch'.format(snekdir, realver)
+    patch_file = os.path.join(snekdir, 'python-builds', 'Python-{}.patch'.format(realver))
     if os.path.exists(patch_file):
         if subprocess.call(['patch', '-p1', '-i', patch_file], cwd=pyver_dir) != 0:
             sys.exit(1)

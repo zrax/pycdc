@@ -86,6 +86,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iprintf(indent + 1, "File Name: %s\n", codeObj->fileName()->value());
             iprintf(indent + 1, "Object Name: %s\n", codeObj->name()->value());
             iprintf(indent + 1, "Arg Count: %d\n", codeObj->argCount());
+            if (mod->verCompare(3, 8) >= 0)
+                iprintf(indent + 1, "Pos Only Arg Count: %d\n", codeObj->posOnlyArgCount());
             if (mod->majorVer() >= 3)
                 iprintf(indent + 1, "KW Only Arg Count: %d\n", codeObj->kwOnlyArgCount());
             iprintf(indent + 1, "Locals: %d\n", codeObj->numLocals());

@@ -31,6 +31,7 @@ DECLARE_PYTHON(3, 4)
 DECLARE_PYTHON(3, 5)
 DECLARE_PYTHON(3, 6)
 DECLARE_PYTHON(3, 7)
+DECLARE_PYTHON(3, 8)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -95,6 +96,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 5: return python_35_map(opcode);
         case 6: return python_36_map(opcode);
         case 7: return python_37_map(opcode);
+        case 8: return python_38_map(opcode);
         }
         break;
     }
