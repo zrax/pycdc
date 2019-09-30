@@ -1,7 +1,40 @@
-diff --git a/setup.py b/setup.py
-index 4fe1f45..d124268 100644
---- a/setup.py
-+++ b/setup.py
+diff -rupN a/Include/objimpl.h b/Include/objimpl.h
+--- a/Include/objimpl.h	2013-10-29 08:04:37.000000000 -0700
++++ b/Include/objimpl.h	2019-09-30 16:18:58.318197021 -0700
+@@ -241,6 +241,20 @@ PyAPI_FUNC(PyVarObject *) _PyObject_GC_R
+ /* for source compatibility with 2.2 */
+ #define _PyObject_GC_Del PyObject_GC_Del
+ 
++/*
++ * Former over-aligned definition of PyGC_Head, used to compute the size of the
++ * padding for the new version below.
++ */
++union _gc_head;
++union _gc_head_old {
++    struct {
++        union _gc_head_old *gc_next;
++        union _gc_head_old *gc_prev;
++        Py_ssize_t gc_refs;
++    } gc;
++    long double dummy;
++};
++
+ /* GC information is stored BEFORE the object structure. */
+ typedef union _gc_head {
+     struct {
+@@ -248,7 +262,8 @@ typedef union _gc_head {
+         union _gc_head *gc_prev;
+         Py_ssize_t gc_refs;
+     } gc;
+-    long double dummy;  /* force worst-case alignment */
++    double dummy; /* Force at least 8-byte alignment. */
++    char dummy_padding[sizeof(union _gc_head_old)];
+ } PyGC_Head;
+ 
+ extern PyGC_Head *_PyGC_generation0;
+diff -rupN a/setup.py b/setup.py
+--- a/setup.py	2013-10-29 08:04:39.000000000 -0700
++++ b/setup.py	2019-09-30 16:19:09.146284481 -0700
 @@ -408,7 +408,8 @@ class PyBuildExt(build_ext):
          # if a file is found in one of those directories, it can
          # be assumed that no additional -I,-L directives are needed.
