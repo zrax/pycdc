@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # For generating the bytes tables
 find_package(PythonInterp REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror ${CMAKE_CXX_FLAGS}")
 endif()
 
@@ -18,8 +18,8 @@ set(PYTHON_VERSIONS
 )
 
 foreach(ver ${PYTHON_VERSIONS})
-    set(MAP_FILES   ${MAP_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/bytes/python_${ver}.map)
-    set(MAP_SOURCES ${MAP_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/bytes/python_${ver}.cpp)
+    list(APPEND MAP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/bytes/python_${ver}.map)
+    list(APPEND MAP_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/bytes/python_${ver}.cpp)
 endforeach()
 
 add_custom_command(OUTPUT ${MAP_SOURCES}
@@ -31,7 +31,9 @@ add_custom_command(OUTPUT ${MAP_SOURCES}
                            ${CMAKE_CURRENT_SOURCE_DIR}/bytes/comp_map.py
 )
 
-set(COMMON_SOURCES
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(pycxx STATIC
     bytecode.cpp
     data.cpp
     pyc_code.cpp
@@ -43,21 +45,13 @@ set(COMMON_SOURCES
     ${MAP_SOURCES}
 )
 
-set(pycdc_AST_SOURCES
-    ASTree.cpp
-    ASTNode.cpp
-)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(pycxx STATIC ${COMMON_SOURCES})
-
 add_executable(pycdas pycdas.cpp)
 target_link_libraries(pycdas pycxx)
 
 install(TARGETS pycdas
     RUNTIME DESTINATION bin)
 
-add_executable(pycdc pycdc.cpp ${pycdc_AST_SOURCES})
+add_executable(pycdc pycdc.cpp ASTree.cpp ASTNode.cpp)
 target_link_libraries(pycdc pycxx)
 
 install(TARGETS pycdc
