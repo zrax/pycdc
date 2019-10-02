@@ -23,12 +23,12 @@ public:
 
     PycTuple(int type = TYPE_TUPLE) : PycSequence(type) { }
 
-    bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const { return m_values.at(idx); }
+    PycRef<PycObject> get(int idx) const override { return m_values.at(idx); }
 
 private:
     value_t m_values;
@@ -40,12 +40,12 @@ public:
 
     PycList(int type = TYPE_LIST) : PycSequence(type) { }
 
-    bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const;
+    PycRef<PycObject> get(int idx) const override;
 
 private:
     value_t m_values;
@@ -58,15 +58,15 @@ public:
 
     PycDict(int type = TYPE_DICT) : PycSequence(type) { }
 
-    bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     PycRef<PycObject> get(PycRef<PycObject> key) const;
     const key_t& keys() const { return m_keys; }
     const value_t& values() const { return m_values; }
 
-    PycRef<PycObject> get(int idx) const;
+    PycRef<PycObject> get(int idx) const override;
 
 private:
     key_t m_keys;
@@ -79,12 +79,12 @@ public:
 
     PycSet(int type = TYPE_SET) : PycSequence(type) { }
 
-    bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const;
+    PycRef<PycObject> get(int idx) const override;
 
 private:
     value_t m_values;

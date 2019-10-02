@@ -12,10 +12,10 @@ public:
 
     ~PycString() { delete[] m_value; }
 
-    bool isEqual(PycRef<PycObject> obj) const;
+    bool isEqual(PycRef<PycObject> obj) const override;
     bool isEqual(const char* str) const;
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     int length() const { return m_length; }
     const char* value() const { return m_value; }

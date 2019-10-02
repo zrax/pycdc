@@ -29,11 +29,11 @@ public:
     PycFile(const char* filename);
     ~PycFile() { if (m_stream) fclose(m_stream); }
 
-    bool isOpen() const { return (m_stream != 0); }
-    bool atEof() const;
+    bool isOpen() const override { return (m_stream != 0); }
+    bool atEof() const override;
 
-    int getByte();
-    int getBuffer(int bytes, void* buffer);
+    int getByte() override;
+    int getBuffer(int bytes, void* buffer) override;
 
 private:
     FILE* m_stream;
@@ -45,11 +45,11 @@ public:
         : m_buffer((const unsigned char*)buffer), m_size(size), m_pos(0) { }
     ~PycBuffer() { }
 
-    bool isOpen() const { return (m_buffer != 0); }
-    bool atEof() const { return (m_pos == m_size); }
+    bool isOpen() const override { return (m_buffer != 0); }
+    bool atEof() const override { return (m_pos == m_size); }
 
-    int getByte();
-    int getBuffer(int bytes, void* buffer);
+    int getByte() override;
+    int getBuffer(int bytes, void* buffer) override;
 
 private:
     const unsigned char* m_buffer;

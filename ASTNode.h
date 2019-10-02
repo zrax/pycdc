@@ -144,7 +144,7 @@ public:
     ASTCompare(PycRef<ASTNode> left, PycRef<ASTNode> right, int op)
         : ASTBinary(left, right, op, NODE_COMPARE) { }
 
-    const char* op_str() const;
+    const char* op_str() const override;
 };
 
 
@@ -555,7 +555,6 @@ private:
     generator_t m_generators;
 
 };
-
 
 class ASTLoadBuildClass : public ASTNode {
 public:

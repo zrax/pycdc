@@ -31,7 +31,7 @@ public:
         : PycObject(type), m_argCount(0), m_kwOnlyArgCount(0), m_numLocals(0),
           m_stackSize(0), m_flags(0), m_firstLine(0) { }
 
-    void load(class PycData* stream, class PycModule* mod);
+    void load(class PycData* stream, class PycModule* mod) override;
 
     int argCount() const { return m_argCount; }
     int kwOnlyArgCount() const { return m_kwOnlyArgCount; }
