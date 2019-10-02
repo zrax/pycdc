@@ -123,7 +123,9 @@ public:
     int type() const { return m_type; }
 
     virtual bool isEqual(PycRef<PycObject> obj) const
-    { return obj.isIdent(this); }
+    {
+        return obj.isIdent(this);
+    }
 
     virtual void load(PycData*, PycModule*) { }
 

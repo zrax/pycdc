@@ -47,35 +47,31 @@ private:
 class PycFloat : public PycObject {
 public:
     PycFloat(int type = TYPE_FLOAT)
-        : PycObject(type), m_value(0) { }
-
-    ~PycFloat() { delete[] m_value; }
+        : PycObject(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
     void load(class PycData* stream, class PycModule* mod) override;
 
-    const char* value() const { return m_value; }
+    const char* value() const { return m_value.c_str(); }
 
 private:
-    char* m_value;  // Floats are stored as strings
+    std::string m_value;  // Floats are stored as strings
 };
 
 class PycComplex : public PycFloat {
 public:
     PycComplex(int type = TYPE_COMPLEX)
-        : PycFloat(type), m_imag(0) { }
-
-    ~PycComplex() { delete[] m_imag; }
+        : PycFloat(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
     void load(class PycData* stream, class PycModule* mod) override;
 
-    const char* imag() const { return m_imag; }
+    const char* imag() const { return m_imag.c_str(); }
 
 private:
-    char* m_imag;
+    std::string m_imag;
 };
 
 class PycCFloat : public PycObject {

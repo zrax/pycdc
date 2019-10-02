@@ -4,25 +4,23 @@
 #include "pyc_object.h"
 #include "data.h"
 #include <cstdio>
+#include <string>
 
 class PycString : public PycObject {
 public:
     PycString(int type = TYPE_STRING)
-        : PycObject(type), m_value(0), m_length(0) { }
-
-    ~PycString() { delete[] m_value; }
+        : PycObject(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
-    bool isEqual(const char* str) const;
+    bool isEqual(const std::string& str) const { return m_value == str; }
 
     void load(class PycData* stream, class PycModule* mod) override;
 
-    int length() const { return m_length; }
-    const char* value() const { return m_value; }
+    int length() const { return (int)m_value.size(); }
+    const char* value() const { return m_value.c_str(); }
 
 private:
-    char* m_value;
-    int m_length;
+    std::string m_value;
 };
 
 void OutputString(PycRef<PycString> str, char prefix = 0,

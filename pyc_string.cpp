@@ -4,10 +4,10 @@
 #include <cstring>
 #include <limits>
 
-static void ascii_to_utf8(char** data)
+static void ascii_to_utf8(std::string* data)
 {
     size_t utf8len = 0, asciilen = 0;
-    unsigned char* cp = reinterpret_cast<unsigned char*>(*data);
+    auto cp = reinterpret_cast<const unsigned char*>(data->c_str());
     while (*cp) {
         if (*cp & 0x80)
             utf8len += 2;
@@ -26,9 +26,10 @@ static void ascii_to_utf8(char** data)
         return;
     }
 
-    char* utf8_buffer = new char[utf8len + 1];
-    unsigned char* up = reinterpret_cast<unsigned char*>(utf8_buffer);
-    cp = reinterpret_cast<unsigned char*>(*data);
+    std::string utf8_buffer;
+    utf8_buffer.resize(utf8len);
+    auto up = reinterpret_cast<unsigned char*>(&utf8_buffer.front());
+    cp = reinterpret_cast<const unsigned char*>(data->c_str());
     while (*cp) {
         if (*cp & 0x80) {
             *up++ = 0xC0 | ((*cp >> 6) & 0x1F);
@@ -39,45 +40,32 @@ static void ascii_to_utf8(char** data)
         ++cp;
     }
 
-    utf8_buffer[utf8len] = 0;
-    delete[] *data;
-    *data = utf8_buffer;
+    *data = std::move(utf8_buffer);
 }
 
 /* PycString */
 void PycString::load(PycData* stream, PycModule* mod)
 {
-    delete[] m_value;
-
     if (type() == TYPE_STRINGREF) {
         PycRef<PycString> str = mod->getIntern(stream->get32());
-        m_length = str->length();
-        if (m_length) {
-            m_value = new char[m_length+1];
-            memcpy(m_value, str->value(), m_length);
-            m_value[m_length] = 0;
-        } else {
-            m_value = 0;
-        }
+        m_value.resize(str->length());
+        std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
     } else {
+        int length;
         if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-            m_length = stream->getByte();
+            length = stream->getByte();
         else
-            m_length = stream->get32();
+            length = stream->get32();
 
-        if (m_length < 0 || (m_length > std::numeric_limits<int>::max() - 1))
+        if (length < 0)
             throw std::bad_alloc();
 
-        if (m_length) {
-            m_value = new char[m_length+1];
-            stream->getBuffer(m_length, m_value);
-            m_value[m_length] = 0;
-
+        m_value.resize(length);
+        if (length) {
+            stream->getBuffer(length, &m_value.front());
             if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
                     type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
                 ascii_to_utf8(&m_value);
-        } else {
-            m_value = 0;
         }
 
         if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
@@ -93,15 +81,6 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
 
     PycRef<PycString> strObj = obj.cast<PycString>();
     return isEqual(strObj->m_value);
-}
-
-bool PycString::isEqual(const char* str) const
-{
-    if (m_value == str)
-        return true;
-    if (!m_value)
-        return false;
-    return (strcmp(m_value, str) == 0);
 }
 
 void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
