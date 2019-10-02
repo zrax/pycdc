@@ -154,6 +154,7 @@ if len(pythons) == 0:
     sys.exit(1)
 
 snekdir = os.path.dirname(os.path.realpath(__file__))
+result = 0
 for ver in pythons:
     pyexe = acquire_python(snekdir, ver)
     proc = subprocess.Popen([pyexe, '-c', 'import sys; print(sys.version)'],
@@ -161,17 +162,20 @@ for ver in pythons:
     out, _ = proc.communicate()
     if proc.returncode != 0:
         print('Could not determine Python version for {}'.format(ver))
+        result = 1
         continue
 
     bcver = str(out, 'iso-8859-1').split(' ', 1)[0]
     if not bcver.startswith(ver):
         print('Python {} reported itself as version {}!'.format(ver, bcver))
+        result = 1
         continue
 
-    if '.py' in infile:
-        outfile = infile.replace('.py', '.{}.pyc'.format(ver))
+    if infile.endswith('.py'):
+        outfile = os.path.basename(infile)[:-3]
     else:
-        outfile = infile + '.{}.pyc'.format(ver)
+        outfile = os.path.basename(infile)
+    outfile += '.{}.pyc'.format(ver)
     if os.path.exists(outfile):
         os.unlink(outfile)
 
@@ -201,3 +205,8 @@ for ver in pythons:
                     "import py_compile; py_compile.compile('{}', '{}')" \
                     .format(infile, outfile)])
         proc.communicate()
+
+    if not os.path.exists(outfile):
+        result = 1
+
+sys.exit(result)
