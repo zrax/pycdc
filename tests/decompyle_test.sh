@@ -25,18 +25,20 @@ fi
 
 mkdir -p "$outdir"
 
+echo -ne "\033[1m*** $testname:\033[0m "
+
 fails=0
+efiles=()
+errors=()
 for pyc in "${compfiles[@]}"; do
     base="$outdir/$(basename "$pyc")"
-
-    echo -ne "\033[1m*** $(basename "$pyc"):\033[0m "
 
     ./pycdc "$pyc" 2>"$base.err" 1>"$base.src.py"
     if (( $? )) || [[ -s "$base.err" ]]
     then
         let fails+=1
-        echo -e "\033[31mFAIL\033[m"
-        cat "$base.err"
+        efiles+=("$(basename "$pyc")")
+        errors+=("$(cat "$base.err")")
         continue
     fi
 
@@ -44,18 +46,29 @@ for pyc in "${compfiles[@]}"; do
     if (( $? )) || [[ -s "$base.tok.err" ]]
     then
         let fails+=1
-        echo -e "\033[31mFAIL\033[m"
-        cat "$base.tok.err"
+        efiles+=("$(basename "$pyc")")
+        errors+=("$(cat "$base.tok.err")")
         continue
     fi
 
     if ! diff "$base.tok.txt" "$testdir/tokenized/$testname.txt" >/dev/null
     then
         let fails+=1
-        echo -e "\033[31mFAIL\033[m"
-        echo "$base.tok.txt does not match $testdir/tokenized/$testname.txt"
+        efiles+=("$(basename "$pyc")")
+        errors+=("$base.tok.txt does not match $testdir/tokenized/$testname.txt")
         continue
     fi
-
-    echo -e "\033[32mPASS\033[m"
 done
+
+if (( $fails == 0 ))
+then
+    echo -e "\033[32mPASS\033[m"
+else
+    echo -e "\033[31mFAIL\033[m"
+    for ((i=0; i<${#efiles[@]}; i++))
+    do
+        echo -e "\t\033[31m${efiles[i]}\033[m"
+        echo -e "${errors[i]}\n"
+    done
+    exit 1
+fi
