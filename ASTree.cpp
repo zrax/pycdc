@@ -272,11 +272,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BUILD_MAP_A:
-            stack.push(new ASTMap());
+            if (mod->majorVer() > 3 || (mod->majorVer() == 3 && mod->minorVer() >= 5)) {
+                auto map = new ASTMap;
+                for (int i=0; i<operand; ++i) {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    map->add(key, value);
+                }
+                stack.push(map);
+            } else {
+                stack.push(new ASTMap());
+            }
             break;
         case Pyc::STORE_MAP:
             {
-                ASTList::value_t values;
                 PycRef<ASTNode> key = stack.top();
                 stack.pop();
                 PycRef<ASTNode> value = stack.top();
