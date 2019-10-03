@@ -1,0 +1,7 @@
+a = 42 <EOL>
+b = 3.14159 <EOL>
+c = 'test' <EOL>
+d = ( 1 , 2 ) <EOL>
+e = ( 3 , ) <EOL>
+f = [ 1 , 2 ] <EOL>
+g = { 'key' : 42 } <EOL>
