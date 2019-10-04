@@ -69,3 +69,4 @@ add_dependencies(rt_test dc_test)
 
 add_custom_target(check "${CMAKE_CURRENT_SOURCE_DIR}/tests/all_tests.sh"
                   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+add_dependencies(check pycdc)
