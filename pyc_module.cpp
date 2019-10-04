@@ -189,10 +189,10 @@ PycRef<PycString> PycModule::getIntern(int ref) const
     if (ref < 0)
         throw std::out_of_range("Intern index out of range");
 
-    std::list<PycRef<PycString> >::const_iterator it = m_interns.begin();
-    while (ref-- && it != m_interns.end())
+    auto it = m_interns.cbegin();
+    while (ref-- && it != m_interns.cend())
         ++it;
-    if (it == m_interns.end())
+    if (it == m_interns.cend())
         throw std::out_of_range("Intern index out of range");
     return *it;
 }
@@ -202,10 +202,10 @@ PycRef<PycObject> PycModule::getRef(int ref) const
     if (ref < 0)
         throw std::out_of_range("Ref index out of range");
 
-    std::list<PycRef<PycObject> >::const_iterator it = m_refs.begin();
-    while (ref-- && it != m_refs.end())
+    auto it = m_refs.cbegin();
+    while (ref-- && it != m_refs.cend())
         ++it;
-    if (it == m_refs.end())
+    if (it == m_refs.cend())
         throw std::out_of_range("Ref index out of range");
     return *it;
 }

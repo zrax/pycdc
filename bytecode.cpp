@@ -169,10 +169,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             fputs("(", pyc_output);
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
-            PycTuple::value_t::const_iterator it = values.begin();
-            if (it != values.end()) {
+            auto it = values.cbegin();
+            if (it != values.cend()) {
                 print_const(*it, mod);
-                while (++it != values.end()) {
+                while (++it != values.cend()) {
                     fputs(", ", pyc_output);
                     print_const(*it, mod);
                 }
@@ -187,10 +187,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             fputs("[", pyc_output);
             PycList::value_t values = obj.cast<PycList>()->values();
-            PycList::value_t::const_iterator it = values.begin();
-            if (it != values.end()) {
+            auto it = values.cbegin();
+            if (it != values.cend()) {
                 print_const(*it, mod);
-                while (++it != values.end()) {
+                while (++it != values.cend()) {
                     fputs(", ", pyc_output);
                     print_const(*it, mod);
                 }
@@ -203,13 +203,13 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
             fputs("{", pyc_output);
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
-            PycDict::key_t::const_iterator ki = keys.begin();
-            PycDict::value_t::const_iterator vi = values.begin();
-            if (ki != keys.end()) {
+            auto ki = keys.cbegin();
+            auto vi = values.cbegin();
+            if (ki != keys.cend()) {
                 print_const(*ki, mod);
                 fputs(": ", pyc_output);
                 print_const(*vi, mod);
-                while (++ki != keys.end()) {
+                while (++ki != keys.cend()) {
                     ++vi;
                     fputs(", ", pyc_output);
                     print_const(*ki, mod);
@@ -224,10 +224,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             fputs("{", pyc_output);
             PycSet::value_t values = obj.cast<PycSet>()->values();
-            PycSet::value_t::const_iterator it = values.begin();
-            if (it != values.end()) {
+            auto it = values.cbegin();
+            if (it != values.cend()) {
                 print_const(*it, mod);
-                while (++it != values.end()) {
+                while (++it != values.cend()) {
                     fputs(", ", pyc_output);
                     print_const(*it, mod);
                 }

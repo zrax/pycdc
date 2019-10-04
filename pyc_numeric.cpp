@@ -61,15 +61,14 @@ std::string PycLong::repr() const
 
     // Realign to 32 bits, since Python uses only 15
     std::list<unsigned> bits;
-    std::list<int>::const_iterator bit;
     int shift = 0, temp = 0;
-    for (bit = m_value.begin(); bit != m_value.end(); ++bit) {
-        temp |= unsigned(*bit & 0xFFFF) << shift;
+    for (auto bit : m_value) {
+        temp |= unsigned(bit & 0xFFFF) << shift;
         shift += 15;
         if (shift >= 32) {
             bits.push_back(temp);
             shift -= 32;
-            temp = unsigned(*bit & 0xFFFF) >> (15 - shift);
+            temp = unsigned(bit & 0xFFFF) >> (15 - shift);
         }
     }
     if (temp)

@@ -151,18 +151,16 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_SMALL_TUPLE:
         {
             iputs(indent, "(\n");
-            PycTuple::value_t values = obj.cast<PycTuple>()->values();
-            for (PycTuple::value_t::const_iterator i = values.begin(); i != values.end(); i++)
-                output_object(*i, mod, indent + 1);
+            for (const auto& val : obj.cast<PycTuple>()->values())
+                output_object(val, mod, indent + 1);
             iputs(indent, ")\n");
         }
         break;
     case PycObject::TYPE_LIST:
         {
             iputs(indent, "[\n");
-            PycList::value_t values = obj.cast<PycList>()->values();
-            for (PycList::value_t::const_iterator i = values.begin(); i != values.end(); i++)
-                output_object(*i, mod, indent + 1);
+            for (const auto& val : obj.cast<PycList>()->values())
+                output_object(val, mod, indent + 1);
             iputs(indent, "]\n");
         }
         break;
@@ -184,9 +182,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_SET:
         {
             iputs(indent, "{\n");
-            PycSet::value_t values = obj.cast<PycSet>()->values();
-            for (PycSet::value_t::const_iterator i = values.begin(); i != values.end(); i++)
-                output_object(*i, mod, indent + 1);
+            for (const auto& val : obj.cast<PycSet>()->values())
+                output_object(val, mod, indent + 1);
             iputs(indent, "}\n");
         }
         break;

@@ -10,8 +10,7 @@ void ASTNodeList::removeLast()
 
 void ASTNodeList::removeFirst()
 {
-    list_t::iterator it = m_nodes.begin();
-    m_nodes.erase(it);
+    m_nodes.erase(m_nodes.cbegin());
 }
 
 
@@ -69,8 +68,7 @@ void ASTBlock::removeLast()
 
 void ASTBlock::removeFirst()
 {
-    list_t::iterator it = m_nodes.begin();
-    m_nodes.erase(it);
+    m_nodes.erase(m_nodes.begin());
 }
 
 const char* ASTBlock::type_str() const
