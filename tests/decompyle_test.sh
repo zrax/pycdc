@@ -51,11 +51,12 @@ for pyc in "${compfiles[@]}"; do
         continue
     fi
 
-    if ! diff "$base.tok.txt" "$testdir/tokenized/$testname.txt" >/dev/null
+    diff -u "$testdir/tokenized/$testname.txt" "$base.tok.txt" >"$base.tok.diff"
+    if (( $? ))
     then
         let fails+=1
         efiles+=("$(basename "$pyc")")
-        errors+=("$base.tok.txt does not match $testdir/tokenized/$testname.txt")
+        errors+=("$base.tok.txt does not match $testdir/tokenized/$testname.txt:\n$(cat "$base.tok.diff")")
         continue
     fi
 done
