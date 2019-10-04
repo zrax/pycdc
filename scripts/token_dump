@@ -86,33 +86,14 @@ class FloatToken(PyToken):
 
 
 class StringToken(PyToken):
-    def __init__(self, prefix, quotes, line, n_line):
+    def __init__(self, prefix, content, n_line):
         super().__init__(PyToken.STRING, n_line)
 
         # Normalize prefix for comparison
-        if prefix is None:
-            self.prefix = ''
-        else:
-            self.prefix = ''.join(sorted(prefix.lower()))
+        self.prefix = ''.join(sorted(prefix.lower()))
 
-        # Look for the end of the string
-        self.endpos = len(self.prefix) + len(quotes)
-        scan = line[self.endpos:]
-        while True:
-            if scan[0] == '\\':
-                scan = scan[2:]
-                self.endpos += 2
-                continue
-            if scan.startswith(quotes):
-                self.endpos += len(quotes)
-                break
-            scan = scan[1:]
-            self.endpos += 1
-
-        self.content = line[len(self.prefix) + len(quotes):self.endpos - len(quotes)]
-
-        # TODO: Normalize special characters for comparison
-        self.content.replace("'", "\\'")
+        # Normalize special characters for comparison
+        self.content = content.replace("'", "\\'").replace('\n', '\\n')
 
     def __str__(self):
         return "{}'{}'".format(self.prefix, self.content)
@@ -147,6 +128,41 @@ def symbolic_token(line, n_line):
     return None
 
 
+def string_token(line, n_line, pysrc):
+    match = RE_START_STRING.match(line)
+    if not match:
+        return None
+
+    # Look for the end of the string
+    prefix = match.group(1)
+    if prefix is None:
+        prefix = ''
+    quotes = match.group(2)
+    start = len(prefix) + len(quotes)
+    content = ''
+    while True:
+        end = line.find(quotes, start)
+        if end > 0 and line[end - 1] == '\\':
+            start = end + 1
+            continue
+        elif end >= 0:
+            content += line[start:end]
+            break
+
+        # Read in a new line
+        content += line[start:]
+        line = pysrc.readline()
+        n_line += 1
+        start = 0
+        if not line:
+            raise RuntimeError('Reached EOF while looking for {}'.format(repr(quotes)))
+
+    token = StringToken(prefix, content, n_line)
+    token.rem_line = line[end + len(quotes):]
+    token.end_line = n_line
+    return token
+
+
 def read_tokens(pysrc):
     indent_stack = [0]
     context_stack = []
@@ -158,8 +174,7 @@ def read_tokens(pysrc):
         if not line:
             break
 
-        sline = line.strip()
-        if not sline or sline.startswith('#'):
+        if not line.strip() or line.lstrip().startswith('#'):
             continue
 
         # Look for indentation changes
@@ -174,58 +189,57 @@ def read_tokens(pysrc):
             if indent != indent_stack[-1]:
                 raise RuntimeError('Incorrect indentation on line {}'.format(n_line))
 
-        while sline:
-            idx = 0
-            while sline[idx].isspace():
-                idx += 1
-            sline = sline[idx:]
+        while True:
+            line = line.lstrip()
+            if not line:
+                break
 
-            token = symbolic_token(sline, n_line)
+            token = symbolic_token(line, n_line)
             if token:
                 if token.type in {'(', '{', '['}:
                     context_stack.append(token.type)
                 elif token.type == ')':
                     if len(context_stack) == 0 or context_stack[-1] != '(':
-                        raise RuntimeError('Mismatched token at {} on line {}'.format(sline, n_line))
+                        raise RuntimeError('Mismatched token at {} on line {}'.format(line, n_line))
                     context_stack.pop()
                 elif token.type == '}':
                     if len(context_stack) == 0 or context_stack[-1] != '{':
-                        raise RuntimeError('Mismatched token at {} on line {}'.format(sline, n_line))
+                        raise RuntimeError('Mismatched token at {} on line {}'.format(line, n_line))
                     context_stack.pop()
                 elif token.type == ']':
                     if len(context_stack) == 0 or context_stack[-1] != '[':
-                        raise RuntimeError('Mismatched token at {} on line {}'.format(sline, n_line))
+                        raise RuntimeError('Mismatched token at {} on line {}'.format(line, n_line))
                     context_stack.pop()
                 yield token
-                sline = sline[len(token.type):]
+                line = line[len(token.type):]
                 continue
 
-            match = RE_FLOAT.match(sline)
+            match = RE_FLOAT.match(line)
             if match:
                 yield FloatToken(match.group(), n_line)
-                sline = sline[match.end():]
+                line = line[match.end():]
                 continue
 
-            match = RE_INT.match(sline)
+            match = RE_INT.match(line)
             if match:
                 yield IntToken(match.group(), n_line)
-                sline = sline[match.end():]
+                line = line[match.end():]
                 continue
 
-            match = RE_START_STRING.match(sline)
-            if match:
-                token = StringToken(match.group(1), match.group(2), sline, n_line)
+            token = string_token(line, n_line, pysrc)
+            if token:
+                line = token.rem_line
+                n_line = token.end_line
                 yield token
-                sline = sline[token.endpos:]
                 continue
 
-            match = RE_WORD.match(sline)
+            match = RE_WORD.match(line)
             if match:
                 yield WordToken(match.group(), n_line)
-                sline = sline[match.end():]
+                line = line[match.end():]
                 continue
 
-            print('Error: Unrecognized tokens: "{}" at line {}'.format(sline, n_line))
+            print('Error: Unrecognized tokens: "{}" at line {}'.format(line, n_line))
             sys.exit(1)
 
         if len(context_stack) == 0:
