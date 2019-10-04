@@ -1,0 +1,12 @@
+for i in range ( 20 ) : <EOL>
+<INDENT>
+print i , <EOL>
+<OUTDENT>
+print <EOL>
+for i in range ( 10 ) : <EOL>
+<INDENT>
+print i , <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'The End' <EOL>

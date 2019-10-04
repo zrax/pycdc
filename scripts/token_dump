@@ -119,7 +119,7 @@ SYMBOLIC_TOKENS = (
     '<<=', '>>=', '**=', '//=', '...', '.',
     '+=', '-=', '*=', '@=', '/=', '%=', '&=', '|=', '^=',
     '<>', '<<', '<=', '<', '>>', '>=', '>', '!=', '==', '=',
-    ',', ';', ':=', ':', '->', '~',
+    ',', ';', ':=', ':', '->', '~', '`',
     '+', '-', '**', '*', '@', '//', '/', '%', '&', '|', '^',
     '(', ')', '{', '}', '[', ']',
 )
@@ -244,8 +244,7 @@ def read_tokens(pysrc):
                 line = line[match.end():]
                 continue
 
-            print('Error: Unrecognized tokens: "{}" at line {}'.format(line, n_line))
-            sys.exit(1)
+            raise RuntimeError('Error: Unrecognized tokens: "{}" at line {}'.format(line, n_line))
 
         if len(context_stack) == 0:
             yield PyToken(PyToken.ENDLINE, n_line)

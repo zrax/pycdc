@@ -1,0 +1,12 @@
+'\ntest_import_as.py -- source test pattern for \'import .. as \'statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+import sys as SYS <EOL>
+import os as OS <EOL>
+import sys as SYSTEM <EOL>
+import BaseHTTPServer as HTTPServ <EOL>
+import test . test_MimeWriter as Mime_Writer <EOL>
+from rfc822 import Message as MSG <EOL>
+from mimetools import Message as mimeMsg , decode , choose_boundary as mimeBoundry <EOL>
+print '---' * 20 <EOL>
+for ( k , v ) in globals ( ) . items ( ) : <EOL>
+<INDENT>
+print k , repr ( v ) <EOL>

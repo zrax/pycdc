@@ -1,0 +1,29 @@
+raise 'This program can\'t be run' <EOL>
+class A : <EOL>
+<INDENT>
+def __init__ ( self , num ) : <EOL>
+<INDENT>
+self . num = num <EOL>
+<OUTDENT>
+def __repr__ ( self ) : <EOL>
+<INDENT>
+return str ( self . num ) <EOL>
+<OUTDENT>
+<OUTDENT>
+b = [ ] <EOL>
+for i in range ( 10 ) : <EOL>
+<INDENT>
+b . append ( A ( i ) ) <EOL>
+<OUTDENT>
+for i in ( 'CALL_FUNCTION' , 'CALL_FUNCTION_VAR' , 'CALL_FUNCTION_VAR_KW' , 'CALL_FUNCTION_KW' ) : <EOL>
+<INDENT>
+print i , '\t' , len ( i ) , len ( i ) - len ( 'CALL_FUNCTION' ) , ( len ( i ) - len ( 'CALL_FUNCTION' ) ) / 3 , i [ len ( 'CALL_FUNCTION' ) : ] <EOL>
+<OUTDENT>
+p2 = ( 0 , 0 , None ) <EOL>
+if p2 [ 2 ] : <EOL>
+<INDENT>
+print 'has value' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print ' no value' <EOL>

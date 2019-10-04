@@ -1,0 +1,30 @@
+from __future__ import generators <EOL>
+def inorder ( t ) : <EOL>
+<INDENT>
+if t : <EOL>
+<INDENT>
+for x in inorder ( t . left ) : <EOL>
+<INDENT>
+yield x <EOL>
+<OUTDENT>
+yield t . label <EOL>
+for x in inorder ( t . right ) : <EOL>
+<INDENT>
+yield x <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+def generate_ints ( n ) : <EOL>
+<INDENT>
+for i in range ( n ) : <EOL>
+<INDENT>
+yield i * 2 <EOL>
+<OUTDENT>
+<OUTDENT>
+for i in generate_ints ( 5 ) : <EOL>
+<INDENT>
+print i , <EOL>
+<OUTDENT>
+print <EOL>
+gen = generate_ints ( 3 ) <EOL>
+print gen . next ( ) , gen . next ( ) , gen . next ( ) , gen . next ( ) <EOL>

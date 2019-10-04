@@ -1,0 +1,8 @@
+print 1 , 2 , 3 , 4 , 5 <EOL>
+a = b + 5 <EOL>
+print 1 , 2 , 3 , 4 , 5 <EOL>
+print 1 , 2 , 3 , 4 , 5 <EOL>
+print <EOL>
+print <EOL>
+print 1 , 2 , 3 , 4 , 5 <EOL>
+print <EOL>

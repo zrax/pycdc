@@ -1,0 +1,4 @@
+testcode = 'a = 12' <EOL>
+exec testcode <EOL>
+exec testcode in globals ( ) <EOL>
+exec testcode in globals ( ) , locals ( ) <EOL>

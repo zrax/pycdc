@@ -1,0 +1,23 @@
+'\ntest_global.py -- source test pattern for \'global\' statement\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+i = 1 <EOL>
+j = 7 <EOL>
+def a ( ) : <EOL>
+<INDENT>
+def b ( ) : <EOL>
+<INDENT>
+global j <EOL>
+def c ( ) : <EOL>
+<INDENT>
+global i <EOL>
+k = 34 <EOL>
+i = i + k <EOL>
+<OUTDENT>
+l = 42 <EOL>
+c ( ) <EOL>
+j = j + l <EOL>
+<OUTDENT>
+b ( ) <EOL>
+print i , j <EOL>
+<OUTDENT>
+a ( ) <EOL>
+print i , j <EOL>

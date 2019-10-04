@@ -62,9 +62,9 @@ done
 
 if (( $fails == 0 ))
 then
-    echo -e "\033[32mPASS\033[m"
+    echo -e "\033[32mPASS (${#compfiles[@]})\033[m"
 else
-    echo -e "\033[31mFAIL\033[m"
+    echo -e "\033[31mFAIL ($fails of ${#compfiles[@]})\033[m"
     for ((i=0; i<${#efiles[@]}; i++))
     do
         echo -e "\t\033[31m${efiles[i]}\033[m"

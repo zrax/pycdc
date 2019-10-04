@@ -1,0 +1,21 @@
+import random <EOL>
+i = random . randint ( 0 , 5 ) <EOL>
+if i is 1 : <EOL>
+<INDENT>
+print '%d is 1' % i <EOL>
+<OUTDENT>
+elif i < 5 : <EOL>
+<INDENT>
+print '%d less than 5' % i <EOL>
+if i is 3 : <EOL>
+<INDENT>
+print '%d = 3' % i <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print '%d != 3' % i <EOL>
+<OUTDENT>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print '%d is 5' % i <EOL>

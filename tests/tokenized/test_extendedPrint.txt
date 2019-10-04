@@ -1,0 +1,4 @@
+import sys <EOL>
+print >> sys . stdout , 'Hello World' <EOL>
+print >> sys . stdout , 1 , 2 , 3 <EOL>
+print >> sys . stdout , 1 , 2 , 3 <EOL>

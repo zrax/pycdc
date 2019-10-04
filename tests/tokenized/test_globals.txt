@@ -1,0 +1,10 @@
+def f ( ) : <EOL>
+<INDENT>
+print x <EOL>
+x = x + 1 <EOL>
+print x <EOL>
+<OUTDENT>
+raise 'This program can\'t be run' <EOL>
+x = 1 <EOL>
+f ( ) <EOL>
+print x <EOL>

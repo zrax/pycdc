@@ -1,0 +1,5 @@
+from __future__ import division <EOL>
+print '  1 // 2   =' , 1 // 2 <EOL>
+print '1.0 // 2.0 =' , 1.0 // 2.0 <EOL>
+print '  1 /  2   =' , 1 / 2 <EOL>
+print '1.0 /  2.0 =' , 1.0 / 2.0 <EOL>

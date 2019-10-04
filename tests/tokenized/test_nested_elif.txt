@@ -1,0 +1,134 @@
+a = None <EOL>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+elif a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+elif a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+elif a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+elif a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'more' <EOL>
+if a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
+<OUTDENT>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'more' <EOL>
+if a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+elif a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
+<OUTDENT>
+<OUTDENT>
+if a == 1 : <EOL>
+<INDENT>
+print '1' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'more' <EOL>
+if a == 2 : <EOL>
+<INDENT>
+print '2' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'more' <EOL>
+if a == 3 : <EOL>
+<INDENT>
+print '3' <EOL>
+<OUTDENT>
+elif a == 4 : <EOL>
+<INDENT>
+print '4' <EOL>
+<OUTDENT>
+elif a == 4 : <EOL>
+<INDENT>
+print '4' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'other' <EOL>
