@@ -1,0 +1,43 @@
+'\nThis is a doc string\n' <EOL>
+def Doc_Test ( ) : <EOL>
+<INDENT>
+'This has to be present' <EOL>
+pass <EOL>
+<OUTDENT>
+class XXX : <EOL>
+<INDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+'__init__: This has to be present' <EOL>
+self . a = 1 <EOL>
+def XXX22 ( ) : <EOL>
+<INDENT>
+'XXX22: This has to be present' <EOL>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+def XXX11 ( ) : <EOL>
+<INDENT>
+'XXX22: This has to be present' <EOL>
+pass <EOL>
+<OUTDENT>
+def XXX12 ( ) : <EOL>
+<INDENT>
+foo = 'XXX22: This has to be present' <EOL>
+<OUTDENT>
+def XXX13 ( ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+def Y11 ( ) : <EOL>
+<INDENT>
+def Y22 ( ) : <EOL>
+<INDENT>
+def Y33 ( ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+print __doc__ <EOL>

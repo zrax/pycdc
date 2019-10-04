@@ -1,17 +1,10 @@
-
-
-
-
-
-
-
-
 """
 This is a doc string
 """
 
 def Doc_Test():
     """This has to be present"""
+    pass
 
 class XXX:
     def __init__(self):
@@ -28,7 +21,6 @@ class XXX:
 
     def XXX12():
         foo = 'XXX22: This has to be present'
-        pass        # Left for line number compatibility.  Do not emit
 
     def XXX13():
         pass

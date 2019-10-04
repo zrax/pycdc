@@ -1,0 +1,23 @@
+'\ntest_del.py -- source test pattern for \'del\' statements\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs\'s test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+raise 'This program can\'t be run' <EOL>
+print 0 <EOL>
+a = b [ 5 ] <EOL>
+print 1 <EOL>
+del a <EOL>
+print 2 <EOL>
+del b [ 5 ] <EOL>
+print 3 <EOL>
+del testme [ 1 ] <EOL>
+print 4 <EOL>
+del testme [ : ] <EOL>
+print '4a' <EOL>
+del testme [ : 42 ] <EOL>
+print '4b' <EOL>
+del testme [ 40 : 42 ] <EOL>
+print 5 <EOL>
+del testme [ 2 : 1024 : 10 ] <EOL>
+print '5a' <EOL>
+del testme [ ( 40 , 41 , 42 ) ] <EOL>
+print 6 <EOL>
+del testme [ ( : 42 , ... , : 24 : , 24 , 100 ) ] <EOL>
+print 7 <EOL>

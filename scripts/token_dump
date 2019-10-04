@@ -93,7 +93,9 @@ class StringToken(PyToken):
         self.prefix = ''.join(sorted(prefix.lower()))
 
         # Normalize special characters for comparison
-        self.content = content.replace("'", "\\'").replace('\n', '\\n')
+        self.content = content.replace("\\'", "'").replace("'", "\\'") \
+                              .replace('\\"', '"').replace('\t', '\\t') \
+                              .replace('\n', '\\n').replace('\r', '\\r')
 
     def __str__(self):
         return "{}'{}'".format(self.prefix, self.content)
@@ -192,6 +194,9 @@ def read_tokens(pysrc):
         while True:
             line = line.lstrip()
             if not line:
+                break
+            if line[0] == '#':
+                # The rest of this line is a comment
                 break
 
             token = symbolic_token(line, n_line)
