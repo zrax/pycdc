@@ -245,20 +245,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::BUILD_CLASS:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> class_code = stack.top();
                 stack.pop();
                 PycRef<ASTNode> bases = stack.top();
                 stack.pop();
                 PycRef<ASTNode> name = stack.top();
                 stack.pop();
-                stack.push(new ASTClass(code, bases, name));
+                stack.push(new ASTClass(class_code, bases, name));
             }
             break;
         case Pyc::BUILD_FUNCTION:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
-                stack.push(new ASTFunction(code, ASTFunction::defarg_t()));
+                stack.push(new ASTFunction(fun_code, ASTFunction::defarg_t()));
             }
             break;
         case Pyc::BUILD_LIST_A:
@@ -435,17 +435,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> param = stack.top();
                     stack.pop();
                     if (param.type() == ASTNode::NODE_FUNCTION) {
-                        PycRef<ASTNode> code = param.cast<ASTFunction>()->code();
-                        PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
+                        PycRef<ASTNode> fun_code = param.cast<ASTFunction>()->code();
+                        PycRef<PycCode> code_src = fun_code.cast<ASTObject>()->object().cast<PycCode>();
                         PycRef<PycString> function_name = code_src->name();
                         if (function_name->isEqual("<lambda>")) {
                             pparamList.push_front(param);
                         } else {
                             // Decorator used
-                            PycRef<ASTNode> name = new ASTName(function_name);
-                            curblock->append(new ASTStore(param, name));
+                            PycRef<ASTNode> decor_name = new ASTName(function_name);
+                            curblock->append(new ASTStore(param, decor_name));
 
-                            pparamList.push_front(name);
+                            pparamList.push_front(decor_name);
                         }
                     } else {
                         pparamList.push_front(param);
@@ -1326,14 +1326,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
             {
-                PycRef<ASTNode> code = stack.top();
+                PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
 
                 /* Test for the qualified name of the function (at TOS) */
-                int tos_type = code.cast<ASTObject>()->object().type();
+                int tos_type = fun_code.cast<ASTObject>()->object().type();
                 if (tos_type != PycObject::TYPE_CODE &&
                     tos_type != PycObject::TYPE_CODE2) {
-                    code = stack.top();
+                    fun_code = stack.top();
                     stack.pop();
                 }
 
@@ -1342,7 +1342,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     defArgs.push_front(stack.top());
                     stack.pop();
                 }
-                stack.push(new ASTFunction(code, defArgs));
+                stack.push(new ASTFunction(fun_code, defArgs));
             }
             break;
         case Pyc::NOP:
@@ -1707,19 +1707,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
 
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(attr);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(attr);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
@@ -1743,19 +1736,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> name = new ASTName(code->getCellVar(operand));
 
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(name);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(name);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
@@ -1781,19 +1767,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         name = new ASTName(code->getVarName(operand));
 
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(name);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(name);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
@@ -1843,19 +1822,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (unpack) {
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(name);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(name);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
@@ -1886,19 +1858,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> name = new ASTName(code->getName(operand));
 
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(name);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(name);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
@@ -2005,19 +1970,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> save = new ASTSubscr(dest, subscr);
 
                     PycRef<ASTNode> tup = stack.top();
-                    if (tup.type() == ASTNode::NODE_TUPLE) {
-                        stack.pop();
-
-                        PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
-                        tuple->add(save);
-
-                        stack.push(tuple.cast<ASTNode>());
-                    } else {
+                    if (tup.type() == ASTNode::NODE_TUPLE)
+                        tup.cast<ASTTuple>()->add(save);
+                    else
                         fputs("Something TERRIBLE happened!\n", stderr);
-                    }
 
                     if (--unpack <= 0) {
-                        PycRef<ASTNode> tup = stack.top();
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
