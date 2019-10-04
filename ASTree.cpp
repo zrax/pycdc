@@ -1800,6 +1800,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
+                            PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                            if (tuple != NULL)
+                                tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
@@ -1859,6 +1862,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
+                            PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                            if (tuple != NULL)
+                                tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
@@ -1899,6 +1905,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         if (curblock->blktype() == ASTBlock::BLK_FOR
                                 && !curblock->inited()) {
+                            PycRef<ASTTuple> tuple = tup.cast<ASTTuple>();
+                            if (tuple != NULL)
+                                tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
@@ -2769,8 +2778,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         break;
     case ASTNode::NODE_TUPLE:
         {
-            ASTTuple::value_t values = node.cast<ASTTuple>()->values();
-            fputs("(", pyc_output);
+            PycRef<ASTTuple> tuple = node.cast<ASTTuple>();
+            ASTTuple::value_t values = tuple->values();
+            if (tuple->requireParens())
+                fputc('(', pyc_output);
             bool first = true;
             for (ASTTuple::value_t::const_iterator b = values.begin(); b != values.end(); ++b) {
                 if (!first)
@@ -2779,9 +2790,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 first = false;
             }
             if (values.size() == 1)
-                fputs(",)", pyc_output);
-            else
-                fputs(")", pyc_output);
+                fputc(',', pyc_output);
+            if (tuple->requireParens())
+                fputc(')', pyc_output);
         }
         break;
     default:

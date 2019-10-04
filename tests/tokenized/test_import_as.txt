@@ -7,6 +7,6 @@ import test . test_MimeWriter as Mime_Writer <EOL>
 from rfc822 import Message as MSG <EOL>
 from mimetools import Message as mimeMsg , decode , choose_boundary as mimeBoundry <EOL>
 print '---' * 20 <EOL>
-for ( k , v ) in globals ( ) . items ( ) : <EOL>
+for k , v in globals ( ) . items ( ) : <EOL>
 <INDENT>
 print k , repr ( v ) <EOL>

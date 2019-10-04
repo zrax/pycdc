@@ -5,6 +5,6 @@ import sys <EOL>
 from rfc822 import Message as Msg822 <EOL>
 from mimetools import Message as MimeMsg , decode , choose_boundary as MimeBoundary <EOL>
 import test . test_StringIO as StringTest <EOL>
-for ( k , v ) in globals ( ) . items ( ) : <EOL>
+for k , v in globals ( ) . items ( ) : <EOL>
 <INDENT>
 print ` k ` , v <EOL>

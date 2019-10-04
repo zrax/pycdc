@@ -301,16 +301,21 @@ private:
 
 class ASTTuple : public ASTNode {
 public:
-    typedef std::vector<PycRef<ASTNode> > value_t;
+    typedef std::vector<PycRef<ASTNode>> value_t;
 
     ASTTuple(value_t values)
-        : ASTNode(NODE_TUPLE), m_values(values) { }
+        : ASTNode(NODE_TUPLE), m_values(std::move(values)),
+          m_requireParens(true) { }
 
     const value_t& values() const { return m_values; }
     void add(PycRef<ASTNode> name) { m_values.push_back(name); }
 
+    void setRequireParens(bool require) { m_requireParens = require; }
+    bool requireParens() const { return m_requireParens; }
+
 private:
     value_t m_values;
+    bool m_requireParens;
 };
 
 
