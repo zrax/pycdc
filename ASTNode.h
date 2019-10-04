@@ -497,14 +497,17 @@ public:
 
     PycRef<ASTNode> iter() const { return m_iter; }
     PycRef<ASTNode> index() const { return m_idx; }
+    PycRef<ASTNode> condition() const { return m_cond; }
     bool isComprehension() const { return m_comp; }
 
     void setIndex(PycRef<ASTNode> idx) { m_idx = idx; init(); }
+    void setCondition(PycRef<ASTNode> cond) { m_cond = cond; }
     void setComprehension(bool comp) { m_comp = comp; }
 
 private:
     PycRef<ASTNode> m_iter;
     PycRef<ASTNode> m_idx;
+    PycRef<ASTNode> m_cond;
     bool m_comp;
 };
 

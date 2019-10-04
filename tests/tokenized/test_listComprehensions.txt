@@ -1,0 +1,21 @@
+XXX = range ( 4 ) <EOL>
+print [ i for i in XXX ] <EOL>
+print <EOL>
+print [ i for i in ( 1 , 2 , 3 , 4 ) ] <EOL>
+print <EOL>
+print [ ( i , 1 ) for i in XXX ] <EOL>
+print <EOL>
+print [ i * 2 for i in range ( 4 ) ] <EOL>
+print <EOL>
+print [ i * j for i in range ( 4 ) for j in range ( 7 ) ] <EOL>
+print [ i * 2 for i in range ( 4 ) if i == 0 ] <EOL>
+print [ ( i , i ** 2 ) for i in range ( 4 ) if i % 2 == 0 ] <EOL>
+print [ i * j for i in range ( 4 ) if i == 2 for j in range ( 7 ) if i + i % 2 == 0 ] <EOL>
+seq1 = 'abc' <EOL>
+seq2 = ( 1 , 2 , 3 ) <EOL>
+[ ( x , y ) for x in seq1 for y in seq2 ] <EOL>
+def flatten ( seq ) : <EOL>
+<INDENT>
+return [ x for subseq in seq for x in subseq ] <EOL>
+<OUTDENT>
+print flatten ( [ [ 0 ] , [ 1 , 2 , 3 ] , [ 4 , 5 ] , [ 6 , 7 , 8 , 9 ] , [ ] ] ) <EOL>

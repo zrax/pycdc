@@ -272,7 +272,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BUILD_MAP_A:
-            if (mod->majorVer() > 3 || (mod->majorVer() == 3 && mod->minorVer() >= 5)) {
+            if (mod->verCompare(3, 5) >= 0) {
                 auto map = new ASTMap;
                 for (int i=0; i<operand; ++i) {
                     PycRef<ASTNode> value = stack.top();
@@ -1029,6 +1029,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_OR);
                     }
                     ifblk = new ASTCondBlock(top->blktype(), offs, newcond, neg);
+                } else if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && curblock.cast<ASTIterBlock>()->isComprehension()
+                            && mod->verCompare(2, 7) >= 0) {
+                    /* Comprehension condition */
+                    curblock.cast<ASTIterBlock>()->setCondition(cond);
+                    stack_hist.pop();
+                    // TODO: Handle older python versions, where condition
+                    // is laid out a little differently.
+                    break;
                 } else {
                     /* Plain old if statement */
                     ifblk = new ASTCondBlock(ASTBlock::BLK_IF, offs, cond, neg);
@@ -1056,7 +1065,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                         blocks.pop();
                         curblock = blocks.top();
-                    } if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                    } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
                         stack = stack_hist.top();
                         stack_hist.pop();
 
@@ -1271,6 +1280,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (curblock->blktype() == ASTBlock::BLK_FOR
                         && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                    stack.pop();
                     stack.push(new ASTComprehension(value));
                 } else {
                     stack.push(new ASTSubscr(list, value)); /* Total hack */
@@ -2333,6 +2343,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_src(gen->index(), mod);
                 fputs(" in ", pyc_output);
                 print_src(gen->iter(), mod);
+                if (gen->condition()) {
+                    fprintf(pyc_output, " if ");
+                    print_src(gen->condition(), mod);
+                }
             }
             fputs(" ]", pyc_output);
         }
