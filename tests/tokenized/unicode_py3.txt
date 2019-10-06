@@ -1,0 +1,3 @@
+ustr = 'Unicode' <EOL>
+bstr = b'Bytes' <EOL>
+dstr = 'Default' <EOL>
