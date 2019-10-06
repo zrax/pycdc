@@ -2777,17 +2777,25 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
 {
     // docstrings are translated from the bytecode __doc__ = 'string' to simply '''string'''
     signed char prefix = -1;
-    if (obj.type() == PycObject::TYPE_STRING)
-        prefix = mod->majorVer() == 3 ? 'b' : 0;
-    else if (obj.type() == PycObject::TYPE_UNICODE)
-        prefix = mod->majorVer() == 3 ? 0 : 'u';
-    else if (obj.type() == PycObject::TYPE_INTERNED ||
-            obj.type() == PycObject::TYPE_STRINGREF ||
-            obj.type() == PycObject::TYPE_ASCII ||
-            obj.type() == PycObject::TYPE_ASCII_INTERNED ||
-            obj.type() == PycObject::TYPE_SHORT_ASCII ||
-            obj.type() == PycObject::TYPE_SHORT_ASCII_INTERNED)
-        prefix = 0;
+    switch (obj.type()) {
+    case PycObject::TYPE_STRING:
+        prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    case PycObject::TYPE_UNICODE:
+        prefix = mod->strIsUnicode() ? 0 : 'u';
+        break;
+    case PycObject::TYPE_STRINGREF:
+    case PycObject::TYPE_INTERNED:
+    case PycObject::TYPE_ASCII:
+    case PycObject::TYPE_ASCII_INTERNED:
+    case PycObject::TYPE_SHORT_ASCII:
+    case PycObject::TYPE_SHORT_ASCII_INTERNED:
+        if (mod->majorVer() >= 3)
+            prefix = 0;
+        else
+            prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    }
     if (prefix != -1) {
         start_line(indent);
         OutputString(obj.cast<PycString>(), prefix, true);

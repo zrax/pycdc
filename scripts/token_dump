@@ -110,7 +110,7 @@ RE_WHITESPACE = re.compile(r'\s+')
 RE_WORD = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 RE_INT = re.compile(r'[0-9][0-9_]*|0[Xx][0-9A-Fa-f_]+|0[Bb][0-1_]+|0[Oo][0-7_]+')
 RE_FLOAT = re.compile(r'(([0-9][0-9_]*)?\.[0-9][0-9_]*|[0-9][0-9_]*\.)([eE][+-]?[0-9][0-9_]*)?')
-RE_START_STRING = re.compile(r'([rR][fFbB]?|[uU]|[fF][rR]?|[bB][rR]+)?(\'\'\'|\'|"""|")')
+RE_START_STRING = re.compile(r'([rR][fFbB]?|[uU]|[fF][rR]?|[bB][rR]?)?(\'\'\'|\'|"""|")')
 
 # Note, tokens sharing a common prefix should be entered in order from
 # longest to shortest, so we don't mismatch a long token as a sequence

@@ -129,12 +129,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         break;
     case PycObject::TYPE_STRING:
         iputs(indent, "");
-        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 'b' : 0);
+        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
         fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_UNICODE:
         iputs(indent, "");
-        OutputString(obj.cast<PycString>(), (mod->majorVer() == 3) ? 0 : 'u');
+        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u');
         fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_STRINGREF:
@@ -144,7 +144,10 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
         iputs(indent, "");
-        OutputString(obj.cast<PycString>(), 0);
+        if (mod->majorVer() >= 3)
+            OutputString(obj.cast<PycString>(), 0);
+        else
+            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
         fputs("\n", pyc_output);
         break;
     case PycObject::TYPE_TUPLE:

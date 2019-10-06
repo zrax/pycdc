@@ -53,6 +53,11 @@ public:
 
     bool isUnicode() const { return m_unicode; }
 
+    bool strIsUnicode() const
+    {
+        return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+    }
+
     PycRef<PycCode> code() const { return m_code; }
 
     void intern(PycRef<PycString> str) { m_interns.push_back(str); }
