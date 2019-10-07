@@ -1,0 +1,20 @@
+'\ntest_tuple_params.py -- source test pattern for formal parameters of type tuple\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+def A ( a , b , ( x , y , z ) , c ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def B ( a , b = 42 , ( x , y , z ) = ( 1 , 2 , 3 ) , c = 17 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def C ( ( x , y , z ) ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def D ( ( x , ) ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def E ( ( x , ) ) : <EOL>
+<INDENT>
+pass <EOL>
