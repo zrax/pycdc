@@ -1,0 +1,19 @@
+try : <EOL>
+<INDENT>
+import sys <EOL>
+try : <EOL>
+<INDENT>
+print 'something else' <EOL>
+<OUTDENT>
+except AssertionError : <EOL>
+<INDENT>
+print '...failed' <EOL>
+<OUTDENT>
+<OUTDENT>
+except ImportError : <EOL>
+<INDENT>
+print 'Oh Noes!' <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print 'Exiting' <EOL>

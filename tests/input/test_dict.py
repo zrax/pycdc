@@ -1,4 +1,4 @@
 x = { 'one': 1, 'two': 2 }
 if x['one'] == 1:
-    print("Correct!")
+    print "Correct!"
 x['three'] = 3

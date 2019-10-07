@@ -1,0 +1,15 @@
+def test ( msgtype , flags ) : <EOL>
+<INDENT>
+if flags == 1 : <EOL>
+<INDENT>
+msgtype = 1 <EOL>
+<OUTDENT>
+elif flags == 2 : <EOL>
+<INDENT>
+msgtype = 2 <EOL>
+<OUTDENT>
+elif flags == 3 : <EOL>
+<INDENT>
+msgtype = 3 <EOL>
+<OUTDENT>
+return msgtype <EOL>

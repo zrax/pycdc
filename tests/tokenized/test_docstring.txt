@@ -1,29 +1,30 @@
-'\nThis is a doc string\n' <EOL>
+'\nModule docstring\n' <EOL>
 def Doc_Test ( ) : <EOL>
 <INDENT>
-'This has to be present' <EOL>
+'Function docstring' <EOL>
 pass <EOL>
 <OUTDENT>
 class XXX : <EOL>
 <INDENT>
+'Class docstring' <EOL>
 def __init__ ( self ) : <EOL>
 <INDENT>
-'__init__: This has to be present' <EOL>
+'__init__:  Member function docstring' <EOL>
 self . a = 1 <EOL>
 def XXX22 ( ) : <EOL>
 <INDENT>
-'XXX22: This has to be present' <EOL>
+'XXX22: Nested function docstring' <EOL>
 pass <EOL>
 <OUTDENT>
 <OUTDENT>
 def XXX11 ( ) : <EOL>
 <INDENT>
-'XXX22: This has to be present' <EOL>
+'XXX11: Member Function docstring' <EOL>
 pass <EOL>
 <OUTDENT>
 def XXX12 ( ) : <EOL>
 <INDENT>
-foo = 'XXX22: This has to be present' <EOL>
+foo = 'XXX12: Normal string' <EOL>
 <OUTDENT>
 def XXX13 ( ) : <EOL>
 <INDENT>

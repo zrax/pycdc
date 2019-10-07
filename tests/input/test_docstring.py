@@ -1,26 +1,28 @@
 """
-This is a doc string
+Module docstring
 """
 
 def Doc_Test():
-    """This has to be present"""
+    """Function docstring"""
     pass
 
 class XXX:
+    """Class docstring"""
+
     def __init__(self):
-        """__init__: This has to be present"""
+        """__init__:  Member function docstring"""
         self.a = 1
 
         def XXX22():
-            """XXX22: This has to be present"""
+            """XXX22: Nested function docstring"""
             pass
 
     def XXX11():
-        """XXX22: This has to be present"""
+        """XXX11: Member Function docstring"""
         pass
 
     def XXX12():
-        foo = 'XXX22: This has to be present'
+        foo = 'XXX12: Normal string'
 
     def XXX13():
         pass

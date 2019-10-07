@@ -1,0 +1,51 @@
+with open ( __file__ ) : <EOL>
+<INDENT>
+result = True <EOL>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+f . read ( ) <EOL>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+s = f . readline ( ) <EOL>
+while s : <EOL>
+<INDENT>
+s = f . readline ( ) <EOL>
+<OUTDENT>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+result = False <EOL>
+data = f . read ( ) <EOL>
+if data : <EOL>
+<INDENT>
+result = True <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+data = 'empty' <EOL>
+<OUTDENT>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+result = None <EOL>
+try : <EOL>
+<INDENT>
+data = f . read ( ) <EOL>
+if data : <EOL>
+<INDENT>
+result = data <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+result = '' <EOL>
+<OUTDENT>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+result = 'exception' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+result += '\n' <EOL>

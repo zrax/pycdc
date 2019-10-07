@@ -1,0 +1,8 @@
+def map_with_index ( func , lst ) : <EOL>
+<INDENT>
+res = [ ] <EOL>
+for i , x in enumerate ( lst ) : <EOL>
+<INDENT>
+res . append ( func ( i , x ) ) <EOL>
+<OUTDENT>
+return res <EOL>

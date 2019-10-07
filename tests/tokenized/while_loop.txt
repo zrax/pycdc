@@ -1,0 +1,12 @@
+class Test2 : <EOL>
+<INDENT>
+def count ( self ) : <EOL>
+<INDENT>
+a = [ 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 , 10 ] <EOL>
+i = 0 <EOL>
+while i < len ( a ) : <EOL>
+<INDENT>
+print a [ i ] <EOL>
+i += 1 <EOL>
+<OUTDENT>
+print 'done' <EOL>

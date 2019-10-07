@@ -1,0 +1,99 @@
+def try_finally ( ) : <EOL>
+<INDENT>
+print 'before' <EOL>
+try : <EOL>
+<INDENT>
+print 'try' <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print 'finally' <EOL>
+<OUTDENT>
+print 'after' <EOL>
+<OUTDENT>
+def try_else_finally ( ) : <EOL>
+<INDENT>
+print 'before' <EOL>
+try : <EOL>
+<INDENT>
+print 'try' <EOL>
+<OUTDENT>
+except AttributeError : <EOL>
+<INDENT>
+print 'except' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'else' <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print 'finally' <EOL>
+<OUTDENT>
+print 'after' <EOL>
+<OUTDENT>
+def try_except_except ( ) : <EOL>
+<INDENT>
+print 'before' <EOL>
+try : <EOL>
+<INDENT>
+print 'try' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+print 'except (1)' <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+print 'except (2)' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'else' <EOL>
+<OUTDENT>
+print 'after' <EOL>
+<OUTDENT>
+def try_except_except_finally ( ) : <EOL>
+<INDENT>
+print 'before' <EOL>
+try : <EOL>
+<INDENT>
+print 'try' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+print 'except (1)' <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+print 'except (2)' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'else' <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print 'finally' <EOL>
+<OUTDENT>
+print 'after' <EOL>
+<OUTDENT>
+def finally_if ( a ) : <EOL>
+<INDENT>
+print 'before' <EOL>
+try : <EOL>
+<INDENT>
+print 'try' <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+if a : <EOL>
+<INDENT>
+print 'if' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'else' <EOL>
+<OUTDENT>
+<OUTDENT>
+print 'after' <EOL>

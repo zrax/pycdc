@@ -1,0 +1,3 @@
+async def foobar ( ) : <EOL>
+<INDENT>
+pass <EOL>

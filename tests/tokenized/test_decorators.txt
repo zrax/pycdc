@@ -1,0 +1,49 @@
+@ staticmethod <EOL>
+def square ( n ) : <EOL>
+<INDENT>
+return n * n <EOL>
+<OUTDENT>
+def synchronized ( lock ) : <EOL>
+<INDENT>
+'Synchronization decorator.' <EOL>
+def wrap ( f ) : <EOL>
+<INDENT>
+def new_function ( * args , ** kw ) : <EOL>
+<INDENT>
+lock . acquire ( ) <EOL>
+try : <EOL>
+<INDENT>
+return f ( * args , ** kw ) <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+lock . release ( ) <EOL>
+<OUTDENT>
+<OUTDENT>
+return new_function <EOL>
+<OUTDENT>
+return wrap <EOL>
+<OUTDENT>
+from threading import Lock <EOL>
+cache_lock = Lock ( ) <EOL>
+class Cache ( object ) : <EOL>
+<INDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+self . _name = 'default' <EOL>
+<OUTDENT>
+@ classmethod <EOL>
+@ synchronized ( cache_lock ) <EOL>
+def cache ( cls ) : <EOL>
+<INDENT>
+return cls ( ) <EOL>
+<OUTDENT>
+@ property <EOL>
+def name ( self ) : <EOL>
+<INDENT>
+return self . _name <EOL>
+<OUTDENT>
+@ name . setter <EOL>
+def name ( self , new_name ) : <EOL>
+<INDENT>
+self . _name = new_name <EOL>

@@ -1,0 +1,24 @@
+class C : <EOL>
+<INDENT>
+def foobar ( self ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+<OUTDENT>
+class B ( C ) : <EOL>
+<INDENT>
+def barfoo ( self ) : <EOL>
+<INDENT>
+d = 1 <EOL>
+<OUTDENT>
+<OUTDENT>
+class F ( C , B ) : <EOL>
+<INDENT>
+def raboof ( self ) : <EOL>
+<INDENT>
+e = 1 <EOL>
+<OUTDENT>
+<OUTDENT>
+C . foobar ( ) <EOL>
+F . raboof ( ) <EOL>
+B . foobar ( ) <EOL>

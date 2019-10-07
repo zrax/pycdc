@@ -1,0 +1,117 @@
+import sys <EOL>
+width = 80 <EOL>
+height = 24 <EOL>
+inner_l = int ( ( width - 60 ) / 2 ) <EOL>
+inner_r = 61 + inner_l <EOL>
+sys . stderr . write ( '\x1b?3l' ) <EOL>
+sys . stderr . write ( '\x1b[H' ) <EOL>
+sys . stderr . write ( '\x1b#8' ) <EOL>
+sys . stderr . write ( '\x1b[9;%dH' % inner_l ) <EOL>
+sys . stderr . write ( '\x1b[1J' ) <EOL>
+sys . stderr . write ( '\x1b[18;60H' ) <EOL>
+sys . stderr . write ( '\x1b[0J' ) <EOL>
+sys . stderr . write ( '\x1b[1K' ) <EOL>
+sys . stderr . write ( '\x1b[9;%dH' % inner_r ) <EOL>
+sys . stderr . write ( '\x1b[0K' ) <EOL>
+i = 10 <EOL>
+while i <= 16 : <EOL>
+<INDENT>
+sys . stderr . write ( '\x1b[%d;%dH' % ( i , inner_l ) ) <EOL>
+sys . stderr . write ( '\x1b[1K' ) <EOL>
+sys . stderr . write ( '\x1b[%d;%dH' % ( i , inner_r ) ) <EOL>
+sys . stderr . write ( '\x1b[0K' ) <EOL>
+i += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[17;30H' ) <EOL>
+sys . stderr . write ( '\x1b[2K' ) <EOL>
+i = 1 <EOL>
+while i <= width : <EOL>
+<INDENT>
+sys . stderr . write ( '\x1b[%d;%df' % ( height , i ) ) <EOL>
+sys . stderr . write ( '*' ) <EOL>
+sys . stderr . write ( '\x1b[%d;%df' % ( 1 , i ) ) <EOL>
+sys . stderr . write ( '*' ) <EOL>
+i += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[2;2H' ) <EOL>
+i = 2 <EOL>
+while i < height : <EOL>
+<INDENT>
+sys . stderr . write ( '+' ) <EOL>
+sys . stderr . write ( '\x1b[1D' ) <EOL>
+sys . stderr . write ( '\x1bD' ) <EOL>
+i += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[%d;%dH' % ( height - 1 , width - 1 ) ) <EOL>
+i = height - 1 <EOL>
+while i > 1 : <EOL>
+<INDENT>
+sys . stderr . write ( '+' ) <EOL>
+sys . stderr . write ( '\x1b[1D' ) <EOL>
+sys . stderr . write ( '\x1bM' ) <EOL>
+i -= 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[2;1H' ) <EOL>
+i = 2 <EOL>
+while i < height : <EOL>
+<INDENT>
+sys . stderr . write ( '*' ) <EOL>
+sys . stderr . write ( '\x1b[%d;%dH' % ( i , width ) ) <EOL>
+sys . stderr . write ( '*' ) <EOL>
+sys . stderr . write ( '\x1b[10D' ) <EOL>
+if i < 10 : <EOL>
+<INDENT>
+sys . stderr . write ( '\x1bE' ) <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+sys . stderr . write ( '\n' ) <EOL>
+<OUTDENT>
+i += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[2;10H' ) <EOL>
+sys . stderr . write ( '\x1b[42D' ) <EOL>
+sys . stderr . write ( '\x1b[2C' ) <EOL>
+i = 3 <EOL>
+while i < width - 1 : <EOL>
+<INDENT>
+sys . stderr . write ( '+' ) <EOL>
+sys . stderr . write ( '\x1b[0C' ) <EOL>
+sys . stderr . write ( '\x1b[2D' ) <EOL>
+sys . stderr . write ( '\x1b[1C' ) <EOL>
+i += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[%d;%dH' % ( height - 1 , inner_r - 1 ) ) <EOL>
+sys . stderr . write ( '\x1b[42C' ) <EOL>
+sys . stderr . write ( '\x1b[2D' ) <EOL>
+i = width - 2 <EOL>
+while i > 2 : <EOL>
+<INDENT>
+sys . stderr . write ( '+' ) <EOL>
+sys . stderr . write ( '\x1b[1D' ) <EOL>
+sys . stderr . write ( '\x1b[1C' ) <EOL>
+sys . stderr . write ( '\x1b[0D' ) <EOL>
+sys . stderr . write ( '\x08' ) <EOL>
+i -= 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[10;%dH' % ( 2 + inner_l ) ) <EOL>
+i = 10 <EOL>
+while i <= 15 : <EOL>
+<INDENT>
+j = 2 + inner_l <EOL>
+while j < inner_r - 1 : <EOL>
+<INDENT>
+sys . stderr . write ( ' ' ) <EOL>
+j += 1 <EOL>
+<OUTDENT>
+sys . stderr . write ( '\x1b[1B' ) <EOL>
+sys . stderr . write ( '\x1b[58D' ) <EOL>
+i += 1 <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+input ( '' ) <EOL>
+<OUTDENT>
+except SyntaxError : <EOL>
+<INDENT>
+pass <EOL>
