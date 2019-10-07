@@ -1,0 +1,37 @@
+'\ntest_prettyprint.py --\tsource test pattern for tesing the prettyprint\n\t\t\tfuncionality of decompyle\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+import pprint <EOL>
+aa = 'aa' <EOL>
+dict0 = { 'a' : 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , 'b' : 1234 , 'd' : aa , aa : aa } <EOL>
+dict = { 'a' : 'aaa' , 'b' : 1234 , 'c' : { 'ca' : 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , 'cb' : 1234 , 'cc' : None } , 'd' : aa , aa : aa , 'eee' : { 'ca' : 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , 'cb' : 1234 , 'cc' : None } , 'ff' : aa } <EOL>
+list1 = [ '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '1ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+list2 = [ '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , [ '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ] , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+tuple1 = ( '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '1ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+tuple2 = ( '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , ( '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ) , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+def funcA ( ) : <EOL>
+<INDENT>
+dict = { 'a' : 'aaa' , 'b' : 1234 , 'c' : { 'ca' : 'aaa' , 'cb' : 1234 , 'cc' : None } , 'd' : aa , aa : aa } <EOL>
+list1 = [ '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , aa , '1ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+list2 = [ '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , [ '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ] , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+tuple1 = ( '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , aa , '1ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+tuple2 = ( '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , ( '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , aa , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ) , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+def funcAB ( ) : <EOL>
+<INDENT>
+dict = { 'a' : 'aaa' , 'b' : 1234 , 'c' : { 'ca' : 'aaa' , 'cb' : 1234 , 'cc' : None } , 'd' : aa , aa : aa } <EOL>
+list1 = [ '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '1ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+list2 = [ '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , [ '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ] , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ] <EOL>
+tuple1 = ( '1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '1ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+tuple2 = ( '2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , ( '22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' , '22bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , '22ccccccccccccccccccccccccccccccccccccccccccc' ) , 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' , 'ccccccccccccccccccccccccccccccccccccccccccc' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+pprint . pprint ( dict0 ) <EOL>
+print <EOL>
+pprint . pprint ( dict ) <EOL>
+print <EOL>
+pprint = pprint . PrettyPrinter ( indent = 2 ) <EOL>
+pprint . pprint ( dict0 ) <EOL>
+print <EOL>
+pprint . pprint ( dict ) <EOL>
+print <EOL>
+pprint . pprint ( list1 ) <EOL>
+print <EOL>
+pprint . pprint ( list2 ) <EOL>
