@@ -1,0 +1,19 @@
+'\ntest_tuples.py -- source test pattern for tuples\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+a = ( 1 , ) <EOL>
+b = ( 2 , 3 ) <EOL>
+( a , b ) = ( 1 , 2 ) <EOL>
+( a , b ) = ( ( 1 , 2 ) , ( 3 , 4 , 5 ) ) <EOL>
+x = { } <EOL>
+try : <EOL>
+<INDENT>
+x [ ( 1 , 2 , 3 ) ] <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+x [ ( 1 , 2 , 3 ) ] = 42 <EOL>
+print x [ ( 1 , 2 , 3 ) ] <EOL>
+print x [ ( 1 , 2 , 3 ) ] <EOL>
+assert x [ ( 1 , 2 , 3 ) ] == x [ ( 1 , 2 , 3 ) ] <EOL>
+del x [ ( 1 , 2 , 3 ) ] <EOL>

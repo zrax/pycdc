@@ -1,0 +1,62 @@
+'\ntest_loops.py -- source test pattern for loops\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+for i in range ( 10 ) : <EOL>
+<INDENT>
+if i == 3 : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+if i == 5 : <EOL>
+<INDENT>
+break <EOL>
+<OUTDENT>
+print i , <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'Else' <EOL>
+<OUTDENT>
+print <EOL>
+for i in range ( 10 ) : <EOL>
+<INDENT>
+if i == 3 : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+print i , <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'Else' <EOL>
+<OUTDENT>
+i = 0 <EOL>
+while i < 10 : <EOL>
+<INDENT>
+i = i + 1 <EOL>
+if i == 3 : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+if i == 5 : <EOL>
+<INDENT>
+break <EOL>
+<OUTDENT>
+print i , <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'Else' <EOL>
+<OUTDENT>
+print <EOL>
+i = 0 <EOL>
+while i < 10 : <EOL>
+<INDENT>
+i = i + 1 <EOL>
+if i == 3 : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+print i , <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'Else' <EOL>

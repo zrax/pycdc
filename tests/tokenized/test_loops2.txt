@@ -1,0 +1,12 @@
+'\ntest_loops2.py -- source test pattern for loops (CONTINUE_LOOP)\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+for term in args : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+print <EOL>
+continue <EOL>
+print <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+pass <EOL>

@@ -1,0 +1,25 @@
+def kwfunc ( ** kwargs ) : <EOL>
+<INDENT>
+print kwargs . items ( ) <EOL>
+<OUTDENT>
+def argsfunc ( * args ) : <EOL>
+<INDENT>
+print args <EOL>
+<OUTDENT>
+def no_apply ( * args , ** kwargs ) : <EOL>
+<INDENT>
+print args <EOL>
+print kwargs . items ( ) <EOL>
+argsfunc ( 34 ) <EOL>
+foo = argsfunc ( * args ) <EOL>
+argsfunc ( * args ) <EOL>
+argsfunc ( 34 , * args ) <EOL>
+kwfunc ( ** kwargs ) <EOL>
+kwfunc ( x = 11 , ** kwargs ) <EOL>
+no_apply ( * args , ** kwargs ) <EOL>
+no_apply ( 34 , * args , ** kwargs ) <EOL>
+no_apply ( x = 11 , * args , ** kwargs ) <EOL>
+no_apply ( 34 , x = 11 , * args , ** kwargs ) <EOL>
+no_apply ( 42 , 34 , x = 11 , * args , ** kwargs ) <EOL>
+<OUTDENT>
+no_apply ( 1 , 2 , 4 , 8 , a = 2 , b = 3 , c = 5 ) <EOL>

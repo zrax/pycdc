@@ -1,0 +1,26 @@
+'\ntest_slices.py -- source test pattern for slices\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs\'s test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+raise 'This program can\'t be run' <EOL>
+testme [ 1 ] <EOL>
+testme [ 1 ] = 1 <EOL>
+del testme [ 1 ] <EOL>
+testme [ : 42 ] <EOL>
+testme [ : 42 ] = 'The Answer' <EOL>
+del testme [ : 42 ] <EOL>
+testme [ 2 : 1024 : ] <EOL>
+testme [ : 1024 : 10 ] <EOL>
+testme [ : : ] <EOL>
+testme [ 2 : 1024 : 10 ] <EOL>
+testme [ 2 : 1024 : 10 ] = 'A lot' <EOL>
+del testme [ 2 : 1024 : 10 ] <EOL>
+testme [ ( : 42 , ... , : 24 : , 24 , 100 ) ] <EOL>
+testme [ ( : 42 , ... , : 24 : , 24 , 100 ) ] = 'Strange' <EOL>
+del testme [ ( : 42 , ... , : 24 : , 24 , 100 ) ] <EOL>
+testme [ : ] <EOL>
+testme [ : ] = 'Take all' <EOL>
+del testme [ : ] <EOL>
+testme [ 40 : 42 ] <EOL>
+testme [ 40 : 42 ] = 'Three' <EOL>
+del testme [ 40 : 42 ] <EOL>
+testme [ ( 40 , 41 , 42 ) ] <EOL>
+testme [ ( 40 , 41 , 42 ) ] = 'Another Three' <EOL>
+del testme [ ( 40 , 41 , 42 ) ] <EOL>

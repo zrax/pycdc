@@ -1,0 +1,125 @@
+from __future__ import nested_scopes <EOL>
+blurb = 1 <EOL>
+def k0 ( ) : <EOL>
+<INDENT>
+def l0 ( m = 1 ) : <EOL>
+<INDENT>
+print <EOL>
+<OUTDENT>
+l0 ( ) <EOL>
+<OUTDENT>
+def x0 ( ) : <EOL>
+<INDENT>
+def y0 ( ) : <EOL>
+<INDENT>
+print <EOL>
+<OUTDENT>
+y0 ( ) <EOL>
+<OUTDENT>
+def x1 ( ) : <EOL>
+<INDENT>
+def y1 ( ) : <EOL>
+<INDENT>
+print 'y-blurb =' , blurb <EOL>
+<OUTDENT>
+y1 ( ) <EOL>
+<OUTDENT>
+def x2 ( ) : <EOL>
+<INDENT>
+def y2 ( ) : <EOL>
+<INDENT>
+print <EOL>
+<OUTDENT>
+blurb = 2 <EOL>
+y2 ( ) <EOL>
+<OUTDENT>
+def x3a ( ) : <EOL>
+<INDENT>
+def y3a ( x ) : <EOL>
+<INDENT>
+print 'y-blurb =' , blurb , flurb <EOL>
+<OUTDENT>
+print <EOL>
+blurb = 3 <EOL>
+flurb = 7 <EOL>
+y3a ( 1 ) <EOL>
+print 'x3a-blurb =' , blurb <EOL>
+<OUTDENT>
+def x3 ( ) : <EOL>
+<INDENT>
+def y3 ( x ) : <EOL>
+<INDENT>
+def z ( ) : <EOL>
+<INDENT>
+blurb = 25 <EOL>
+print 'z-blurb =' , blurb , <EOL>
+<OUTDENT>
+z ( ) <EOL>
+print 'y-blurb =' , blurb , <EOL>
+<OUTDENT>
+print <EOL>
+blurb = 3 <EOL>
+y3 ( 1 ) <EOL>
+print 'x3-blurb =' , blurb <EOL>
+<OUTDENT>
+def x3b ( ) : <EOL>
+<INDENT>
+def y3b ( x ) : <EOL>
+<INDENT>
+def z ( ) : <EOL>
+<INDENT>
+print 'z-blurb =' , blurb , <EOL>
+<OUTDENT>
+blurb = 25 <EOL>
+z ( ) <EOL>
+print 'y-blurb =' , blurb , <EOL>
+<OUTDENT>
+print <EOL>
+blurb = 3 <EOL>
+y3b ( 1 ) <EOL>
+print 'x3-blurb =' , blurb <EOL>
+<OUTDENT>
+def x4 ( ) : <EOL>
+<INDENT>
+global blurb <EOL>
+def y4 ( x ) : <EOL>
+<INDENT>
+def z ( ) : <EOL>
+<INDENT>
+print 'z-blurb =' , blurb <EOL>
+<OUTDENT>
+z ( ) <EOL>
+<OUTDENT>
+blurb = 3 <EOL>
+y4 ( 1 ) <EOL>
+<OUTDENT>
+def x ( ) : <EOL>
+<INDENT>
+def y ( x ) : <EOL>
+<INDENT>
+print 'y-blurb =' , blurb <EOL>
+<OUTDENT>
+blurb = 2 <EOL>
+y ( 1 ) <EOL>
+<OUTDENT>
+def func_with_tuple_args6 ( ( a , b ) , ( c , d ) = ( 2 , 3 ) , * args , ** kwargs ) : <EOL>
+<INDENT>
+def y ( x ) : <EOL>
+<INDENT>
+print 'y-a =' , a <EOL>
+<OUTDENT>
+print c <EOL>
+<OUTDENT>
+def find ( self , name ) : <EOL>
+<INDENT>
+L = filter ( ( lambda x , name : x == name ) , self . list_attribute ) <EOL>
+<OUTDENT>
+x0 ( ) <EOL>
+x1 ( ) <EOL>
+x2 ( ) <EOL>
+x3 ( ) <EOL>
+x3a ( ) <EOL>
+x3b ( ) <EOL>
+x4 ( ) <EOL>
+x ( ) <EOL>
+print 'blurb =' , blurb <EOL>

@@ -1,0 +1,65 @@
+def x0 ( ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x1 ( arg1 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x2 ( arg1 , arg2 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3a ( * args ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3b ( ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3c ( * args , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4a ( foo , bar = 1 , bla = 2 , * args ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4b ( foo , bar = 1 , bla = 2 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4c ( foo , bar = 1 , bla = 2 , * args , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def func_with_tuple_args ( ( a , b ) ) : <EOL>
+<INDENT>
+print a <EOL>
+print b <EOL>
+<OUTDENT>
+def func_with_tuple_args2 ( ( a , b ) , ( c , d ) ) : <EOL>
+<INDENT>
+print a <EOL>
+print c <EOL>
+<OUTDENT>
+def func_with_tuple_args3 ( ( a , b ) , ( c , d ) , * args ) : <EOL>
+<INDENT>
+print a <EOL>
+print c <EOL>
+<OUTDENT>
+def func_with_tuple_args4 ( ( a , b ) , ( c , d ) , ** kwargs ) : <EOL>
+<INDENT>
+print a <EOL>
+print c <EOL>
+<OUTDENT>
+def func_with_tuple_args5 ( ( a , b ) , ( c , d ) , * args , ** kwargs ) : <EOL>
+<INDENT>
+print a <EOL>
+print c <EOL>
+<OUTDENT>
+def func_with_tuple_args6 ( ( a , b ) , ( c , d ) = ( 2 , 3 ) , * args , ** kwargs ) : <EOL>
+<INDENT>
+print a <EOL>
+print c <EOL>

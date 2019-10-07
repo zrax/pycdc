@@ -1,4 +1,8 @@
-print '  1 // 2   =' , 1 // 2 <EOL>
-print '1.0 // 2.0 =' , 1.0 // 2.0 <EOL>
-print '  1 /  2   =' , 1 / 2 <EOL>
-print '1.0 /  2.0 =' , 1.0 / 2.0 <EOL>
+ai = 1 <EOL>
+bi = 2 <EOL>
+af = 1.5 <EOL>
+bf = 2.5 <EOL>
+print '  1 // 2   =' , ai // bi <EOL>
+print '1.5 // 2.5 =' , af // bf <EOL>
+print '  1 /  2   =' , ai / bi <EOL>
+print '1.5 /  2.5 =' , af / bf <EOL>

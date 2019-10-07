@@ -1,0 +1,7 @@
+palette = map ( lambda a : ( a , a , a ) , range ( 256 ) ) <EOL>
+palette = map ( lambda ( r , g , b ) : chr ( r ) + chr ( g ) + chr ( b ) , palette ) <EOL>
+palette = map ( lambda r : r , palette ) <EOL>
+palette = lambda ( r , g , b ) : r <EOL>
+palette = lambda ( r ) : r <EOL>
+palette = lambda r : r <EOL>
+palette = ( lambda ( r ) : r , palette ) <EOL>

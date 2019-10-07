@@ -1,6 +1,11 @@
 from __future__ import division
 
-print '  1 // 2   =', 1 // 2
-print '1.0 // 2.0 =', 1.0 // 2.0
-print '  1 /  2   =', 1 / 2
-print '1.0 /  2.0 =', 1.0 / 2.0
+ai = 1
+bi = 2
+af = 1.5
+bf = 2.5
+
+print '  1 // 2   =', ai // bi
+print '1.5 // 2.5 =', af // bf
+print '  1 /  2   =', ai / bi
+print '1.5 /  2.5 =', af / bf

@@ -1,0 +1,20 @@
+'\ntest_integers.py -- source test pattern for integers\n\nThis source is part of the decompyle test suite.\nSnippet taken from python libs\'s test_class.py\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+import sys <EOL>
+i = 1 <EOL>
+i = 42 <EOL>
+i = - 1 <EOL>
+i = - 42 <EOL>
+i = sys . maxint <EOL>
+minint = - ( sys . maxint ) - 1 <EOL>
+print sys . maxint <EOL>
+print minint <EOL>
+print long ( minint ) - 1 <EOL>
+print <EOL>
+i = - 2147483647 <EOL>
+print i , repr ( i ) <EOL>
+i = i - 1 <EOL>
+print i , repr ( i ) <EOL>
+i = - 0 x80000000L <EOL>
+print i , repr ( i ) <EOL>
+i = - 0 x80000001L <EOL>
+print i , repr ( i ) <EOL>

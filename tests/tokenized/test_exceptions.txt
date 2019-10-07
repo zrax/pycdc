@@ -1,0 +1,168 @@
+import dis <EOL>
+def x11 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try except' <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x12 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try except else(pass)' <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x13 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try except else(a=3)' <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 3 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x21 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try KeyError' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x22 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try (IdxErr, KeyError) else(pass)' <EOL>
+<OUTDENT>
+except ( IndexError , KeyError ) : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x23 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try KeyError else(a=9)' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 9 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x31 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try KeyError IndexError' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+a = 9 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x32 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try KeyError IndexError else(pass)' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+a = 9 <EOL>
+<OUTDENT>
+b = '--------' <EOL>
+<OUTDENT>
+def x33 ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 'try KeyError IndexError else(a=9)' <EOL>
+<OUTDENT>
+except KeyError : <EOL>
+<INDENT>
+a = 8 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+a = 9 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 9 <EOL>
+<OUTDENT>
+b = '#################' <EOL>
+<OUTDENT>
+def x41 ( ) : <EOL>
+<INDENT>
+if a == 1 : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+elif b == 1 : <EOL>
+<INDENT>
+b = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+c = 1 <EOL>
+<OUTDENT>
+b = '#################' <EOL>
+<OUTDENT>
+def x42 ( ) : <EOL>
+<INDENT>
+if a == 1 : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+elif b == 1 : <EOL>
+<INDENT>
+b = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+c = 1 <EOL>
+<OUTDENT>
+xxx = 'mmm' <EOL>
+<OUTDENT>
+if __name__ == '__main__' : <EOL>
+<INDENT>
+dis . dis ( xx ) <EOL>

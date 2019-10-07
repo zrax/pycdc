@@ -1,0 +1,12 @@
+'\ntest_import.py -- source test pattern for import statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+import sys <EOL>
+import os <EOL>
+import sys <EOL>
+import BaseHTTPServer <EOL>
+import test . test_MimeWriter <EOL>
+from rfc822 import Message <EOL>
+from mimetools import Message , decode , choose_boundary <EOL>
+from os import * <EOL>
+for k , v in globals ( ) . items ( ) : <EOL>
+<INDENT>
+print ` k ` , v <EOL>
