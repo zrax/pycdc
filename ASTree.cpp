@@ -2208,7 +2208,7 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
     ASTBlock::list_t lines = blk->nodes();
 
     if (lines.size() == 0) {
-        PycRef<ASTNode> pass = new ASTNode(ASTNode::NODE_PASS);
+        PycRef<ASTNode> pass = new ASTKeyword(ASTKeyword::KW_PASS);
         start_line(cur_indent);
         print_src(pass, mod);
     }
@@ -2456,9 +2456,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_const(obj, mod);
             }
         }
-        break;
-    case ASTNode::NODE_PASS:
-        fputs("pass", pyc_output);
         break;
     case ASTNode::NODE_PRINT:
         if (node.cast<ASTPrint>()->value() == NULL) {
@@ -2897,7 +2894,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
     // This is outside the clean check so a source block will always
     // be compilable, even if decompylation failed.
     if (clean->nodes().size() == 0 && !code.isIdent(mod->code()))
-        clean->append(new ASTNode(ASTNode::NODE_PASS));
+        clean->append(new ASTKeyword(ASTKeyword::KW_PASS));
 
     inPrint = false;
     bool part1clean = cleanBuild;

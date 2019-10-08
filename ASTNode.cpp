@@ -52,7 +52,7 @@ const char* ASTCompare::op_str() const
 const char* ASTKeyword::word_str() const
 {
     static const char* s_word_strings[] = {
-        "break", "continue"
+        "pass", "break", "continue"
     };
     return s_word_strings[key()];
 }
