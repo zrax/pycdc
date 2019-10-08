@@ -2284,7 +2284,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (!first)
                     fputs(", ", pyc_output);
                 fputs("**", pyc_output);
-                print_src(call->var(), mod);
+                print_src(call->kw(), mod);
                 first = false;
             }
             fputs(")", pyc_output);
