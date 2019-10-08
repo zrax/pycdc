@@ -1296,6 +1296,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::LOAD_BUILD_CLASS:
+            stack.push(new ASTLoadBuildClass(new PycObject()));
+            break;
         case Pyc::LOAD_CLOSURE_A:
             /* Ignore this */
             break;
@@ -2068,11 +2071,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock->append(new ASTReturn(value, ASTReturn::YIELD));
             }
             break;
-        case Pyc::LOAD_BUILD_CLASS:
-            {
-                stack.push(new ASTLoadBuildClass(new PycObject()));
-            }
-            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
@@ -2817,18 +2815,34 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
         // if the cleaned up code is empty
         if (clean->nodes().front().type() == ASTNode::NODE_STORE) {
             PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
-            if (store->src().type() == ASTNode::NODE_NAME &&
-                store->dest().type() == ASTNode::NODE_NAME) {
+            if (store->src().type() == ASTNode::NODE_NAME
+                    && store->dest().type() == ASTNode::NODE_NAME) {
                 PycRef<ASTName> src = store->src().cast<ASTName>();
                 PycRef<ASTName> dest = store->dest().cast<ASTName>();
-                if (src->name()->isEqual("__name__") &&
-                    dest->name()->isEqual("__module__")) {
+                if (src->name()->isEqual("__name__")
+                        && dest->name()->isEqual("__module__")) {
                     // __module__ = __name__
                     // Automatically added by Python 2.2.1 and later
                     clean->removeFirst();
                 }
             }
         }
+        if (clean->nodes().front().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+            if (store->src().type() == ASTNode::NODE_OBJECT
+                    && store->dest().type() == ASTNode::NODE_NAME) {
+                PycRef<ASTObject> src = store->src().cast<ASTObject>();
+                PycRef<PycString> srcString = src->object().cast<PycString>();
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (srcString != nullptr && srcString->isEqual(code->name().cast<PycObject>())
+                        && dest->name()->isEqual("__qualname__")) {
+                    // __qualname__ = '<Class Name>'
+                    // Automatically added by Python 3.3 and later
+                    clean->removeFirst();
+                }
+            }
+        }
+
         // Class and module docstrings may only appear at the beginning of their source
         if (printClassDocstring && clean->nodes().front().type() == ASTNode::NODE_STORE) {
             PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
