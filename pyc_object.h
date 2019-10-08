@@ -6,18 +6,23 @@
 template <class _Obj>
 class PycRef {
 public:
-    PycRef() : m_obj(0) { }
+    PycRef() noexcept : m_obj() { }
 
-    PycRef(_Obj* obj) : m_obj(obj)
+    PycRef(_Obj* obj) noexcept : m_obj(obj)
     {
         if (m_obj)
             m_obj->addRef();
     }
 
-    PycRef(const PycRef<_Obj>& obj) : m_obj(obj.m_obj)
+    PycRef(const PycRef<_Obj>& obj) noexcept : m_obj(obj.m_obj)
     {
         if (m_obj)
             m_obj->addRef();
+    }
+
+    PycRef(PycRef<_Obj>&& obj) noexcept : m_obj(obj.m_obj)
+    {
+        obj.m_obj = nullptr;
     }
 
     ~PycRef<_Obj>()
@@ -43,6 +48,13 @@ public:
         if (m_obj)
             m_obj->delRef();
         m_obj = obj.m_obj;
+        return *this;
+    }
+
+    PycRef<_Obj>& operator=(PycRef<_Obj>&& obj) noexcept
+    {
+        m_obj = obj.m_obj;
+        obj.m_obj = nullptr;
         return *this;
     }
 
@@ -140,7 +152,9 @@ public:
 
 template <class _Obj>
 int PycRef<_Obj>::type() const
-{ return m_obj ? m_obj->type() : PycObject::TYPE_NULL; }
+{
+    return m_obj ? m_obj->type() : PycObject::TYPE_NULL;
+}
 
 PycRef<PycObject> CreateObject(int type);
 PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod);
