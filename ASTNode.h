@@ -55,15 +55,15 @@ public:
 
 class ASTNodeList : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > list_t;
+    typedef std::list<PycRef<ASTNode>> list_t;
 
     ASTNodeList(list_t nodes)
-        : ASTNode(NODE_NODELIST), m_nodes(nodes) { }
+        : ASTNode(NODE_NODELIST), m_nodes(std::move(nodes)) { }
 
     const list_t& nodes() const { return m_nodes; }
     void removeFirst();
     void removeLast();
-    void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
+    void append(PycRef<ASTNode> node) { m_nodes.emplace_back(std::move(node)); }
 
 private:
     list_t m_nodes;
@@ -73,7 +73,7 @@ private:
 class ASTObject : public ASTNode {
 public:
     ASTObject(PycRef<PycObject> obj)
-        : ASTNode(NODE_OBJECT), m_obj(obj) { }
+        : ASTNode(NODE_OBJECT), m_obj(std::move(obj)) { }
 
     PycRef<PycObject> object() const { return m_obj; }
 
@@ -89,7 +89,7 @@ public:
     };
 
     ASTUnary(PycRef<ASTNode> operand, int op)
-        : ASTNode(NODE_UNARY), m_op(op), m_operand(operand) { }
+        : ASTNode(NODE_UNARY), m_op(op), m_operand(std::move(operand)) { }
 
     PycRef<ASTNode> operand() const { return m_operand; }
     int op() const { return m_op; }
@@ -116,7 +116,7 @@ public:
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
               int type = NODE_BINARY)
-        : ASTNode(type), m_op(op), m_left(left), m_right(right) { }
+        : ASTNode(type), m_op(op), m_left(std::move(left)), m_right(std::move(right)) { }
 
     PycRef<ASTNode> left() const { return m_left; }
     PycRef<ASTNode> right() const { return m_right; }
@@ -142,7 +142,7 @@ public:
     };
 
     ASTCompare(PycRef<ASTNode> left, PycRef<ASTNode> right, int op)
-        : ASTBinary(left, right, op, NODE_COMPARE) { }
+        : ASTBinary(std::move(left), std::move(right), op, NODE_COMPARE) { }
 
     const char* op_str() const override;
 };
@@ -154,16 +154,15 @@ public:
         SLICE0, SLICE1, SLICE2, SLICE3
     };
 
-    ASTSlice(int op, PycRef<ASTNode> left = NULL,
-             PycRef<ASTNode> right = NULL)
-        : ASTBinary(left, right, op, NODE_SLICE) { }
+    ASTSlice(int op, PycRef<ASTNode> left = {}, PycRef<ASTNode> right = {})
+        : ASTBinary(std::move(left), std::move(right), op, NODE_SLICE) { }
 };
 
 
 class ASTStore : public ASTNode {
 public:
     ASTStore(PycRef<ASTNode> src, PycRef<ASTNode> dest)
-        : ASTNode(NODE_STORE), m_src(src), m_dest(dest) { }
+        : ASTNode(NODE_STORE), m_src(std::move(src)), m_dest(std::move(dest)) { }
 
     PycRef<ASTNode> src() const { return m_src; }
     PycRef<ASTNode> dest() const { return m_dest; }
@@ -181,7 +180,7 @@ public:
     };
 
     ASTReturn(PycRef<ASTNode> value, RetType rettype = RETURN)
-        : ASTNode(NODE_RETURN), m_value(value), m_rettype(rettype) { }
+        : ASTNode(NODE_RETURN), m_value(std::move(value)), m_rettype(rettype) { }
 
     PycRef<ASTNode> value() const { return m_value; }
     RetType rettype() const { return m_rettype; }
@@ -195,7 +194,7 @@ private:
 class ASTName : public ASTNode {
 public:
     ASTName(PycRef<PycString> name)
-        : ASTNode(NODE_NAME), m_name(name) { }
+        : ASTNode(NODE_NAME), m_name(std::move(name)) { }
 
     PycRef<PycString> name() const { return m_name; }
 
@@ -207,7 +206,7 @@ private:
 class ASTDelete : public ASTNode {
 public:
     ASTDelete(PycRef<ASTNode> value)
-        : ASTNode(NODE_DELETE), m_value(value) { }
+        : ASTNode(NODE_DELETE), m_value(std::move(value)) { }
 
     PycRef<ASTNode> value() const { return m_value; }
 
@@ -238,7 +237,8 @@ private:
 class ASTClass : public ASTNode {
 public:
     ASTClass(PycRef<ASTNode> code, PycRef<ASTNode> bases, PycRef<ASTNode> name)
-        : ASTNode(NODE_CLASS), m_code(code), m_bases(bases), m_name(name) { }
+        : ASTNode(NODE_CLASS), m_code(std::move(code)), m_bases(std::move(bases)),
+          m_name(std::move(name)) { }
 
     PycRef<ASTNode> code() const { return m_code; }
     PycRef<ASTNode> bases() const { return m_bases; }
@@ -253,12 +253,12 @@ private:
 
 class ASTCall : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > pparam_t;
-    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > kwparam_t;
+    typedef std::list<PycRef<ASTNode>> pparam_t;
+    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> kwparam_t;
 
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
-        : ASTNode(NODE_CALL), m_func(func), m_pparams(pparams), m_kwparams(kwparams),
-          m_var(), m_kw() { }
+        : ASTNode(NODE_CALL), m_func(std::move(func)), m_pparams(std::move(pparams)),
+          m_kwparams(std::move(kwparams)) { }
 
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
@@ -266,11 +266,11 @@ public:
     PycRef<ASTNode> var() const { return m_var; }
     PycRef<ASTNode> kw() const { return m_kw; }
 
-    bool hasVar() const { return m_var != NULL; }
-    bool hasKW() const { return m_kw != NULL; }
+    bool hasVar() const { return m_var != nullptr; }
+    bool hasKW() const { return m_kw != nullptr; }
 
-    void setVar(PycRef<ASTNode> var) { m_var = var; }
-    void setKW(PycRef<ASTNode> kw) { m_kw = kw; }
+    void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
+    void setKW(PycRef<ASTNode> kw) { m_kw = std::move(kw); }
 
 private:
     PycRef<ASTNode> m_func;
@@ -283,14 +283,14 @@ private:
 
 class ASTImport : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTStore> > list_t;
+    typedef std::list<PycRef<ASTStore>> list_t;
 
     ASTImport(PycRef<ASTNode> name, PycRef<ASTNode> fromlist)
-        : ASTNode(NODE_IMPORT), m_name(name), m_fromlist(fromlist) { }
+        : ASTNode(NODE_IMPORT), m_name(std::move(name)), m_fromlist(std::move(fromlist)) { }
 
     PycRef<ASTNode> name() const { return m_name; }
     list_t stores() const { return m_stores; }
-    void add_store(PycRef<ASTStore> store) { m_stores.push_back(store); }
+    void add_store(PycRef<ASTStore> store) { m_stores.emplace_back(std::move(store)); }
 
     PycRef<ASTNode> fromlist() const { return m_fromlist; }
 
@@ -311,7 +311,7 @@ public:
           m_requireParens(true) { }
 
     const value_t& values() const { return m_values; }
-    void add(PycRef<ASTNode> name) { m_values.push_back(name); }
+    void add(PycRef<ASTNode> name) { m_values.emplace_back(std::move(name)); }
 
     void setRequireParens(bool require) { m_requireParens = require; }
     bool requireParens() const { return m_requireParens; }
@@ -324,10 +324,10 @@ private:
 
 class ASTList : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > value_t;
+    typedef std::list<PycRef<ASTNode>> value_t;
 
     ASTList(value_t values)
-        : ASTNode(NODE_LIST), m_values(values) { }
+        : ASTNode(NODE_LIST), m_values(std::move(values)) { }
 
     const value_t& values() const { return m_values; }
 
@@ -338,12 +338,14 @@ private:
 
 class ASTMap : public ASTNode {
 public:
-    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode> > > map_t;
+    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> map_t;
 
     ASTMap() : ASTNode(NODE_MAP) { }
 
     void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
-    { m_values.push_back(std::make_pair(key, value)); }
+    {
+        m_values.emplace_back(std::move(key), std::move(value));
+    }
 
     const map_t& values() const { return m_values; }
 
@@ -355,7 +357,7 @@ private:
 class ASTSubscr : public ASTNode {
 public:
     ASTSubscr(PycRef<ASTNode> name, PycRef<ASTNode> key)
-        : ASTNode(NODE_SUBSCR), m_name(name), m_key(key) { }
+        : ASTNode(NODE_SUBSCR), m_name(std::move(name)), m_key(std::move(key)) { }
 
     PycRef<ASTNode> name() const { return m_name; }
     PycRef<ASTNode> key() const { return m_key; }
@@ -368,8 +370,9 @@ private:
 
 class ASTPrint : public ASTNode {
 public:
-    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = NULL)
-        : ASTNode(NODE_PRINT), m_value(value), m_stream(stream) { }
+    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = {})
+        : ASTNode(NODE_PRINT), m_value(std::move(value)),
+          m_stream(std::move(stream)) { }
 
     PycRef<ASTNode> value() const { return m_value; }
     PycRef<ASTNode> stream() const { return m_stream; }
@@ -383,7 +386,7 @@ private:
 class ASTConvert : public ASTNode {
 public:
     ASTConvert(PycRef<ASTNode> name)
-        : ASTNode(NODE_CONVERT), m_name(name) { }
+        : ASTNode(NODE_CONVERT), m_name(std::move(name)) { }
 
     PycRef<ASTNode> name() const { return m_name; }
 
@@ -410,9 +413,9 @@ private:
 
 class ASTRaise : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > param_t;
+    typedef std::list<PycRef<ASTNode>> param_t;
 
-    ASTRaise(param_t params) : ASTNode(NODE_RAISE), m_params(params) { }
+    ASTRaise(param_t params) : ASTNode(NODE_RAISE), m_params(std::move(params)) { }
 
     const param_t& params() const { return m_params; }
 
@@ -424,7 +427,8 @@ private:
 class ASTExec : public ASTNode {
 public:
     ASTExec(PycRef<ASTNode> stmt, PycRef<ASTNode> glob, PycRef<ASTNode> loc)
-        : ASTNode(NODE_EXEC), m_stmt(stmt), m_glob(glob), m_loc(loc) { }
+        : ASTNode(NODE_EXEC), m_stmt(std::move(stmt)), m_glob(std::move(glob)),
+          m_loc(std::move(loc)) { }
 
     PycRef<ASTNode> statement() const { return m_stmt; }
     PycRef<ASTNode> globals() const { return m_glob; }
@@ -439,7 +443,7 @@ private:
 
 class ASTBlock : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > list_t;
+    typedef std::list<PycRef<ASTNode>> list_t;
 
     enum BlkType {
         BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY,
@@ -456,7 +460,7 @@ public:
     list_t::size_type size() const { return m_nodes.size(); }
     void removeFirst();
     void removeLast();
-    void append(PycRef<ASTNode> node) { m_nodes.push_back(node); }
+    void append(PycRef<ASTNode> node) { m_nodes.emplace_back(std::move(node)); }
     const char* type_str() const;
 
     virtual int inited() const { return m_inited; }
@@ -481,8 +485,9 @@ public:
         UNINITED, POPPED, PRE_POPPED
     };
 
-    ASTCondBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> cond, bool negative = false)
-        : ASTBlock(blktype, end), m_cond(cond), m_negative(negative) { }
+    ASTCondBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> cond,
+                 bool negative = false)
+        : ASTBlock(blktype, end), m_cond(std::move(cond)), m_negative(negative) { }
 
     PycRef<ASTNode> cond() const { return m_cond; }
     bool negative() const { return m_negative; }
@@ -496,15 +501,15 @@ private:
 class ASTIterBlock : public ASTBlock {
 public:
     ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
-        : ASTBlock(blktype, end), m_iter(iter), m_idx(), m_comp(false) { }
+        : ASTBlock(blktype, end), m_iter(std::move(iter)), m_idx(), m_comp() { }
 
     PycRef<ASTNode> iter() const { return m_iter; }
     PycRef<ASTNode> index() const { return m_idx; }
     PycRef<ASTNode> condition() const { return m_cond; }
     bool isComprehension() const { return m_comp; }
 
-    void setIndex(PycRef<ASTNode> idx) { m_idx = idx; init(); }
-    void setCondition(PycRef<ASTNode> cond) { m_cond = cond; }
+    void setIndex(PycRef<ASTNode> idx) { m_idx = std::move(idx); init(); }
+    void setCondition(PycRef<ASTNode> cond) { m_cond = std::move(cond); }
     void setComprehension(bool comp) { m_comp = comp; }
 
 private:
@@ -539,8 +544,8 @@ public:
     PycRef<ASTNode> expr() const { return m_expr; }
     PycRef<ASTNode> var() const { return m_var; }
 
-    void setExpr(PycRef<ASTNode> expr) { m_expr = expr; init(); }
-    void setVar(PycRef<ASTNode> var) { m_var = var; }
+    void setExpr(PycRef<ASTNode> expr) { m_expr = std::move(expr); init(); }
+    void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
 
 private:
     PycRef<ASTNode> m_expr;
@@ -549,16 +554,16 @@ private:
 
 class ASTComprehension : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTIterBlock> > generator_t;
+    typedef std::list<PycRef<ASTIterBlock>> generator_t;
 
     ASTComprehension(PycRef<ASTNode> result)
-        : ASTNode(NODE_COMPREHENSION), m_result(result) { }
+        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)) { }
 
     PycRef<ASTNode> result() const { return m_result; }
     generator_t generators() const { return m_generators; }
 
     void addGenerator(PycRef<ASTIterBlock> gen) {
-        m_generators.push_front(gen);
+        m_generators.emplace_front(std::move(gen));
     }
 
 private:
@@ -570,7 +575,7 @@ private:
 class ASTLoadBuildClass : public ASTNode {
 public:
     ASTLoadBuildClass(PycRef<PycObject> obj)
-        : ASTNode(NODE_LOADBUILDCLASS), m_obj(obj) { }
+        : ASTNode(NODE_LOADBUILDCLASS), m_obj(std::move(obj)) { }
 
     PycRef<PycObject> object() const { return m_obj; }
 
