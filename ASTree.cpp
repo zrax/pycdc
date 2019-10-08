@@ -2866,7 +2866,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
         printClassDocstring = false;
     // This is outside the clean check so a source block will always
     // be compilable, even if decompylation failed.
-    if (clean->nodes().size() == 0)
+    if (clean->nodes().size() == 0 && !code.isIdent(mod->code()))
         clean->append(new ASTNode(ASTNode::NODE_PASS));
 
     inPrint = false;
