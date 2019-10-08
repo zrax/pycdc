@@ -1,0 +1,35 @@
+def x0 ( ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x1 ( arg1 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x2 ( arg1 , arg2 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3a ( * args ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3b ( ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x3c ( * args , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4a ( foo , bar = 1 , bla = 2 , * args ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4b ( foo , bar = 1 , bla = 2 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x4c ( foo , bar = 1 , bla = 2 , * args , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
