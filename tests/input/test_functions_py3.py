@@ -24,3 +24,36 @@ def x4b(foo, bar = 1, bla = 2, **kwargs):
 
 def x4c(foo, bar = 1, bla = 2, *args, **kwargs):
     pass
+
+def x5a(*, bar):
+    pass
+
+def x5b(*, bar = 1):
+    pass
+
+def x5c(*, bar = 1, **kwargs):
+    pass
+
+def x6a(foo, *, bar):
+    pass
+
+def x6b(foo, *, bar = 1):
+    pass
+
+def x6c(foo = 1, *, bar):
+    pass
+
+def x6d(foo = 1, *, bar = 2):
+    pass
+
+def x7a(foo, *, bar, **kwargs):
+    pass
+
+def x7b(foo, *, bar = 1, **kwargs):
+    pass
+
+def x7c(foo = 1, *, bar, **kwargs):
+    pass
+
+def x7d(foo = 1, *, bar = 2, **kwargs):
+    pass

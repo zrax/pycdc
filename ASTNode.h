@@ -218,17 +218,20 @@ private:
 
 class ASTFunction : public ASTNode {
 public:
-    typedef std::list<PycRef<ASTNode> > defarg_t;
+    typedef std::list<PycRef<ASTNode>> defarg_t;
 
-    ASTFunction(PycRef<ASTNode> code, defarg_t defArgs)
-        : ASTNode(NODE_FUNCTION), m_code(code), m_defargs(defArgs) { }
+    ASTFunction(PycRef<ASTNode> code, defarg_t defArgs, defarg_t kwDefArgs)
+        : ASTNode(NODE_FUNCTION), m_code(std::move(code)),
+          m_defargs(std::move(defArgs)), m_kwdefargs(std::move(kwDefArgs)) { }
 
     PycRef<ASTNode> code() const { return m_code; }
     const defarg_t& defargs() const { return m_defargs; }
+    const defarg_t& kwdefargs() const { return m_kwdefargs; }
 
 private:
     PycRef<ASTNode> m_code;
     defarg_t m_defargs;
+    defarg_t m_kwdefargs;
 };
 
 

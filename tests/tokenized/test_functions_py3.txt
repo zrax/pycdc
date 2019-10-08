@@ -33,3 +33,19 @@ pass <EOL>
 def x4c ( foo , bar = 1 , bla = 2 , * args , ** kwargs ) : <EOL>
 <INDENT>
 pass <EOL>
+<OUTDENT>
+def x5a ( * , bar = 1 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x5b ( * , bar = 1 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x6a ( foo , * , bar = 1 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7a ( foo , * , bar = 1 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>

@@ -258,7 +258,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
-                stack.push(new ASTFunction(fun_code, ASTFunction::defarg_t()));
+                stack.push(new ASTFunction(fun_code, {}, {}));
             }
             break;
         case Pyc::BUILD_LIST_A:
@@ -1350,12 +1350,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                 }
 
-                ASTFunction::defarg_t defArgs;
-                for (int i=0; i<operand; i++) {
+                ASTFunction::defarg_t defArgs, kwDefArgs;
+                const int defCount = operand & 0xFF;
+                const int kwDefCount = (operand >> 8) & 0xFF;
+                for (int i = 0; i < defCount; ++i) {
                     defArgs.push_front(stack.top());
                     stack.pop();
                 }
-                stack.push(new ASTFunction(fun_code, defArgs));
+                for (int i = 0; i < kwDefCount; ++i) {
+                    kwDefArgs.push_front(stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
             break;
         case Pyc::NOP:
@@ -2569,14 +2575,28 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<ASTNode> code = node.cast<ASTFunction>()->code();
             PycRef<PycCode> code_src = code.cast<ASTObject>()->object().cast<PycCode>();
             ASTFunction::defarg_t defargs = node.cast<ASTFunction>()->defargs();
+            ASTFunction::defarg_t kwdefargs = node.cast<ASTFunction>()->kwdefargs();
             auto da = defargs.cbegin();
+            int narg = 0;
             for (int i=0; i<code_src->argCount(); i++) {
-                if (i > 0)
+                if (narg)
                     fputs(", ", pyc_output);
-                fprintf(pyc_output, "%s", code_src->getVarName(i)->value());
+                fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                 if ((code_src->argCount() - i) <= (int)defargs.size()) {
                     fputs(" = ", pyc_output);
                     print_src(*da++, mod);
+                }
+            }
+            da = kwdefargs.cbegin();
+            if (code_src->kwOnlyArgCount() != 0) {
+                fputs(narg == 0 ? "*" : ", *", pyc_output);
+                for (int i = 0; i < code_src->argCount(); i++) {
+                    fputs(", ", pyc_output);
+                    fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                    if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
+                        fputs(" = ", pyc_output);
+                        print_src(*da++, mod);
+                    }
                 }
             }
             fputs(": ", pyc_output);
@@ -2614,34 +2634,44 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 }
 
                 ASTFunction::defarg_t defargs = src.cast<ASTFunction>()->defargs();
+                ASTFunction::defarg_t kwdefargs = src.cast<ASTFunction>()->kwdefargs();
                 auto da = defargs.cbegin();
-                bool first = true;
-                for (int i=0; i<code_src->argCount(); i++) {
-                    if (!first)
+                int narg = 0;
+                for (int i = 0; i < code_src->argCount(); ++i) {
+                    if (narg)
                         fputs(", ", pyc_output);
-                    fprintf(pyc_output, "%s", code_src->getVarName(i)->value());
+                    fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                     if ((code_src->argCount() - i) <= (int)defargs.size()) {
                         fputs(" = ", pyc_output);
                         print_src(*da++, mod);
                     }
-                    first = false;
+                }
+                da = kwdefargs.cbegin();
+                if (code_src->kwOnlyArgCount() != 0) {
+                    fputs(narg == 0 ? "*" : ", *", pyc_output);
+                    for (int i = 0; i < code_src->kwOnlyArgCount(); ++i) {
+                        fputs(", ", pyc_output);
+                        fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                        if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
+                            fputs(" = ", pyc_output);
+                            print_src(*da++, mod);
+                        }
+                    }
                 }
                 if (code_src->flags() & PycCode::CO_VARARGS) {
-                    if (!first)
+                    if (narg)
                         fputs(", ", pyc_output);
-                    fprintf(pyc_output, "*%s", code_src->getVarName(code_src->argCount())->value());
-                    first = false;
+                    fprintf(pyc_output, "*%s", code_src->getVarName(narg++)->value());
                 }
                 if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
-                    if (!first)
+                    if (narg)
                         fputs(", ", pyc_output);
 
                     int idx = code_src->argCount();
                     if (code_src->flags() & PycCode::CO_VARARGS) {
                         idx++;
                     }
-                    fprintf(pyc_output, "**%s", code_src->getVarName(idx)->value());
-                    first = false;
+                    fprintf(pyc_output, "**%s", code_src->getVarName(narg++)->value());
                 }
 
                 if (isLambda) {
