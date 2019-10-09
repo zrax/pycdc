@@ -5,6 +5,10 @@ testdir="$srcdir/tests"
 testname="$1"
 outdir="$2"
 
+if [[ -z "$PYTHON_EXE" ]]; then
+    PYTHON_EXE="$(which python3)"
+fi
+
 if [[ -z "$testname" ]]; then
     echo "Missing required parameter: testname" >&2
     exit 1
@@ -51,7 +55,7 @@ for pyc in "${compfiles[@]}" "${xfcfiles[@]}"; do
         continue
     fi
 
-    "$srcdir"/scripts/token_dump "$base.src.py" 2>"$base.tok.err" 1>"$base.tok.txt"
+    "$PYTHON_EXE" "$srcdir"/scripts/token_dump "$base.src.py" 2>"$base.tok.err" 1>"$base.tok.txt"
     if (( $? )) || [[ -s "$base.tok.err" ]]
     then
         if [[ "$(dirname "$pyc")" =~ xfail ]]
