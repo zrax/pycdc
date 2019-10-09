@@ -1,6 +1,9 @@
 '\nprint_to.py -- source test pattern for \'print >> ...\' statements\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
 import sys <EOL>
 print >> sys . stdout , 1 , 2 , 3 , 4 , 5 <EOL>
-print >> sys . stdout , 1 , 2 , 3 , 4 , 5 <EOL>
-print >> sys . stdout , 1 , 2 , 3 , 4 , 5 , 1 , 2 , 3 , 4 , 5 <EOL>
+print >> sys . stdout , 1 , 2 , 3 , 4 , 5 , <EOL>
+print >> sys . stdout <EOL>
+print >> sys . stdout , 1 , 2 , 3 , 4 , 5 , <EOL>
+print >> sys . stdout , 1 , 2 , 3 , 4 , 5 , <EOL>
+print >> sys . stdout <EOL>
 print >> sys . stdout <EOL>

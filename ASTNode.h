@@ -370,16 +370,28 @@ private:
 
 class ASTPrint : public ASTNode {
 public:
-    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = {})
-        : ASTNode(NODE_PRINT), m_value(std::move(value)),
-          m_stream(std::move(stream)) { }
+    typedef std::list<PycRef<ASTNode>> values_t;
 
-    PycRef<ASTNode> value() const { return m_value; }
+    ASTPrint(PycRef<ASTNode> value, PycRef<ASTNode> stream = {})
+        : ASTNode(NODE_PRINT), m_stream(std::move(stream)), m_eol()
+    {
+        if (value != nullptr)
+            m_values.emplace_back(std::move(value));
+        else
+            m_eol = true;
+    }
+
+    values_t values() const { return m_values; }
     PycRef<ASTNode> stream() const { return m_stream; }
+    bool eol() const { return m_eol; }
+
+    void add(PycRef<ASTNode> value) { m_values.emplace_back(std::move(value)); }
+    void setEol(bool eol) { m_eol = eol; }
 
 private:
-    PycRef<ASTNode> m_value;
+    values_t m_values;
     PycRef<ASTNode> m_stream;
+    bool m_eol;
 };
 
 

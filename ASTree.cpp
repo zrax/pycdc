@@ -8,10 +8,6 @@
  * avoid cleaning the output tree) */
 static bool cleanBuild;
 
-/* Keep track of whether we're in a print statement, so we can make
- * chained prints (print x, y, z) prettier */
-static bool inPrint;
-
 /* Use this to prevent printing return keywords and newlines in lambdas. */
 static bool inLambda = false;
 
@@ -1501,24 +1497,58 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::PRINT_ITEM:
-            curblock->append(new ASTPrint(stack.top()));
-            stack.pop();
+            {
+                PycRef<ASTPrint> printNode;
+                if (curblock->size() > 0 && curblock->nodes().back().type() == ASTNode::NODE_PRINT)
+                    printNode = curblock->nodes().back().cast<ASTPrint>();
+                if (printNode && printNode->stream() == nullptr && !printNode->eol())
+                    printNode->add(stack.top());
+                else
+                    curblock->append(new ASTPrint(stack.top()));
+                stack.pop();
+            }
             break;
         case Pyc::PRINT_ITEM_TO:
             {
                 PycRef<ASTNode> stream = stack.top();
                 stack.pop();
 
-                curblock->append(new ASTPrint(stack.top(), stream));
+                PycRef<ASTPrint> printNode;
+                if (curblock->size() > 0 && curblock->nodes().back().type() == ASTNode::NODE_PRINT)
+                    printNode = curblock->nodes().back().cast<ASTPrint>();
+                if (printNode && printNode->stream() == stream && !printNode->eol())
+                    printNode->add(stack.top());
+                else
+                    curblock->append(new ASTPrint(stack.top(), stream));
                 stack.pop();
-                break;
             }
+            break;
         case Pyc::PRINT_NEWLINE:
-            curblock->append(new ASTPrint(NULL));
+            {
+                PycRef<ASTPrint> printNode;
+                if (curblock->size() > 0 && curblock->nodes().back().type() == ASTNode::NODE_PRINT)
+                    printNode = curblock->nodes().back().cast<ASTPrint>();
+                if (printNode && printNode->stream() == nullptr && !printNode->eol())
+                    printNode->setEol(true);
+                else
+                    curblock->append(new ASTPrint(nullptr));
+                stack.pop();
+            }
             break;
         case Pyc::PRINT_NEWLINE_TO:
-            curblock->append(new ASTPrint(NULL, stack.top()));
-            stack.pop();
+            {
+                PycRef<ASTNode> stream = stack.top();
+                stack.pop();
+
+                PycRef<ASTPrint> printNode;
+                if (curblock->size() > 0 && curblock->nodes().back().type() == ASTNode::NODE_PRINT)
+                    printNode = curblock->nodes().back().cast<ASTPrint>();
+                if (printNode && printNode->stream() == stream && !printNode->eol())
+                    printNode->setEol(true);
+                else
+                    curblock->append(new ASTPrint(nullptr, stream));
+                stack.pop();
+            }
             break;
         case Pyc::RAISE_VARARGS_A:
             {
@@ -2190,7 +2220,7 @@ static void print_ordered(PycRef<ASTNode> parent, PycRef<ASTNode> child,
 
 static void start_line(int indent)
 {
-    if (inPrint || inLambda)
+    if (inLambda)
         return;
     for (int i=0; i<indent; i++)
         fputs("    ", pyc_output);
@@ -2198,7 +2228,7 @@ static void start_line(int indent)
 
 static void end_line()
 {
-    if (inPrint || inLambda)
+    if (inLambda)
         return;
     fputs("\n", pyc_output);
 }
@@ -2404,7 +2434,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 end_line();
                 break;
             }
-            inPrint = false;
 
             fprintf(pyc_output, "%s", node.cast<ASTBlock>()->type_str());
             PycRef<ASTBlock> blk = node.cast<ASTBlock>();
@@ -2439,11 +2468,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
 
             cur_indent++;
             print_block(blk, mod);
-            if (inPrint) {
-                fputs(",", pyc_output);
-            }
             cur_indent--;
-            inPrint = false;
         }
         break;
     case ASTNode::NODE_OBJECT:
@@ -2458,27 +2483,23 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_PRINT:
-        if (node.cast<ASTPrint>()->value() == NULL) {
-            if (!inPrint) {
-                fputs("print ", pyc_output);
-                if (node.cast<ASTPrint>()->stream() != NULL) {
-                    fputs(">>", pyc_output);
-                    print_src(node.cast<ASTPrint>()->stream(), mod);
-                }
-            }
-            inPrint = false;
-        } else if (!inPrint) {
+        {
             fputs("print ", pyc_output);
-            if (node.cast<ASTPrint>()->stream() != NULL) {
+            bool first = true;
+            if (node.cast<ASTPrint>()->stream() != nullptr) {
                 fputs(">>", pyc_output);
                 print_src(node.cast<ASTPrint>()->stream(), mod);
-                fputs(", ", pyc_output);
+                first = false;
             }
-            print_src(node.cast<ASTPrint>()->value(), mod);
-            inPrint = true;
-        } else {
-            fputs(", ", pyc_output);
-            print_src(node.cast<ASTPrint>()->value(), mod);
+
+            for (const auto& val : node.cast<ASTPrint>()->values()) {
+                if (!first)
+                    fputs(", ", pyc_output);
+                print_src(val, mod);
+                first = false;
+            }
+            if (!node.cast<ASTPrint>()->eol())
+                fputs(",", pyc_output);
         }
         break;
     case ASTNode::NODE_RAISE:
@@ -2896,7 +2917,6 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
     if (clean->nodes().size() == 0 && !code.isIdent(mod->code()))
         clean->append(new ASTKeyword(ASTKeyword::KW_PASS));
 
-    inPrint = false;
     bool part1clean = cleanBuild;
 
     if (printDocstringAndGlobals) {
