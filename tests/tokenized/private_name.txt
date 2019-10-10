@@ -1,0 +1,26 @@
+class Klass : <EOL>
+<INDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def method ( self ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def _internal_name ( self ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def __private_name ( self ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+var = 1 <EOL>
+_internal_var = 2 <EOL>
+__private_var = 3 <EOL>
+<OUTDENT>
+k = Klass ( ) <EOL>
+k . method ( ) <EOL>
+k . _internal_name ( ) <EOL>
+k . __private_name ( ) <EOL>

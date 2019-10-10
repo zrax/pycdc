@@ -1942,6 +1942,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         break;
                     }
 
+                    // Return private names back to their original name
+                    const std::string class_prefix = std::string("_") + code->name()->strValue();
+                    if (varname->startsWith(class_prefix + std::string("__")))
+                        varname->setValue(varname->strValue().substr(class_prefix.size()));
+
                     PycRef<ASTNode> name = new ASTName(varname);
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR

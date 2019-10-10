@@ -14,10 +14,18 @@ public:
     bool isEqual(PycRef<PycObject> obj) const override;
     bool isEqual(const std::string& str) const { return m_value == str; }
 
+    bool startsWith(const std::string& str) const
+    {
+        return m_value.substr(0, str.size()) == str;
+    }
+
     void load(class PycData* stream, class PycModule* mod) override;
 
     int length() const { return (int)m_value.size(); }
     const char* value() const { return m_value.c_str(); }
+    const std::string &strValue() const { return m_value; }
+
+    void setValue(std::string str) { m_value = std::move(str); }
 
 private:
     std::string m_value;
