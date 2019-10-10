@@ -1471,12 +1471,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock->init();
                     }
                     break;
-                } else if (value.type() == ASTNode::NODE_INVALID
+                } else if (value == nullptr
+                        || value.type() == ASTNode::NODE_INVALID
                         || value.type() == ASTNode::NODE_BINARY
-                        || value.type() == ASTNode::NODE_NAME) {
-                    break;
-                } else if (value.type() == ASTNode::NODE_COMPARE
-                        && value.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
+                        || value.type() == ASTNode::NODE_NAME
+                        || (value.type() == ASTNode::NODE_COMPARE
+                            && value.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION)) {
                     break;
                 }
 
