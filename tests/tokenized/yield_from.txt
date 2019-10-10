@@ -1,0 +1,18 @@
+def gen10 ( ) : <EOL>
+<INDENT>
+for i in range ( 10 ) : <EOL>
+<INDENT>
+yield i <EOL>
+<OUTDENT>
+<OUTDENT>
+def gen20 ( ) : <EOL>
+<INDENT>
+for i in range ( 10 , 20 ) : <EOL>
+<INDENT>
+yield i <EOL>
+<OUTDENT>
+<OUTDENT>
+def generator ( ) : <EOL>
+<INDENT>
+yield from gen10 ( ) <EOL>
+yield from gen20 ( ) <EOL>

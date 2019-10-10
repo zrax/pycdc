@@ -14,7 +14,7 @@ public:
         NODE_DELETE, NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT,
         NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
-        NODE_COMPREHENSION, NODE_LOADBUILDCLASS,
+        NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
 
         // Empty node types
         NODE_LOCALS,
@@ -180,7 +180,7 @@ private:
 class ASTReturn : public ASTNode {
 public:
     enum RetType {
-        RETURN, YIELD
+        RETURN, YIELD, YIELD_FROM
     };
 
     ASTReturn(PycRef<ASTNode> value, RetType rettype = RETURN)
@@ -597,6 +597,17 @@ public:
 
 private:
     PycRef<PycObject> m_obj;
+};
+
+class ASTAwaitable : public ASTNode {
+public:
+    ASTAwaitable(PycRef<ASTNode> expr)
+        : ASTNode(NODE_AWAITABLE), m_expr(std::move(expr)) { }
+
+    PycRef<ASTNode> expression() const { return m_expr; }
+
+private:
+    PycRef<ASTNode> m_expr;
 };
 
 #endif

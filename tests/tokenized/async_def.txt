@@ -1,3 +1,7 @@
 async def foobar ( ) : <EOL>
 <INDENT>
 pass <EOL>
+<OUTDENT>
+async def barfoo ( ) : <EOL>
+<INDENT>
+await foobar ( ) <EOL>

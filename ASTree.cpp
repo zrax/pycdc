@@ -782,6 +782,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(NULL); // We can totally hack this >_>
             }
             break;
+        case Pyc::GET_AWAITABLE:
+            {
+                PycRef<ASTNode> object = stack.top();
+                stack.pop();
+                stack.push(new ASTAwaitable(object));
+            }
+            break;
         case Pyc::GET_ITER:
             /* We just entirely ignore this */
             break;
@@ -2097,6 +2104,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTTuple(vals));
             }
             break;
+        case Pyc::YIELD_FROM:
+            {
+                PycRef<ASTNode> dest = stack.top();
+                stack.pop();
+                // TODO: Support yielding into a non-null destination
+                PycRef<ASTNode> value = stack.top();
+                value->setProcessed();
+                curblock->append(new ASTReturn(value, ASTReturn::YIELD_FROM));
+            }
+            break;
         case Pyc::YIELD_VALUE:
             {
                 PycRef<ASTNode> value = stack.top();
@@ -2515,17 +2532,26 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_RETURN:
         {
             PycRef<ASTReturn> ret = node.cast<ASTReturn>();
+            PycRef<ASTNode> value = ret->value();
             if (!inLambda) {
                 switch (ret->rettype()) {
-                    case ASTReturn::RETURN:
-                        fputs("return ", pyc_output);
-                        break;
-                    case ASTReturn::YIELD:
-                        fputs("yield ", pyc_output);
-                        break;
+                case ASTReturn::RETURN:
+                    fputs("return ", pyc_output);
+                    break;
+                case ASTReturn::YIELD:
+                    fputs("yield ", pyc_output);
+                    break;
+                case ASTReturn::YIELD_FROM:
+                    if (value.type() == ASTNode::NODE_AWAITABLE) {
+                        fputs("await ", pyc_output);
+                        value = value.cast<ASTAwaitable>()->expression();
+                    } else {
+                        fputs("yield from ", pyc_output);
+                    }
+                    break;
                 }
             }
-            print_src(ret->value(), mod);
+            print_src(value, mod);
         }
         break;
     case ASTNode::NODE_SLICE:
