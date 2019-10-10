@@ -20,14 +20,18 @@ public:
         NODE_LOCALS,
     };
 
-    ASTNode(int type = NODE_INVALID) : m_refs(0), m_type(type) { }
+    ASTNode(int type = NODE_INVALID) : m_refs(), m_type(type), m_processed() { }
     virtual ~ASTNode() { }
 
     int type() const { return internalGetType(this); }
 
+    bool processed() const { return m_processed; }
+    void setProcessed() { m_processed = true; }
+
 private:
     int m_refs;
     int m_type;
+    bool m_processed;
 
     // Hack to make clang happy :(
     static int internalGetType(const ASTNode *node)

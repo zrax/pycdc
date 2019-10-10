@@ -1471,12 +1471,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock->init();
                     }
                     break;
-                } else if (value == nullptr
-                        || value.type() == ASTNode::NODE_INVALID
-                        || value.type() == ASTNode::NODE_BINARY
-                        || value.type() == ASTNode::NODE_NAME
-                        || (value.type() == ASTNode::NODE_COMPARE
-                            && value.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION)) {
+                } else if (value == nullptr || value->processed()) {
                     break;
                 }
 
@@ -1521,6 +1516,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else
                     curblock->append(new ASTPrint(stack.top(), stream));
                 stack.pop();
+                stream->setProcessed();
             }
             break;
         case Pyc::PRINT_NEWLINE:
@@ -1548,6 +1544,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else
                     curblock->append(new ASTPrint(nullptr, stream));
                 stack.pop();
+                stream->setProcessed();
             }
             break;
         case Pyc::RAISE_VARARGS_A:
