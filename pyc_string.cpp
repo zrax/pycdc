@@ -49,7 +49,9 @@ void PycString::load(PycData* stream, PycModule* mod)
     if (type() == TYPE_STRINGREF) {
         PycRef<PycString> str = mod->getIntern(stream->get32());
         m_value.resize(str->length());
-        std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
+
+        if (str->length())
+            std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
     } else {
         int length;
         if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
