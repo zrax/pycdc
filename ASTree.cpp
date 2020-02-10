@@ -1395,8 +1395,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || curblock->blktype() == ASTBlock::BLK_TRY
                         || curblock->blktype() == ASTBlock::BLK_EXCEPT
                         || curblock->blktype() == ASTBlock::BLK_FINALLY) {
-                    stack = stack_hist.top();
-                    stack_hist.pop();
+                    if (!stack_hist.empty()) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    } else {
+                        fprintf(stderr, "Warning: Stack history is empty, something wrong might have happened\n");
+                    }
                 }
 
                 tmp = curblock;
