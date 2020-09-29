@@ -31,6 +31,7 @@ enum PycMagic {
     MAGIC_3_6 = 0x0A0D0D33,
     MAGIC_3_7 = 0x0A0D0D42,
     MAGIC_3_8 = 0x0A0D0D55,
+    MAGIC_3_9 = 0x0A0D0D61,
 };
 
 class PycModule {
