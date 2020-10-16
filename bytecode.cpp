@@ -272,8 +272,19 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
         {
             // Wrap any nan/inf values in float('').
             double value = obj.cast<PycCFloat>()->value();
-            if (std::isnan(value) || std::isinf(value)) {
-                fprintf(pyc_output, "float('%g')", value);
+            bool is_negative = std::signbit(value);
+            if (std::isnan(value)) {
+                if (is_negative) {
+                    fprintf(pyc_output, "float('-nan')");
+                } else {
+                    fprintf(pyc_output, "float('nan')");
+                }
+            } else if (std::isinf(value)) {
+                if (is_negative) {
+                    fprintf(pyc_output, "float('-inf')");
+                } else {
+                    fprintf(pyc_output, "float('inf')");
+                }
             } else {
                 fprintf(pyc_output, "%g", value);
             }
