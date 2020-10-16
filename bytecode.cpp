@@ -1,5 +1,6 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
+#include <cmath>
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -268,7 +269,15 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
                                         obj.cast<PycComplex>()->imag());
         break;
     case PycObject::TYPE_BINARY_FLOAT:
-        fprintf(pyc_output, "%g", obj.cast<PycCFloat>()->value());
+        {
+            // Wrap any nan/inf values in float('').
+            double value = obj.cast<PycCFloat>()->value();
+            if (std::isnan(value) || std::isinf(value)) {
+                fprintf(pyc_output, "float('%g')", value);
+            } else {
+                fprintf(pyc_output, "%g", value);
+            }
+        }
         break;
     case PycObject::TYPE_BINARY_COMPLEX:
         fprintf(pyc_output, "(%g+%gj)", obj.cast<PycCComplex>()->value(),

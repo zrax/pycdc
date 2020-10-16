@@ -1,0 +1,8 @@
+a = float ( '-nan' ) <EOL>
+b = float ( '-nan' ) <EOL>
+c = float ( 'inf' ) <EOL>
+d = float ( '-inf' ) <EOL>
+e = float ( 'nan' ) <EOL>
+f = float ( '-nan' ) <EOL>
+g = float ( 'inf' ) <EOL>
+h = float ( '-inf' ) <EOL>
