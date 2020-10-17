@@ -79,3 +79,11 @@ const char* ASTBlock::type_str() const
     };
     return s_type_strings[blktype()];
 }
+/* ASTFormattedValue */
+// This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
+// E.g. f'''{"interpolated "123' literal"}'''    -> valid.
+// E.g. f"""{"interpolated "123' literal"}"""    -> valid.
+// E.g. f'{"interpolated "123' literal"}'        -> invalid, unescaped quotes in literal.
+// E.g. f'{"interpolated \"123\' literal"}'      -> invalid, f-string expression does not allow backslash.
+// NOTE: Nested f-strings not supported.
+const char* ASTFormattedValue::F_STRING_QUOTE = "'''";

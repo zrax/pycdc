@@ -15,6 +15,7 @@ public:
         NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
+        NODE_FORMATTEDVALUE, NODE_JOINEDSTR,
 
         // Empty node types
         NODE_LOCALS,
@@ -610,5 +611,48 @@ public:
 private:
     PycRef<ASTNode> m_expr;
 };
+
+class ASTFormattedValue : public ASTNode {
+public:
+    static const char* F_STRING_QUOTE;
+    enum ConversionFlag {
+	    NONE=0,
+    	STR=1,
+    	REPR=2,
+    	ASCII=3,
+    	FMTSPEC=4
+    };
+	
+    ASTFormattedValue(PycRef<ASTNode> val, ConversionFlag conversion, PycRef<ASTNode> format_spec)
+        : ASTNode(NODE_FORMATTEDVALUE),
+        m_val(std::move(val)),
+        m_conversion(conversion),
+        m_format_spec(std::move(format_spec))
+	{}
+
+    PycRef<ASTNode> val() const { return m_val; }
+    ConversionFlag conversion() const { return m_conversion; }
+    PycRef<ASTNode> format_spec() const { return m_format_spec; }
+
+private:
+    PycRef<ASTNode> m_val;
+    ConversionFlag m_conversion;
+    PycRef<ASTNode> m_format_spec;
+};
+
+// Same as ASTList
+class ASTJoinedStr : public ASTNode {
+public:
+    typedef std::list<PycRef<ASTNode>> value_t;
+
+    ASTJoinedStr(value_t values)
+        : ASTNode(NODE_JOINEDSTR), m_values(std::move(values)) { }
+
+    const value_t& values() const { return m_values; }
+
+private:
+    value_t m_values;
+};
+
 
 #endif

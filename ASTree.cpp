@@ -366,6 +366,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::BUILD_STRING_A:
+	        {
+	            // Nearly identical logic to BUILD_LIST
+	            ASTList::value_t values;
+	            for (int i = 0; i < operand; i++) {
+	                values.push_front(stack.top());
+	                stack.pop();
+	            }
+	            stack.push(new ASTJoinedStr(values));
+	        }
+	        break;
         case Pyc::BUILD_TUPLE_A:
             {
                 ASTTuple::value_t values;
@@ -781,6 +792,35 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(curidx);
                 stack.push(NULL); // We can totally hack this >_>
             }
+            break;
+        case Pyc::FORMAT_VALUE_A:
+			{
+                auto conversion_flag = static_cast<ASTFormattedValue::ConversionFlag>(operand);
+        		switch (conversion_flag)
+        		{
+                case ASTFormattedValue::ConversionFlag::NONE:
+                case ASTFormattedValue::ConversionFlag::STR:
+                case ASTFormattedValue::ConversionFlag::REPR:
+                case ASTFormattedValue::ConversionFlag::ASCII:
+	                {
+	                    auto val = stack.top();
+	                    stack.pop();
+	                    stack.push(new ASTFormattedValue(val, conversion_flag, nullptr));
+	                }
+                    break;
+                case ASTFormattedValue::ConversionFlag::FMTSPEC:
+	                {
+	                    auto format_spec = stack.top();
+	                    stack.pop();
+	                    auto val = stack.top();
+	                    stack.pop();
+	                    stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
+	                }
+                    break;
+                default:
+                    fprintf(stderr, "Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
+        		}
+			}
             break;
         case Pyc::GET_AWAITABLE:
             {
@@ -2277,6 +2317,33 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
     }
 }
 
+void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule* mod)
+{
+    fputs("{", pyc_output);
+    print_src(formatted_value->val(), mod);
+
+    switch (formatted_value->conversion())
+    {
+    case ASTFormattedValue::ConversionFlag::NONE:
+        break;
+    case ASTFormattedValue::ConversionFlag::STR:
+        fputs("!s", pyc_output);
+        break;
+    case ASTFormattedValue::ConversionFlag::REPR:
+        fputs("!r", pyc_output);
+        break;
+    case ASTFormattedValue::ConversionFlag::ASCII:
+        fputs("!a", pyc_output);
+        break;
+    case ASTFormattedValue::ConversionFlag::FMTSPEC:
+        fprintf(pyc_output, ":%s", formatted_value->format_spec().cast<ASTObject>()->object().cast<PycString>()->value());
+        break;
+    default:
+        fprintf(stderr, "Unsupported NODE_FORMATTEDVALUE conversion flag: %d\n", formatted_value->conversion());
+    }
+    fputs("}", pyc_output);
+}
+
 void print_src(PycRef<ASTNode> node, PycModule* mod)
 {
     if (node == NULL) {
@@ -2366,6 +2433,31 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 }
             }
         }
+        break;
+    case ASTNode::NODE_FORMATTEDVALUE:
+        fprintf(pyc_output, "f%s", ASTFormattedValue::F_STRING_QUOTE);
+        print_formatted_value(node.cast<ASTFormattedValue>(), mod);
+        fputs(ASTFormattedValue::F_STRING_QUOTE, pyc_output);
+        break;
+    case ASTNode::NODE_JOINEDSTR:
+        fprintf(pyc_output, "f%s", ASTFormattedValue::F_STRING_QUOTE);
+        for (const auto& val : node.cast<ASTJoinedStr>()->values())
+        {
+            switch (val.type())
+            {
+            case ASTNode::NODE_FORMATTEDVALUE:
+                print_formatted_value(val.cast<ASTFormattedValue>(), mod);
+                break;
+            case ASTNode::NODE_OBJECT:
+                // When printing a piece of the f-string, keep the quote style consistent.
+                // This avoids problems when ''' or """ is part of the string.
+                print_const(val.cast<ASTObject>()->object(), mod, ASTFormattedValue::F_STRING_QUOTE);
+                break;
+            default:
+                fprintf(stderr, "Unsupported node type %d in NODE_JOINEDSTR\n", val.type());
+            }
+        }
+        fputs(ASTFormattedValue::F_STRING_QUOTE, pyc_output);
         break;
     case ASTNode::NODE_KEYWORD:
         fprintf(pyc_output, "%s", node.cast<ASTKeyword>()->word_str());

@@ -1,0 +1,32 @@
+var1 = 'x' <EOL>
+var2 = 'y' <EOL>
+x = 1.23456 <EOL>
+s1 = 1.23456 <EOL>
+var3 = 1.23456 <EOL>
+a = 15 <EOL>
+some_dict = { } <EOL>
+some_dict [ 2 ] = 3 <EOL>
+f'' <EOL>
+f'{123}' <EOL>
+f'{123}{var1}' <EOL>
+f'{123}ok' <EOL>
+f'ok{123}' <EOL>
+assigned = f'{123}' <EOL>
+print ( f'{123}' ) <EOL>
+print ( f'{123}{123}{var3}{123}' ) <EOL>
+print ( f'{var3}' ) <EOL>
+print ( f'{var3:4.5}' ) <EOL>
+print ( f'f-string {123}' ) <EOL>
+print ( f'{123}:\\s+' ) <EOL>
+print ( f'x{12}' * 3 ) <EOL>
+print ( f'f-string. \t\tformat value 0: {var1}, 1 (!s): {var2!s}, 2 (!r): {var2!r}, 3 (!a): {var2!a}, 4: {var3:6.3}, constant: {123}. End.' ) <EOL>
+print ( 'percent format %d ' % 444 + f'f-string {123} and {var1!s}' + f' add another f-str {var3:2.3}' + ' regular string  regular string ' ) <EOL>
+print ( f'' ) <EOL>
+print ( f'"""{\'single quoted string\'} \'singles in f-string\' {"single quote \' inside"} "doubles in f-string" {\'double quoted string\'} " both \' {\'double quotes " inside\'}"""' ) <EOL>
+print ( f'' ) <EOL>
+print ( f'' ) <EOL>
+print ( f'{var3 * x} {var3:.2f} {var3:.5f} {x:02} {x * x:3} {x * x * x:4} {s1:>10} {a:x} {a:o} {a:e}' ) <EOL>
+print ( f'some {{braces}} {\'inner literal: {braces} {{double braces}}\'}' ) <EOL>
+print ( f'f-string dict {some_dict[2]} and {{function call in expression}}: {max([\n    1,\n    20,\n    3])}' ) <EOL>
+print ( f'{(lambda x: x * 2)(3)}' ) <EOL>
+msg = f'a {var1}coolmultiline {var2}\nf-string {var3}' <EOL>

@@ -147,7 +147,7 @@ bool Pyc::IsCompareArg(int opcode)
     return (opcode == Pyc::COMPARE_OP_A);
 }
 
-void print_const(PycRef<PycObject> obj, PycModule* mod)
+void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_string_quote)
 {
     if (obj == NULL) {
         fputs("<NULL>", pyc_output);
@@ -156,10 +156,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
 
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
+        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0, false, pyc_output, parent_f_string_quote);
         break;
     case PycObject::TYPE_UNICODE:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u');
+        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u', false, pyc_output, parent_f_string_quote);
         break;
     case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
@@ -168,9 +168,9 @@ void print_const(PycRef<PycObject> obj, PycModule* mod)
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
         if (mod->majorVer() >= 3)
-            OutputString(obj.cast<PycString>(), 0);
+            OutputString(obj.cast<PycString>(), 0, false, pyc_output, parent_f_string_quote);
         else
-            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
+            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0, false, pyc_output, parent_f_string_quote);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:

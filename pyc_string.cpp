@@ -85,7 +85,7 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
+void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, const char* parent_f_string_quote)
 {
     if (prefix != 0)
         fputc(prefix, F);
@@ -99,23 +99,31 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
 
     // Determine preferred quote style (Emulate Python's method)
     bool useQuotes = false;
-    while (len--) {
-        if (*ch == '\'') {
-            useQuotes = true;
-        } else if (*ch == '"') {
-            useQuotes = false;
-            break;
+	if (!parent_f_string_quote) {
+        while (len--) {
+            if (*ch == '\'') {
+                useQuotes = true;
+            }
+            else if (*ch == '"') {
+                useQuotes = false;
+                break;
+            }
+            ch++;
         }
-        ch++;
+	}
+    else {
+        useQuotes = parent_f_string_quote[0] == '"';
     }
     ch = str->value();
     len = str->length();
 
     // Output the string
-    if (triple)
-        fputs(useQuotes ? "\"\"\"" : "'''", F);
-    else
-        fputc(useQuotes ? '"' : '\'', F);
+    if (!parent_f_string_quote) {
+        if (triple)
+            fputs(useQuotes ? "\"\"\"" : "'''", F);
+        else
+            fputc(useQuotes ? '"' : '\'', F);
+    }
     while (len--) {
         if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
@@ -144,13 +152,19 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F)
                 fputs("\\\"", F);
             else if (*ch == '\\')
                 fputs("\\\\", F);
+            else if (parent_f_string_quote && *ch == '{')
+                fputs("{{", F);
+            else if (parent_f_string_quote && *ch == '}')
+                fputs("}}", F);
             else
                 fputc(*ch, F);
         }
         ch++;
     }
-    if (triple)
-        fputs(useQuotes ? "\"\"\"" : "'''", F);
-    else
-        fputc(useQuotes ? '"' : '\'', F);
+    if (!parent_f_string_quote) {
+	    if (triple)
+	        fputs(useQuotes ? "\"\"\"" : "'''", F);
+	    else
+	        fputc(useQuotes ? '"' : '\'', F);
+	}
 }
