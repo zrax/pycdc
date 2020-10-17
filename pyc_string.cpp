@@ -99,7 +99,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
 
     // Determine preferred quote style (Emulate Python's method)
     bool useQuotes = false;
-	if (!parent_f_string_quote) {
+    if (!parent_f_string_quote) {
         while (len--) {
             if (*ch == '\'') {
                 useQuotes = true;
@@ -110,7 +110,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
             }
             ch++;
         }
-	}
+    }
     else {
         useQuotes = parent_f_string_quote[0] == '"';
     }
@@ -162,9 +162,9 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
         ch++;
     }
     if (!parent_f_string_quote) {
-	    if (triple)
-	        fputs(useQuotes ? "\"\"\"" : "'''", F);
-	    else
-	        fputc(useQuotes ? '"' : '\'', F);
-	}
+        if (triple)
+            fputs(useQuotes ? "\"\"\"" : "'''", F);
+        else
+            fputc(useQuotes ? '"' : '\'', F);
+    }
 }

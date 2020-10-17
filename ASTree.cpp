@@ -367,16 +367,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BUILD_STRING_A:
-	        {
-	            // Nearly identical logic to BUILD_LIST
-	            ASTList::value_t values;
-	            for (int i = 0; i < operand; i++) {
-	                values.push_front(stack.top());
-	                stack.pop();
-	            }
-	            stack.push(new ASTJoinedStr(values));
-	        }
-	        break;
+            {
+                // Nearly identical logic to BUILD_LIST
+                ASTList::value_t values;
+                for (int i = 0; i < operand; i++) {
+                    values.push_front(stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTJoinedStr(values));
+            }
+            break;
         case Pyc::BUILD_TUPLE_A:
             {
                 ASTTuple::value_t values;
@@ -794,33 +794,33 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::FORMAT_VALUE_A:
-			{
+            {
                 auto conversion_flag = static_cast<ASTFormattedValue::ConversionFlag>(operand);
-        		switch (conversion_flag)
-        		{
+                switch (conversion_flag)
+                {
                 case ASTFormattedValue::ConversionFlag::NONE:
                 case ASTFormattedValue::ConversionFlag::STR:
                 case ASTFormattedValue::ConversionFlag::REPR:
                 case ASTFormattedValue::ConversionFlag::ASCII:
-	                {
-	                    auto val = stack.top();
-	                    stack.pop();
-	                    stack.push(new ASTFormattedValue(val, conversion_flag, nullptr));
-	                }
+                    {
+                        auto val = stack.top();
+                        stack.pop();
+                        stack.push(new ASTFormattedValue(val, conversion_flag, nullptr));
+                    }
                     break;
                 case ASTFormattedValue::ConversionFlag::FMTSPEC:
-	                {
-	                    auto format_spec = stack.top();
-	                    stack.pop();
-	                    auto val = stack.top();
-	                    stack.pop();
-	                    stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
-	                }
+                    {
+                        auto format_spec = stack.top();
+                        stack.pop();
+                        auto val = stack.top();
+                        stack.pop();
+                        stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
+                    }
                     break;
                 default:
                     fprintf(stderr, "Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
-        		}
-			}
+                }
+            }
             break;
         case Pyc::GET_AWAITABLE:
             {
