@@ -1265,6 +1265,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 } while (prev != nil);
 
+                if (blocks.empty())
+                  break;
+
                 curblock = blocks.top();
 
                 if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
