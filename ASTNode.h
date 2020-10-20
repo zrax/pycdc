@@ -617,10 +617,10 @@ public:
     static const char* F_STRING_QUOTE;
     enum ConversionFlag {
         NONE=0,
-    	STR=1,
-    	REPR=2,
-    	ASCII=3,
-    	FMTSPEC=4
+        STR=1,
+        REPR=2,
+        ASCII=3,
+        FMTSPEC=4
     };
 
     ASTFormattedValue(PycRef<ASTNode> val, ConversionFlag conversion, PycRef<ASTNode> format_spec)

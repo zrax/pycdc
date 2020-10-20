@@ -34,9 +34,4 @@ msg = (
     f'multiline {var2}\n'
     f'f-string {var3}'
 )
-
-# Commented out because LOAD_/CALL_METHOD not supported. https://github.com/zrax/pycdc/issues/163
-# The f-string will decompile correctly, however.
-# import datetime
-# datetime.date(2015,9,29)
-#print(f'{now:%Y-%m-%d %H:%M}')
+print(f'{now:%Y-%m-%d %H:%M}')

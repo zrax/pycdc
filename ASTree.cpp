@@ -4,6 +4,14 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 
+// This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
+// E.g. f'''{"interpolated "123' literal"}'''    -> valid.
+// E.g. f"""{"interpolated "123' literal"}"""    -> valid.
+// E.g. f'{"interpolated "123' literal"}'        -> invalid, unescaped quotes in literal.
+// E.g. f'{"interpolated \"123\' literal"}'      -> invalid, f-string expression does not allow backslash.
+// NOTE: Nested f-strings not supported.
+const char* F_STRING_QUOTE = "'''";
+
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
 static bool cleanBuild;
@@ -2435,12 +2443,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_FORMATTEDVALUE:
-        fprintf(pyc_output, "f%s", ASTFormattedValue::F_STRING_QUOTE);
+        fprintf(pyc_output, "f%s", F_STRING_QUOTE);
         print_formatted_value(node.cast<ASTFormattedValue>(), mod);
-        fputs(ASTFormattedValue::F_STRING_QUOTE, pyc_output);
+        fputs(F_STRING_QUOTE, pyc_output);
         break;
     case ASTNode::NODE_JOINEDSTR:
-        fprintf(pyc_output, "f%s", ASTFormattedValue::F_STRING_QUOTE);
+        fprintf(pyc_output, "f%s", F_STRING_QUOTE);
         for (const auto& val : node.cast<ASTJoinedStr>()->values())
         {
             switch (val.type())
@@ -2451,13 +2459,13 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             case ASTNode::NODE_OBJECT:
                 // When printing a piece of the f-string, keep the quote style consistent.
                 // This avoids problems when ''' or """ is part of the string.
-                print_const(val.cast<ASTObject>()->object(), mod, ASTFormattedValue::F_STRING_QUOTE);
+                print_const(val.cast<ASTObject>()->object(), mod, F_STRING_QUOTE);
                 break;
             default:
                 fprintf(stderr, "Unsupported node type %d in NODE_JOINEDSTR\n", val.type());
             }
         }
-        fputs(ASTFormattedValue::F_STRING_QUOTE, pyc_output);
+        fputs(F_STRING_QUOTE, pyc_output);
         break;
     case ASTNode::NODE_KEYWORD:
         fprintf(pyc_output, "%s", node.cast<ASTKeyword>()->word_str());
