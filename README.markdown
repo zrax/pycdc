@@ -20,8 +20,8 @@ https://github.com/zrax/pycdc
     | Option | Description |
     | --- | --- |
     | `-DCMAKE_BUILD_TYPE=Debug` | Produce debugging symbols |
-    | `-DUSE_BLOCK_DEBUG=ON` | Enable block debugging output |
-    | `-DUSE_STACK_DEBUG=ON` | Enable stack debugging output |
+    | `-DENABLE_BLOCK_DEBUG=ON` | Enable block debugging output |
+    | `-DENABLE_STACK_DEBUG=ON` | Enable stack debugging output |
 
 * Build the generated project or makefile
   * For projects (e.g. MSVC), open the generated project file and build it
