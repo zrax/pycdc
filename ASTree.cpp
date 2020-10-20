@@ -282,6 +282,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTMap());
             }
             break;
+        case Pyc::BUILD_CONST_KEY_MAP_A:
+            // Top of stack will be a tuple of keys.
+            // Values will start at TOS - 1.
+            {
+                PycRef<ASTNode> keys = stack.top();
+                stack.pop();
+
+                ASTConstMap::values_t values;
+                for (int i = 0; i < operand; ++i) {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    values.push_back(value);
+                }
+
+                stack.push(new ASTConstMap(keys, values));
+            }
+            break;
         case Pyc::STORE_MAP:
             {
                 PycRef<ASTNode> key = stack.top();
@@ -2426,6 +2443,24 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             }
             cur_indent--;
             fputs(" }", pyc_output);
+        }
+        break;
+    case ASTNode::NODE_CONST_MAP:
+        {
+            PycRef<ASTConstMap> const_map = node.cast<ASTConstMap>();
+            PycTuple::value_t keys = const_map->keys().cast<ASTObject>()->object().cast<PycTuple>()->values();
+            ASTConstMap::values_t values = const_map->values();
+
+            auto map = new ASTMap;
+            for (auto key : keys) {
+                // Values are pushed onto the stack in reverse order.
+                PycRef<ASTNode> value = values.back();
+                values.pop_back();
+
+                map->add(new ASTObject(key), value);
+            }
+
+            print_src(map, mod);
         }
         break;
     case ASTNode::NODE_NAME:
