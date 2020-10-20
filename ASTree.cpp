@@ -290,6 +290,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
 
                 ASTConstMap::values_t values;
+                values.reserve(operand);
                 for (int i = 0; i < operand; ++i) {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
@@ -2452,7 +2453,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             ASTConstMap::values_t values = const_map->values();
 
             auto map = new ASTMap;
-            for (auto key : keys) {
+            for (const auto& key : keys) {
                 // Values are pushed onto the stack in reverse order.
                 PycRef<ASTNode> value = values.back();
                 values.pop_back();
