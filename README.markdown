@@ -15,10 +15,18 @@ https://github.com/zrax/pycdc
 
 ## Building Decompyle++
 * Generate a project or makefile with [CMake](http://www.cmake.org) (See CMake's documentation for details)
+  * The following options can be passed to CMake to control debug features:
+
+    | Option | Description |
+    | --- | --- |
+    | `-DCMAKE_BUILD_TYPE=Debug` | Produce debugging symbols |
+    | `-DUSE_BLOCK_DEBUG=ON` | Enable block debugging output |
+    | `-DUSE_STACK_DEBUG=ON` | Enable stack debugging output |
+
 * Build the generated project or makefile
   * For projects (e.g. MSVC), open the generated project file and build it
   * For makefiles, just run `make`
-  * To run tests (on \*nix or MSYS), run `make test`
+  * To run tests (on \*nix or MSYS), run `make check`
 
 ## Usage
 **To run pycdas**, the PYC Disassembler:

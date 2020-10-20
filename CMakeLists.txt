@@ -4,6 +4,18 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Debug options.
+option(USE_BLOCK_DEBUG "Enable block debugging" OFF)
+option(USE_STACK_DEBUG "Enable stack debugging" OFF)
+
+# Turn debug defs on if they're enabled.
+if (USE_BLOCK_DEBUG)
+  add_definitions(-DBLOCK_DEBUG)
+endif()
+if (USE_STACK_DEBUG)
+  add_definitions(-DSTACK_DEBUG)
+endif()
+
 # For generating the bytes tables
 find_package(PythonInterp REQUIRED)
 
