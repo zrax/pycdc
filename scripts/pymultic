@@ -60,6 +60,8 @@ def fetch_python(snekdir, version):
         return
 
     tb_dir = os.path.join(snekdir, 'tarballs')
+    if not os.path.exists(tb_dir):
+        os.makedirs(tb_dir)
     tarfile = os.path.join(tb_dir, tarball)
     if not os.path.exists(tarfile):
         if version == '1.6':
