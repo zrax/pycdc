@@ -465,7 +465,7 @@ public:
     enum BlkType {
         BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY,
         BLK_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
-        BLK_WHILE, BLK_FOR, BLK_WITH
+        BLK_WHILE, BLK_FOR, BLK_WITH, BLK_ASYNCFOR
     };
 
     ASTBlock(BlkType blktype, int end = 0, int inited = 0)
@@ -514,9 +514,17 @@ private:
     bool m_negative;
 };
 
+namespace Pyc { enum Opcode : int; }
 
 class ASTIterBlock : public ASTBlock {
 public:
+    static const std::vector<Pyc::Opcode> ASYNCFOR_BOILERPLATE;
+    static const int ASYNCFOR_BOILER_READLOOPINDEX;
+    static const int ASYNCFOR_BOILER_READLOOPCONTENTS;
+    static const int ASYNCFOR_BOILER_OFFSETFROMEND;
+    static const int ASYNCFOR_BOILER_FIRSTJUMP;
+    static const Pyc::Opcode ASYNCFOR_BOILER_ALTJUMPOP;
+
     ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
         : ASTBlock(blktype, end), m_iter(std::move(iter)), m_idx(), m_comp() { }
 
