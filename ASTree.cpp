@@ -10,7 +10,7 @@
 // E.g. f'{"interpolated "123' literal"}'        -> invalid, unescaped quotes in literal.
 // E.g. f'{"interpolated \"123\' literal"}'      -> invalid, f-string expression does not allow backslash.
 // NOTE: Nested f-strings not supported.
-const char* F_STRING_QUOTE = "'''";
+#define F_STRING_QUOTE "'''"
 
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
@@ -804,8 +804,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::FORMAT_VALUE_A:
             {
                 auto conversion_flag = static_cast<ASTFormattedValue::ConversionFlag>(operand);
-                switch (conversion_flag)
-                {
+                switch (conversion_flag) {
                 case ASTFormattedValue::ConversionFlag::NONE:
                 case ASTFormattedValue::ConversionFlag::STR:
                 case ASTFormattedValue::ConversionFlag::REPR:
@@ -2330,8 +2329,7 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     fputs("{", pyc_output);
     print_src(formatted_value->val(), mod);
 
-    switch (formatted_value->conversion())
-    {
+    switch (formatted_value->conversion()) {
     case ASTFormattedValue::ConversionFlag::NONE:
         break;
     case ASTFormattedValue::ConversionFlag::STR:
@@ -2443,16 +2441,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         }
         break;
     case ASTNode::NODE_FORMATTEDVALUE:
-        fprintf(pyc_output, "f%s", F_STRING_QUOTE);
+        fputs("f" F_STRING_QUOTE, pyc_output);
         print_formatted_value(node.cast<ASTFormattedValue>(), mod);
         fputs(F_STRING_QUOTE, pyc_output);
         break;
     case ASTNode::NODE_JOINEDSTR:
-        fprintf(pyc_output, "f%s", F_STRING_QUOTE);
-        for (const auto& val : node.cast<ASTJoinedStr>()->values())
-        {
-            switch (val.type())
-            {
+        fputs("f" F_STRING_QUOTE, pyc_output);
+        for (const auto& val : node.cast<ASTJoinedStr>()->values()) {
+            switch (val.type()) {
             case ASTNode::NODE_FORMATTEDVALUE:
                 print_formatted_value(val.cast<ASTFormattedValue>(), mod);
                 break;

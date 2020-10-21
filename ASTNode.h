@@ -614,21 +614,21 @@ private:
 
 class ASTFormattedValue : public ASTNode {
 public:
-    static const char* F_STRING_QUOTE;
     enum ConversionFlag {
-        NONE=0,
-        STR=1,
-        REPR=2,
-        ASCII=3,
-        FMTSPEC=4
+        NONE = 0,
+        STR = 1,
+        REPR = 2,
+        ASCII = 3,
+        FMTSPEC = 4
     };
 
-    ASTFormattedValue(PycRef<ASTNode> val, ConversionFlag conversion, PycRef<ASTNode> format_spec)
+    ASTFormattedValue(PycRef<ASTNode> val, ConversionFlag conversion,
+                      PycRef<ASTNode> format_spec)
         : ASTNode(NODE_FORMATTEDVALUE),
-        m_val(std::move(val)),
-        m_conversion(conversion),
-        m_format_spec(std::move(format_spec))
-    {}
+          m_val(std::move(val)),
+          m_conversion(conversion),
+          m_format_spec(std::move(format_spec))
+    { }
 
     PycRef<ASTNode> val() const { return m_val; }
     ConversionFlag conversion() const { return m_conversion; }
@@ -653,6 +653,5 @@ public:
 private:
     value_t m_values;
 };
-
 
 #endif

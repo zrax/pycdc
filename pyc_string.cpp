@@ -103,15 +103,13 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
         while (len--) {
             if (*ch == '\'') {
                 useQuotes = true;
-            }
-            else if (*ch == '"') {
+            } else if (*ch == '"') {
                 useQuotes = false;
                 break;
             }
             ch++;
         }
-    }
-    else {
+    } else {
         useQuotes = parent_f_string_quote[0] == '"';
     }
     ch = str->value();
