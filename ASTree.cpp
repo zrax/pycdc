@@ -732,14 +732,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     blocks.pop();
                     PycRef<ASTBlock> prev = curblock;
 
-                    bool isAsyncFor = false;
+                    bool isUninitAsyncFor = false;
                     if (blocks.top()->blktype() == ASTBlock::BLK_CONTAINER)
                     {
                         auto container = blocks.top();
                         blocks.pop();
                         auto asyncForBlock = blocks.top();
-                        isAsyncFor = asyncForBlock->blktype() == ASTBlock::BLK_ASYNCFOR;
-                        if (isAsyncFor)
+                        isUninitAsyncFor = asyncForBlock->blktype() == ASTBlock::BLK_ASYNCFOR && !asyncForBlock->inited();
+                        if (isUninitAsyncFor)
                         {
                             auto tryBlock = container->nodes().front().cast<ASTBlock>();
                             if (!tryBlock->nodes().empty() && tryBlock->blktype() == ASTBlock::BLK_TRY)
@@ -764,7 +764,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         }
                     }
 
-                    if (!isAsyncFor) {
+                    if (!isUninitAsyncFor) {
                         if (curblock->size() != 0) {
                             blocks.top()->append(curblock.cast<ASTNode>());
                         }

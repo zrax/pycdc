@@ -67,4 +67,57 @@ pass <EOL>
 <OUTDENT>
 print ( 'outside loop' ) <EOL>
 <OUTDENT>
+async def tryBlocks ( ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+stuff <EOL>
+await things ( x ) <EOL>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+<OUTDENT>
+BLOCK_AFTER <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+stuff <EOL>
+await things ( x ) <EOL>
+async for b2 in c2 : <EOL>
+<INDENT>
+stuff2 <EOL>
+await things2 ( x ) <EOL>
+try : <EOL>
+<INDENT>
+STUFF2 <EOL>
+<OUTDENT>
+except MyException2 : <EOL>
+<INDENT>
+running2 = False <EOL>
+<OUTDENT>
+AFTER <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+continue <EOL>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+continue <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+except MyException2 : <EOL>
+<INDENT>
+OUTEREXCEPT <EOL>
+<OUTDENT>
+<OUTDENT>
 print ( 'outside function' ) <EOL>

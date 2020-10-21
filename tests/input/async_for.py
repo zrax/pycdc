@@ -37,6 +37,35 @@ async def time_for_some_fun():
         
     print('outside loop')
 
+async def tryBlocks():
+    async for b in c:
+        stuff
+        await things(x)
+        try:
+            STUFF
+        except MyException:
+            running = False
+        BLOCK_AFTER
+
+    try:
+        async for b in c:
+            stuff
+            await things(x)
+            async for b2 in c2:
+                stuff2
+                await things2(x)
+                try:
+                    STUFF2
+                except MyException2:
+                    running2 = False
+                AFTER
+            try:
+                STUFF
+            except MyException:
+                running = False
+    except MyException2:
+        OUTEREXCEPT
+
 print ('outside function')
 
 # The following will LOAD_METHOD, not GET_AITER or GET_ANEXT.
