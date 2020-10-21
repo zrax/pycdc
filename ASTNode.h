@@ -514,17 +514,9 @@ private:
     bool m_negative;
 };
 
-namespace Pyc { enum Opcode : int; }
 
 class ASTIterBlock : public ASTBlock {
 public:
-    static const std::vector<Pyc::Opcode> ASYNCFOR_BOILERPLATE;
-    static const int ASYNCFOR_BOILER_READLOOPINDEX;
-    static const int ASYNCFOR_BOILER_READLOOPCONTENTS;
-    static const int ASYNCFOR_BOILER_OFFSETFROMEND;
-    static const int ASYNCFOR_BOILER_FIRSTJUMP;
-    static const Pyc::Opcode ASYNCFOR_BOILER_ALTJUMPOP;
-
     ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
         : ASTBlock(blktype, end), m_iter(std::move(iter)), m_idx(), m_comp() { }
 

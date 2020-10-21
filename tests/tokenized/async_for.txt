@@ -21,7 +21,7 @@ break <EOL>
 <OUTDENT>
 async def time_for_some_fun ( ) : <EOL>
 <INDENT>
-async for x , y in myfunc ( c ) : <EOL>
+async for ( x , y ) in myfunc ( c ) : <EOL>
 <INDENT>
 print ( 123 ) <EOL>
 if x == 3 : <EOL>
@@ -54,7 +54,7 @@ print ( 'ridiculous nesting' ) <EOL>
 <OUTDENT>
 <OUTDENT>
 <OUTDENT>
-async for q , w , e , r in qwer : <EOL>
+async for ( q , w , e , r ) in qwer : <EOL>
 <INDENT>
 u = 6 <EOL>
 <OUTDENT>

@@ -4,7 +4,7 @@
 
 namespace Pyc {
 
-enum Opcode : int {
+enum Opcode {
     #define OPCODE(x) x,
     #define OPCODE_A_FIRST(x) PYC_HAVE_ARG, x##_A = PYC_HAVE_ARG,
     #define OPCODE_A(x) x##_A,
