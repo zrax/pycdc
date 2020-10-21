@@ -15,7 +15,7 @@ public:
         NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
-        NODE_FORMATTEDVALUE, NODE_JOINEDSTR,
+        NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
 
         // Empty node types
         NODE_LOCALS,
@@ -357,6 +357,21 @@ public:
 
 private:
     map_t m_values;
+};
+
+class ASTConstMap : public ASTNode {
+public:
+    typedef std::vector<PycRef<ASTNode>> values_t;
+
+    ASTConstMap(PycRef<ASTNode> keys, const values_t& values)
+        : ASTNode(NODE_CONST_MAP), m_keys(std::move(keys)), m_values(std::move(values)) { }
+
+    const PycRef<ASTNode>& keys() const { return m_keys; }
+    const values_t& values() const { return m_values; }
+
+private:
+    PycRef<ASTNode> m_keys;
+    values_t m_values;
 };
 
 
