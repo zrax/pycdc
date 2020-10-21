@@ -145,6 +145,7 @@ def string_token(line, n_line, pysrc):
     while True:
         end = line.find(quotes, start)
         if end > 0 and line[end - 1] == '\\':
+            content += line[start:end + 1]
             start = end + 1
             continue
         elif end >= 0:
