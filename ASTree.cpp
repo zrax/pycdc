@@ -727,39 +727,30 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(final.cast<ASTNode>());
                     isFinally = true;
-                }
-                else if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                } else if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
                     blocks.pop();
                     PycRef<ASTBlock> prev = curblock;
 
                     bool isUninitAsyncFor = false;
-                    if (blocks.top()->blktype() == ASTBlock::BLK_CONTAINER)
-                    {
+                    if (blocks.top()->blktype() == ASTBlock::BLK_CONTAINER) {
                         auto container = blocks.top();
                         blocks.pop();
                         auto asyncForBlock = blocks.top();
                         isUninitAsyncFor = asyncForBlock->blktype() == ASTBlock::BLK_ASYNCFOR && !asyncForBlock->inited();
-                        if (isUninitAsyncFor)
-                        {
+                        if (isUninitAsyncFor) {
                             auto tryBlock = container->nodes().front().cast<ASTBlock>();
-                            if (!tryBlock->nodes().empty() && tryBlock->blktype() == ASTBlock::BLK_TRY)
-                            {
+                            if (!tryBlock->nodes().empty() && tryBlock->blktype() == ASTBlock::BLK_TRY) {
                                 auto store = tryBlock->nodes().front().cast<ASTStore>();
-                                if (store) 
-                                {
+                                if (store) {
                                     asyncForBlock.cast<ASTIterBlock>()->setIndex(store->dest());
                                 }
                             }
-                        
                             curblock = blocks.top();
                             stack = stack_hist.top();
                             stack_hist.pop();
-
                             if (!curblock->inited())
                                 fprintf(stderr, "Error when decompiling 'async for'.\n");
-                        }
-                        else
-                        {
+                        } else {
                             blocks.push(container);
                         }
                     }
@@ -859,22 +850,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::GET_AITER:
             {
-                // Logic very similar to FOR_ITER_A
+                // Logic similar to FOR_ITER_A
                 PycRef<ASTNode> iter = stack.top(); // Iterable
                 stack.pop();
 
                 PycRef<ASTBlock> top = blocks.top();
                 if (top->blktype() == ASTBlock::BLK_WHILE) {
                     blocks.pop();
-                }
-                else {
+                    PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_ASYNCFOR, top->end(), iter);
+                    blocks.push(forblk.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    stack.push(nullptr);
+                } else {
                      fprintf(stderr, "Unsupported use of GET_AITER outside of SETUP_LOOP\n");
                 }
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_ASYNCFOR, top->end(), iter);
-                blocks.push(forblk.cast<ASTBlock>());
-                curblock = blocks.top();
-
-                stack.push(NULL);
             }
             break;
         case Pyc::GET_ANEXT:
@@ -1545,9 +1534,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 if (curblock->blktype() == ASTBlock::BLK_TRY
-                    && tmp->blktype() != ASTBlock::BLK_FOR
-                    && tmp->blktype() != ASTBlock::BLK_ASYNCFOR
-                    && tmp->blktype() != ASTBlock::BLK_WHILE) {
+                        && tmp->blktype() != ASTBlock::BLK_FOR
+                        && tmp->blktype() != ASTBlock::BLK_ASYNCFOR
+                        && tmp->blktype() != ASTBlock::BLK_WHILE) {
                     stack = stack_hist.top();
                     stack_hist.pop();
 
