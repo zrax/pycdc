@@ -1,0 +1,36 @@
+async def myFunc ( ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+for b in c : <EOL>
+<INDENT>
+stuff <EOL>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+<OUTDENT>
+<OUTDENT>
+while a : <EOL>
+<INDENT>
+stuff <EOL>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>

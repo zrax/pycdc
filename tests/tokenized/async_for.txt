@@ -1,0 +1,122 @@
+async def a ( b , c ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+async def a ( b , c ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+<OUTDENT>
+async def a ( b , c ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+break <EOL>
+<OUTDENT>
+<OUTDENT>
+async def time_for_some_fun ( ) : <EOL>
+<INDENT>
+async for ( x , y ) in myfunc ( c ) : <EOL>
+<INDENT>
+print ( 123 ) <EOL>
+if x == 3 : <EOL>
+<INDENT>
+print ( 'something' ) <EOL>
+break <EOL>
+<OUTDENT>
+for i in regular_for : <EOL>
+<INDENT>
+var1 = var2 + var3 <EOL>
+async for x1 in print : <EOL>
+<INDENT>
+print ( 'test LOAD_GLOBAL' ) <EOL>
+async for x2 in inner : <EOL>
+<INDENT>
+for x3 in regular : <EOL>
+<INDENT>
+async for x4 in inner2 : <EOL>
+<INDENT>
+async for x5 in inner3 : <EOL>
+<INDENT>
+async for x6 in inner4 : <EOL>
+<INDENT>
+print ( 'ridiculous nesting' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+async for ( q , w , e , r ) in qwer : <EOL>
+<INDENT>
+u = 6 <EOL>
+<OUTDENT>
+async for x4 in inner2 : <EOL>
+<INDENT>
+async for x5 in inner3 : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+print ( 'outside loop' ) <EOL>
+<OUTDENT>
+async def tryBlocks ( ) : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+stuff <EOL>
+await things ( x ) <EOL>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+<OUTDENT>
+BLOCK_AFTER <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+async for b in c : <EOL>
+<INDENT>
+stuff <EOL>
+await things ( x ) <EOL>
+async for b2 in c2 : <EOL>
+<INDENT>
+stuff2 <EOL>
+await things2 ( x ) <EOL>
+try : <EOL>
+<INDENT>
+STUFF2 <EOL>
+<OUTDENT>
+except MyException2 : <EOL>
+<INDENT>
+running2 = False <EOL>
+<OUTDENT>
+AFTER <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+STUFF <EOL>
+<OUTDENT>
+except MyException : <EOL>
+<INDENT>
+running = False <EOL>
+<OUTDENT>
+BLOCK_AFTER <EOL>
+<OUTDENT>
+<OUTDENT>
+except MyException2 : <EOL>
+<INDENT>
+OUTEREXCEPT <EOL>
+<OUTDENT>
+<OUTDENT>
+print ( 'outside function' ) <EOL>
