@@ -63,6 +63,8 @@ async def tryBlocks():
                 STUFF
             except MyException:
                 running = False
+            BLOCK_AFTER
+            
     except MyException2:
         OUTEREXCEPT
 

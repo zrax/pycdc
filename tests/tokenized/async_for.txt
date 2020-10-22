@@ -107,12 +107,11 @@ try : <EOL>
 <INDENT>
 STUFF <EOL>
 <OUTDENT>
-continue <EOL>
 except MyException : <EOL>
 <INDENT>
 running = False <EOL>
-continue <EOL>
 <OUTDENT>
+BLOCK_AFTER <EOL>
 <OUTDENT>
 <OUTDENT>
 except MyException2 : <EOL>
