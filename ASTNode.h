@@ -16,6 +16,7 @@ public:
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
+        NODE_ANNOTATED_VAR,
 
         // Empty node types
         NODE_LOCALS,
@@ -667,6 +668,19 @@ public:
 
 private:
     value_t m_values;
+};
+
+class ASTAnnotatedVar : public ASTNode {
+public:
+    ASTAnnotatedVar(PycRef<ASTNode> name, PycRef<ASTNode> type)
+        : ASTNode(NODE_ANNOTATED_VAR), m_name(std::move(name)), m_type(std::move(type)) { }
+
+    const PycRef<ASTNode> name() const { return m_name; }
+    const PycRef<ASTNode> type() const { return m_type; }
+
+private:
+    PycRef<ASTNode> m_name;
+    PycRef<ASTNode> m_type;
 };
 
 #endif

@@ -1,0 +1,8 @@
+a : int <EOL>
+b <EOL>
+c = 'no annotation' <EOL>
+x : int = 10 <EOL>
+y : str = 'annotation' <EOL>
+z : tuple = ( 1 , 2 , 3 ) <EOL>
+confirm_subscr = { } <EOL>
+confirm_subscr [ 'test' ] = 'works' <EOL>
