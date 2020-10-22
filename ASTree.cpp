@@ -2121,19 +2121,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     // If variable annotations are enabled, we'll need to check for them here.
                     // Python handles a varaible annotation by setting:
                     // __annotations__['var-name'] = type
-                    bool found_annotated_var = false;
-                    if (variable_annotations) {
-                        if (dest->type() == ASTNode::Type::NODE_NAME) {
-                            if (dest.cast<ASTName>()->name()->isEqual("__annotations__")) {
-                                found_annotated_var = true;
-                            }
-                        }
-                    }
+                    const bool found_annotated_var = (variable_annotations && dest->type() == ASTNode::Type::NODE_NAME
+                                                      && dest.cast<ASTName>()->name()->isEqual("__annotations__"));
 
                     if (found_annotated_var) {
                         // Annotations can be done alone or as part of an assignment.
                         // In the case of an assignment, we'll see a NODE_STORE on the stack.
-                        if (curblock->nodes().back()->type() == ASTNode::Type::NODE_STORE) {
+                        if (!curblock->nodes().empty() && curblock->nodes().back()->type() == ASTNode::Type::NODE_STORE) {
                             // Replace the existing NODE_STORE with a new one that includes the annotation.
                             PycRef<ASTStore> store = curblock->nodes().back().cast<ASTStore>();
                             curblock->removeLast();
