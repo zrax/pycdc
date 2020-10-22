@@ -1,0 +1,45 @@
+'\ntest_class.py -- source test pattern for class definitions\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+class A : <EOL>
+<INDENT>
+class A1 : <EOL>
+<INDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+print ( 'A1.__init__' ) <EOL>
+<OUTDENT>
+def foo ( self ) : <EOL>
+<INDENT>
+print ( 'A1.foo' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+print ( 'A.__init__' ) <EOL>
+<OUTDENT>
+def foo ( self ) : <EOL>
+<INDENT>
+print ( 'A.foo' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+class B : <EOL>
+<INDENT>
+def __init__ ( self ) : <EOL>
+<INDENT>
+print ( 'B.__init__' ) <EOL>
+<OUTDENT>
+def bar ( self ) : <EOL>
+<INDENT>
+print ( 'B.bar' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+class C ( A , B ) : <EOL>
+<INDENT>
+def foobar ( self ) : <EOL>
+<INDENT>
+print ( 'C.foobar' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+c = C ( ) <EOL>
+c . foo ( ) <EOL>
+c . bar ( ) <EOL>
+c . foobar ( ) <EOL>

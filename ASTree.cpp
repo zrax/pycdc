@@ -1451,6 +1451,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_LOCALS:
             stack.push(new ASTNode(ASTNode::NODE_LOCALS));
             break;
+        case Pyc::STORE_LOCALS:
+            stack.pop();
+            break;
         case Pyc::LOAD_NAME_A:
             stack.push(new ASTName(code->getName(operand)));
             break;

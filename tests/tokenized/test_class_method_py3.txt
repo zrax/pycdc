@@ -1,0 +1,15 @@
+class MyClass : <EOL>
+<INDENT>
+def method ( self , i ) : <EOL>
+<INDENT>
+if i is 5 : <EOL>
+<INDENT>
+print ( 'five' ) <EOL>
+<OUTDENT>
+elif i is not 2 : <EOL>
+<INDENT>
+print ( 'not two' ) <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print ( '2' ) <EOL>
