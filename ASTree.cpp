@@ -45,6 +45,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int unpack = 0;
     bool else_pop = false;
     bool need_try = false;
+    bool variable_annotations = false;
 
     while (!source.atEof()) {
 #if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
@@ -2117,10 +2118,30 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> src = stack.top();
                     stack.pop();
 
-                    if (dest.type() == ASTNode::NODE_MAP) {
-                        dest.cast<ASTMap>()->add(subscr, src);
+                    // If variable annotations are enabled, we'll need to check for them here.
+                    // Python handles a varaible annotation by setting:
+                    // __annotations__['var-name'] = type
+                    const bool found_annotated_var = (variable_annotations && dest->type() == ASTNode::Type::NODE_NAME
+                                                      && dest.cast<ASTName>()->name()->isEqual("__annotations__"));
+
+                    if (found_annotated_var) {
+                        // Annotations can be done alone or as part of an assignment.
+                        // In the case of an assignment, we'll see a NODE_STORE on the stack.
+                        if (!curblock->nodes().empty() && curblock->nodes().back()->type() == ASTNode::Type::NODE_STORE) {
+                            // Replace the existing NODE_STORE with a new one that includes the annotation.
+                            PycRef<ASTStore> store = curblock->nodes().back().cast<ASTStore>();
+                            curblock->removeLast();
+                            curblock->append(new ASTStore(store->src(),
+                                                          new ASTAnnotatedVar(subscr, src)));
+                        } else {
+                            curblock->append(new ASTAnnotatedVar(subscr, src));
+                        }
                     } else {
-                        curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
+                        if (dest.type() == ASTNode::NODE_MAP) {
+                            dest.cast<ASTMap>()->add(subscr, src);
+                        } else {
+                            curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
+                        }
                     }
                 }
             }
@@ -2194,6 +2215,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 curblock->append(new ASTReturn(value, ASTReturn::YIELD));
             }
+            break;
+        case Pyc::SETUP_ANNOTATIONS:
+            variable_annotations = true;
             break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
@@ -2971,6 +2995,17 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 fputc(',', pyc_output);
             if (tuple->requireParens())
                 fputc(')', pyc_output);
+        }
+        break;
+    case ASTNode::NODE_ANNOTATED_VAR:
+        {
+            PycRef<ASTAnnotatedVar> annotated_var = node.cast<ASTAnnotatedVar>();
+            PycRef<ASTObject> name = annotated_var->name().cast<ASTObject>();
+            PycRef<ASTNode> type = annotated_var->type();
+
+            fputs(name->object().cast<PycString>()->value(), pyc_output);
+            fputs(": ", pyc_output);
+            print_src(type, mod);
         }
         break;
     default:
