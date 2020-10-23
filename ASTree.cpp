@@ -2243,10 +2243,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::UNPACK_SEQUENCE_A:
             {
                 unpack = operand;
-
-                ASTTuple::value_t vals;
-
-                stack.push(new ASTTuple(vals));
+                if (unpack > 0) {
+                    ASTTuple::value_t vals;
+                    stack.push(new ASTTuple(vals));
+                } else {
+                    // Unpack zero values and assign it to top of stack or for loop variable.
+                    // E.g. [] = TOS / for [] in X
+                    ASTTuple::value_t vals;
+                    auto tup = new ASTTuple(vals);
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && !curblock->inited()) {
+                        tup->setRequireParens(true);
+                        curblock.cast<ASTIterBlock>()->setIndex(tup);
+                    } else {
+                        curblock->append(new ASTStore(stack.top(), tup));
+                        stack.pop();
+                    }
+                }
             }
             break;
         case Pyc::YIELD_FROM:
