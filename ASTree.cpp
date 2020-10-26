@@ -685,19 +685,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::DUP_TOP:
             {
-                if (stack.top().type() != PycObject::TYPE_NULL) {
-                    if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
-                        auto chainstore = stack.top();
-                        stack.pop();
-                        stack.push(stack.top());
-                        stack.push(chainstore);
-                    } else {
-                        stack.push(stack.top());
-                        ASTNodeList::list_t targets;
-                        stack.push(new ASTChainStore(targets, stack.top()));
-                    }
+                if (stack.top().type() == PycObject::TYPE_NULL) {
+                    stack.push(stack.top());
+                } else if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    auto chainstore = stack.top();
+                    stack.pop();
+                    stack.push(stack.top());
+                    stack.push(chainstore);
                 } else {
                     stack.push(stack.top());
+                    ASTNodeList::list_t targets;
+                    stack.push(new ASTChainStore(targets, stack.top()));
                 }
             }
             break;
@@ -2389,7 +2387,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     return new ASTNodeList(defblock->nodes());
 }
 
-static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item, FastStack& stack, PycRef<ASTBlock> curblock)
+static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item,
+        FastStack& stack, PycRef<ASTBlock> curblock)
 {
     stack.pop();    // ignore identical source object.
     chainStore.cast<ASTChainStore>()->append(item);
