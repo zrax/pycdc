@@ -16,7 +16,7 @@ public:
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
-        NODE_ANNOTATED_VAR,
+        NODE_ANNOTATED_VAR, NODE_CHAINSTORE,
 
         // Empty node types
         NODE_LOCALS,
@@ -71,8 +71,24 @@ public:
     void removeLast();
     void append(PycRef<ASTNode> node) { m_nodes.emplace_back(std::move(node)); }
 
+protected:
+    ASTNodeList(list_t nodes, ASTNode::Type type)
+        : ASTNode(type), m_nodes(std::move(nodes)) { }
+
 private:
     list_t m_nodes;
+};
+
+
+class ASTChainStore : public ASTNodeList {
+public:
+    ASTChainStore(list_t nodes, PycRef<ASTNode> src)
+        : ASTNodeList(nodes, NODE_CHAINSTORE), m_src(std::move(src)) { }
+    
+    PycRef<ASTNode> src() const { return m_src; }
+
+private:
+    PycRef<ASTNode> m_src;
 };
 
 

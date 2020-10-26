@@ -1,8 +1,6 @@
 var1 = 'x' <EOL>
 var2 = 'y' <EOL>
-x = 1.23456 <EOL>
-s1 = 1.23456 <EOL>
-var3 = 1.23456 <EOL>
+x = s1 = var3 = 1.23456 <EOL>
 a = 15 <EOL>
 some_dict = { } <EOL>
 some_dict [ 2 ] = 3 <EOL>

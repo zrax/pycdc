@@ -12,6 +12,9 @@
 // NOTE: Nested f-strings not supported.
 #define F_STRING_QUOTE "'''"
 
+static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item,
+        FastStack& stack, PycRef<ASTBlock> curblock);
+
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
 static bool cleanBuild;
@@ -288,6 +291,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 stack.push(map);
             } else {
+                if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    stack.pop();
+                }
                 stack.push(new ASTMap());
             }
             break;
@@ -679,7 +685,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::DUP_TOP:
-            stack.push(stack.top());
+            {
+                if (stack.top().type() == PycObject::TYPE_NULL) {
+                    stack.push(stack.top());
+                } else if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    auto chainstore = stack.top();
+                    stack.pop();
+                    stack.push(stack.top());
+                    stack.push(chainstore);
+                } else {
+                    stack.push(stack.top());
+                    ASTNodeList::list_t targets;
+                    stack.push(new ASTChainStore(targets, stack.top()));
+                }
+            }
             break;
         case Pyc::DUP_TOP_TWO:
             {
@@ -791,6 +810,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::EXEC_STMT:
             {
+                if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    stack.pop();
+                }
                 PycRef<ASTNode> loc = stack.top();
                 stack.pop();
                 PycRef<ASTNode> glob = stack.top();
@@ -1725,6 +1747,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> one = stack.top();
                 stack.pop();
+                if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    stack.pop();
+                }
                 PycRef<ASTNode> two = stack.top();
                 stack.pop();
 
@@ -1738,6 +1763,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> two = stack.top();
                 stack.pop();
+                if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    stack.pop();
+                }
                 PycRef<ASTNode> three = stack.top();
                 stack.pop();
                 stack.push(one);
@@ -1753,6 +1781,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> three = stack.top();
                 stack.pop();
+                if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                    stack.pop();
+                }
                 PycRef<ASTNode> four = stack.top();
                 stack.pop();
                 stack.push(one);
@@ -1889,8 +1920,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
-
-                        curblock->append(new ASTStore(seq, tup));
+                        if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
                     }
                 } else {
                     PycRef<ASTNode> name = stack.top();
@@ -1898,8 +1932,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
                     PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
-
-                    curblock->append(new ASTStore(value, attr));
+                    if (value.type() == ASTNode::NODE_CHAINSTORE) {
+                        append_to_chain_store(value, attr, stack, curblock);
+                    } else {
+                        curblock->append(new ASTStore(value, attr));
+                    }
                 }
             }
             break;
@@ -1919,13 +1956,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
 
-                        curblock->append(new ASTStore(seq, tup));
+                        if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
                     }
                 } else {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
                     PycRef<ASTNode> name = new ASTName(code->getCellVar(operand));
-                    curblock->append(new ASTStore(value, name));
+
+                    if (value.type() == ASTNode::NODE_CHAINSTORE) {
+                        append_to_chain_store(value, name, stack, curblock);
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+                    }
                 }
             }
             break;
@@ -1956,6 +2002,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             if (tuple != NULL)
                                 tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
                         }
@@ -1983,6 +2031,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                    && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
+                    } else if (value.type() == ASTNode::NODE_CHAINSTORE) {
+                        append_to_chain_store(value, name, stack, curblock);
                     } else {
                         curblock->append(new ASTStore(value, name));
                     }
@@ -2011,6 +2061,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             if (tuple != NULL)
                                 tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
                         }
@@ -2018,7 +2070,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
-                    curblock->append(new ASTStore(value, name));
+                    if (value.type() == ASTNode::NODE_CHAINSTORE) {
+                        append_to_chain_store(value, name, stack, curblock);
+                    } else {
+                        curblock->append(new ASTStore(value, name));
+                    }
                 }
 
                 /* Mark the global as used */
@@ -2047,6 +2103,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             if (tuple != NULL)
                                 tuple->setRequireParens(false);
                             curblock.cast<ASTIterBlock>()->setIndex(tup);
+                        } else if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
                         } else {
                             curblock->append(new ASTStore(seq, tup));
                         }
@@ -2080,6 +2138,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
+                    } else if (value.type() == ASTNode::NODE_CHAINSTORE) {
+                        append_to_chain_store(value, name, stack, curblock);
                     } else {
                         curblock->append(new ASTStore(value, name));
 
@@ -2157,8 +2217,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.pop();
                         PycRef<ASTNode> seq = stack.top();
                         stack.pop();
-
-                        curblock->append(new ASTStore(seq, tup));
+                        if (seq.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(seq, tup, stack, curblock);
+                        } else {
+                            curblock->append(new ASTStore(seq, tup));
+                        }
                     }
                 } else {
                     PycRef<ASTNode> subscr = stack.top();
@@ -2189,6 +2252,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     } else {
                         if (dest.type() == ASTNode::NODE_MAP) {
                             dest.cast<ASTMap>()->add(subscr, src);
+                        } else if (src.type() == ASTNode::NODE_CHAINSTORE) {
+                            append_to_chain_store(src, new ASTSubscr(dest, subscr), stack, curblock);
                         } else {
                             curblock->append(new ASTStore(src, new ASTSubscr(dest, subscr)));
                         }
@@ -2255,6 +2320,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         && !curblock->inited()) {
                         tup->setRequireParens(true);
                         curblock.cast<ASTIterBlock>()->setIndex(tup);
+                    } else if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
+                        auto chainStore = stack.top();
+                        stack.pop();
+                        append_to_chain_store(chainStore, tup, stack, curblock);
                     } else {
                         curblock->append(new ASTStore(stack.top(), tup));
                         stack.pop();
@@ -2317,6 +2386,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
     cleanBuild = true;
     return new ASTNodeList(defblock->nodes());
+}
+
+static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item,
+        FastStack& stack, PycRef<ASTBlock> curblock)
+{
+    stack.pop();    // ignore identical source object.
+    chainStore.cast<ASTChainStore>()->append(item);
+    if (stack.top().type() == PycObject::TYPE_NULL) {
+        curblock->append(chainStore);
+    } else {
+        stack.push(chainStore);
+    }
 }
 
 static int cmp_prec(PycRef<ASTNode> parent, PycRef<ASTNode> child)
@@ -3026,6 +3107,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 fputs(" = ", pyc_output);
                 print_src(src, mod);
             }
+        }
+        break;
+    case ASTNode::NODE_CHAINSTORE:
+        {
+            for (auto& dest : node.cast<ASTChainStore>()->nodes()) {
+                print_src(dest, mod);
+                fputs(" = ", pyc_output);
+            }
+            print_src(node.cast<ASTChainStore>()->src(), mod);
         }
         break;
     case ASTNode::NODE_SUBSCR:

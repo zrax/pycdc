@@ -1,0 +1,43 @@
+a = ( y , z ) = x = ( k1 , k2 , k3 ) = ( ) = c = myfunc ( x ) + 3 <EOL>
+x = y = g = { keyA : X } <EOL>
+Gx = Gy = Gz = Gq1 <EOL>
+Gx = ( Gy , Gz ) = Gq2 <EOL>
+a = b = store_global = c <EOL>
+def func_with_global ( ) : <EOL>
+<INDENT>
+global Gx , Gy , Gz <EOL>
+Gx = Gy = Gz = Gq <EOL>
+<OUTDENT>
+y = store_subscr [ 0 ] = x <EOL>
+a [ 0 ] = b [ x ] = c [ 3 ] = D [ 4 ] <EOL>
+a [ 0 ] = ( b [ x ] , c [ 3 ] ) = D [ 4 ] <EOL>
+a [ 0 ] = Q = ( b [ x ] , c [ 3 ] ) = F = D [ 4 ] <EOL>
+q = v = arr [ a : b : c ] = x <EOL>
+class store_attr1 : <EOL>
+<INDENT>
+def __init__ ( self , a , b , c ) : <EOL>
+<INDENT>
+self . a = self . b = self . c = x <EOL>
+self . d = y <EOL>
+<OUTDENT>
+<OUTDENT>
+class store_attr2 : <EOL>
+<INDENT>
+def __init__ ( self , a , b , c ) : <EOL>
+<INDENT>
+self . a = ( self . b , self . c ) = x <EOL>
+<OUTDENT>
+<OUTDENT>
+a . b = c . d = e . f + g . h <EOL>
+def store_deref ( ) : <EOL>
+<INDENT>
+a = I <EOL>
+a = b = c = R1 <EOL>
+a = ( b , c ) = R2 <EOL>
+def store_fast ( ) : <EOL>
+<INDENT>
+x = a <EOL>
+y = b <EOL>
+z = c <EOL>
+p = q = r = s <EOL>
+p = ( q , r ) = s <EOL>
