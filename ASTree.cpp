@@ -12,7 +12,8 @@
 // NOTE: Nested f-strings not supported.
 #define F_STRING_QUOTE "'''"
 
-static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item, FastStack& stack, PycRef<ASTBlock> curblock);
+static void append_to_chain_store(PycRef<ASTNode> chainStore, PycRef<ASTNode> item,
+        FastStack& stack, PycRef<ASTBlock> curblock);
 
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
