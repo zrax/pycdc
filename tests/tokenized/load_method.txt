@@ -1,0 +1,19 @@
+class C : <EOL>
+<INDENT>
+def test1 ( self ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+def test2 ( self , x , y , z ) : <EOL>
+<INDENT>
+a = x * y + z <EOL>
+<OUTDENT>
+def testS ( ) : <EOL>
+<INDENT>
+a = 3 <EOL>
+<OUTDENT>
+<OUTDENT>
+c = C ( ) <EOL>
+c . test1 ( ) <EOL>
+c . test2 ( 42 , 5 , - 1 ) <EOL>
+C . testS ( ) <EOL>

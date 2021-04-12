@@ -580,6 +580,34 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(call);
             }
             break;
+        case Pyc::CALL_METHOD_A:
+            {
+                ASTCall::pparam_t pparamList;
+                for (int i = 0; i < operand; i++) {
+                    PycRef<ASTNode> param = stack.top();
+                    stack.pop();
+                    if (param.type() == ASTNode::NODE_FUNCTION) {
+                        PycRef<ASTNode> fun_code = param.cast<ASTFunction>()->code();
+                        PycRef<PycCode> code_src = fun_code.cast<ASTObject>()->object().cast<PycCode>();
+                        PycRef<PycString> function_name = code_src->name();
+                        if (function_name->isEqual("<lambda>")) {
+                            pparamList.push_front(param);
+                        } else {
+                            // Decorator used
+                            PycRef<ASTNode> decor_name = new ASTName(function_name);
+                            curblock->append(new ASTStore(param, decor_name));
+
+                            pparamList.push_front(decor_name);
+                        }
+                    } else {
+                        pparamList.push_front(param);
+                    }
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                stack.push(new ASTCall(func, pparamList, ASTCall::kwparam_t()));
+            }
+            break;
         case Pyc::CONTINUE_LOOP_A:
             curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
             break;
@@ -1475,6 +1503,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_LOCALS:
             stack.pop();
+            break;
+        case Pyc::LOAD_METHOD_A:
+            {
+                // Behave like LOAD_ATTR
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+            }
             break;
         case Pyc::LOAD_NAME_A:
             stack.push(new ASTName(code->getName(operand)));
