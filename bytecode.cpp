@@ -58,8 +58,8 @@ const char* Pyc::OpcodeName(int opcode)
     if (opcode < PYC_LAST_OPCODE)
         return opcode_names[opcode];
 
-    static char badcode[10];
-    snprintf(badcode, 10, "<%d>", opcode);
+    static char badcode[16];
+    snprintf(badcode, sizeof(badcode), "<%d>", opcode);
     return badcode;
 };
 
