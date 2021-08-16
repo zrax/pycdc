@@ -1,5 +1,6 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
+#include <stdexcept>
 #include <cmath>
 
 #ifdef _MSC_VER
@@ -356,14 +357,31 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {
-                fprintf(pyc_output, "%d: ", operand);
-                print_const(code->getConst(operand), mod);
+                try {
+                    auto constParam = code->getConst(operand);
+                    fprintf(pyc_output, "%d: ", operand);
+                    print_const(constParam, mod);
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
             } else if (Pyc::IsNameArg(opcode)) {
-                fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+                try {
+                    fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
             } else if (Pyc::IsVarNameArg(opcode)) {
-                fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
+                try {
+                    fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
             } else if (Pyc::IsCellArg(opcode)) {
-                fprintf(pyc_output, "%d: %s", operand, code->getCellVar(operand)->value());
+                try {
+                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(operand)->value());
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
                 fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
             } else if (Pyc::IsCompareArg(opcode)) {
