@@ -5,4 +5,5 @@ d = [ None ] <EOL>
 e = [ ( 'a' , 'b' , 'c' ) ] <EOL>
 f = [ a , b ] <EOL>
 g = [ ] <EOL>
+h = [ 1 , 2 , [ 3 , 4 ] ] <EOL>
 a = [ None , None , None ] <EOL>
