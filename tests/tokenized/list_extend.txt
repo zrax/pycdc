@@ -1,0 +1,9 @@
+a = [ 1 , 2 , 3 ] <EOL>
+b = [ '4' , 5 , 6 ] <EOL>
+c = [ 7 , ( 8 , 9 , 10 ) ] <EOL>
+d = [ None ] <EOL>
+e = [ ( 'a' , 'b' , 'c' ) ] <EOL>
+f = [ a , b ] <EOL>
+g = [ ] <EOL>
+h = [ 1 , 2 , [ 3 , 4 ] ] <EOL>
+a = [ None , None , None ] <EOL>

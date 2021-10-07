@@ -1455,6 +1455,33 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::LIST_EXTEND_A:
+            {
+                PycRef<ASTNode> rhs = stack.top();
+                stack.pop();
+                PycRef<ASTList> lhs = stack.top().cast<ASTList>();
+                stack.pop();
+
+                if (rhs.type() != ASTNode::NODE_OBJECT) {
+                    fprintf(stderr, "Unsupported argument found for LIST_EXTEND\n");
+                    break;
+                }
+
+                // I've only ever seen this be a SMALL_TUPLE, but let's be careful...
+                PycRef<PycObject> obj = rhs.cast<ASTObject>()->object();
+                if (obj->type() != PycObject::TYPE_TUPLE && obj->type() != PycObject::TYPE_SMALL_TUPLE) {
+                    fprintf(stderr, "Unsupported argument type found for LIST_EXTEND\n");
+                    break;
+                }
+
+                ASTList::value_t result = lhs->values();
+                for (const auto& it : obj.cast<PycTuple>()->values()) {
+                    result.push_back(new ASTObject(it));
+                }
+
+                stack.push(new ASTList(result));
+            }
+            break;
         case Pyc::LOAD_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
