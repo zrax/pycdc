@@ -1104,6 +1104,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTBinary(left, right, ASTBinary::BIN_IP_MAT_MULTIPLY));
             }
             break;
+        case Pyc::IS_OP_A:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                // The operand will be 0 for 'is' and 1 for 'is not'.
+                // Map those back to the appropriate values in ASTCompare::op_str()
+                stack.push(new ASTCompare(left, right, operand ? 9 : 8));
+            }
+            break;
         case Pyc::JUMP_IF_FALSE_A:
         case Pyc::JUMP_IF_TRUE_A:
         case Pyc::JUMP_IF_FALSE_OR_POP_A:
