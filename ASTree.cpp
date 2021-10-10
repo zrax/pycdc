@@ -1111,8 +1111,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> left = stack.top();
                 stack.pop();
                 // The operand will be 0 for 'is' and 1 for 'is not'.
-                // Map those back to the appropriate values in ASTCompare::op_str()
-                stack.push(new ASTCompare(left, right, operand ? 9 : 8));
+                stack.push(new ASTCompare(left, right, operand ? ASTCompare::CMP_IS_NOT : ASTCompare::CMP_IS));
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
