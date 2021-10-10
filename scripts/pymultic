@@ -40,9 +40,21 @@ OLD_PYTHONS = ('1.0', '1.1', '1.2', '1.3', '1.4', '1.5')
 OLD_PYURL = 'https://legacy.python.org/download/releases/src'
 PYURL = 'https://www.python.org/ftp/python'
 
-# Minimum version of Python with a pre-built container.
-PYVER_CONTAINER_MIN = '2.7'
+# Not all versions of Python have an official container.
+PYVER_CONTAINERS = {
+    '2.7',
+    '3.2',
+    '3.3',
+    '3.4',
+    '3.5',
+    '3.6',
+    '3.7',
+    '3.8',
+    '3.9',
+    '3.10',
+}
 USE_CONTAINERS = False
+CONTAINER_EXES = ['docker', 'podman']
 
 
 def fetch_python(snekdir, version):
@@ -180,12 +192,18 @@ def local_compile(snekdir, ver, infile):
 
 
 def container_compile(snekdir, ver, infile):
-    if ver < PYVER_CONTAINER_MIN:
-        print('Container compilation requires a Python version >= {}'.format(PYVER_CONTAINER_MIN))
+    if ver not in PYVER_CONTAINERS:
+        print('Container compilation not supported for version {}'.format(ver))
         return None
 
-    if shutil.which('docker') is None:
-        print('Cannot find docker in $PATH')
+    container_exe = None
+    for ce in CONTAINER_EXES:
+        if shutil.which(ce) is not None:
+            container_exe = ce
+            break
+
+    if container_exe is None:
+        print('Cannot find {} in $PATH'.format(' or '.join(CONTAINER_EXES)))
         return None
 
     fullver = PYVERS[ver]
@@ -200,7 +218,7 @@ def container_compile(snekdir, ver, infile):
 
     print('*** Compiling for Python {}'.format(fullver))
     # The easy way
-    proc = subprocess.Popen(['docker', 'run', '--privileged', '--rm', '--name', '{}-{}'.format(infile, ver),
+    proc = subprocess.Popen([container_exe, 'run', '--privileged', '--rm', '--name', '{}-{}'.format(infile, ver),
                              '-v', '{}:/src'.format(snekdir), '-w', '/src', 'python:{}'.format(fullver),
                              'python', '-c', "import py_compile; py_compile.compile('{}', '{}')".format(infile, outfile)])
     proc.communicate()
@@ -253,7 +271,7 @@ snekdir = os.path.dirname(os.path.realpath(__file__))
 result = 0
 for ver in pythons:
     compile_with_container = USE_CONTAINERS
-    if USE_CONTAINERS and ver < PYVER_CONTAINER_MIN:
+    if USE_CONTAINERS and ver not in PYVER_CONTAINERS:
         print('Warning: No supported container for {} - using local build'.format(ver))
         compile_with_container = False
 
