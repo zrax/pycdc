@@ -620,6 +620,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCompare(left, right, operand));
             }
             break;
+        case Pyc::CONTAINS_OP_A:
+            {
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                // The operand will be 0 for 'in' and 1 for 'not in'.
+                stack.push(new ASTCompare(left, right, operand ? ASTCompare::CMP_NOT_IN : ASTCompare::CMP_IN));
+            }
+            break;
         case Pyc::DELETE_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
