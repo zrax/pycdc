@@ -230,8 +230,7 @@ if len(sys.argv) < 2:
     print('Usage: {} [-c] [versions] input.py'.format(sys.argv[0]))
     print('Compile input.py for one or more python versions')
     print()
-    print('-c\tuse prebuilt containers for running different versions of Python (only available for versions >= {})'
-          .format(PYVER_CONTAINER_MIN))
+    print('-c\tuse prebuilt containers for running different versions of Python (not available for all versions)')
     print()
     print('Output is written to input.<version>.pyc for each version successfully compiled')
     print()
