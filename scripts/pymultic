@@ -53,7 +53,6 @@ PYVER_CONTAINERS = {
     '3.9',
     '3.10',
 }
-USE_CONTAINERS = False
 CONTAINER_EXES = ['docker', 'podman']
 
 
@@ -191,7 +190,7 @@ def local_compile(snekdir, ver, infile):
     return outfile
 
 
-def container_compile(snekdir, ver, infile):
+def container_compile(ver, infile):
     if ver not in PYVER_CONTAINERS:
         print('Container compilation not supported for version {}'.format(ver))
         return None
@@ -208,19 +207,24 @@ def container_compile(snekdir, ver, infile):
 
     fullver = PYVERS[ver]
 
+    indir = os.path.dirname(os.path.abspath(infile))
+    infile = os.path.basename(infile)
+
     if infile.endswith('.py'):
-        outfile = os.path.basename(infile)[:-3]
+        outfile = infile[:-3]
     else:
-        outfile = os.path.basename(infile)
+        outfile = infile
     outfile += '.{}.pyc'.format(ver)
     if os.path.exists(outfile):
         os.unlink(outfile)
 
     print('*** Compiling for Python {}'.format(fullver))
-    # The easy way
-    proc = subprocess.Popen([container_exe, 'run', '--privileged', '--rm', '--name', '{}-{}'.format(infile, ver),
-                             '-v', '{}:/src'.format(snekdir), '-w', '/src', 'python:{}'.format(fullver),
-                             'python', '-c', "import py_compile; py_compile.compile('{}', '{}')".format(infile, outfile)])
+    proc = subprocess.Popen([container_exe, 'run', '--rm', '--name', '{}'.format(outfile),
+                             '-v', '{}:/indir:Z'.format(indir),
+                             '-v', '{}:/outdir:Z'.format(os.getcwd()), '-w', '/outdir',
+                             'python:{}'.format(fullver),
+                             'python', '-c',
+                             "import py_compile; py_compile.compile('/indir/{}', '{}')".format(infile, outfile)])
     proc.communicate()
 
     return outfile
@@ -230,7 +234,8 @@ if len(sys.argv) < 2:
     print('Usage: {} [-c] [versions] input.py'.format(sys.argv[0]))
     print('Compile input.py for one or more python versions')
     print()
-    print('-c\tuse prebuilt containers for running different versions of Python (not available for all versions)')
+    print('-c\tuse prebuilt containers for running different versions of Python')
+    print('\t(not available for all versions)')
     print()
     print('Output is written to input.<version>.pyc for each version successfully compiled')
     print()
@@ -241,6 +246,7 @@ RE_PYVER = re.compile(r'\d\.\d')
 
 pythons = []
 infile = None
+use_containers = False
 for arg in sys.argv[1:]:
     if RE_PYVER.match(arg):
         if arg in PYVERS.keys():
@@ -249,7 +255,7 @@ for arg in sys.argv[1:]:
             print('Unknown Python version: {}'.format(arg))
             sys.exit(1)
     elif arg == '-c':
-        USE_CONTAINERS = True
+        use_containers = True
     elif arg.startswith('-'):
         print("WARNING: Unrecognized argument '{}'".format(arg))
     else:
@@ -269,14 +275,14 @@ if len(pythons) == 0:
 snekdir = os.path.dirname(os.path.realpath(__file__))
 result = 0
 for ver in pythons:
-    compile_with_container = USE_CONTAINERS
-    if USE_CONTAINERS and ver not in PYVER_CONTAINERS:
+    compile_with_container = use_containers
+    if use_containers and ver not in PYVER_CONTAINERS:
         print('Warning: No supported container for {} - using local build'.format(ver))
         compile_with_container = False
 
     outfile = None
     if compile_with_container:
-        outfile = container_compile(snekdir, ver, infile)
+        outfile = container_compile(ver, infile)
     else:
         outfile = local_compile(snekdir, ver, infile)
 
