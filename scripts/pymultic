@@ -54,7 +54,10 @@ PYVER_CONTAINERS = {
     '3.10',
 }
 CONTAINER_EXES = ['podman', 'docker']
-CONTAINER_EXE_ARGS = { 'docker': ['-u', '{}:{}'.format(os.getuid(), os.getgid())] } # Docker requires extra magic for permissions.
+CONTAINER_EXE_EXTRA_ARGS = {
+    'podman': [],
+    'docker': ['-u', '{}:{}'.format(os.getuid(), os.getgid())], # Docker requires extra magic for permissions.
+}
 
 
 def fetch_python(snekdir, version):
@@ -220,7 +223,7 @@ def container_compile(ver, infile):
         os.unlink(outfile)
 
     print('*** Compiling for Python {}'.format(fullver))
-    proc = subprocess.Popen([container_exe, 'run'] + CONTAINER_EXE_ARGS.get(container_exe, []) +
+    proc = subprocess.Popen([container_exe, 'run'] + CONTAINER_EXE_EXTRA_ARGS[container_exe] +
                             ['--rm', '--name', '{}'.format(outfile),
                              '-v', '{}:/indir:Z'.format(indir),
                              '-v', '{}:/outdir:Z'.format(os.getcwd()), '-w', '/outdir',
