@@ -1,0 +1,16 @@
+diff --git a/Makefile.pre.in b/Makefile.pre.in
+index e01cd2745a..dcf465e30e 100644
+--- a/Makefile.pre.in
++++ b/Makefile.pre.in
+@@ -817,6 +817,11 @@ bininstall: altbininstall
+ 	else true; \
+ 	fi
+ 	(cd $(DESTDIR)$(BINDIR); $(LN) python$(VERSION)$(EXE) $(PYTHON)3$(EXE))
++	-if test -f $(DESTDIR)$(BINDIR)/$(PYTHON)$(EXE) -o -h $(DESTDIR)$(BINDIR)/$(PYTHON)$(EXE); \
++	then rm -f $(DESTDIR)$(BINDIR)/$(PYTHON)$(EXE); \
++	else true; \
++	fi
++	(cd $(DESTDIR)$(BINDIR); $(LN) python$(VERSION)$(EXE) $(PYTHON)$(EXE))
+ 	-rm -f $(DESTDIR)$(BINDIR)/python3-config
+ 	(cd $(DESTDIR)$(BINDIR); $(LN) -s python$(VERSION)-config python3-config)
+ 	-rm -f $(DESTDIR)$(LIBPC)/python3.pc

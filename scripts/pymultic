@@ -60,6 +60,20 @@ CONTAINER_EXE_EXTRA_ARGS = {
 }
 
 
+def get_container_exe():
+    container_exe = None
+    for ce in CONTAINER_EXES:
+        if shutil.which(ce) is not None:
+            container_exe = ce
+            break
+
+    if container_exe is None:
+        print('Cannot find {} in $PATH'.format(' or '.join(CONTAINER_EXES)))
+        return sys.exit(1)
+
+    return container_exe
+
+
 def fetch_python(snekdir, version):
     realver = PYVERS[version]
     if version in ('1.0', '1.1'):
@@ -142,6 +156,35 @@ def acquire_python(snekdir, version):
     return pyexe
 
 
+def build_python_container(snekdir, version):
+    realver = PYVERS[version]
+    snek = 'Python-{}'.format(realver)
+    builddir = os.path.join(snekdir, snek)
+    container_exe = get_container_exe()
+    py_container_tag = 'python:{}'.format(realver)
+
+    if subprocess.call([container_exe, 'image', 'inspect', py_container_tag],
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) == 0:
+        return
+
+    fetch_python(snekdir, version)
+
+    print('Building Python {} container...'.format(realver))
+    logfile = os.path.join(snekdir, '{}.build.log'.format(snek))
+    install_target = 'fullinstall' if version == '3.0' else 'install'
+    with open(logfile, 'wb') as log:
+        if subprocess.call([container_exe, 'build',
+                            '--build-arg', 'python_version={}'.format(realver),
+                            '--build-arg', 'install_target={}'.format(install_target),
+                            '-f', os.path.join(snekdir, 'Dockerfile.pybuild'),
+                            '-t', py_container_tag, snekdir], stdout=log, stderr=log) != 0:
+            print('...Container build failed.  See {} for details'.format(logfile))
+            sys.exit(1)
+
+    shutil.rmtree(builddir)
+
+
 def local_compile(snekdir, ver, infile):
     pyexe = acquire_python(snekdir, ver)
     proc = subprocess.Popen([pyexe, '-c', 'import sys; print(sys.version)'],
@@ -194,23 +237,12 @@ def local_compile(snekdir, ver, infile):
     return outfile
 
 
-def container_compile(ver, infile):
+def container_compile(snekdir, ver, infile):
     if ver not in PYVER_CONTAINERS:
-        print('Container compilation not supported for version {}'.format(ver))
-        return None
+        build_python_container(snekdir, ver)
 
-    container_exe = None
-    for ce in CONTAINER_EXES:
-        if shutil.which(ce) is not None:
-            container_exe = ce
-            break
-
-    if container_exe is None:
-        print('Cannot find {} in $PATH'.format(' or '.join(CONTAINER_EXES)))
-        return None
-
+    container_exe = get_container_exe()
     fullver = PYVERS[ver]
-
     indir = os.path.dirname(os.path.abspath(infile))
     infile = os.path.basename(infile)
 
@@ -223,14 +255,38 @@ def container_compile(ver, infile):
         os.unlink(outfile)
 
     print('*** Compiling for Python {}'.format(fullver))
-    proc = subprocess.Popen([container_exe, 'run'] + CONTAINER_EXE_EXTRA_ARGS[container_exe] +
-                            ['--rm', '--name', '{}'.format(outfile),
-                             '-v', '{}:/indir:Z'.format(indir),
-                             '-v', '{}:/outdir:Z'.format(os.getcwd()), '-w', '/outdir',
-                             'python:{}'.format(fullver),
-                             'python', '-c',
-                             "import py_compile; py_compile.compile('/indir/{}', '{}')".format(infile, outfile)])
-    proc.communicate()
+    if ver in {'1.0', '1.1', '1.2', '1.3', '1.4'}:
+        # The hard way -- hope your code is safe...
+        srcdir = os.path.dirname(os.path.realpath(infile))
+        comptmp = os.path.join(indir, 'pymc_temp.py')
+        if os.path.exists(comptmp):
+            os.unlink(comptmp)
+        shutil.copyfile(infile, comptmp)
+        proc = subprocess.Popen([container_exe, 'run'] + CONTAINER_EXE_EXTRA_ARGS[container_exe] +
+                                ['--rm', '--name', '{}'.format(outfile),
+                                 '-v', '{}:/indir:Z'.format(indir),
+                                 '-v', '{}:/outdir:Z'.format(os.getcwd()), '-w', '/outdir',
+                                 'python:{}'.format(fullver),
+                                 'python', '-c',
+                                 "import pymc_temp"])
+        proc.communicate()
+        if os.path.exists(comptmp + 'o'):
+            shutil.copyfile(comptmp + 'o', outfile)
+            os.unlink(comptmp + 'o')
+        elif os.path.exists(comptmp + 'c'):
+            shutil.copyfile(comptmp + 'c', outfile)
+            os.unlink(comptmp + 'c')
+        os.unlink(comptmp)
+    else:
+        # The easy way
+        proc = subprocess.Popen([container_exe, 'run'] + CONTAINER_EXE_EXTRA_ARGS[container_exe] +
+                                ['--rm', '--name', '{}'.format(outfile),
+                                 '-v', '{}:/indir:Z'.format(indir),
+                                 '-v', '{}:/outdir:Z'.format(os.getcwd()), '-w', '/outdir',
+                                 'python:{}'.format(fullver),
+                                 'python', '-c',
+                                 "import py_compile; py_compile.compile('/indir/{}', '{}')".format(infile, outfile)])
+        proc.communicate()
 
     return outfile
 
@@ -282,12 +338,11 @@ result = 0
 for ver in pythons:
     compile_with_container = use_containers
     if use_containers and ver not in PYVER_CONTAINERS:
-        print('Warning: No supported container for {} - using local build'.format(ver))
-        compile_with_container = False
+        print('Warning: No officially supported container for {} - using locally built one'.format(ver))
 
     outfile = None
     if compile_with_container:
-        outfile = container_compile(ver, infile)
+        outfile = container_compile(snekdir, ver, infile)
     else:
         outfile = local_compile(snekdir, ver, infile)
 
