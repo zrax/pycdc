@@ -1,0 +1,42 @@
+#
+# This will generate a local container with the specified version of Python.
+#
+# Note: This assumes the the tarball for the particular version you'd like to build has already been downloaded,
+# unpacked, and patched appropriately.
+#
+# To build:
+#   docker build --build-arg python_version=PYTHON-VERSION \
+#                --build-arg install_target=INSTALL-TARGET \
+#                -f Dockerfile.pybuild \
+#                -t python:PYTHON-VERSION
+#
+#   PYTHON-VERSION  full version of Python to build (ex. 3.0.1)
+#   INSTALL-TARGET  the target to make for installing (fullinstall for 3.0.1, install otherwise)
+#
+# Example for 3.0.1:
+#   docker build --build-arg python_version=3.0.1 \
+#                --build-arg install_target=fullinstall \
+#                -f Dockerfile.pybuild \
+#                -t python:3.0.1
+#
+
+FROM debian:buster
+
+ARG python_version
+ARG install_target
+
+RUN mkdir -p /pybuild/ &&\
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y build-essential libncurses-dev libz-dev libbz2-dev libreadline-dev
+
+COPY Python-$python_version /pybuild/
+
+RUN cd pybuild &&\
+    ./configure && \
+    make && \
+    make $install_target && \
+    cd / && \
+    apt-get remove -y build-essential libncurses-dev libz-dev libbz2-dev libreadline-dev && \
+    apt autoremove -y && \
+    rm -rf /pybuild
