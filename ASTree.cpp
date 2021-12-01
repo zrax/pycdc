@@ -923,7 +923,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     stack.push(nullptr);
                 } else {
-                     fprintf(stderr, "Unsupported use of GET_AITER outside of SETUP_LOOP\n");
+                     fprintf(stderr, "# WARNING: Unsupported use of GET_AITER outside of SETUP_LOOP\n");
                 }
             }
             break;
@@ -953,7 +953,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
                     break;
                 default:
-                    fprintf(stderr, "Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
+                    fprintf(stderr, "# WARNING: Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
                 }
             }
             break;
@@ -1483,7 +1483,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
 
                 if (rhs.type() != ASTNode::NODE_OBJECT) {
-                    fprintf(stderr, "Unsupported argument found for LIST_EXTEND\n");
+                    fprintf(stderr, "# WARNING: Unsupported argument found for LIST_EXTEND\n");
                     break;
                 }
 
@@ -2437,7 +2437,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             variable_annotations = true;
             break;
         default:
-            fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
+            fprintf(stderr, "# WARNING: Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
             return new ASTNodeList(defblock->nodes());
         }
