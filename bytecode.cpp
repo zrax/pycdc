@@ -137,6 +137,12 @@ bool Pyc::IsCellArg(int opcode)
            (opcode == Pyc::STORE_DEREF_A);
 }
 
+bool Pyc::IsJumpArg(int opcode)
+{
+    return (opcode == Pyc::POP_JUMP_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_IF_TRUE_A) ||
+           (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A) || (opcode == JUMP_IF_TRUE_OR_POP_A);
+}
+
 bool Pyc::IsJumpOffsetArg(int opcode)
 {
     return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
@@ -385,7 +391,16 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
-                fprintf(pyc_output, "%d (to %d)", operand, pos+operand);
+                int offs = operand;
+                if (mod->verCompare(3, 10) >= 0)
+                    offs *= sizeof(uint16_t); // BPO-27129
+                fprintf(pyc_output, "%d (to %d)", operand, pos+offs);
+            }
+            else if (Pyc::IsJumpArg(opcode)) {
+                if (mod->verCompare(3, 10) >= 0) // BPO-27129
+                    fprintf(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
+                else
+                    fprintf(pyc_output, "%d", operand);
             } else if (Pyc::IsCompareArg(opcode)) {
                 if (static_cast<size_t>(operand) < cmp_strings_len)
                     fprintf(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
