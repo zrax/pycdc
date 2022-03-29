@@ -29,6 +29,43 @@ static bool printDocstringAndGlobals = false;
 /* Use this to keep track of whether we need to print a class or module docstring */
 static bool printClassDocstring = true;
 
+// shortcut for all top/pop calls
+PycRef<ASTNode> StackPopTop(FastStack& stack)
+{
+    const auto node{ stack.top() };
+    stack.pop();
+    return node;
+}
+
+/* compiler generates very, VERY similar byte code for if/else statement block and if-expression
+ *  statement
+ *      if a: b = 1
+ *      else: b = 2
+ *  expression:
+ *      b = 1 if a else 2
+ *  (see for instance https://stackoverflow.com/a/52202007)
+ *  here, try to guess if just finished else statement is part of if-expression (ternary operator)
+ *  if it is, remove statements from the block and put a ternary node on top of stack
+ */
+void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
+{
+    if (stack.empty())
+        return;
+    if (curblock->nodes().size() < 2)
+        return;
+    auto rit{ curblock->nodes().crbegin() };
+    ++rit; // the last is "else" block, the one before should be "if" (could be "for", ...)
+    if ((*rit)->type() != ASTNode::NODE_BLOCK ||
+        (*rit).cast<ASTBlock>()->blktype() != ASTBlock::BLK_IF)
+        return;
+    auto else_expr{ StackPopTop(stack) };
+    curblock->removeLast();
+    auto if_block{ curblock->nodes().back() };
+    auto if_expr{ StackPopTop(stack) };
+    curblock->removeLast();
+    stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -109,6 +146,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock->append(prev.cast<ASTNode>());
 
                 prev = curblock;
+
+                CheckIfExpr(stack, curblock);
             }
         }
 
@@ -1363,19 +1402,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                if ((curblock->blktype() == ASTBlock::BLK_WHILE
-                            && !curblock->inited())
-                        || (curblock->blktype() == ASTBlock::BLK_IF
-                            && curblock->size() == 0)) {
-                    PycRef<PycObject> fakeint = new PycInt(1);
-                    PycRef<ASTNode> truthy = new ASTObject(fakeint);
-
-                    stack.push(truthy);
-                    break;
-                }
-
                 if (!stack_hist.empty()) {
-                    stack = stack_hist.top();
+                    if (stack.empty()) // if it's part of if-expression, TOS at the moment is the result of "if" part
+                        stack = stack_hist.top();
                     stack_hist.pop();
                 }
 
@@ -3254,6 +3283,26 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             fputs(name->object().cast<PycString>()->value(), pyc_output);
             fputs(": ", pyc_output);
             print_src(type, mod);
+        }
+        break;
+    case ASTNode::NODE_TERNARY:
+        {
+            /* parenthesis might not be needed,
+             * but when if-expr is part of numerical expression, ternary has the LOWEST precedence
+             *     print(a + b if False else c)
+             * output is c, not a+c (a+b is calculated first)
+             */
+            PycRef<ASTTernary> ternary = node.cast<ASTTernary>();
+            fputs("( ", pyc_output);
+            print_src(ternary->if_expr(), mod);
+            const auto if_block = ternary->if_block().require_cast<ASTCondBlock>();
+            fputs(" if ", pyc_output);
+            if (if_block->negative())
+                fputs("not ", pyc_output);
+            print_src(if_block->cond(), mod);
+            fputs(" else ", pyc_output);
+            print_src(ternary->else_expr(), mod);
+            fputs(" )", pyc_output);
         }
         break;
     default:

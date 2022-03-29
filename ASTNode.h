@@ -16,7 +16,7 @@ public:
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
-        NODE_ANNOTATED_VAR, NODE_CHAINSTORE,
+        NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
 
         // Empty node types
         NODE_LOCALS,
@@ -697,6 +697,35 @@ public:
 private:
     PycRef<ASTNode> m_name;
     PycRef<ASTNode> m_type;
+};
+
+class ASTTernary : public ASTNode
+{
+public:
+    ASTTernary(PycRef<ASTNode> if_block, PycRef<ASTNode> if_expr, PycRef<ASTNode> else_expr)
+        : ASTNode(NODE_TERNARY),
+        m_if_block(std::move(if_block)),
+        m_if_expr(std::move(if_expr)),
+        m_else_expr(std::move(else_expr))
+    {
+    }
+    const PycRef<ASTNode>& if_block() const noexcept
+    {
+        return m_if_block;
+    }
+    const PycRef<ASTNode>& if_expr() const noexcept
+    {
+        return m_if_expr;
+    }
+    const PycRef<ASTNode>& else_expr() const noexcept
+    {
+        return m_else_expr;
+    }
+
+private:
+    PycRef<ASTNode> m_if_block; // contains "condition" and "negative"
+    PycRef<ASTNode> m_if_expr;
+    PycRef<ASTNode> m_else_expr;
 };
 
 #endif
