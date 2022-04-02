@@ -30,7 +30,7 @@ static bool printDocstringAndGlobals = false;
 static bool printClassDocstring = true;
 
 // shortcut for all top/pop calls
-PycRef<ASTNode> StackPopTop(FastStack& stack)
+static PycRef<ASTNode> StackPopTop(FastStack& stack)
 {
     const auto node{ stack.top() };
     stack.pop();
@@ -47,7 +47,7 @@ PycRef<ASTNode> StackPopTop(FastStack& stack)
  *  here, try to guess if just finished else statement is part of if-expression (ternary operator)
  *  if it is, remove statements from the block and put a ternary node on top of stack
  */
-void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
+static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
 {
     if (stack.empty())
         return;
@@ -3287,13 +3287,16 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         break;
     case ASTNode::NODE_TERNARY:
         {
-            /* parenthesis might not be needed,
-             * but when if-expr is part of numerical expression, ternary has the LOWEST precedence
+            /* parenthesis might be needed
+             * 
+             * when if-expr is part of numerical expression, ternary has the LOWEST precedence
              *     print(a + b if False else c)
              * output is c, not a+c (a+b is calculated first)
+             * 
+             * but, let's not add parenthesis - to keep the source as close to original as possible in most cases
              */
             PycRef<ASTTernary> ternary = node.cast<ASTTernary>();
-            fputs("( ", pyc_output);
+            //fputs("(", pyc_output);
             print_src(ternary->if_expr(), mod);
             const auto if_block = ternary->if_block().require_cast<ASTCondBlock>();
             fputs(" if ", pyc_output);
@@ -3302,7 +3305,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             print_src(if_block->cond(), mod);
             fputs(" else ", pyc_output);
             print_src(ternary->else_expr(), mod);
-            fputs(" )", pyc_output);
+            //fputs(")", pyc_output);
         }
         break;
     default:
