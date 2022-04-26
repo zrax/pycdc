@@ -41,7 +41,7 @@ upfiles=()
 for pyc in "${compfiles[@]}" "${xfcfiles[@]}"; do
     base="$outdir/$(basename "$pyc")"
 
-    ./pycdc "$pyc" 2>"$base.err" 1>"$base.src.py"
+    ./pycdc "$pyc" -o "$base.src.py" >"$base.err" 2>&1
     if (( $? )) || [[ -s "$base.err" ]]
     then
         if [[ "$(dirname "$pyc")" =~ xfail ]]
