@@ -40,6 +40,11 @@ public:
             return nullptr;
     }
 
+    bool empty() const
+    {
+        return m_ptr == -1;
+    }
+
 private:
     std::vector<PycRef<ASTNode>> m_stack;
     int m_ptr;
