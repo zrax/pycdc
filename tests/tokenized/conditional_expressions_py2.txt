@@ -1,0 +1,30 @@
+import sys <EOL>
+a = 1 <EOL>
+result = 'even' if a % 2 == 0 else 'odd' <EOL>
+print result <EOL>
+a = 2 <EOL>
+result = 'even' if a % 2 == 0 else 'odd' <EOL>
+print result <EOL>
+a = 1 <EOL>
+result = a * 2 if a % 2 == 0 else a * 3 <EOL>
+print result <EOL>
+a = 2 <EOL>
+result = a * 2 if a % 2 == 0 else a * 3 <EOL>
+print result <EOL>
+a = 1 <EOL>
+sys . stdout . write ( 'even\n' ) if a % 2 == 0 else sys . stdout . write ( 'odd\n' ) <EOL>
+a = 1 <EOL>
+if a % 2 == 0 : <EOL>
+<INDENT>
+print 'even' <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+print 'odd' <EOL>
+<OUTDENT>
+a = - 2 <EOL>
+result = 'negative and even' if a < 0 and a % 2 == 0 else 'positive or odd' <EOL>
+print result <EOL>
+a = - 1 <EOL>
+result = 'negative and even' if a < 0 and a % 2 == 0 else 'positive or odd' <EOL>
+print result <EOL>
