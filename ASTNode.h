@@ -691,8 +691,8 @@ public:
     ASTAnnotatedVar(PycRef<ASTNode> name, PycRef<ASTNode> type)
         : ASTNode(NODE_ANNOTATED_VAR), m_name(std::move(name)), m_type(std::move(type)) { }
 
-    const PycRef<ASTNode> name() const { return m_name; }
-    const PycRef<ASTNode> type() const { return m_type; }
+    PycRef<ASTNode> name() const noexcept { return m_name; }
+    PycRef<ASTNode> type() const noexcept { return m_type; }
 
 private:
     PycRef<ASTNode> m_name;
@@ -702,25 +702,14 @@ private:
 class ASTTernary : public ASTNode
 {
 public:
-    ASTTernary(PycRef<ASTNode> if_block, PycRef<ASTNode> if_expr, PycRef<ASTNode> else_expr)
-        : ASTNode(NODE_TERNARY),
-        m_if_block(std::move(if_block)),
-        m_if_expr(std::move(if_expr)),
-        m_else_expr(std::move(else_expr))
-    {
-    }
-    const PycRef<ASTNode>& if_block() const noexcept
-    {
-        return m_if_block;
-    }
-    const PycRef<ASTNode>& if_expr() const noexcept
-    {
-        return m_if_expr;
-    }
-    const PycRef<ASTNode>& else_expr() const noexcept
-    {
-        return m_else_expr;
-    }
+    ASTTernary(PycRef<ASTNode> if_block, PycRef<ASTNode> if_expr,
+               PycRef<ASTNode> else_expr)
+        : ASTNode(NODE_TERNARY), m_if_block(std::move(if_block)),
+          m_if_expr(std::move(if_expr)), m_else_expr(std::move(else_expr)) { }
+
+    PycRef<ASTNode> if_block() const noexcept { return m_if_block; }
+    PycRef<ASTNode> if_expr() const noexcept { return m_if_expr; }
+    PycRef<ASTNode> else_expr() const noexcept { return m_else_expr; }
 
 private:
     PycRef<ASTNode> m_if_block; // contains "condition" and "negative"

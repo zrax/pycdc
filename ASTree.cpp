@@ -53,15 +53,15 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
         return;
     if (curblock->nodes().size() < 2)
         return;
-    auto rit{ curblock->nodes().crbegin() };
+    auto rit = curblock->nodes().crbegin();
     ++rit; // the last is "else" block, the one before should be "if" (could be "for", ...)
     if ((*rit)->type() != ASTNode::NODE_BLOCK ||
         (*rit).cast<ASTBlock>()->blktype() != ASTBlock::BLK_IF)
         return;
-    auto else_expr{ StackPopTop(stack) };
+    auto else_expr = StackPopTop(stack);
     curblock->removeLast();
-    auto if_block{ curblock->nodes().back() };
-    auto if_expr{ StackPopTop(stack) };
+    auto if_block = curblock->nodes().back();
+    auto if_expr = StackPopTop(stack);
     curblock->removeLast();
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
