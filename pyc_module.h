@@ -33,13 +33,18 @@ enum PycMagic {
     MAGIC_3_8 = 0x0A0D0D55,
     MAGIC_3_9 = 0x0A0D0D61,
     MAGIC_3_10 = 0x0A0D0D6F,
+
+    INVALID = 0,
 };
+
+PycMagic version_to_magic(int major, int minor);
 
 class PycModule {
 public:
     PycModule() : m_maj(-1), m_min(-1), m_unicode(false) { }
 
     void loadFromFile(const char* filename);
+    void loadFromMarshalledFile(const char *filename, int major, int minor);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
 
     int majorVer() const { return m_maj; }
