@@ -38,6 +38,11 @@ The byte-code disassembly is printed to stdout.
 The decompiled Python source is printed to stdout.
 Any errors are printed to stderr.
 
+**Marshalled code objects**:
+Both tools support Python marshalled code objects, as output from `marshal.dumps(compile(...))`.
+
+To use this feature, specify `-c -v <version>` on the command line - the version must be specified as the objects themelves do not contain version metadata.
+
 ## Authors, Licence, Credits
 Decompyle++ is the work of Michael Hansen and Darryl Pogue.
 
