@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdarg>
+#include <string>
 #include "pyc_module.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
@@ -232,6 +233,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
 int main(int argc, char* argv[])
 {
     const char* infile = nullptr;
+    bool marshalled = false;
+    const char* version = nullptr;
     for (int arg = 1; arg < argc; ++arg) {
         if (strcmp(argv[arg], "-o") == 0) {
             if (arg + 1 < argc) {
@@ -247,11 +250,22 @@ int main(int argc, char* argv[])
                 fputs("Option '-o' requires a filename\n", stderr);
                 return 1;
             }
+        } else if (strcmp(argv[arg], "-c") == 0) {
+            marshalled = true;
+        } else if (strcmp(argv[arg], "-v") == 0) {
+            if (arg + 1 < argc) {
+                version = argv[++arg];
+            } else {
+                fputs("Option '-v' requires a version\n", stderr);
+                return 1;
+            }
         } else if (strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "-h") == 0) {
             fprintf(stderr, "Usage:  %s [options] input.pyc\n\n", argv[0]);
             fputs("Options:\n", stderr);
-            fputs("  -o <filename>   Write output to <filename> (default: stdout)\n", stderr);
-            fputs("  --help          Show this help text and then exit\n", stderr);
+            fputs("  -o <filename>  Write output to <filename> (default: stdout)\n", stderr);
+            fputs("  -c             Specify loading a compiled code object. Requires the version to be set\n", stderr);
+            fputs("  -v <x.y>       Specify a Python version for loading a compiled code object\n", stderr);
+            fputs("  --help         Show this help text and then exit\n", stderr);
             return 0;
         } else {
             infile = argv[arg];
@@ -264,11 +278,27 @@ int main(int argc, char* argv[])
     }
 
     PycModule mod;
-    try {
-        mod.loadFromFile(infile);
-    } catch (std::exception& ex) {
-        fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
-        return 1;
+    if (!marshalled) {
+        try {
+            mod.loadFromFile(infile);
+        } catch (std::exception &ex) {
+            fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
+            return 1;
+        }
+    }  else {
+        if (!version) {
+            fputs("Opening raw code objects requires a version to be specified\n", stderr);
+            return 1;
+        }
+        std::string s(version);
+        auto dot = s.find('.');
+        if (dot == std::string::npos || dot == s.size()-1) {
+            fputs("Unable to parse version string (use the format x.y)\n", stderr);
+            return 1;
+        }
+        int major = std::stoi(s.substr(0, dot));
+        int minor = std::stoi(s.substr(dot+1, s.size()));
+        mod.loadFromMarshalledFile(infile, major, minor);
     }
     const char* dispname = strrchr(infile, PATHSEP);
     dispname = (dispname == NULL) ? infile : dispname + 1;
