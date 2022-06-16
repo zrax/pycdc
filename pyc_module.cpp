@@ -202,7 +202,8 @@ void PycModule::loadFromFile(const char* filename)
     m_code = LoadObject(&in, this).require_cast<PycCode>();
 }
 
-void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor) {
+void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
+{
     PycFile in (filename);
     if (!in.isOpen()) {
         fprintf(stderr, "Error opening file %s\n", filename);
@@ -214,8 +215,6 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
         return;
     }
     setVersion(magic);
-    m_maj = major;
-    m_min = minor;
     m_code = LoadObject(&in, this).require_cast<PycCode>();
 }
 
@@ -248,47 +247,48 @@ PycRef<PycObject> PycModule::getRef(int ref) const
 #define enumVariant(mj, mn) case mn: \
     return PycMagic::MAGIC_ ## mj ## _ ## mn
 
-PycMagic version_to_magic(int major, int minor) {
+PycMagic version_to_magic(int major, int minor)
+{
     switch (major) {
-        case 1:
+    case 1:
         switch (minor) {
-            enumVariant(1, 0);
-            case 1:
-            case 2:
-            return PycMagic::MAGIC_1_1;
-            enumVariant(1, 3);
-            enumVariant(1, 4);
-            enumVariant(1, 5);
-            enumVariant(1, 6);
-            default: return PycMagic::INVALID;
-        }
+        enumVariant(1, 0);
+        case 1:
         case 2:
-            switch (minor) {
-            enumVariant(2, 0);
-            enumVariant(2, 1);
-            enumVariant(2, 3);
-            enumVariant(2, 4);
-            enumVariant(2, 5);
-            enumVariant(2, 6);
-            enumVariant(2, 7);
-            default: return PycMagic::INVALID;
+        return PycMagic::MAGIC_1_1;
+        enumVariant(1, 3);
+        enumVariant(1, 4);
+        enumVariant(1, 5);
+        enumVariant(1, 6);
+        default: return PycMagic::INVALID;
         }
-        case 3:
-            switch (minor) {
-            enumVariant(3, 0);
-            enumVariant(3, 1);
-            enumVariant(3, 3);
-            enumVariant(3, 4);
-            enumVariant(3, 5);
-            enumVariant(3, 6);
-            enumVariant(3, 7);
-            enumVariant(3, 8);
-            enumVariant(3, 9);
-            enumVariant(3, 10);
-            default: return PycMagic::INVALID;
+    case 2:
+        switch (minor) {
+        enumVariant(2, 0);
+        enumVariant(2, 1);
+        enumVariant(2, 3);
+        enumVariant(2, 4);
+        enumVariant(2, 5);
+        enumVariant(2, 6);
+        enumVariant(2, 7);
+        default: return PycMagic::INVALID;
+        }
+    case 3:
+        switch (minor) {
+        enumVariant(3, 0);
+        enumVariant(3, 1);
+        enumVariant(3, 3);
+        enumVariant(3, 4);
+        enumVariant(3, 5);
+        enumVariant(3, 6);
+        enumVariant(3, 7);
+        enumVariant(3, 8);
+        enumVariant(3, 9);
+        enumVariant(3, 10);
+        default: return PycMagic::INVALID;
         }
         default:
             return PycMagic::INVALID;
-        }
     }
+}
 #undef enumVariant

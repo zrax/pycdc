@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
             fputs("Options:\n", stderr);
             fputs("  -o <filename>  Write output to <filename> (default: stdout)\n", stderr);
             fputs("  -c             Specify loading a compiled code object. Requires the version to be set\n", stderr);
-            fputs("  -v <x.y>       Specify a Python version\n", stderr);
+            fputs("  -v <x.y>       Specify a Python version for loading a compiled code object\n", stderr);
             fputs("  --help         Show this help text and then exit\n", stderr);
             return 0;
         } else {
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
         std::string s(version);
         auto dot = s.find('.');
         if (dot == std::string::npos || dot == s.size()-1) {
-            fputs("Unable to read version string (use the format x.y)\n", stderr);
+            fputs("Unable to parse version string (use the format x.y)\n", stderr);
             return 1;
         }
         int major = std::stoi(s.substr(0, dot));
