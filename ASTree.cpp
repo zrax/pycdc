@@ -1754,7 +1754,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                      * If it's a comprehension, the only POP_TOP should be
                      * a call to append the iter to the list.
                      */
-                    if (value.type() == ASTNode::NODE_CALL) {
+                    if (value.type() == ASTNode::NODE_CALL && !value.cast<ASTCall>()->pparams().empty() ) {
                         PycRef<ASTNode> res = value.cast<ASTCall>()->pparams().front();
 
                         stack.push(new ASTComprehension(res));
