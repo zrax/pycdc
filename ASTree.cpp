@@ -91,18 +91,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     bool need_try = false;
     bool variable_annotations = false;
 
-#define STACK_DEBUG
-#define BLOCK_DEBUG
     while (!source.atEof()) {
-      curpos = pos;
-      bc_next(source, mod, opcode, operand, pos);
-
 #if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
         fprintf(stderr, "%-7d", pos);
     #ifdef STACK_DEBUG
         fprintf(stderr, "%-5d", (unsigned int)stack_hist.size() + 1);
-        fprintf(stderr, "%-5d", (unsigned int)defblock->nodes().size());
-        fprintf(stderr, "%-24s", Pyc::OpcodeName(opcode));
     #endif
     #ifdef BLOCK_DEBUG
         for (unsigned int i = 0; i < blocks.size(); i++)
@@ -111,6 +104,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     #endif
         fprintf(stderr, "\n");
 #endif
+
+        curpos = pos;
+        bc_next(source, mod, opcode, operand, pos);
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -128,10 +124,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::JUMP_IF_TRUE_A
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_TRUE_A
-                && opcode != Pyc::POP_BLOCK
-                && opcode != Pyc::JUMP_IF_NOT_EXC_MATCH_A
-                ) {
+                && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
+
             PycRef<ASTBlock> prev = curblock;
             while (prev->end() < pos
                     && prev->blktype() != ASTBlock::BLK_MAIN) {
@@ -158,13 +153,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 CheckIfExpr(stack, curblock);
             }
-        } else if (curblock->blktype() == ASTBlock::BLK_WITH
-                && curblock->end() == pos) {
-            /* end with blocks */
-            PycRef<ASTBlock> with = curblock;
-            blocks.pop();
-            curblock = blocks.top();
-            curblock->append(with.cast<ASTNode>());
         }
 
         switch (opcode) {
@@ -918,23 +906,33 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::FOR_ITER_A:
             {
-                int offs = operand;
-                if (mod->verCompare(3, 10) >= 0)
-                    offs *= sizeof(uint16_t); // // BPO-27129
-                offs += pos;
-
                 PycRef<ASTNode> iter = stack.top(); // Iterable
                 stack.pop();
                 /* Pop it? Don't pop it? */
 
+                int end;
                 bool comprehension = false;
-                PycRef<ASTBlock> top = blocks.top();
-                if (top->blktype() == ASTBlock::BLK_WHILE) {
-                    blocks.pop();
+
+                // before 3.8, there is a SETUP_LOOP instruction with block start and end position,
+                //    the operand is usually a jump to a POP_BLOCK instruction
+                // after 3.8, block extent has to be inferred implicitly; the operand is a jump to a position after the for block
+                if (mod->majorVer() == 3 && mod->minorVer() >= 8) {
+                    end = operand;
+                    if (mod->verCompare(3, 10) >= 0)
+                        end *= sizeof(uint16_t); // // BPO-27129
+                    end += pos;
+                    comprehension = strcmp(code->name()->value(), "<listcomp>") == 0;
                 } else {
-                    comprehension = true;
+                    PycRef<ASTBlock> top = blocks.top();
+                    end = top->end(); // block end position from SETUP_LOOP
+                    if (top->blktype() == ASTBlock::BLK_WHILE) {
+                        blocks.pop();
+                    } else {
+                        comprehension = true;
+                    }
                 }
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, offs, iter);
+
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, curpos, end, iter);
                 forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
@@ -956,7 +954,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     comprehension = true;
                 }
-                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, top->end(), iter);
+                PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_FOR, curpos, top->end(), iter);
                 forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
@@ -978,7 +976,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTBlock> top = blocks.top();
                 if (top->blktype() == ASTBlock::BLK_WHILE) {
                     blocks.pop();
-                    PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_ASYNCFOR, top->end(), iter);
+                    PycRef<ASTIterBlock> forblk = new ASTIterBlock(ASTBlock::BLK_ASYNCFOR, curpos, top->end(), iter);
                     blocks.push(forblk.cast<ASTBlock>());
                     curblock = blocks.top();
                     stack.push(nullptr);
@@ -1190,7 +1188,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_TRUE_OR_POP_A:
         case Pyc::POP_JUMP_IF_FALSE_A:
         case Pyc::POP_JUMP_IF_TRUE_A:
-        case Pyc::JUMP_IF_NOT_EXC_MATCH_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
@@ -1199,10 +1196,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
-                    stack.pop();
-                    popped = ASTCondBlock::PRE_POPPED;
-                } else if (opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A) {
-                    stack.pop();
                     stack.pop();
                     popped = ASTCondBlock::PRE_POPPED;
                 }
@@ -1226,8 +1219,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129
                 if (opcode == Pyc::JUMP_IF_FALSE_A
-                        || opcode == Pyc::JUMP_IF_TRUE_A
-                        || opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A) {
+                        || opcode == Pyc::JUMP_IF_TRUE_A) {
                     /* Offset is relative in these cases */
                     offs = pos + operand;
                 }
@@ -1243,15 +1235,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     }
 
                     ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, offs, cond.cast<ASTCompare>()->right(), false);
-                } else if (opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A) {
-                    if ((curblock->blktype() == ASTBlock::BLK_EXCEPT) || (curblock->blktype() == ASTBlock::BLK_TRY)) {
-                        /* End of previous block */
-                        PycRef<ASTBlock> prev = curblock;
-                        blocks.pop();
-                        curblock = blocks.top();
-                        curblock->append(prev.cast<ASTNode>());
-                    }
-                    ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, offs, cond, false);
                 } else if (curblock->blktype() == ASTBlock::BLK_ELSE
                            && curblock->size() == 0) {
                     /* Collapse into elif statement */
@@ -1324,16 +1307,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (offs < pos) {
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
-                        if (mod->majorVer() == 3 && mod->minorVer() >= 8) {
-                            // in v3.8, SETUP_LOOP is deprecated and list comprehensions don't use BLK_FOR
-                            // the following code fixes for loops, list comprehensions need more work
-                            if (curblock->end() == pos) {
-                                PycRef<ASTBlock> tmp = curblock;
-                                blocks.pop();
-                                curblock = blocks.top();
-                                curblock->append(tmp.cast<ASTNode>());
-                            }
-                        } else if (curblock.cast<ASTIterBlock>()->isComprehension()) {
+                        bool is_jump_to_start = offs == curblock.cast<ASTIterBlock>()->start();
+                        bool should_pop_for_block = curblock.cast<ASTIterBlock>()->isComprehension();
+                        // in v3.8, SETUP_LOOP is deprecated and for blocks aren't terminated by POP_BLOCK, so we add them here
+                        bool should_add_for_block = mod->majorVer() == 3 && mod->minorVer() >= 8 && is_jump_to_start && !curblock.cast<ASTIterBlock>()->isComprehension();
+
+                        if (should_pop_for_block || should_add_for_block) {
                             PycRef<ASTNode> top = stack.top();
 
                             if (top.type() == ASTNode::NODE_COMPREHENSION) {
@@ -1345,6 +1324,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             PycRef<ASTBlock> tmp = curblock;
                             blocks.pop();
                             curblock = blocks.top();
+                            if (should_add_for_block) {
+                                curblock->append(tmp.cast<ASTNode>());
+                            }
                         }
                     } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
                         stack = stack_hist.top();
@@ -1781,7 +1763,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::POP_TOP:
             {
-        fprintf(stderr, "g1 %s (%d)\n", curblock->type_str(), curblock->end());
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 if (!curblock->inited()) {
@@ -1809,7 +1790,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.push(new ASTComprehension(res));
                     }
                 }
-        fprintf(stderr, "g2 %s (%d)\n", curblock->type_str(), curblock->end());
             }
             break;
         case Pyc::PRINT_ITEM:
@@ -1869,17 +1849,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::RAISE_VARARGS_A:
-        case Pyc::RERAISE:
-        case Pyc::RERAISE_A:
             {
                 ASTRaise::param_t paramList;
-                int argument_count;
-                if (opcode == Pyc::RAISE_VARARGS_A) {
-                    argument_count = operand;
-                } else {
-                    argument_count = 0; // TODO: should have one argument, maybe support syntax like "except Exception as e:"
-                }
-                for (int i = 0; i < argument_count; i++) {
+                for (int i = 0; i < operand; i++) {
                     paramList.push_front(stack.top());
                     stack.pop();
                 }
@@ -1983,7 +1955,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::WITH_CLEANUP:
-        case Pyc::WITH_EXCEPT_START:
             {
                 // Stack top should be a None. Ignore it.
                 PycRef<ASTNode> none = stack.top();
@@ -1992,6 +1963,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (none != NULL) {
                     fprintf(stderr, "Something TERRIBLE happened!\n");
                     break;
+                }
+
+                if (curblock->blktype() == ASTBlock::BLK_WITH
+                        && curblock->end() == curpos) {
+                    PycRef<ASTBlock> with = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(with.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
                 }
             }
             break;
