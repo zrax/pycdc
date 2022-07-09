@@ -85,16 +85,17 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, const char* parent_f_string_quote)
+std::string OutputString(PycRef<PycString> str, char prefix, bool triple, const char* parent_f_string_quote)
 {
+    std::string result;
     if (prefix != 0)
-        fputc(prefix, F);
+        result += prefix;
 
     const char* ch = str->value();
     int len = str->length();
     if (ch == 0) {
-        fputs("''", F);
-        return;
+        result += "''";
+        return result;
     }
 
     // Determine preferred quote style (Emulate Python's method)
@@ -118,51 +119,52 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
     // Output the string
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            result += useQuotes ? "\"\"\"" : "'''";
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            result += useQuotes ? '"' : '\'';
     }
     while (len--) {
         if (*ch < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
-                fputs("\\r", F);
+                result += "\\r";
             } else if (*ch == '\n') {
                 if (triple)
-                    fputc('\n', F);
+                    result += '\n';
                 else
-                    fputs("\\n", F);
+                    result += "\\n";
             } else if (*ch == '\t') {
-                fputs("\\t", F);
+                result += "\\t";
             } else {
-                fprintf(F, "\\x%02x", (*ch & 0xFF));
+                result += string_format("\\x%02x", (*ch & 0xFF));
             }
         } else if ((unsigned char)(*ch) >= 0x80) {
             if (str->type() == PycObject::TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
-                fputc(*ch, F);
+                result += *ch;
             } else {
-                fprintf(F, "\\x%x", (*ch & 0xFF));
+                result += string_format("\\x%x", (*ch & 0xFF));
             }
         } else {
             if (!useQuotes && *ch == '\'')
-                fputs("\\'", F);
+                result += "\\'";
             else if (useQuotes && *ch == '"')
-                fputs("\\\"", F);
+                result += "\\\"";
             else if (*ch == '\\')
-                fputs("\\\\", F);
+                result += "\\\\";
             else if (parent_f_string_quote && *ch == '{')
-                fputs("{{", F);
+                result += "{{";
             else if (parent_f_string_quote && *ch == '}')
-                fputs("}}", F);
+                result += "}}";
             else
-                fputc(*ch, F);
+                result += *ch;
         }
         ch++;
     }
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            result += useQuotes ? "\"\"\"" : "'''";
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            result += useQuotes ? '"' : '\'';
     }
+    return result;
 }

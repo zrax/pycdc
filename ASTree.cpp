@@ -88,8 +88,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     bool variable_annotations = false;
 
     while (!source.atEof()) {
-#if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
+        curpos = pos;
+        bc_next(source, mod, opcode, operand, pos);
+
+#if defined(BLOCK_DEBUG) || defined(STACK_DEBUG) || defined(ASM_DEBUG)
         fprintf(stderr, "%-7d", pos);
+    #ifdef ASM_DEBUG
+        {
+          const int asm_column_width = 40;
+          std::string s = bc_instruction_to_string(code, mod, pos, opcode, operand).c_str();
+          if (s.size() > asm_column_width) {
+            // fixed-size column
+            s = s.substr(0, asm_column_width - 3) + "...";
+          }
+          s.insert(s.end(), asm_column_width - s.size(), ' ');
+          fputs(s.c_str(), stderr);
+        }
+    #endif
     #ifdef STACK_DEBUG
         fprintf(stderr, "%-5d", (unsigned int)stack_hist.size() + 1);
     #endif
@@ -100,9 +115,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     #endif
         fprintf(stderr, "\n");
 #endif
-
-        curpos = pos;
-        bc_next(source, mod, opcode, operand, pos);
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -2763,9 +2775,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 print_formatted_value(val.cast<ASTFormattedValue>(), mod);
                 break;
             case ASTNode::NODE_OBJECT:
-                // When printing a piece of the f-string, keep the quote style consistent.
-                // This avoids problems when ''' or """ is part of the string.
-                print_const(val.cast<ASTObject>()->object(), mod, F_STRING_QUOTE);
+                {
+                    // When printing a piece of the f-string, keep the quote style consistent.
+                    // This avoids problems when ''' or """ is part of the string.
+                    std::string s = const_to_string(val.cast<ASTObject>()->object(), mod, F_STRING_QUOTE);
+                    fputs(s.c_str(), pyc_output);
+                }
                 break;
             default:
                 fprintf(stderr, "Unsupported node type %d in NODE_JOINEDSTR\n", val.type());
@@ -2925,7 +2940,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 PycRef<PycCode> code = obj.cast<PycCode>();
                 decompyle(code, mod);
             } else {
-                print_const(obj, mod);
+                std::string s = const_to_string(obj, mod);
+                fputs(s.c_str(), pyc_output);
             }
         }
         break;
@@ -3343,8 +3359,8 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
     }
     if (prefix != -1) {
         start_line(indent);
-        OutputString(obj.cast<PycString>(), prefix, true);
-        fputs("\n", pyc_output);
+        std::string s = OutputString(obj.cast<PycString>(), prefix, true) + "\n";
+        fputs(s.c_str(), pyc_output);
         return true;
     } else
         return false;
