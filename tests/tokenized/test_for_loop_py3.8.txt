@@ -1,0 +1,13 @@
+'\ntest_for_loop_3.8.py -- source test\nFor-loops have changed in python 3.8. The test and PR\n(https://github.com/zrax/pycdc/pull/270) add some support.\nIt also fixes a problem with nested if- and for blocks.\n\nThis source is part of the decompyle test suite.\n\ndecompyle is a Python byte-code decompiler\nSee http://www.goebel-consult.de/decompyle/ for download and\nfor further information\n' <EOL>
+if 1 == 1 : <EOL>
+<INDENT>
+print ( 'block1' ) <EOL>
+<OUTDENT>
+if 1 == 1 : <EOL>
+<INDENT>
+for a in 'foo' : <EOL>
+<INDENT>
+print ( 'block2' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+return None <EOL>

@@ -19,8 +19,8 @@ if [[ -z "$outdir" ]]; then
 fi
 
 shopt -s nullglob
-compfiles=( "$testdir/compiled/$testname".?.?.pyc )
-xfcfiles=( "$testdir/xfail/$testname".?.?.pyc )
+compfiles=( "$testdir/compiled/$testname".?.?*.pyc )
+xfcfiles=( "$testdir/xfail/$testname".?.?*.pyc )
 shopt -u nullglob
 
 if (( ${#compfiles[@]} + ${#xfcfiles[@]} == 0 )); then
