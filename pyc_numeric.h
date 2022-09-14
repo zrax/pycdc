@@ -17,7 +17,7 @@ public:
                (m_value == obj.cast<PycInt>()->m_value);
     }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     int value() const { return m_value; }
 
@@ -32,7 +32,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     int size() const { return m_size; }
     const std::list<int>& value() const { return m_value; }
@@ -51,7 +51,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     const char* value() const { return m_value.c_str(); }
 
@@ -66,7 +66,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     const char* imag() const { return m_imag.c_str(); }
 
@@ -85,7 +85,7 @@ public:
                (m_value == obj.cast<PycCFloat>()->m_value);
     }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     double value() const { return m_value; }
 
@@ -104,7 +104,7 @@ public:
                (m_imag == obj.cast<PycCComplex>()->m_imag);
     }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     double imag() const { return m_imag; }
 

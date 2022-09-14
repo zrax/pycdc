@@ -25,7 +25,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     const value_t& values() const { return m_values; }
     PycRef<PycObject> get(int idx) const override { return m_values.at(idx); }
@@ -42,7 +42,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     const value_t& values() const { return m_values; }
     PycRef<PycObject> get(int idx) const override;
@@ -60,7 +60,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     PycRef<PycObject> get(PycRef<PycObject> key) const;
     const key_t& keys() const { return m_keys; }
@@ -81,7 +81,7 @@ public:
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     const value_t& values() const { return m_values; }
     PycRef<PycObject> get(int idx) const override;

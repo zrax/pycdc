@@ -7,11 +7,15 @@
 #  define PATHSEP '/'
 #endif
 
+# define DEFAULT_MAX_RECURSION_DEPTH 100
+
 int main(int argc, char* argv[])
 {
     const char* infile = nullptr;
     bool marshalled = false;
     const char* version = nullptr;
+	int maxRecursionDepth = DEFAULT_MAX_RECURSION_DEPTH;
+	
     for (int arg = 1; arg < argc; ++arg) {
         if (strcmp(argv[arg], "-o") == 0) {
             if (arg + 1 < argc) {
@@ -36,12 +40,20 @@ int main(int argc, char* argv[])
                 fputs("Option '-v' requires a version\n", stderr);
                 return 1;
             }
+		} else if (strcmp(argv[arg], "-m") == 0) {
+            if (arg + 1 < argc) {
+                maxRecursionDepth = atoi(argv[++arg]);
+            } else {
+                fputs("Option '-m' requires an integer value\n", stderr);
+                return 1;
+            }
         } else if (strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "-h") == 0) {
             fprintf(stderr, "Usage:  %s [options] input.pyc\n\n", argv[0]);
             fputs("Options:\n", stderr);
             fputs("  -o <filename>  Write output to <filename> (default: stdout)\n", stderr);
             fputs("  -c             Specify loading a compiled code object. Requires the version to be set\n", stderr);
             fputs("  -v <x.y>       Specify a Python version for loading a compiled code object\n", stderr);
+            fprintf(stderr, "  -m <x>         Specify the maximum object recursion depth (default: %i)\n", maxRecursionDepth);
             fputs("  --help         Show this help text and then exit\n", stderr);
             return 0;
         } else {
@@ -57,7 +69,7 @@ int main(int argc, char* argv[])
     PycModule mod;
     if (!marshalled) {
         try {
-            mod.loadFromFile(infile);
+            mod.loadFromFile(infile, maxRecursionDepth);
         } catch (std::exception& ex) {
             fprintf(stderr, "Error loading file %s: %s\n", infile, ex.what());
             return 1;
@@ -75,7 +87,7 @@ int main(int argc, char* argv[])
         }
         int major = std::stoi(s.substr(0, dot));
         int minor = std::stoi(s.substr(dot+1, s.size()));
-        mod.loadFromMarshalledFile(infile, major, minor);
+        mod.loadFromMarshalledFile(infile, major, minor, maxRecursionDepth);
     }
 
     if (!mod.isValid()) {
@@ -88,7 +100,7 @@ int main(int argc, char* argv[])
     fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
             (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
     try {
-        decompyle(mod.code(), &mod);
+        decompyle(mod.code(), &mod, 0, maxRecursionDepth);
     } catch (std::exception& ex) {
         fprintf(stderr, "Error decompyling %s: %s\n", infile, ex.what());
         return 1;

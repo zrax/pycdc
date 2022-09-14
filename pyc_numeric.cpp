@@ -8,29 +8,35 @@
 #endif
 
 /* PycInt */
-void PycInt::load(PycData* stream, PycModule*)
+void PycInt::load(PycData* stream, PycModule*, int currentDepth, int maxDepth)
 {
-    m_value = stream->get32();
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		m_value = stream->get32();
+	}
 }
 
 
 /* PycLong */
-void PycLong::load(PycData* stream, PycModule*)
+void PycLong::load(PycData* stream, PycModule*, int currentDepth, int maxDepth)
 {
-    if (type() == TYPE_INT64) {
-        int lo = stream->get32();
-        int hi = stream->get32();
-        m_value.push_back((lo      ) & 0xFFFF);
-        m_value.push_back((lo >> 16) & 0xFFFF);
-        m_value.push_back((hi      ) & 0xFFFF);
-        m_value.push_back((hi >> 16) & 0xFFFF);
-        m_size = (hi & 0x80000000) != 0 ? -4 : 4;
-    } else {
-        m_size = stream->get32();
-        int actualSize = m_size >= 0 ? m_size : -m_size;
-        for (int i=0; i<actualSize; i++)
-            m_value.push_back(stream->get16());
-    }
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		if (type() == TYPE_INT64) {
+			int lo = stream->get32();
+			int hi = stream->get32();
+			m_value.push_back((lo      ) & 0xFFFF);
+			m_value.push_back((lo >> 16) & 0xFFFF);
+			m_value.push_back((hi      ) & 0xFFFF);
+			m_value.push_back((hi >> 16) & 0xFFFF);
+			m_size = (hi & 0x80000000) != 0 ? -4 : 4;
+		} else {
+			m_size = stream->get32();
+			int actualSize = m_size >= 0 ? m_size : -m_size;
+			for (int i=0; i<actualSize; i++)
+				m_value.push_back(stream->get16());
+		}
+	}
 }
 
 bool PycLong::isEqual(PycRef<PycObject> obj) const
@@ -94,15 +100,18 @@ std::string PycLong::repr() const
 
 
 /* PycFloat */
-void PycFloat::load(PycData* stream, PycModule*)
+void PycFloat::load(PycData* stream, PycModule*, int currentDepth, int maxDepth)
 {
-    int len = stream->getByte();
-    if (len < 0)
-        throw std::bad_alloc();
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		int len = stream->getByte();
+		if (len < 0)
+			throw std::bad_alloc();
 
-    m_value.resize(len);
-    if (len > 0)
-        stream->getBuffer(len, &m_value.front());
+		m_value.resize(len);
+		if (len > 0)
+			stream->getBuffer(len, &m_value.front());
+	}
 }
 
 bool PycFloat::isEqual(PycRef<PycObject> obj) const
@@ -116,17 +125,23 @@ bool PycFloat::isEqual(PycRef<PycObject> obj) const
 
 
 /* PycComplex */
-void PycComplex::load(PycData* stream, PycModule* mod)
+void PycComplex::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    PycFloat::load(stream, mod);
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		PycFloat::load(stream, mod, currentDepth, maxDepth);
 
-    int len = stream->getByte();
-    if (len < 0)
-        throw std::bad_alloc();
-
-    m_imag.resize(len);
-    if (len > 0)
-        stream->getBuffer(len, &m_imag.front());
+		int len = stream->getByte();
+		if (len < 0)
+		{
+			throw std::bad_alloc();
+		}
+		m_imag.resize(len);
+		if (len > 0)
+		{
+			stream->getBuffer(len, &m_imag.front());
+		}
+	}
 }
 
 bool PycComplex::isEqual(PycRef<PycObject> obj) const
@@ -140,17 +155,23 @@ bool PycComplex::isEqual(PycRef<PycObject> obj) const
 
 
 /* PycCFloat */
-void PycCFloat::load(PycData* stream, PycModule*)
+void PycCFloat::load(PycData* stream, PycModule*, int currentDepth, int maxDepth)
 {
-    Pyc_INT64 bits = stream->get64();
-    memcpy(&m_value, &bits, sizeof(bits));
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		Pyc_INT64 bits = stream->get64();
+		memcpy(&m_value, &bits, sizeof(bits));
+	}
 }
 
 
 /* PycCComplex */
-void PycCComplex::load(PycData* stream, PycModule* mod)
+void PycCComplex::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    PycCFloat::load(stream, mod);
-    Pyc_INT64 bits = stream->get64();
-    memcpy(&m_imag, &bits, sizeof(bits));
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		PycCFloat::load(stream, mod, currentDepth, maxDepth);
+		Pyc_INT64 bits = stream->get64();
+		memcpy(&m_imag, &bits, sizeof(bits));
+	}
 }

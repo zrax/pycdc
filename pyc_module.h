@@ -43,8 +43,8 @@ class PycModule {
 public:
     PycModule() : m_maj(-1), m_min(-1), m_unicode(false) { }
 
-    void loadFromFile(const char* filename);
-    void loadFromMarshalledFile(const char *filename, int major, int minor);
+    void loadFromFile(const char* filename, int maxRecursionDepth);
+    void loadFromMarshalledFile(const char *filename, int major, int minor, int maxRecursionDepth);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
 
     int majorVer() const { return m_maj; }

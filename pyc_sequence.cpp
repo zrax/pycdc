@@ -4,16 +4,25 @@
 #include <stdexcept>
 
 /* PycTuple */
-void PycTuple::load(PycData* stream, PycModule* mod)
+void PycTuple::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    if (type() == TYPE_SMALL_TUPLE)
-        m_size = stream->getByte();
-    else
-        m_size = stream->get32();
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		if (type() == TYPE_SMALL_TUPLE)
+		{
+			m_size = stream->getByte();
+		}
+		else
+		{
+			m_size = stream->get32();
+		}
 
-    m_values.resize(m_size);
-    for (int i=0; i<m_size; i++)
-        m_values[i] = LoadObject(stream, mod);
+		m_values.resize(m_size);
+		for (int i=0; i<m_size; i++)
+		{
+			m_values[i] = LoadObject(stream, mod, currentDepth + 1, maxDepth);
+		}
+	}
 }
 
 bool PycTuple::isEqual(PycRef<PycObject> obj) const
@@ -36,11 +45,14 @@ bool PycTuple::isEqual(PycRef<PycObject> obj) const
 
 
 /* PycList */
-void PycList::load(PycData* stream, PycModule* mod)
+void PycList::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    m_size = stream->get32();
-    for (int i=0; i<m_size; i++)
-        m_values.push_back(LoadObject(stream, mod));
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		m_size = stream->get32();
+		for (int i=0; i<m_size; i++)
+			m_values.push_back(LoadObject(stream, mod, currentDepth + 1, maxDepth));
+	}
 }
 
 bool PycList::isEqual(PycRef<PycObject> obj) const
@@ -77,17 +89,20 @@ PycRef<PycObject> PycList::get(int idx) const
 
 
 /* PycDict */
-void PycDict::load(PycData* stream, PycModule* mod)
+void PycDict::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    PycRef<PycObject> key, val;
-    for (;;) {
-        key = LoadObject(stream, mod);
-        if (key == NULL)
-            break;
-        val = LoadObject(stream, mod);
-        m_keys.push_back(key);
-        m_values.push_back(val);
-    }
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		PycRef<PycObject> key, val;
+		for (;;) {
+			key = LoadObject(stream, mod, currentDepth + 1, maxDepth);
+			if (key == NULL)
+				break;
+			val = LoadObject(stream, mod, currentDepth + 1, maxDepth);
+			m_keys.push_back(key);
+			m_values.push_back(val);
+		}
+	}
 }
 
 bool PycDict::isEqual(PycRef<PycObject> obj) const
@@ -144,11 +159,16 @@ PycRef<PycObject> PycDict::get(int idx) const
 
 
 /* PycSet */
-void PycSet::load(PycData* stream, PycModule* mod)
+void PycSet::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    m_size = stream->get32();
-    for (int i=0; i<m_size; i++)
-        m_values.insert(LoadObject(stream, mod));
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		m_size = stream->get32();
+		for (int i=0; i<m_size; i++)
+		{
+			m_values.insert(LoadObject(stream, mod, currentDepth + 1, maxDepth));
+		}
+	}
 }
 
 bool PycSet::isEqual(PycRef<PycObject> obj) const

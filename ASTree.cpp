@@ -2604,27 +2604,27 @@ static int cmp_prec(PycRef<ASTNode> parent, PycRef<ASTNode> child)
 }
 
 static void print_ordered(PycRef<ASTNode> parent, PycRef<ASTNode> child,
-                          PycModule* mod)
+                          PycModule* mod, int currentDepth, int maxDepth)
 {
     if (child.type() == ASTNode::NODE_BINARY ||
         child.type() == ASTNode::NODE_COMPARE) {
         if (cmp_prec(parent, child) > 0) {
             fputs("(", pyc_output);
-            print_src(child, mod);
+            print_src(child, mod, currentDepth, maxDepth);
             fputs(")", pyc_output);
         } else {
-            print_src(child, mod);
+            print_src(child, mod, currentDepth, maxDepth);
         }
     } else if (child.type() == ASTNode::NODE_UNARY) {
         if (cmp_prec(parent, child) > 0) {
             fputs("(", pyc_output);
-            print_src(child, mod);
+            print_src(child, mod, currentDepth, maxDepth);
             fputs(")", pyc_output);
         } else {
-            print_src(child, mod);
+            print_src(child, mod, currentDepth, maxDepth);
         }
     } else {
-        print_src(child, mod);
+        print_src(child, mod, currentDepth, maxDepth);
     }
 }
 
@@ -2644,30 +2644,30 @@ static void end_line()
 }
 
 int cur_indent = -1;
-static void print_block(PycRef<ASTBlock> blk, PycModule* mod) {
+static void print_block(PycRef<ASTBlock> blk, PycModule* mod, int currentDepth, int maxDepth) {
     ASTBlock::list_t lines = blk->nodes();
 
     if (lines.size() == 0) {
         PycRef<ASTNode> pass = new ASTKeyword(ASTKeyword::KW_PASS);
         start_line(cur_indent);
-        print_src(pass, mod);
+        print_src(pass, mod, currentDepth, maxDepth);
     }
 
     for (auto ln = lines.cbegin(); ln != lines.cend();) {
         if ((*ln).cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
             start_line(cur_indent);
         }
-        print_src(*ln, mod);
+        print_src(*ln, mod, currentDepth, maxDepth);
         if (++ln != lines.end()) {
             end_line();
         }
     }
 }
 
-void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule* mod)
+void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule* mod, int currentDepth, int maxDepth)
 {
     fputs("{", pyc_output);
-    print_src(formatted_value->val(), mod);
+    print_src(formatted_value->val(), mod, currentDepth, maxDepth);
 
     switch (formatted_value->conversion()) {
     case ASTFormattedValue::ConversionFlag::NONE:
@@ -2690,9 +2690,19 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     fputs("}", pyc_output);
 }
 
-void print_src(PycRef<ASTNode> node, PycModule* mod)
+int CheckRecursionDepthAST(int currentDepth, int maxDepth)
 {
-    if (node == NULL) {
+	if (currentDepth > maxDepth)
+	{
+		fprintf(stderr, "\n# Error: Reached maximum object recursion depth of %i while generating source code\n", maxDepth);
+		return 0;
+	}
+	return 1;
+}
+
+void print_src(PycRef<ASTNode> node, PycModule* mod, int currentDepth, int maxDepth)
+{
+    if ((node == NULL) || (!CheckRecursionDepthAST(currentDepth, maxDepth))) {
         fputs("None", pyc_output);
         cleanBuild = true;
         return;
@@ -2703,28 +2713,28 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_COMPARE:
         {
             PycRef<ASTBinary> bin = node.cast<ASTBinary>();
-            print_ordered(node, bin->left(), mod);
+            print_ordered(node, bin->left(), mod, currentDepth + 1, maxDepth);
             fprintf(pyc_output, "%s", bin->op_str());
-            print_ordered(node, bin->right(), mod);
+            print_ordered(node, bin->right(), mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_UNARY:
         {
             PycRef<ASTUnary> un = node.cast<ASTUnary>();
             fprintf(pyc_output, "%s", un->op_str());
-            print_ordered(node, un->operand(), mod);
+            print_ordered(node, un->operand(), mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_CALL:
         {
             PycRef<ASTCall> call = node.cast<ASTCall>();
-            print_src(call->func(), mod);
+            print_src(call->func(), mod, currentDepth + 1, maxDepth);
             fputs("(", pyc_output);
             bool first = true;
             for (const auto& param : call->pparams()) {
                 if (!first)
                     fputs(", ", pyc_output);
-                print_src(param, mod);
+                print_src(param, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             for (const auto& param : call->kwparams()) {
@@ -2736,21 +2746,21 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     PycRef<PycString> str_name = param.first.cast<ASTObject>()->object().require_cast<PycString>();
                     fprintf(pyc_output, "%s = ", str_name->value());
                 }
-                print_src(param.second, mod);
+                print_src(param.second, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             if (call->hasVar()) {
                 if (!first)
                     fputs(", ", pyc_output);
                 fputs("*", pyc_output);
-                print_src(call->var(), mod);
+                print_src(call->var(), mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             if (call->hasKW()) {
                 if (!first)
                     fputs(", ", pyc_output);
                 fputs("**", pyc_output);
-                print_src(call->kw(), mod);
+                print_src(call->kw(), mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             fputs(")", pyc_output);
@@ -2759,30 +2769,30 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
     case ASTNode::NODE_DELETE:
         {
             fputs("del ", pyc_output);
-            print_src(node.cast<ASTDelete>()->value(), mod);
+            print_src(node.cast<ASTDelete>()->value(), mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_EXEC:
         {
             PycRef<ASTExec> exec = node.cast<ASTExec>();
             fputs("exec ", pyc_output);
-            print_src(exec->statement(), mod);
+            print_src(exec->statement(), mod, currentDepth + 1, maxDepth);
 
             if (exec->globals() != NULL) {
                 fputs(" in ", pyc_output);
-                print_src(exec->globals(), mod);
+                print_src(exec->globals(), mod, currentDepth + 1, maxDepth);
 
                 if (exec->locals() != NULL
                         && exec->globals() != exec->locals()) {
                     fputs(", ", pyc_output);
-                    print_src(exec->locals(), mod);
+                    print_src(exec->locals(), mod, currentDepth + 1, maxDepth);
                 }
             }
         }
         break;
     case ASTNode::NODE_FORMATTEDVALUE:
         fputs("f" F_STRING_QUOTE, pyc_output);
-        print_formatted_value(node.cast<ASTFormattedValue>(), mod);
+        print_formatted_value(node.cast<ASTFormattedValue>(), mod, currentDepth + 1, maxDepth);
         fputs(F_STRING_QUOTE, pyc_output);
         break;
     case ASTNode::NODE_JOINEDSTR:
@@ -2790,7 +2800,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         for (const auto& val : node.cast<ASTJoinedStr>()->values()) {
             switch (val.type()) {
             case ASTNode::NODE_FORMATTEDVALUE:
-                print_formatted_value(val.cast<ASTFormattedValue>(), mod);
+                print_formatted_value(val.cast<ASTFormattedValue>(), mod, currentDepth + 1, maxDepth);
                 break;
             case ASTNode::NODE_OBJECT:
                 // When printing a piece of the f-string, keep the quote style consistent.
@@ -2817,7 +2827,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 else
                     fputs(",\n", pyc_output);
                 start_line(cur_indent);
-                print_src(val, mod);
+                print_src(val, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             cur_indent--;
@@ -2829,16 +2839,16 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<ASTComprehension> comp = node.cast<ASTComprehension>();
 
             fputs("[ ", pyc_output);
-            print_src(comp->result(), mod);
+            print_src(comp->result(), mod, currentDepth + 1, maxDepth);
 
             for (const auto& gen : comp->generators()) {
                 fputs(" for ", pyc_output);
-                print_src(gen->index(), mod);
+                print_src(gen->index(), mod, currentDepth + 1, maxDepth);
                 fputs(" in ", pyc_output);
-                print_src(gen->iter(), mod);
+                print_src(gen->iter(), mod, currentDepth + 1, maxDepth);
                 if (gen->condition()) {
                     fprintf(pyc_output, " if ");
-                    print_src(gen->condition(), mod);
+                    print_src(gen->condition(), mod, currentDepth + 1, maxDepth);
                 }
             }
             fputs(" ]", pyc_output);
@@ -2855,9 +2865,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 else
                     fputs(",\n", pyc_output);
                 start_line(cur_indent);
-                print_src(val.first, mod);
+                print_src(val.first, mod, currentDepth + 1, maxDepth);
                 fputs(": ", pyc_output);
-                print_src(val.second, mod);
+                print_src(val.second, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             cur_indent--;
@@ -2879,7 +2889,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 map->add(new ASTObject(key), value);
             }
 
-            print_src(map, mod);
+            print_src(map, mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_NAME:
@@ -2892,7 +2902,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (ln.cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
                     start_line(cur_indent);
                 }
-                print_src(ln, mod);
+                print_src(ln, mod, currentDepth + 1, maxDepth);
                 end_line();
             }
             cur_indent--;
@@ -2907,7 +2917,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             if (node.cast<ASTBlock>()->blktype() == ASTBlock::BLK_CONTAINER) {
                 end_line();
                 PycRef<ASTBlock> blk = node.cast<ASTBlock>();
-                print_block(blk, mod);
+                print_block(blk, mod, currentDepth + 1, maxDepth);
                 end_line();
                 break;
             }
@@ -2922,29 +2932,29 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 else
                     fputs(" ", pyc_output);
 
-                print_src(blk.cast<ASTCondBlock>()->cond(), mod);
+                print_src(blk.cast<ASTCondBlock>()->cond(), mod, currentDepth + 1, maxDepth);
             } else if (blk->blktype() == ASTBlock::BLK_FOR || blk->blktype() == ASTBlock::BLK_ASYNCFOR) {
                 fputs(" ", pyc_output);
-                print_src(blk.cast<ASTIterBlock>()->index(), mod);
+                print_src(blk.cast<ASTIterBlock>()->index(), mod, currentDepth + 1, maxDepth);
                 fputs(" in ", pyc_output);
-                print_src(blk.cast<ASTIterBlock>()->iter(), mod);
+                print_src(blk.cast<ASTIterBlock>()->iter(), mod, currentDepth + 1, maxDepth);
             } else if (blk->blktype() == ASTBlock::BLK_EXCEPT &&
                     blk.cast<ASTCondBlock>()->cond() != NULL) {
                 fputs(" ", pyc_output);
-                print_src(blk.cast<ASTCondBlock>()->cond(), mod);
+                print_src(blk.cast<ASTCondBlock>()->cond(), mod, currentDepth + 1, maxDepth);
             } else if (blk->blktype() == ASTBlock::BLK_WITH) {
                 fputs(" ", pyc_output);
-                print_src(blk.cast<ASTWithBlock>()->expr(), mod);
+                print_src(blk.cast<ASTWithBlock>()->expr(), mod, currentDepth + 1, maxDepth);
                 PycRef<ASTNode> var = blk.cast<ASTWithBlock>()->var();
                 if (var != NULL) {
                     fputs(" as ", pyc_output);
-                    print_src(var, mod);
+                    print_src(var, mod, currentDepth + 1, maxDepth);
                 }
             }
             fputs(":\n", pyc_output);
 
             cur_indent++;
-            print_block(blk, mod);
+            print_block(blk, mod, currentDepth + 1, maxDepth);
             cur_indent--;
         }
         break;
@@ -2953,7 +2963,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<PycObject> obj = node.cast<ASTObject>()->object();
             if (obj.type() == PycObject::TYPE_CODE) {
                 PycRef<PycCode> code = obj.cast<PycCode>();
-                decompyle(code, mod);
+                decompyle(code, mod, currentDepth + 1, maxDepth);
+                decompyle(code, mod, currentDepth + 1, maxDepth);
             } else {
                 print_const(obj, mod);
             }
@@ -2965,14 +2976,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             bool first = true;
             if (node.cast<ASTPrint>()->stream() != nullptr) {
                 fputs(">>", pyc_output);
-                print_src(node.cast<ASTPrint>()->stream(), mod);
+                print_src(node.cast<ASTPrint>()->stream(), mod, currentDepth + 1, maxDepth);
                 first = false;
             }
 
             for (const auto& val : node.cast<ASTPrint>()->values()) {
                 if (!first)
                     fputs(", ", pyc_output);
-                print_src(val, mod);
+                print_src(val, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             if (!node.cast<ASTPrint>()->eol())
@@ -2987,7 +2998,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             for (const auto& param : raise->params()) {
                 if (!first)
                     fputs(", ", pyc_output);
-                print_src(param, mod);
+                print_src(param, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
         }
@@ -3014,7 +3025,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     break;
                 }
             }
-            print_src(value, mod);
+            print_src(value, mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_SLICE:
@@ -3022,11 +3033,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             PycRef<ASTSlice> slice = node.cast<ASTSlice>();
 
             if (slice->op() & ASTSlice::SLICE1) {
-                print_src(slice->left(), mod);
+                print_src(slice->left(), mod, currentDepth + 1, maxDepth);
             }
             fputs(":", pyc_output);
             if (slice->op() & ASTSlice::SLICE2) {
-                print_src(slice->right(), mod);
+                print_src(slice->right(), mod, currentDepth + 1, maxDepth);
             }
         }
         break;
@@ -3038,37 +3049,37 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
 
                 fputs("from ", pyc_output);
                 if (import->name().type() == ASTNode::NODE_IMPORT)
-                    print_src(import->name().cast<ASTImport>()->name(), mod);
+                    print_src(import->name().cast<ASTImport>()->name(), mod, currentDepth + 1, maxDepth);
                 else
-                    print_src(import->name(), mod);
+                    print_src(import->name(), mod, currentDepth + 1, maxDepth);
                 fputs(" import ", pyc_output);
 
                 if (stores.size() == 1) {
                     auto src = stores.front()->src();
                     auto dest = stores.front()->dest();
-                    print_src(src, mod);
+                    print_src(src, mod, currentDepth + 1, maxDepth);
 
                     if (src.cast<ASTName>()->name()->value() != dest.cast<ASTName>()->name()->value()) {
                         fputs(" as ", pyc_output);
-                        print_src(dest, mod);
+                        print_src(dest, mod, currentDepth + 1, maxDepth);
                     }
                 } else {
                     bool first = true;
                     for (const auto& st : stores) {
                         if (!first)
                             fputs(", ", pyc_output);
-                        print_src(st->src(), mod);
+                        print_src(st->src(), mod, currentDepth + 1, maxDepth);
                         first = false;
 
                         if (st->src().cast<ASTName>()->name()->value() != st->dest().cast<ASTName>()->name()->value()) {
                             fputs(" as ", pyc_output);
-                            print_src(st->dest(), mod);
+                            print_src(st->dest(), mod, currentDepth + 1, maxDepth);
                         }
                     }
                 }
             } else {
                 fputs("import ", pyc_output);
-                print_src(import->name(), mod);
+                print_src(import->name(), mod, currentDepth + 1, maxDepth);
             }
         }
         break;
@@ -3088,7 +3099,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                 if ((code_src->argCount() - i) <= (int)defargs.size()) {
                     fputs(" = ", pyc_output);
-                    print_src(*da++, mod);
+                    print_src(*da++, mod, currentDepth + 1, maxDepth);
                 }
             }
             da = kwdefargs.cbegin();
@@ -3099,14 +3110,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                     if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
                         fputs(" = ", pyc_output);
-                        print_src(*da++, mod);
+                        print_src(*da++, mod, currentDepth + 1, maxDepth);
                     }
                 }
             }
             fputs(": ", pyc_output);
 
             inLambda = true;
-            print_src(code, mod);
+            print_src(code, mod, currentDepth + 1, maxDepth);
             inLambda = false;
 
             fputs(")", pyc_output);
@@ -3124,7 +3135,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (strcmp(code_src->name()->value(), "<lambda>") == 0) {
                     fputs("\n", pyc_output);
                     start_line(cur_indent);
-                    print_src(dest, mod);
+                    print_src(dest, mod, currentDepth + 1, maxDepth);
                     fputs(" = lambda ", pyc_output);
                     isLambda = true;
                 } else {
@@ -3133,7 +3144,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     if (code_src->flags() & PycCode::CO_COROUTINE)
                         fputs("async ", pyc_output);
                     fputs("def ", pyc_output);
-                    print_src(dest, mod);
+                    print_src(dest, mod, currentDepth + 1, maxDepth);
                     fputs("(", pyc_output);
                 }
 
@@ -3147,7 +3158,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                     if ((code_src->argCount() - i) <= (int)defargs.size()) {
                         fputs(" = ", pyc_output);
-                        print_src(*da++, mod);
+                        print_src(*da++, mod, currentDepth + 1, maxDepth);
                     }
                 }
                 da = kwdefargs.cbegin();
@@ -3158,7 +3169,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
                         if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
                             fputs(" = ", pyc_output);
-                            print_src(*da++, mod);
+                            print_src(*da++, mod, currentDepth + 1, maxDepth);
                         }
                     }
                 }
@@ -3188,14 +3199,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 bool preLambda = inLambda;
                 inLambda |= isLambda;
 
-                print_src(code, mod);
+                print_src(code, mod, currentDepth + 1, maxDepth);
 
                 inLambda = preLambda;
             } else if (src.type() == ASTNode::NODE_CLASS) {
                 fputs("\n", pyc_output);
                 start_line(cur_indent);
                 fputs("class ", pyc_output);
-                print_src(dest, mod);
+                print_src(dest, mod, currentDepth + 1, maxDepth);
                 PycRef<ASTTuple> bases = src.cast<ASTClass>()->bases().cast<ASTTuple>();
                 if (bases->values().size() > 0) {
                     fputs("(", pyc_output);
@@ -3203,7 +3214,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     for (const auto& val : bases->values()) {
                         if (!first)
                             fputs(", ", pyc_output);
-                        print_src(val, mod);
+                        print_src(val, mod, currentDepth + 1, maxDepth);
                         first = false;
                     }
                     fputs("):\n", pyc_output);
@@ -3214,7 +3225,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 printClassDocstring = true;
                 PycRef<ASTNode> code = src.cast<ASTClass>()->code().cast<ASTCall>()
                                        ->func().cast<ASTFunction>()->code();
-                print_src(code, mod);
+                print_src(code, mod, currentDepth + 1, maxDepth);
             } else if (src.type() == ASTNode::NODE_IMPORT) {
                 PycRef<ASTImport> import = src.cast<ASTImport>();
                 if (import->fromlist() != NULL) {
@@ -3222,9 +3233,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     if (fromlist != Pyc_None) {
                         fputs("from ", pyc_output);
                         if (import->name().type() == ASTNode::NODE_IMPORT)
-                            print_src(import->name().cast<ASTImport>()->name(), mod);
+                            print_src(import->name().cast<ASTImport>()->name(), mod, currentDepth + 1, maxDepth);
                         else
-                            print_src(import->name(), mod);
+                            print_src(import->name(), mod, currentDepth + 1, maxDepth);
                         fputs(" import ", pyc_output);
                         if (fromlist.type() == PycObject::TYPE_TUPLE ||
                                 fromlist.type() == PycObject::TYPE_SMALL_TUPLE) {
@@ -3240,48 +3251,48 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                         }
                     } else {
                         fputs("import ", pyc_output);
-                        print_src(import->name(), mod);
+                        print_src(import->name(), mod, currentDepth + 1, maxDepth);
                     }
                 } else {
                     fputs("import ", pyc_output);
                     PycRef<ASTNode> import_name = import->name();
-                    print_src(import_name, mod);
+                    print_src(import_name, mod, currentDepth + 1, maxDepth);
                     if (!dest.cast<ASTName>()->name()->isEqual(import_name.cast<ASTName>()->name().cast<PycObject>())) {
                         fputs(" as ", pyc_output);
-                        print_src(dest, mod);
+                        print_src(dest, mod, currentDepth + 1, maxDepth);
                     }
                 }
             } else if (src.type() == ASTNode::NODE_BINARY &&
                     src.cast<ASTBinary>()->is_inplace() == true) {
-                print_src(src, mod);
+                print_src(src, mod, currentDepth + 1, maxDepth);
             } else {
-                print_src(dest, mod);
+                print_src(dest, mod, currentDepth + 1, maxDepth);
                 fputs(" = ", pyc_output);
-                print_src(src, mod);
+                print_src(src, mod, currentDepth + 1, maxDepth);
             }
         }
         break;
     case ASTNode::NODE_CHAINSTORE:
         {
             for (auto& dest : node.cast<ASTChainStore>()->nodes()) {
-                print_src(dest, mod);
+                print_src(dest, mod, currentDepth + 1, maxDepth);
                 fputs(" = ", pyc_output);
             }
-            print_src(node.cast<ASTChainStore>()->src(), mod);
+            print_src(node.cast<ASTChainStore>()->src(), mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_SUBSCR:
         {
-            print_src(node.cast<ASTSubscr>()->name(), mod);
+            print_src(node.cast<ASTSubscr>()->name(), mod, currentDepth + 1, maxDepth);
             fputs("[", pyc_output);
-            print_src(node.cast<ASTSubscr>()->key(), mod);
+            print_src(node.cast<ASTSubscr>()->key(), mod, currentDepth + 1, maxDepth);
             fputs("]", pyc_output);
         }
         break;
     case ASTNode::NODE_CONVERT:
         {
             fputs("`", pyc_output);
-            print_src(node.cast<ASTConvert>()->name(), mod);
+            print_src(node.cast<ASTConvert>()->name(), mod, currentDepth + 1, maxDepth);
             fputs("`", pyc_output);
         }
         break;
@@ -3295,7 +3306,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             for (const auto& val : values) {
                 if (!first)
                     fputs(", ", pyc_output);
-                print_src(val, mod);
+                print_src(val, mod, currentDepth + 1, maxDepth);
                 first = false;
             }
             if (values.size() == 1)
@@ -3312,7 +3323,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
 
             fputs(name->object().cast<PycString>()->value(), pyc_output);
             fputs(": ", pyc_output);
-            print_src(type, mod);
+            print_src(type, mod, currentDepth + 1, maxDepth);
         }
         break;
     case ASTNode::NODE_TERNARY:
@@ -3327,14 +3338,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
              */
             PycRef<ASTTernary> ternary = node.cast<ASTTernary>();
             //fputs("(", pyc_output);
-            print_src(ternary->if_expr(), mod);
+            print_src(ternary->if_expr(), mod, currentDepth + 1, maxDepth);
             const auto if_block = ternary->if_block().require_cast<ASTCondBlock>();
             fputs(" if ", pyc_output);
             if (if_block->negative())
                 fputs("not ", pyc_output);
-            print_src(if_block->cond(), mod);
+            print_src(if_block->cond(), mod, currentDepth + 1, maxDepth);
             fputs(" else ", pyc_output);
-            print_src(ternary->else_expr(), mod);
+            print_src(ternary->else_expr(), mod, currentDepth + 1, maxDepth);
             //fputs(")", pyc_output);
         }
         break;
@@ -3380,7 +3391,7 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
         return false;
 }
 
-void decompyle(PycRef<PycCode> code, PycModule* mod)
+void decompyle(PycRef<PycCode> code, PycModule* mod, int currentDepth, int maxDepth)
 {
     PycRef<ASTNode> source = BuildFromCode(code, mod);
 
@@ -3468,7 +3479,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod)
         printDocstringAndGlobals = false;
     }
 
-    print_src(source, mod);
+    print_src(source, mod, currentDepth, maxDepth);
 
     if (!cleanBuild || !part1clean) {
         start_line(cur_indent);

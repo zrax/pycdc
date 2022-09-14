@@ -19,7 +19,7 @@ public:
         return m_value.substr(0, str.size()) == str;
     }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     int length() const { return (int)m_value.size(); }
     const char* value() const { return m_value.c_str(); }

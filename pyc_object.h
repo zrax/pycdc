@@ -139,7 +139,7 @@ public:
         return obj.isIdent(this);
     }
 
-    virtual void load(PycData*, PycModule*) { }
+    virtual void load(PycData*, PycModule*, int, int) { }
 
 private:
     int m_refs;
@@ -157,7 +157,8 @@ int PycRef<_Obj>::type() const
 }
 
 PycRef<PycObject> CreateObject(int type);
-PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod);
+int CheckRecursionDepth(int currentDepth, int maxDepth);
+PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod, int currentDepth, int maxDepth);
 
 /* Static Singleton objects */
 extern PycRef<PycObject> Pyc_None;

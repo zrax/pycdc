@@ -68,22 +68,36 @@ PycRef<PycObject> CreateObject(int type)
     }
 }
 
-PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod)
+int CheckRecursionDepth(int currentDepth, int maxDepth)
 {
-    int type = stream->getByte();
-    PycRef<PycObject> obj;
+	if (currentDepth > maxDepth)
+	{
+		fprintf(stderr, "\n# Error: Reached maximum object recursion depth of %i while loading object data\n", maxDepth);
+		return 0;
+	}
+	return 1;
+}
 
-    if (type == PycObject::TYPE_OBREF) {
-        int index = stream->get32();
-        obj = mod->getRef(index);
-    } else {
-        obj = CreateObject(type & 0x7F);
-        if (obj != NULL) {
-            if (type & 0x80)
-                mod->refObject(obj);
-            obj->load(stream, mod);
-        }
-    }
+PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
+{    
+    PycRef<PycObject> obj;
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		int type = stream->getByte();
+		if (type == PycObject::TYPE_OBREF) {
+			int index = stream->get32();
+			obj = mod->getRef(index);
+		} else {
+			obj = CreateObject(type & 0x7F);
+			if (obj != NULL) {
+				if (type & 0x80)
+				{
+					mod->refObject(obj);		
+				}
+				obj->load(stream, mod, currentDepth + 1, maxDepth);
+			}
+		}
+	}
 
     return obj;
 }

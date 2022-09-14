@@ -31,7 +31,7 @@ public:
         : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
           m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(class PycData* stream, class PycModule* mod, int currentDepth, int maxDepth) override;
 
     int argCount() const { return m_argCount; }
     int posOnlyArgCount() const { return m_posOnlyArgCount; }

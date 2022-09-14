@@ -44,36 +44,39 @@ static void ascii_to_utf8(std::string* data)
 }
 
 /* PycString */
-void PycString::load(PycData* stream, PycModule* mod)
+void PycString::load(PycData* stream, PycModule* mod, int currentDepth, int maxDepth)
 {
-    if (type() == TYPE_STRINGREF) {
-        PycRef<PycString> str = mod->getIntern(stream->get32());
-        m_value.resize(str->length());
+	if (CheckRecursionDepth(currentDepth, maxDepth))
+	{
+		if (type() == TYPE_STRINGREF) {
+			PycRef<PycString> str = mod->getIntern(stream->get32());
+			m_value.resize(str->length());
 
-        if (str->length())
-            std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
-    } else {
-        int length;
-        if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-            length = stream->getByte();
-        else
-            length = stream->get32();
+			if (str->length())
+				std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
+		} else {
+			int length;
+			if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
+				length = stream->getByte();
+			else
+				length = stream->get32();
 
-        if (length < 0)
-            throw std::bad_alloc();
+			if (length < 0)
+				throw std::bad_alloc();
 
-        m_value.resize(length);
-        if (length) {
-            stream->getBuffer(length, &m_value.front());
-            if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
-                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-                ascii_to_utf8(&m_value);
-        }
+			m_value.resize(length);
+			if (length) {
+				stream->getBuffer(length, &m_value.front());
+				if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
+						type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
+					ascii_to_utf8(&m_value);
+			}
 
-        if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
-                type() == TYPE_SHORT_ASCII_INTERNED)
-            mod->intern(this);
+			if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
+					type() == TYPE_SHORT_ASCII_INTERNED)
+				mod->intern(this);
     }
+	}
 }
 
 bool PycString::isEqual(PycRef<PycObject> obj) const

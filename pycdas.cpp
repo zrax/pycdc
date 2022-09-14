@@ -12,6 +12,8 @@
 #  define PATHSEP '/'
 #endif
 
+# define DEFAULT_MAX_RECURSION_DEPTH 100
+
 static const char* flag_names[] = {
     "CO_OPTIMIZED", "CO_NEWLOCALS", "CO_VARARGS", "CO_VARKEYWORDS",
     "CO_NESTED", "CO_GENERATOR", "CO_NOFREE", "CO_COROUTINE",
@@ -71,9 +73,9 @@ static void iprintf(int indent, const char* fmt, ...)
     va_end(varargs);
 }
 
-void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
+void output_object(PycRef<PycObject> obj, PycModule* mod, int indent, int currentDepth, int maxDepth)
 {
-    if (obj == NULL) {
+    if ((obj == NULL) || (!CheckRecursionDepth(currentDepth, maxDepth))) {
         iputs(indent, "<NULL>");
         return;
     }
@@ -99,31 +101,31 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             if (codeObj->names() != NULL) {
                 iputs(indent + 1, "[Names]\n");
                 for (int i=0; i<codeObj->names()->size(); i++)
-                    output_object(codeObj->names()->get(i), mod, indent + 2);
+                    output_object(codeObj->names()->get(i), mod, indent + 2, currentDepth + 1, maxDepth);
             }
 
             if (codeObj->varNames() != NULL) {
                 iputs(indent + 1, "[Var Names]\n");
                 for (int i=0; i<codeObj->varNames()->size(); i++)
-                    output_object(codeObj->varNames()->get(i), mod, indent + 2);
+                    output_object(codeObj->varNames()->get(i), mod, indent + 2, currentDepth + 1, maxDepth);
             }
 
             if (codeObj->freeVars() != NULL) {
                 iputs(indent + 1, "[Free Vars]\n");
                 for (int i=0; i<codeObj->freeVars()->size(); i++)
-                    output_object(codeObj->freeVars()->get(i), mod, indent + 2);
+                    output_object(codeObj->freeVars()->get(i), mod, indent + 2, currentDepth + 1, maxDepth);
             }
 
             if (codeObj->cellVars() != NULL) {
                 iputs(indent + 1, "[Cell Vars]\n");
                 for (int i=0; i<codeObj->cellVars()->size(); i++)
-                    output_object(codeObj->cellVars()->get(i), mod, indent + 2);
+                    output_object(codeObj->cellVars()->get(i), mod, indent + 2, currentDepth + 1, maxDepth);
             }
 
             if (codeObj->consts() != NULL) {
                 iputs(indent + 1, "[Constants]\n");
                 for (int i=0; i<codeObj->consts()->size(); i++)
-                    output_object(codeObj->consts()->get(i), mod, indent + 2);
+                    output_object(codeObj->consts()->get(i), mod, indent + 2, currentDepth + 1, maxDepth);
             }
 
             iputs(indent + 1, "[Disassembly]\n");
@@ -158,7 +160,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iputs(indent, "(\n");
             for (const auto& val : obj.cast<PycTuple>()->values())
-                output_object(val, mod, indent + 1);
+                output_object(val, mod, indent + 1, currentDepth + 1, maxDepth);
             iputs(indent, ")\n");
         }
         break;
@@ -166,7 +168,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iputs(indent, "[\n");
             for (const auto& val : obj.cast<PycList>()->values())
-                output_object(val, mod, indent + 1);
+                output_object(val, mod, indent + 1, currentDepth + 1, maxDepth);
             iputs(indent, "]\n");
         }
         break;
@@ -178,8 +180,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             PycDict::key_t::const_iterator ki = keys.begin();
             PycDict::value_t::const_iterator vi = values.begin();
             while (ki != keys.end()) {
-                output_object(*ki, mod, indent + 1);
-                output_object(*vi, mod, indent + 2);
+                output_object(*ki, mod, indent + 1, currentDepth + 1, maxDepth);
+                output_object(*vi, mod, indent + 2, currentDepth + 1, maxDepth);
                 ++ki, ++vi;
             }
             iputs(indent, "}\n");
@@ -189,7 +191,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         {
             iputs(indent, "{\n");
             for (const auto& val : obj.cast<PycSet>()->values())
-                output_object(val, mod, indent + 1);
+                output_object(val, mod, indent + 1, currentDepth + 1, maxDepth);
             iputs(indent, "}\n");
         }
         break;
@@ -235,6 +237,8 @@ int main(int argc, char* argv[])
     const char* infile = nullptr;
     bool marshalled = false;
     const char* version = nullptr;
+	int maxRecursionDepth = DEFAULT_MAX_RECURSION_DEPTH;
+	
     for (int arg = 1; arg < argc; ++arg) {
         if (strcmp(argv[arg], "-o") == 0) {
             if (arg + 1 < argc) {
@@ -259,12 +263,20 @@ int main(int argc, char* argv[])
                 fputs("Option '-v' requires a version\n", stderr);
                 return 1;
             }
+		} else if (strcmp(argv[arg], "-m") == 0) {
+            if (arg + 1 < argc) {
+                maxRecursionDepth = atoi(argv[++arg]);
+            } else {
+                fputs("Option '-m' requires an integer value\n", stderr);
+                return 1;
+            }
         } else if (strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "-h") == 0) {
             fprintf(stderr, "Usage:  %s [options] input.pyc\n\n", argv[0]);
             fputs("Options:\n", stderr);
             fputs("  -o <filename>  Write output to <filename> (default: stdout)\n", stderr);
             fputs("  -c             Specify loading a compiled code object. Requires the version to be set\n", stderr);
             fputs("  -v <x.y>       Specify a Python version for loading a compiled code object\n", stderr);
+            fprintf(stderr, "  -m <x>         Specify the maximum object recursion depth (default: %i)\n", maxRecursionDepth);
             fputs("  --help         Show this help text and then exit\n", stderr);
             return 0;
         } else {
@@ -280,7 +292,7 @@ int main(int argc, char* argv[])
     PycModule mod;
     if (!marshalled) {
         try {
-            mod.loadFromFile(infile);
+            mod.loadFromFile(infile, maxRecursionDepth);
         } catch (std::exception &ex) {
             fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
             return 1;
@@ -298,14 +310,14 @@ int main(int argc, char* argv[])
         }
         int major = std::stoi(s.substr(0, dot));
         int minor = std::stoi(s.substr(dot+1, s.size()));
-        mod.loadFromMarshalledFile(infile, major, minor);
+        mod.loadFromMarshalledFile(infile, major, minor, maxRecursionDepth);
     }
     const char* dispname = strrchr(infile, PATHSEP);
     dispname = (dispname == NULL) ? infile : dispname + 1;
     fprintf(pyc_output, "%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
            (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     try {
-        output_object(mod.code().cast<PycObject>(), &mod, 0);
+        output_object(mod.code().cast<PycObject>(), &mod, 0, 0, maxRecursionDepth);
     } catch (std::exception& ex) {
         fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
         return 1;

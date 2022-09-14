@@ -166,12 +166,13 @@ void PycModule::setVersion(unsigned int magic)
 
     /* Bad Magic detected */
     default:
+	fprintf(stderr, "Unrecognized magic value: %x\n", magic);
         m_maj = -1;
         m_min = -1;
     }
 }
 
-void PycModule::loadFromFile(const char* filename)
+void PycModule::loadFromFile(const char* filename, int maxRecursionDepth)
 {
     PycFile in(filename);
     if (!in.isOpen()) {
@@ -199,10 +200,10 @@ void PycModule::loadFromFile(const char* filename)
             in.get32(); // Size parameter added in Python 3.3
     }
 
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this, 0, maxRecursionDepth).require_cast<PycCode>();
 }
 
-void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
+void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor, int maxRecursionDepth)
 {
     PycFile in (filename);
     if (!in.isOpen()) {
@@ -215,7 +216,7 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
         return;
     }
     setVersion(magic);
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this, 0, maxRecursionDepth).require_cast<PycCode>();
 }
 
 PycRef<PycString> PycModule::getIntern(int ref) const
