@@ -3170,11 +3170,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
                     if (narg)
                         fputs(", ", pyc_output);
-
-                    int idx = code_src->argCount();
-                    if (code_src->flags() & PycCode::CO_VARARGS) {
-                        idx++;
-                    }
                     fprintf(pyc_output, "**%s", code_src->getVarName(narg++)->value());
                 }
 
