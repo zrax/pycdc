@@ -37,8 +37,6 @@ enum PycMagic {
     INVALID = 0,
 };
 
-PycMagic version_to_magic(int major, int minor);
-
 class PycModule {
 public:
     PycModule() : m_maj(-1), m_min(-1), m_unicode(false) { }
@@ -71,6 +69,8 @@ public:
 
     void refObject(PycRef<PycObject> str) { m_refs.push_back(str); }
     PycRef<PycObject> getRef(int ref) const;
+
+    static bool isSupportedVersion(int major, int minor);
 
 private:
     void setVersion(unsigned int magic);
