@@ -173,7 +173,6 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
         OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
                      false, pyc_output, parent_f_string_quote);
         break;
-    case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:

@@ -3356,7 +3356,6 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod)
     case PycObject::TYPE_UNICODE:
         prefix = mod->strIsUnicode() ? 0 : 'u';
         break;
-    case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:

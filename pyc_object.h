@@ -143,6 +143,8 @@ public:
 
 private:
     int m_refs;
+
+protected:
     int m_type;
 
 public:

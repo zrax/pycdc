@@ -140,7 +140,6 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u');
         fputs("\n", pyc_output);
         break;
-    case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
