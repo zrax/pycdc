@@ -24,9 +24,9 @@ bool PycTuple::isEqual(PycRef<PycObject> obj) const
     PycRef<PycTuple> tupleObj = obj.cast<PycTuple>();
     if (m_size != tupleObj->m_size)
         return false;
-    value_t::const_iterator it1 = m_values.begin();
-    value_t::const_iterator it2 = tupleObj->m_values.begin();
-    while (it1 != m_values.end()) {
+    auto it1 = m_values.cbegin();
+    auto it2 = tupleObj->m_values.cbegin();
+    while (it1 != m_values.cend()) {
         if (!(*it1)->isEqual(*it2))
             return false;
         ++it1, ++it2;
@@ -51,29 +51,15 @@ bool PycList::isEqual(PycRef<PycObject> obj) const
     PycRef<PycList> listObj = obj.cast<PycList>();
     if (m_size != listObj->m_size)
         return false;
-    value_t::const_iterator it1 = m_values.begin();
-    value_t::const_iterator it2 = listObj->m_values.begin();
-    while (it1 != m_values.end()) {
+    auto it1 = m_values.cbegin();
+    auto it2 = listObj->m_values.cbegin();
+    while (it1 != m_values.cend()) {
         if (!(*it1)->isEqual(*it2))
             return false;
         ++it1, ++it2;
     }
     return true;
 }
-
-PycRef<PycObject> PycList::get(int idx) const
-{
-    if (idx < 0)
-        throw std::out_of_range("List index out of range");
-
-    value_t::const_iterator it = m_values.begin();
-    while (idx-- && it != m_values.end())
-        ++it;
-    if (it == m_values.end())
-        throw std::out_of_range("List index out of range");
-    return *it;
-}
-
 
 
 /* PycDict */
@@ -99,17 +85,17 @@ bool PycDict::isEqual(PycRef<PycObject> obj) const
     if (m_size != dictObj->m_size)
         return false;
 
-    key_t::const_iterator ki1 = m_keys.begin();
-    key_t::const_iterator ki2 = dictObj->m_keys.begin();
-    while (ki1 != m_keys.end()) {
+    auto ki1 = m_keys.cbegin();
+    auto ki2 = dictObj->m_keys.cbegin();
+    while (ki1 != m_keys.cend()) {
         if (!(*ki1)->isEqual(*ki2))
             return false;
         ++ki1, ++ki2;
     }
 
-    value_t::const_iterator vi1 = m_values.begin();
-    value_t::const_iterator vi2 = dictObj->m_values.begin();
-    while (vi1 != m_values.end()) {
+    auto vi1 = m_values.cbegin();
+    auto vi2 = dictObj->m_values.cbegin();
+    while (vi1 != m_values.cend()) {
         if (!(*vi1)->isEqual(*vi2))
             return false;
         ++vi1, ++vi2;
@@ -119,14 +105,14 @@ bool PycDict::isEqual(PycRef<PycObject> obj) const
 
 PycRef<PycObject> PycDict::get(PycRef<PycObject> key) const
 {
-    key_t::const_iterator ki = m_keys.begin();
-    value_t::const_iterator vi = m_values.begin();
-    while (ki != m_keys.end()) {
+    auto ki = m_keys.cbegin();
+    auto vi = m_values.cbegin();
+    while (ki != m_keys.cend()) {
         if ((*ki)->isEqual(key))
             return *vi;
         ++ki, ++vi;
     }
-    return NULL; // Disassembly shouldn't get non-existant keys
+    return NULL; // Disassembly shouldn't get non-existent keys
 }
 
 PycRef<PycObject> PycDict::get(int idx) const
@@ -134,10 +120,10 @@ PycRef<PycObject> PycDict::get(int idx) const
     if (idx < 0)
         throw std::out_of_range("Dict index out of range");
 
-    value_t::const_iterator it = m_values.begin();
-    while (idx-- && it != m_values.end())
+    auto it = m_values.cbegin();
+    while (idx-- && it != m_values.cend())
         ++it;
-    if (it == m_values.end())
+    if (it == m_values.cend())
         throw std::out_of_range("Dict index out of range");
     return *it;
 }
@@ -159,9 +145,9 @@ bool PycSet::isEqual(PycRef<PycObject> obj) const
     PycRef<PycSet> setObj = obj.cast<PycSet>();
     if (m_size != setObj->m_size)
         return false;
-    value_t::const_iterator it1 = m_values.begin();
-    value_t::const_iterator it2 = setObj->m_values.begin();
-    while (it1 != m_values.end()) {
+    auto it1 = m_values.cbegin();
+    auto it2 = setObj->m_values.cbegin();
+    while (it1 != m_values.cend()) {
         if (!(*it1)->isEqual(*it2))
             return false;
         ++it1, ++it2;
@@ -174,10 +160,10 @@ PycRef<PycObject> PycSet::get(int idx) const
     if (idx < 0)
         throw std::out_of_range("Set index out of range");
 
-    value_t::const_iterator it = m_values.begin();
-    while (idx-- && it != m_values.end())
+    auto it = m_values.cbegin();
+    while (idx-- && it != m_values.cend())
         ++it;
-    if (it == m_values.end())
+    if (it == m_values.cend())
         throw std::out_of_range("Set index out of range");
     return *it;
 }

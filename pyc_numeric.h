@@ -3,7 +3,7 @@
 
 #include "pyc_object.h"
 #include "data.h"
-#include <list>
+#include <vector>
 #include <string>
 
 class PycInt : public PycObject {
@@ -35,13 +35,13 @@ public:
     void load(class PycData* stream, class PycModule* mod) override;
 
     int size() const { return m_size; }
-    const std::list<int>& value() const { return m_value; }
+    const std::vector<int>& value() const { return m_value; }
 
     std::string repr() const;
 
 private:
     int m_size;
-    std::list<int> m_value;
+    std::vector<int> m_value;
 };
 
 class PycFloat : public PycObject {

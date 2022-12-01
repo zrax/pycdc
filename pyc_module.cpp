@@ -235,26 +235,14 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
 
 PycRef<PycString> PycModule::getIntern(int ref) const
 {
-    if (ref < 0)
+    if (ref < 0 || (size_t)ref >= m_interns.size())
         throw std::out_of_range("Intern index out of range");
-
-    auto it = m_interns.cbegin();
-    while (ref-- && it != m_interns.cend())
-        ++it;
-    if (it == m_interns.cend())
-        throw std::out_of_range("Intern index out of range");
-    return *it;
+    return m_interns[(size_t)ref];
 }
 
 PycRef<PycObject> PycModule::getRef(int ref) const
 {
-    if (ref < 0)
+    if (ref < 0 || (size_t)ref >= m_refs.size())
         throw std::out_of_range("Ref index out of range");
-
-    auto it = m_refs.cbegin();
-    while (ref-- && it != m_refs.cend())
-        ++it;
-    if (it == m_refs.cend())
-        throw std::out_of_range("Ref index out of range");
-    return *it;
+    return m_refs[(size_t)ref];
 }
