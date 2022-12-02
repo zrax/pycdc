@@ -3,11 +3,11 @@
 
 #include "pyc_sequence.h"
 #include "pyc_string.h"
-#include <set>
+#include <vector>
 
 class PycCode : public PycObject {
 public:
-    typedef std::set<PycRef<PycString>> globals_t;
+    typedef std::vector<PycRef<PycString>> globals_t;
     enum CodeFlags {
         CO_OPTIMIZED = 0x1,
         CO_NEWLOCALS = 0x2,
@@ -77,7 +77,7 @@ public:
 
     void markGlobal(PycRef<PycString> varname)
     {
-        m_globalsUsed.emplace(std::move(varname));
+        m_globalsUsed.emplace_back(std::move(varname));
     }
 
 private:
