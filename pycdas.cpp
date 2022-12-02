@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
     fprintf(pyc_output, "%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
            (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     try {
-        output_object(mod.code().cast<PycObject>(), &mod, 0);
+        output_object(mod.code().try_cast<PycObject>(), &mod, 0);
     } catch (std::exception& ex) {
         fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
         return 1;

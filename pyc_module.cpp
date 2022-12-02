@@ -213,7 +213,7 @@ void PycModule::loadFromFile(const char* filename)
             in.get32(); // Size parameter added in Python 3.3
     }
 
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
 void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
@@ -230,7 +230,7 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
     m_maj = major;
     m_min = minor;
     m_unicode = (major >= 3);
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
 PycRef<PycString> PycModule::getIntern(int ref) const
