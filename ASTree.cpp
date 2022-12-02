@@ -3305,11 +3305,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
         {
             PycRef<ASTAnnotatedVar> annotated_var = node.cast<ASTAnnotatedVar>();
             PycRef<ASTObject> name = annotated_var->name().cast<ASTObject>();
-            PycRef<ASTNode> type = annotated_var->type();
+            PycRef<ASTNode> annotation = annotated_var->annotation();
 
             fputs(name->object().cast<PycString>()->value(), pyc_output);
             fputs(": ", pyc_output);
-            print_src(type, mod);
+            print_src(annotation, mod);
         }
         break;
     case ASTNode::NODE_TERNARY:
