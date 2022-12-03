@@ -46,10 +46,14 @@ public:
     PycRef<PycSequence> varNames() const { return m_varNames; }
     PycRef<PycSequence> freeVars() const { return m_freeVars; }
     PycRef<PycSequence> cellVars() const { return m_cellVars; }
+    PycRef<PycSequence> localsAndNames() const { return m_localsAndNames; }
+    PycRef<PycString> localsAndKinds() const { return m_localsAndKinds; }
     PycRef<PycString> fileName() const { return m_fileName; }
     PycRef<PycString> name() const { return m_name; }
+    PycRef<PycString> qualName() const { return m_qualName; }
     int firstLine() const { return m_firstLine; }
     PycRef<PycString> lnTable() const { return m_lnTable; }
+    PycRef<PycString> exceptTable() const { return m_exceptTable; }
 
     PycRef<PycObject> getConst(int idx) const
     {
@@ -89,10 +93,14 @@ private:
     PycRef<PycSequence> m_varNames;
     PycRef<PycSequence> m_freeVars;
     PycRef<PycSequence> m_cellVars;
+    PycRef<PycSequence> m_localsAndNames;
+    PycRef<PycString> m_localsAndKinds;
     PycRef<PycString> m_fileName;
     PycRef<PycString> m_name;
+    PycRef<PycString> m_qualName;
     int m_firstLine;
     PycRef<PycString> m_lnTable;
+    PycRef<PycString> m_exceptTable;
     globals_t m_globalsUsed; /* Global vars used in this code */
 };
 
