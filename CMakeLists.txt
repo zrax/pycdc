@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Debug options.
 option(ENABLE_BLOCK_DEBUG "Enable block debugging" OFF)
 option(ENABLE_STACK_DEBUG "Enable stack debugging" OFF)
+option(ENABLE_ASM_DEBUG "Enable assembly debugging" OFF)
 
 # Turn debug defs on if they're enabled.
 if (ENABLE_BLOCK_DEBUG)
@@ -14,6 +15,9 @@ if (ENABLE_BLOCK_DEBUG)
 endif()
 if (ENABLE_STACK_DEBUG)
     add_definitions(-DSTACK_DEBUG)
+endif()
+if (ENABLE_ASM_DEBUG)
+    add_definitions(-DASM_DEBUG)
 endif()
 
 # For generating the bytes tables

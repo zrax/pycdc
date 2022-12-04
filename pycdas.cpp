@@ -131,26 +131,34 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
         }
         break;
     case PycObject::TYPE_STRING:
-        iputs(indent, "");
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
-        fputs("\n", pyc_output);
+        {
+            iputs(indent, "");
+            std::string s = OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0) + "\n";
+            fputs(s.c_str(), pyc_output);
+        }
         break;
     case PycObject::TYPE_UNICODE:
-        iputs(indent, "");
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u');
-        fputs("\n", pyc_output);
+        {
+            iputs(indent, "");
+            std::string s = OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u') + "\n";
+            fputs(s.c_str(), pyc_output);
+        }
         break;
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        iputs(indent, "");
-        if (mod->majorVer() >= 3)
-            OutputString(obj.cast<PycString>(), 0);
-        else
-            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
-        fputs("\n", pyc_output);
+        {
+            iputs(indent, "");
+            std::string s;
+            if (mod->majorVer() >= 3)
+                s = OutputString(obj.cast<PycString>(), 0);
+            else
+                s = OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
+            fputs(s.c_str(), pyc_output);
+            fputs("\n", pyc_output);
+        }
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
