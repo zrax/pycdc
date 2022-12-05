@@ -86,48 +86,67 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iputs(indent, "[Code]\n");
             iprintf(indent + 1, "File Name: %s\n", codeObj->fileName()->value());
             iprintf(indent + 1, "Object Name: %s\n", codeObj->name()->value());
+            if (mod->verCompare(3, 11) >= 0)
+                iprintf(indent + 1, "Qualified Name: %s\n", codeObj->qualName()->value());
             iprintf(indent + 1, "Arg Count: %d\n", codeObj->argCount());
             if (mod->verCompare(3, 8) >= 0)
                 iprintf(indent + 1, "Pos Only Arg Count: %d\n", codeObj->posOnlyArgCount());
             if (mod->majorVer() >= 3)
                 iprintf(indent + 1, "KW Only Arg Count: %d\n", codeObj->kwOnlyArgCount());
-            iprintf(indent + 1, "Locals: %d\n", codeObj->numLocals());
-            iprintf(indent + 1, "Stack Size: %d\n", codeObj->stackSize());
-            iprintf(indent + 1, "Flags: 0x%08X", codeObj->flags());
-            print_coflags(codeObj->flags());
-
-            if (codeObj->names() != NULL) {
-                iputs(indent + 1, "[Names]\n");
-                for (int i=0; i<codeObj->names()->size(); i++)
-                    output_object(codeObj->names()->get(i), mod, indent + 2);
+            if (mod->verCompare(3, 11) < 0)
+                iprintf(indent + 1, "Locals: %d\n", codeObj->numLocals());
+            if (mod->verCompare(1, 5) >= 0)
+                iprintf(indent + 1, "Stack Size: %d\n", codeObj->stackSize());
+            if (mod->verCompare(1, 3) >= 0) {
+                iprintf(indent + 1, "Flags: 0x%08X", codeObj->flags());
+                print_coflags(codeObj->flags());
             }
 
-            if (codeObj->varNames() != NULL) {
+            iputs(indent + 1, "[Names]\n");
+            for (int i=0; i<codeObj->names()->size(); i++)
+                output_object(codeObj->names()->get(i), mod, indent + 2);
+
+            if (mod->verCompare(1, 3) >= 0 && mod->verCompare(3, 11) < 0) {
                 iputs(indent + 1, "[Var Names]\n");
                 for (int i=0; i<codeObj->varNames()->size(); i++)
                     output_object(codeObj->varNames()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->freeVars() != NULL) {
+            if (mod->verCompare(2, 1) >= 0 && mod->verCompare(3, 11) < 0) {
                 iputs(indent + 1, "[Free Vars]\n");
                 for (int i=0; i<codeObj->freeVars()->size(); i++)
                     output_object(codeObj->freeVars()->get(i), mod, indent + 2);
-            }
 
-            if (codeObj->cellVars() != NULL) {
                 iputs(indent + 1, "[Cell Vars]\n");
                 for (int i=0; i<codeObj->cellVars()->size(); i++)
                     output_object(codeObj->cellVars()->get(i), mod, indent + 2);
             }
 
-            if (codeObj->consts() != NULL) {
-                iputs(indent + 1, "[Constants]\n");
-                for (int i=0; i<codeObj->consts()->size(); i++)
-                    output_object(codeObj->consts()->get(i), mod, indent + 2);
+            if (mod->verCompare(3, 11) >= 0) {
+                iputs(indent + 1, "[Locals+Names]\n");
+                for (int i=0; i<codeObj->localsAndNames()->size(); i++)
+                    output_object(codeObj->localsAndNames()->get(i), mod, indent + 2);
+
+                iputs(indent + 1, "[Locals+Kinds]\n");
+                output_object(codeObj->localsAndKinds().cast<PycObject>(), mod, indent + 2);
             }
+
+            iputs(indent + 1, "[Constants]\n");
+            for (int i=0; i<codeObj->consts()->size(); i++)
+                output_object(codeObj->consts()->get(i), mod, indent + 2);
 
             iputs(indent + 1, "[Disassembly]\n");
             bc_disasm(codeObj, mod, indent + 2);
+
+            if (mod->verCompare(1, 5) >= 0) {
+                iputs(indent + 1, "[Line Number Table]\n");
+                output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2);
+            }
+
+            if (mod->verCompare(3, 11) >= 0) {
+                iputs(indent + 1, "[Exception Table]\n");
+                output_object(codeObj->exceptTable().cast<PycObject>(), mod, indent + 2);
+            }
         }
         break;
     case PycObject::TYPE_STRING:
