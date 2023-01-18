@@ -8,13 +8,14 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Configure and Build
         run: |
           mkdir build
           cd build
           cmake -G "Visual Studio 17 2022" -A Win32 ..
           cmake --build . --config Debug
+          cmake --build . --config Release
 
       # This should probably be fixed to work from MSVC without needing to
       # use a bash shell and the GNU userland tools...  But for now, the
@@ -25,3 +26,9 @@ jobs:
           bash.exe ..\..\tests\all_tests.sh
         env:
           PYTHON_EXE: python.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pycdc-release
+          path: build\Release\*.exe
