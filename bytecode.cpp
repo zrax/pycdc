@@ -345,7 +345,7 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
-void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
+void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
 {
     static const char *cmp_strings[] = {
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
@@ -358,12 +358,14 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
     int opcode, operand;
     int pos = 0;
     while (!source.atEof()) {
+        int start_pos = pos;
+        bc_next(source, mod, opcode, operand, pos);
+        if (opcode == Pyc::CACHE && (flags & Pyc::DISASM_SHOW_CACHES) == 0)
+            continue;
+
         for (int i=0; i<indent; i++)
             fputs("    ", pyc_output);
-        fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
-
-        bc_next(source, mod, opcode, operand, pos);
-        fprintf(pyc_output, "%-30s", Pyc::OpcodeName(opcode));
+        fprintf(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {

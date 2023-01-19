@@ -2510,6 +2510,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SETUP_ANNOTATIONS:
             variable_annotations = true;
             break;
+        case Pyc::CACHE:
+            /* These "fake" opcodes are used as placeholders for optimizing
+               certain opcodes in Python 3.11+.  Since we have no need for
+               that during disassembly/decompilation, we can just treat these
+               as no-ops. */
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
