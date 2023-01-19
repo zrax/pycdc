@@ -318,7 +318,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
 {
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-    bool py36_opcode = (mod->majorVer() > 3 || (mod->majorVer() == 3 && mod->minorVer() >= 6));
+    bool py36_opcode = (mod->verCompare(3, 6) >= 0);
     if (py36_opcode) {
         operand = source.getByte();
         pos += 2;
@@ -382,7 +382,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 }
             } else if (Pyc::IsVarNameArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
+                    fprintf(pyc_output, "%d: %s", operand, code->getLocal(operand)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
@@ -397,8 +397,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // BPO-27129
                 fprintf(pyc_output, "%d (to %d)", operand, pos+offs);
-            }
-            else if (Pyc::IsJumpArg(opcode)) {
+            } else if (Pyc::IsJumpArg(opcode)) {
                 if (mod->verCompare(3, 10) >= 0) // BPO-27129
                     fprintf(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
                 else

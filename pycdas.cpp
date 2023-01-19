@@ -12,6 +12,9 @@
 #  define PATHSEP '/'
 #endif
 
+// Set this to 1 to print extra details on PyCode objects
+#define PRINT_EXTRA_PYCODE_FIELDS 0
+
 static const char* flag_names[] = {
     "CO_OPTIMIZED", "CO_NEWLOCALS", "CO_VARARGS", "CO_VARKEYWORDS",
     "CO_NESTED", "CO_GENERATOR", "CO_NOFREE", "CO_COROUTINE",
@@ -107,10 +110,20 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
                 output_object(codeObj->names()->get(i), mod, indent + 2);
 
             if (mod->verCompare(1, 3) >= 0 && mod->verCompare(3, 11) < 0) {
-                iputs(indent + 1, "[Var Names]\n");
-                for (int i=0; i<codeObj->varNames()->size(); i++)
-                    output_object(codeObj->varNames()->get(i), mod, indent + 2);
+                if (mod->verCompare(3, 11) >= 0)
+                    iputs(indent + 1, "[Locals+Names]\n");
+                else
+                    iputs(indent + 1, "[Var Names]\n");
+                for (int i=0; i<codeObj->localNames()->size(); i++)
+                    output_object(codeObj->localNames()->get(i), mod, indent + 2);
             }
+
+#if PRINT_EXTRA_PYCODE_FIELDS
+            if (mod->verCompare(3, 11) >= 0) {
+                iputs(indent + 1, "[Locals+Kinds]\n");
+                output_object(codeObj->localKinds().cast<PycObject>(), mod, indent + 2);
+            }
+#endif
 
             if (mod->verCompare(2, 1) >= 0 && mod->verCompare(3, 11) < 0) {
                 iputs(indent + 1, "[Free Vars]\n");
@@ -122,15 +135,6 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
                     output_object(codeObj->cellVars()->get(i), mod, indent + 2);
             }
 
-            if (mod->verCompare(3, 11) >= 0) {
-                iputs(indent + 1, "[Locals+Names]\n");
-                for (int i=0; i<codeObj->localsAndNames()->size(); i++)
-                    output_object(codeObj->localsAndNames()->get(i), mod, indent + 2);
-
-                iputs(indent + 1, "[Locals+Kinds]\n");
-                output_object(codeObj->localsAndKinds().cast<PycObject>(), mod, indent + 2);
-            }
-
             iputs(indent + 1, "[Constants]\n");
             for (int i=0; i<codeObj->consts()->size(); i++)
                 output_object(codeObj->consts()->get(i), mod, indent + 2);
@@ -138,6 +142,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
             iputs(indent + 1, "[Disassembly]\n");
             bc_disasm(codeObj, mod, indent + 2);
 
+#if PRINT_EXTRA_PYCODE_FIELDS
             if (mod->verCompare(1, 5) >= 0) {
                 iputs(indent + 1, "[Line Number Table]\n");
                 output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2);
@@ -147,6 +152,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent)
                 iputs(indent + 1, "[Exception Table]\n");
                 output_object(codeObj->exceptTable().cast<PycObject>(), mod, indent + 2);
             }
+#endif
         }
         break;
     case PycObject::TYPE_STRING:

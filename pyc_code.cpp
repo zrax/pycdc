@@ -44,10 +44,15 @@ void PycCode::load(PycData* stream, PycModule* mod)
     m_consts = LoadObject(stream, mod).cast<PycSequence>();
     m_names = LoadObject(stream, mod).cast<PycSequence>();
 
-    if (mod->verCompare(1, 3) >= 0 && mod->verCompare(3, 11) < 0)
-        m_varNames = LoadObject(stream, mod).cast<PycSequence>();
+    if (mod->verCompare(1, 3) >= 0)
+        m_localNames = LoadObject(stream, mod).cast<PycSequence>();
     else
-        m_varNames = new PycTuple;
+        m_localNames = new PycTuple;
+
+    if (mod->verCompare(3, 11) >= 0)
+        m_localKinds = LoadObject(stream, mod).cast<PycString>();
+    else
+        m_localKinds = new PycString;
 
     if (mod->verCompare(2, 1) >= 0 && mod->verCompare(3, 11) < 0)
         m_freeVars = LoadObject(stream, mod).cast<PycSequence>();
@@ -58,16 +63,6 @@ void PycCode::load(PycData* stream, PycModule* mod)
         m_cellVars = LoadObject(stream, mod).cast<PycSequence>();
     else
         m_cellVars = new PycTuple;
-
-    if (mod->verCompare(3, 11) >= 0)
-        m_localsAndNames = LoadObject(stream, mod).cast<PycSequence>();
-    else
-        m_localsAndNames = new PycTuple;
-
-    if (mod->verCompare(3, 11) >= 0)
-        m_localsAndKinds = LoadObject(stream, mod).cast<PycString>();
-    else
-        m_localsAndKinds = new PycString;
 
     m_fileName = LoadObject(stream, mod).cast<PycString>();
     m_name = LoadObject(stream, mod).cast<PycString>();

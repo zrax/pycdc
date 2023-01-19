@@ -704,7 +704,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (mod->verCompare(1, 3) < 0)
                     name = new ASTName(code->getName(operand));
                 else
-                    name = new ASTName(code->getVarName(operand));
+                    name = new ASTName(code->getLocal(operand));
 
                 if (name.cast<ASTName>()->name()->value()[0] == '_'
                         && name.cast<ASTName>()->name()->value()[1] == '[') {
@@ -1612,7 +1612,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             if (mod->verCompare(1, 3) < 0)
                 stack.push(new ASTName(code->getName(operand)));
             else
-                stack.push(new ASTName(code->getVarName(operand)));
+                stack.push(new ASTName(code->getLocal(operand)));
             break;
         case Pyc::LOAD_GLOBAL_A:
             stack.push(new ASTName(code->getName(operand)));
@@ -2140,7 +2140,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (mod->verCompare(1, 3) < 0)
                         name = new ASTName(code->getName(operand));
                     else
-                        name = new ASTName(code->getVarName(operand));
+                        name = new ASTName(code->getLocal(operand));
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2173,7 +2173,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (mod->verCompare(1, 3) < 0)
                         name = new ASTName(code->getName(operand));
                     else
-                        name = new ASTName(code->getVarName(operand));
+                        name = new ASTName(code->getLocal(operand));
 
                     if (name.cast<ASTName>()->name()->value()[0] == '_'
                             && name.cast<ASTName>()->name()->value()[1] == '[') {
@@ -3088,7 +3088,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             for (int i=0; i<code_src->argCount(); i++) {
                 if (narg)
                     fputs(", ", pyc_output);
-                fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                fprintf(pyc_output, "%s", code_src->getLocal(narg++)->value());
                 if ((code_src->argCount() - i) <= (int)defargs.size()) {
                     fputs(" = ", pyc_output);
                     print_src(*da++, mod);
@@ -3099,7 +3099,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 fputs(narg == 0 ? "*" : ", *", pyc_output);
                 for (int i = 0; i < code_src->argCount(); i++) {
                     fputs(", ", pyc_output);
-                    fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                    fprintf(pyc_output, "%s", code_src->getLocal(narg++)->value());
                     if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
                         fputs(" = ", pyc_output);
                         print_src(*da++, mod);
@@ -3147,7 +3147,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 for (int i = 0; i < code_src->argCount(); ++i) {
                     if (narg)
                         fputs(", ", pyc_output);
-                    fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                    fprintf(pyc_output, "%s", code_src->getLocal(narg++)->value());
                     if ((code_src->argCount() - i) <= (int)defargs.size()) {
                         fputs(" = ", pyc_output);
                         print_src(*da++, mod);
@@ -3158,7 +3158,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                     fputs(narg == 0 ? "*" : ", *", pyc_output);
                     for (int i = 0; i < code_src->kwOnlyArgCount(); ++i) {
                         fputs(", ", pyc_output);
-                        fprintf(pyc_output, "%s", code_src->getVarName(narg++)->value());
+                        fprintf(pyc_output, "%s", code_src->getLocal(narg++)->value());
                         if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
                             fputs(" = ", pyc_output);
                             print_src(*da++, mod);
@@ -3168,12 +3168,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
                 if (code_src->flags() & PycCode::CO_VARARGS) {
                     if (narg)
                         fputs(", ", pyc_output);
-                    fprintf(pyc_output, "*%s", code_src->getVarName(narg++)->value());
+                    fprintf(pyc_output, "*%s", code_src->getLocal(narg++)->value());
                 }
                 if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
                     if (narg)
                         fputs(", ", pyc_output);
-                    fprintf(pyc_output, "**%s", code_src->getVarName(narg++)->value());
+                    fprintf(pyc_output, "**%s", code_src->getLocal(narg++)->value());
                 }
 
                 if (isLambda) {

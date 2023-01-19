@@ -43,11 +43,10 @@ public:
     PycRef<PycString> code() const { return m_code; }
     PycRef<PycSequence> consts() const { return m_consts; }
     PycRef<PycSequence> names() const { return m_names; }
-    PycRef<PycSequence> varNames() const { return m_varNames; }
+    PycRef<PycSequence> localNames() const { return m_localNames; }
+    PycRef<PycString> localKinds() const { return m_localKinds; }
     PycRef<PycSequence> freeVars() const { return m_freeVars; }
     PycRef<PycSequence> cellVars() const { return m_cellVars; }
-    PycRef<PycSequence> localsAndNames() const { return m_localsAndNames; }
-    PycRef<PycString> localsAndKinds() const { return m_localsAndKinds; }
     PycRef<PycString> fileName() const { return m_fileName; }
     PycRef<PycString> name() const { return m_name; }
     PycRef<PycString> qualName() const { return m_qualName; }
@@ -65,9 +64,9 @@ public:
         return m_names->get(idx).cast<PycString>();
     }
 
-    PycRef<PycString> getVarName(int idx) const
+    PycRef<PycString> getLocal(int idx) const
     {
-        return m_varNames->get(idx).cast<PycString>();
+        return m_localNames->get(idx).cast<PycString>();
     }
 
     PycRef<PycString> getCellVar(int idx) const
@@ -90,11 +89,10 @@ private:
     PycRef<PycString> m_code;
     PycRef<PycSequence> m_consts;
     PycRef<PycSequence> m_names;
-    PycRef<PycSequence> m_varNames;
+    PycRef<PycSequence> m_localNames;
+    PycRef<PycString> m_localKinds;
     PycRef<PycSequence> m_freeVars;
     PycRef<PycSequence> m_cellVars;
-    PycRef<PycSequence> m_localsAndNames;
-    PycRef<PycString> m_localsAndKinds;
     PycRef<PycString> m_fileName;
     PycRef<PycString> m_name;
     PycRef<PycString> m_qualName;

@@ -11,6 +11,7 @@ Python  MAGIC           Python  MAGIC           Python  MAGIC
                                                 3.8     0x0A0D0D55
                                                 3.9     0x0A0D0D61
                                                 3.10    0x0A0D0D6F
+                                                3.11    0x0A0D0DA7
 
 
                         1.0     1.1     1.2     1.3     1.4     1.5     1.6
