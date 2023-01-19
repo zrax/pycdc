@@ -363,7 +363,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
         fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
 
         bc_next(source, mod, opcode, operand, pos);
-        fprintf(pyc_output, "%-24s", Pyc::OpcodeName(opcode));
+        fprintf(pyc_output, "%-30s", Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {
@@ -371,6 +371,16 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                     auto constParam = code->getConst(operand);
                     fprintf(pyc_output, "%d: ", operand);
                     print_const(constParam, mod);
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
+            } else if (opcode == Pyc::LOAD_GLOBAL_A) {
+                // Special case for Python 3.11+
+                try {
+                    if (operand & 1)
+                        fprintf(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                    else
+                        fprintf(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
@@ -388,7 +398,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 }
             } else if (Pyc::IsCellArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(operand)->value());
+                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(mod, operand)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }

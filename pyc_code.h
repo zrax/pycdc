@@ -5,6 +5,9 @@
 #include "pyc_string.h"
 #include <vector>
 
+class PycData;
+class PycModule;
+
 class PycCode : public PycObject {
 public:
     typedef std::vector<PycRef<PycString>> globals_t;
@@ -32,7 +35,7 @@ public:
         : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
           m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(PycData* stream, PycModule* mod) override;
 
     int argCount() const { return m_argCount; }
     int posOnlyArgCount() const { return m_posOnlyArgCount; }
@@ -69,12 +72,7 @@ public:
         return m_localNames->get(idx).cast<PycString>();
     }
 
-    PycRef<PycString> getCellVar(int idx) const
-    {
-        return (idx >= m_cellVars->size())
-            ? m_freeVars->get(idx - m_cellVars->size()).cast<PycString>()
-            : m_cellVars->get(idx).cast<PycString>();
-    }
+    PycRef<PycString> getCellVar(PycModule* mod, int idx) const;
 
     const globals_t& getGlobals() const { return m_globalsUsed; }
 
