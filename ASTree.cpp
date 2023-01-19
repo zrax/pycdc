@@ -1025,6 +1025,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::GET_ITER:
             /* We just entirely ignore this */
             break;
+        case Pyc::GET_YIELD_FROM_ITER:
+            /* We just entirely ignore this */
+            break;
         case Pyc::IMPORT_NAME_A:
             if (mod->majorVer() == 1) {
                 stack.push(new ASTImport(new ASTName(code->getName(operand)), NULL));
