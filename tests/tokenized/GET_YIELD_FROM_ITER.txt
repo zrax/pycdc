@@ -1,0 +1,16 @@
+def yield1 ( ) : <EOL>
+<INDENT>
+yield 123 <EOL>
+<OUTDENT>
+def return1 ( ) : <EOL>
+<INDENT>
+return 321 <EOL>
+<OUTDENT>
+def yieldFrom1 ( ) : <EOL>
+<INDENT>
+yield from yield1 ( ) <EOL>
+<OUTDENT>
+a = next ( yield1 ( ) ) <EOL>
+b = return1 ( ) <EOL>
+c = next ( yieldFrom1 ( ) ) <EOL>
+print ( f'A: {a} / B: {b} / C: {c}' ) <EOL>
