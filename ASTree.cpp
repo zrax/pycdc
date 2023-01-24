@@ -2516,6 +2516,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                that during disassembly/decompilation, we can just treat these
                as no-ops. */
             break;
+        case Pyc::RESUME_A:
+            /* Treated as no-op for decompyle purposes */
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
