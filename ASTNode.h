@@ -550,13 +550,14 @@ private:
 
 class ASTIterBlock : public ASTBlock {
 public:
-    ASTIterBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> iter)
-        : ASTBlock(blktype, end), m_iter(std::move(iter)), m_idx(), m_comp() { }
+    ASTIterBlock(ASTBlock::BlkType blktype, int start, int end, PycRef<ASTNode> iter)
+        : ASTBlock(blktype, end), m_iter(std::move(iter)), m_idx(), m_comp(), m_start(start) { }
 
     PycRef<ASTNode> iter() const { return m_iter; }
     PycRef<ASTNode> index() const { return m_idx; }
     PycRef<ASTNode> condition() const { return m_cond; }
     bool isComprehension() const { return m_comp; }
+    int start() const { return m_start; }
 
     void setIndex(PycRef<ASTNode> idx) { m_idx = std::move(idx); init(); }
     void setCondition(PycRef<ASTNode> cond) { m_cond = std::move(cond); }
@@ -567,6 +568,7 @@ private:
     PycRef<ASTNode> m_idx;
     PycRef<ASTNode> m_cond;
     bool m_comp;
+    int m_start;
 };
 
 class ASTContainerBlock : public ASTBlock {
@@ -692,7 +694,7 @@ public:
         : ASTNode(NODE_ANNOTATED_VAR), m_name(std::move(name)), m_type(std::move(type)) { }
 
     PycRef<ASTNode> name() const noexcept { return m_name; }
-    PycRef<ASTNode> type() const noexcept { return m_type; }
+    PycRef<ASTNode> annotation() const noexcept { return m_type; }
 
 private:
     PycRef<ASTNode> m_name;

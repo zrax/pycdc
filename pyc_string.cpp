@@ -1,46 +1,17 @@
 #include "pyc_string.h"
 #include "pyc_module.h"
 #include "data.h"
-#include <cstring>
-#include <limits>
+#include <stdexcept>
 
-static void ascii_to_utf8(std::string* data)
+static bool check_ascii(const std::string& data)
 {
-    size_t utf8len = 0, asciilen = 0;
-    auto cp = reinterpret_cast<const unsigned char*>(data->c_str());
+    auto cp = reinterpret_cast<const unsigned char*>(data.c_str());
     while (*cp) {
         if (*cp & 0x80)
-            utf8len += 2;
-        else
-            utf8len += 1;
-
-        // Advance ASCII pointer
-        ++asciilen;
+            return false;
         ++cp;
     }
-
-    if (asciilen == utf8len) {
-        // This can only happen if all characters are [0x00-0x7f].
-        // If that happens, we don't need to do any conversion, nor
-        // reallocate any buffers.  Woot!
-        return;
-    }
-
-    std::string utf8_buffer;
-    utf8_buffer.resize(utf8len);
-    auto up = reinterpret_cast<unsigned char*>(&utf8_buffer.front());
-    cp = reinterpret_cast<const unsigned char*>(data->c_str());
-    while (*cp) {
-        if (*cp & 0x80) {
-            *up++ = 0xC0 | ((*cp >> 6) & 0x1F);
-            *up++ = 0x80 | ((*cp     ) & 0x3F);
-        } else {
-            *up++ = *cp;
-        }
-        ++cp;
-    }
-
-    *data = std::move(utf8_buffer);
+    return true;
 }
 
 /* PycString */
@@ -48,10 +19,8 @@ void PycString::load(PycData* stream, PycModule* mod)
 {
     if (type() == TYPE_STRINGREF) {
         PycRef<PycString> str = mod->getIntern(stream->get32());
-        m_value.resize(str->length());
-
-        if (str->length())
-            std::char_traits<char>::copy(&m_value.front(), str->value(), str->length());
+        m_type = str->m_type;
+        m_value = str->m_value;
     } else {
         int length;
         if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
@@ -66,8 +35,10 @@ void PycString::load(PycData* stream, PycModule* mod)
         if (length) {
             stream->getBuffer(length, &m_value.front());
             if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
-                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-                ascii_to_utf8(&m_value);
+                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED) {
+                if (!check_ascii(m_value))
+                    throw std::runtime_error("Invalid bytes in ASCII string");
+            }
         }
 
         if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||

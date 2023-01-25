@@ -3,10 +3,14 @@
 
 #include "pyc_sequence.h"
 #include "pyc_string.h"
+#include <vector>
+
+class PycData;
+class PycModule;
 
 class PycCode : public PycObject {
 public:
-    typedef std::list<PycRef<PycString> > globals_t;
+    typedef std::vector<PycRef<PycString>> globals_t;
     enum CodeFlags {
         CO_OPTIMIZED = 0x1,
         CO_NEWLOCALS = 0x2,
@@ -31,7 +35,7 @@ public:
         : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
           m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
 
-    void load(class PycData* stream, class PycModule* mod) override;
+    void load(PycData* stream, PycModule* mod) override;
 
     int argCount() const { return m_argCount; }
     int posOnlyArgCount() const { return m_posOnlyArgCount; }
@@ -42,13 +46,16 @@ public:
     PycRef<PycString> code() const { return m_code; }
     PycRef<PycSequence> consts() const { return m_consts; }
     PycRef<PycSequence> names() const { return m_names; }
-    PycRef<PycSequence> varNames() const { return m_varNames; }
+    PycRef<PycSequence> localNames() const { return m_localNames; }
+    PycRef<PycString> localKinds() const { return m_localKinds; }
     PycRef<PycSequence> freeVars() const { return m_freeVars; }
     PycRef<PycSequence> cellVars() const { return m_cellVars; }
     PycRef<PycString> fileName() const { return m_fileName; }
     PycRef<PycString> name() const { return m_name; }
+    PycRef<PycString> qualName() const { return m_qualName; }
     int firstLine() const { return m_firstLine; }
     PycRef<PycString> lnTable() const { return m_lnTable; }
+    PycRef<PycString> exceptTable() const { return m_exceptTable; }
 
     PycRef<PycObject> getConst(int idx) const
     {
@@ -57,27 +64,21 @@ public:
 
     PycRef<PycString> getName(int idx) const
     {
-        return m_names->get(idx).require_cast<PycString>();
+        return m_names->get(idx).cast<PycString>();
     }
 
-    PycRef<PycString> getVarName(int idx) const
+    PycRef<PycString> getLocal(int idx) const
     {
-        return m_varNames->get(idx).require_cast<PycString>();
+        return m_localNames->get(idx).cast<PycString>();
     }
 
-    PycRef<PycString> getCellVar(int idx) const
-    {
-        return (idx >= m_cellVars->size())
-            ? m_freeVars->get(idx - m_cellVars->size()).require_cast<PycString>()
-            : m_cellVars->get(idx).require_cast<PycString>();
-    }
+    PycRef<PycString> getCellVar(PycModule* mod, int idx) const;
 
     const globals_t& getGlobals() const { return m_globalsUsed; }
 
     void markGlobal(PycRef<PycString> varname)
     {
-        m_globalsUsed.push_back(varname);
-        m_globalsUsed.unique();
+        m_globalsUsed.emplace_back(std::move(varname));
     }
 
 private:
@@ -86,13 +87,16 @@ private:
     PycRef<PycString> m_code;
     PycRef<PycSequence> m_consts;
     PycRef<PycSequence> m_names;
-    PycRef<PycSequence> m_varNames;
+    PycRef<PycSequence> m_localNames;
+    PycRef<PycString> m_localKinds;
     PycRef<PycSequence> m_freeVars;
     PycRef<PycSequence> m_cellVars;
     PycRef<PycString> m_fileName;
     PycRef<PycString> m_name;
+    PycRef<PycString> m_qualName;
     int m_firstLine;
     PycRef<PycString> m_lnTable;
+    PycRef<PycString> m_exceptTable;
     globals_t m_globalsUsed; /* Global vars used in this code */
 };
 
