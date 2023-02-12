@@ -322,6 +322,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTList(values));
             }
             break;
+        case Pyc::BUILD_SET_A:
+            {
+                ASTSet::value_t values;
+                for (int i=0; i<operand; i++) {
+                    values.insert(stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTSet(values));
+            }
+            break;
         case Pyc::BUILD_MAP_A:
             if (mod->verCompare(3, 5) >= 0) {
                 auto map = new ASTMap;
@@ -1545,6 +1555,33 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 } else {
                     stack.push(new ASTSubscr(list, value)); /* Total hack */
                 }
+            }
+            break;
+        case Pyc::SET_UPDATE_A:
+            {
+                PycRef<ASTNode> rhs = stack.top();
+                stack.pop();
+                PycRef<ASTSet> lhs = stack.top().cast<ASTSet>();
+                stack.pop();
+
+                if (rhs.type() != ASTNode::NODE_OBJECT) {
+                    fprintf(stderr, "Unsupported argument found for SET_UPDATE\n");
+                    break;
+                }
+
+                // I've only ever seen this be a TYPE_FROZENSET, but let's be careful...
+                PycRef<PycObject> obj = rhs.cast<ASTObject>()->object();
+                if (obj->type() != PycObject::TYPE_FROZENSET) {
+                    fprintf(stderr, "Unsupported argument type found for SET_UPDATE\n");
+                    break;
+                }
+
+                ASTSet::value_t result = lhs->values();
+                for (const auto& it : obj.cast<PycSet>()->values()) {
+                    result.insert(new ASTObject(it));
+                }
+
+                stack.push(new ASTSet(result));
             }
             break;
         case Pyc::LIST_EXTEND_A:
@@ -2836,6 +2873,24 @@ void print_src(PycRef<ASTNode> node, PycModule* mod)
             }
             cur_indent--;
             fputs("]", pyc_output);
+        }
+        break;
+    case ASTNode::NODE_SET:
+        {
+            fputs("{", pyc_output);
+            bool first = true;
+            cur_indent++;
+            for (const auto& val : node.cast<ASTSet>()->values()) {
+                if (first)
+                    fputs("\n", pyc_output);
+                else
+                    fputs(",\n", pyc_output);
+                start_line(cur_indent);
+                print_src(val, mod);
+                first = false;
+            }
+            cur_indent--;
+            fputs("}", pyc_output);
         }
         break;
     case ASTNode::NODE_COMPREHENSION:
