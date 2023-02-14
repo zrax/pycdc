@@ -211,6 +211,14 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             iputs(indent, "}\n");
         }
         break;
+    case PycObject::TYPE_FROZENSET:
+        {
+            iputs(indent, "frozenset({\n");
+            for (const auto& val : obj.cast<PycSet>()->values())
+                output_object(val, mod, indent + 1, flags);
+            iputs(indent, "})\n");
+        }
+        break;
     case PycObject::TYPE_NONE:
         iputs(indent, "None\n");
         break;
