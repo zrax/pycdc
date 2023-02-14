@@ -257,6 +257,21 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             fputs("}", pyc_output);
         }
         break;
+    case PycObject::TYPE_FROZENSET:
+        {
+            fputs("frozenset({", pyc_output);
+            PycSet::value_t values = obj.cast<PycSet>()->values();
+            auto it = values.cbegin();
+            if (it != values.cend()) {
+                print_const(*it, mod);
+                while (++it != values.cend()) {
+                    fputs(", ", pyc_output);
+                    print_const(*it, mod);
+                }
+            }
+            fputs("})", pyc_output);
+        }
+        break;
     case PycObject::TYPE_NONE:
         fputs("None", pyc_output);
         break;
@@ -312,6 +327,8 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
     case PycObject::TYPE_CODE2:
         fprintf(pyc_output, "<CODE> %s", obj.cast<PycCode>()->name()->value());
         break;
+    default:
+        fprintf(pyc_output, "<TYPE: %d>\n", obj->type());
     }
 }
 
