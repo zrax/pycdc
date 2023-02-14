@@ -3,6 +3,7 @@
 
 #include "pyc_module.h"
 #include <list>
+#include <deque>
 
 /* Similar interface to PycObject, so PycRef can work on it... *
  * However, this does *NOT* mean the two are interchangeable!  */
@@ -360,7 +361,7 @@ private:
 
 class ASTSet : public ASTNode {
 public:
-    typedef std::set<PycRef<ASTNode>> value_t;
+    typedef std::deque<PycRef<ASTNode>> value_t;
 
     ASTSet(value_t values)
         : ASTNode(NODE_SET), m_values(std::move(values)) { }

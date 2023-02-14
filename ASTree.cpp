@@ -326,7 +326,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 ASTSet::value_t values;
                 for (int i=0; i<operand; i++) {
-                    values.insert(stack.top());
+                    values.push_front(stack.top());
                     stack.pop();
                 }
                 stack.push(new ASTSet(values));
@@ -1578,7 +1578,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 ASTSet::value_t result = lhs->values();
                 for (const auto& it : obj.cast<PycSet>()->values()) {
-                    result.insert(new ASTObject(it));
+                    result.push_back(new ASTObject(it));
                 }
 
                 stack.push(new ASTSet(result));
