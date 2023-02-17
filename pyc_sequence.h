@@ -3,7 +3,6 @@
 
 #include "pyc_object.h"
 #include <vector>
-#include <set>
 
 class PycSequence : public PycObject {
 public:
@@ -74,7 +73,7 @@ private:
 
 class PycSet : public PycSequence {
 public:
-    typedef std::set<PycRef<PycObject>> value_t;
+    typedef std::vector<PycRef<PycObject>> value_t;
 
     PycSet(int type = TYPE_SET) : PycSequence(type) { }
 
@@ -83,7 +82,7 @@ public:
     void load(class PycData* stream, class PycModule* mod) override;
 
     const value_t& values() const { return m_values; }
-    PycRef<PycObject> get(int idx) const override;
+    PycRef<PycObject> get(int idx) const override { return m_values.at(idx); }
 
 private:
     value_t m_values;

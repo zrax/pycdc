@@ -134,7 +134,7 @@ void PycSet::load(PycData* stream, PycModule* mod)
 {
     m_size = stream->get32();
     for (int i=0; i<m_size; i++)
-        m_values.insert(LoadObject(stream, mod));
+        m_values.push_back(LoadObject(stream, mod));
 }
 
 bool PycSet::isEqual(PycRef<PycObject> obj) const
@@ -153,17 +153,4 @@ bool PycSet::isEqual(PycRef<PycObject> obj) const
         ++it1, ++it2;
     }
     return true;
-}
-
-PycRef<PycObject> PycSet::get(int idx) const
-{
-    if (idx < 0)
-        throw std::out_of_range("Set index out of range");
-
-    auto it = m_values.cbegin();
-    while (idx-- && it != m_values.cend())
-        ++it;
-    if (it == m_values.cend())
-        throw std::out_of_range("Set index out of range");
-    return *it;
 }
