@@ -2614,8 +2614,18 @@ static int cmp_prec(PycRef<ASTNode> parent, PycRef<ASTNode> child)
         return 1;   // Always parenthesize not(x)
     if (child.type() == ASTNode::NODE_BINARY) {
         PycRef<ASTBinary> binChild = child.cast<ASTBinary>();
-        if (parent.type() == ASTNode::NODE_BINARY)
-            return binChild->op() - parent.cast<ASTBinary>()->op();
+        if (parent.type() == ASTNode::NODE_BINARY) {
+            PycRef<ASTBinary> binParent = parent.cast<ASTBinary>();
+            if (binParent->right() == child) {
+                if (binParent->op() == ASTBinary::BIN_SUBTRACT &&
+                    binChild->op() == ASTBinary::BIN_ADD)
+                    return 1;
+                else if (binParent->op() == ASTBinary::BIN_DIVIDE &&
+                         binChild->op() == ASTBinary::BIN_MULTIPLY)
+                    return 1;
+            }
+            return binChild->op() - binParent->op();
+        }
         else if (parent.type() == ASTNode::NODE_COMPARE)
             return (binChild->op() == ASTBinary::BIN_LOG_AND ||
                     binChild->op() == ASTBinary::BIN_LOG_OR) ? 1 : -1;
