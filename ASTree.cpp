@@ -2556,6 +2556,94 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::RESUME_A:
             /* Treated as no-op for decompyle purposes */
             break;
+        case Pyc::PUSH_NULL:
+            {
+                stack.push(NULL);
+            }
+            break;
+        case Pyc::PRECALL_A:
+            /* Treated as no-op for decompyle purposes */
+            break;
+        case Pyc::CALL_A:
+            {
+
+                int kwparams = (operand & 0xFF00) >> 8;
+                int pparams = (operand & 0xFF);
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+
+                /* Test for the load build class function */
+                stack_hist.push(stack);
+                int basecnt = 0;
+                ASTTuple::value_t bases;
+                bases.resize(basecnt);
+                PycRef<ASTNode> TOS = stack.top();
+                int TOS_type = TOS.type();
+                // bases are NODE_NAME at TOS
+                while (TOS_type == ASTNode::NODE_NAME) {
+                    bases.resize(basecnt + 1);
+                    bases[basecnt] = TOS;
+                    basecnt++;
+                    stack.pop();
+                    TOS = stack.top();
+                    TOS_type = TOS.type();
+                }
+                // qualified name is PycString at TOS
+                PycRef<ASTNode> name = stack.top();
+                stack.pop();
+                PycRef<ASTNode> function = stack.top();
+                stack.pop();
+                PycRef<ASTNode> loadbuild = stack.top();
+                stack.pop();
+                int loadbuild_type = loadbuild.type();
+                if (loadbuild_type == ASTNode::NODE_LOADBUILDCLASS) {
+                    PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
+                    stack.push(new ASTClass(call, new ASTTuple(bases), name));
+                    stack_hist.pop();
+                    break;
+                }
+                else
+                {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
+
+                for (int i = 0; i < kwparams; i++) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(key, val));
+                }
+                for (int i = 0; i < pparams; i++) {
+                    PycRef<ASTNode> param = stack.top();
+                    stack.pop();
+                    if (param.type() == ASTNode::NODE_FUNCTION) {
+                        PycRef<ASTNode> fun_code = param.cast<ASTFunction>()->code();
+                        PycRef<PycCode> code_src = fun_code.cast<ASTObject>()->object().cast<PycCode>();
+                        PycRef<PycString> function_name = code_src->name();
+                        if (function_name->isEqual("<lambda>")) {
+                            pparamList.push_front(param);
+                        }
+                        else {
+                            // Decorator used
+                            PycRef<ASTNode> decor_name = new ASTName(function_name);
+                            curblock->append(new ASTStore(param, decor_name));
+
+                            pparamList.push_front(decor_name);
+                        }
+                    }
+                    else {
+                        pparamList.push_front(param);
+                    }
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                stack.pop();
+                stack.push(new ASTCall(func, pparamList, kwparamList));
+
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
