@@ -2557,9 +2557,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             /* Treated as no-op for decompyle purposes */
             break;
         case Pyc::PUSH_NULL:
-            {
-                stack.push(NULL);
-            }
+            stack.push(nullptr);
             break;
         case Pyc::PRECALL_A:
             /* Treated as no-op for decompyle purposes */
