@@ -541,8 +541,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                             pparamList.push_front(decor_name);
                         }
-                    }
-                    else {
+                    } else {
                         pparamList.push_front(param);
                     }
                 }
@@ -1036,6 +1035,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 stack.push(new ASTAwaitable(object));
             }
+            break;
+        case Pyc::GET_ITER:
+        case Pyc::GET_YIELD_FROM_ITER:
+            /* We just entirely ignore this */
             break;
         case Pyc::IMPORT_NAME_A:
             if (mod->majorVer() == 1) {
@@ -2545,9 +2548,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::SETUP_ANNOTATIONS:
             variable_annotations = true;
-            break;
-        case Pyc::GET_ITER:
-        case Pyc::GET_YIELD_FROM_ITER:
             break;
         case Pyc::PRECALL_A:
         case Pyc::RESUME_A:
