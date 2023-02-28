@@ -541,14 +541,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                             pparamList.push_front(decor_name);
                         }
-                    } else {
+                    }
+                    else {
                         pparamList.push_front(param);
                     }
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if (opcode == Pyc::CALL_A)
+                if (opcode == Pyc::CALL_A && stack.top() == nullptr)
                     stack.pop();
+
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
             break;
@@ -2544,11 +2546,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SETUP_ANNOTATIONS:
             variable_annotations = true;
             break;
-        case Pyc::CACHE:
         case Pyc::GET_ITER:
         case Pyc::GET_YIELD_FROM_ITER:
+            break;
         case Pyc::PRECALL_A:
         case Pyc::RESUME_A:
+            /* We just entirely ignore this / no-op */
+            break;
+        case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
                certain opcodes in Python 3.11+.  Since we have no need for
                that during disassembly/decompilation, we can just treat these
