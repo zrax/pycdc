@@ -474,6 +474,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTTuple(values));
             }
             break;
+        case Pyc::CALL_A:
         case Pyc::CALL_FUNCTION_A:
             {
                 int kwparams = (operand & 0xFF00) >> 8;
@@ -546,6 +547,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
+                if (opcode == Pyc::CALL_A && stack.top() == nullptr)
+                    stack.pop();
+
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
             break;
@@ -1033,8 +1037,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::GET_ITER:
-            /* We just entirely ignore this */
-            break;
         case Pyc::GET_YIELD_FROM_ITER:
             /* We just entirely ignore this */
             break;
@@ -2547,14 +2549,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SETUP_ANNOTATIONS:
             variable_annotations = true;
             break;
+        case Pyc::PRECALL_A:
+        case Pyc::RESUME_A:
+            /* We just entirely ignore this / no-op */
+            break;
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
                certain opcodes in Python 3.11+.  Since we have no need for
                that during disassembly/decompilation, we can just treat these
                as no-ops. */
             break;
-        case Pyc::RESUME_A:
-            /* Treated as no-op for decompyle purposes */
+        case Pyc::PUSH_NULL:
+            stack.push(nullptr);
             break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
