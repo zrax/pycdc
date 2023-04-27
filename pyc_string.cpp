@@ -94,7 +94,7 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
             fputc(useQuotes ? '"' : '\'', F);
     }
     while (len--) {
-        if (*ch < 0x20 || *ch == 0x7F) {
+        if ((unsigned char)(*ch) < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
                 fputs("\\r", F);
             } else if (*ch == '\n') {
