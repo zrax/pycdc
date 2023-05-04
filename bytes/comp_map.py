@@ -27,7 +27,7 @@ if not os.path.exists(sys.argv[2]):
 
 maplist = [ 10, 11,     13, 14, 15, 16,
             20, 21, 22, 23, 24, 25, 26, 27,
-            30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 310 ]
+            30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 310, 311 ]
 
 for mapver in maplist:
     infile = open(os.path.join(sys.argv[1], 'python_%d.map' % mapver), 'rt')

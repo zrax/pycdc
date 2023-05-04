@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     }
     const char* dispname = strrchr(infile, PATHSEP);
     dispname = (dispname == NULL) ? infile : dispname + 1;
-    fputs("# Source Generated with Decompyle++\n", pyc_output);
+    fputs("# Source Generated with Decompyle++ , apply in pydumpck\n", pyc_output);
     fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
             (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
     try {

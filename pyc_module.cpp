@@ -164,6 +164,12 @@ void PycModule::setVersion(unsigned int magic)
         m_unicode = true;
         break;
 
+    case MAGIC_3_11:
+        m_maj = 3;
+        m_min = 11;
+        m_unicode = true;
+        break;
+
     /* Bad Magic detected */
     default:
         m_maj = -1;
@@ -213,7 +219,7 @@ void PycModule::loadFromFile(const char* filename)
             in.get32(); // Size parameter added in Python 3.3
     }
 
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
 void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
@@ -230,31 +236,19 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
     m_maj = major;
     m_min = minor;
     m_unicode = (major >= 3);
-    m_code = LoadObject(&in, this).require_cast<PycCode>();
+    m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
 PycRef<PycString> PycModule::getIntern(int ref) const
 {
-    if (ref < 0)
+    if (ref < 0 || (size_t)ref >= m_interns.size())
         throw std::out_of_range("Intern index out of range");
-
-    auto it = m_interns.cbegin();
-    while (ref-- && it != m_interns.cend())
-        ++it;
-    if (it == m_interns.cend())
-        throw std::out_of_range("Intern index out of range");
-    return *it;
+    return m_interns[(size_t)ref];
 }
 
 PycRef<PycObject> PycModule::getRef(int ref) const
 {
-    if (ref < 0)
+    if (ref < 0 || (size_t)ref >= m_refs.size())
         throw std::out_of_range("Ref index out of range");
-
-    auto it = m_refs.cbegin();
-    while (ref-- && it != m_refs.cend())
-        ++it;
-    if (it == m_refs.cend())
-        throw std::out_of_range("Ref index out of range");
-    return *it;
+    return m_refs[(size_t)ref];
 }

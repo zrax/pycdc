@@ -694,7 +694,7 @@ public:
         : ASTNode(NODE_ANNOTATED_VAR), m_name(std::move(name)), m_type(std::move(type)) { }
 
     PycRef<ASTNode> name() const noexcept { return m_name; }
-    PycRef<ASTNode> type() const noexcept { return m_type; }
+    PycRef<ASTNode> annotation() const noexcept { return m_type; }
 
 private:
     PycRef<ASTNode> m_name;

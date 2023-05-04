@@ -36,6 +36,7 @@ DECLARE_PYTHON(3, 7)
 DECLARE_PYTHON(3, 8)
 DECLARE_PYTHON(3, 9)
 DECLARE_PYTHON(3, 10)
+DECLARE_PYTHON(3, 11)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -103,6 +104,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 8: return python_38_map(opcode);
         case 9: return python_39_map(opcode);
         case 10: return python_310_map(opcode);
+        case 11: return python_311_map(opcode);
         }
         break;
     }
@@ -173,7 +175,6 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
         OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
                      false, pyc_output, parent_f_string_quote);
         break;
-    case PycObject::TYPE_STRINGREF:
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
@@ -317,7 +318,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
 {
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-    bool py36_opcode = (mod->majorVer() > 3 || (mod->majorVer() == 3 && mod->minorVer() >= 6));
+    bool py36_opcode = (mod->verCompare(3, 6) >= 0);
     if (py36_opcode) {
         operand = source.getByte();
         pos += 2;
@@ -344,7 +345,7 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
-void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
+void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
 {
     static const char *cmp_strings[] = {
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
@@ -357,12 +358,14 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
     int opcode, operand;
     int pos = 0;
     while (!source.atEof()) {
+        int start_pos = pos;
+        bc_next(source, mod, opcode, operand, pos);
+        if (opcode == Pyc::CACHE && (flags & Pyc::DISASM_SHOW_CACHES) == 0)
+            continue;
+
         for (int i=0; i<indent; i++)
             fputs("    ", pyc_output);
-        fprintf(pyc_output, "%-7d ", pos);   // Current bytecode position
-
-        bc_next(source, mod, opcode, operand, pos);
-        fprintf(pyc_output, "%-24s", Pyc::OpcodeName(opcode));
+        fprintf(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {
@@ -370,6 +373,16 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                     auto constParam = code->getConst(operand);
                     fprintf(pyc_output, "%d: ", operand);
                     print_const(constParam, mod);
+                } catch (const std::out_of_range &) {
+                    fprintf(pyc_output, "%d <INVALID>", operand);
+                }
+            } else if (opcode == Pyc::LOAD_GLOBAL_A) {
+                // Special case for Python 3.11+
+                try {
+                    if (operand & 1)
+                        fprintf(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                    else
+                        fprintf(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
@@ -381,13 +394,13 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 }
             } else if (Pyc::IsVarNameArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getVarName(operand)->value());
+                    fprintf(pyc_output, "%d: %s", operand, code->getLocal(operand)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsCellArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(operand)->value());
+                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(mod, operand)->value());
                 } catch (const std::out_of_range &) {
                     fprintf(pyc_output, "%d <INVALID>", operand);
                 }
@@ -396,8 +409,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent)
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // BPO-27129
                 fprintf(pyc_output, "%d (to %d)", operand, pos+offs);
-            }
-            else if (Pyc::IsJumpArg(opcode)) {
+            } else if (Pyc::IsJumpArg(opcode)) {
                 if (mod->verCompare(3, 10) >= 0) // BPO-27129
                     fprintf(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
                 else
