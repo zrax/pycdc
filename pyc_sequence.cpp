@@ -3,6 +3,34 @@
 #include "data.h"
 #include <stdexcept>
 
+/* PycSimpleSequence */
+void PycSimpleSequence::load(PycData* stream, PycModule* mod)
+{
+    m_size = stream->get32();
+    m_values.reserve(m_size);
+    for (int i=0; i<m_size; i++)
+        m_values.push_back(LoadObject(stream, mod));
+}
+
+bool PycSimpleSequence::isEqual(PycRef<PycObject> obj) const
+{
+    if (type() != obj.type())
+        return false;
+
+    PycRef<PycSimpleSequence> seqObj = obj.cast<PycSimpleSequence>();
+    if (m_size != seqObj->m_size)
+        return false;
+    auto it1 = m_values.cbegin();
+    auto it2 = seqObj->m_values.cbegin();
+    while (it1 != m_values.cend()) {
+        if (!(*it1)->isEqual(*it2))
+            return false;
+        ++it1, ++it2;
+    }
+    return true;
+}
+
+
 /* PycTuple */
 void PycTuple::load(PycData* stream, PycModule* mod)
 {
@@ -14,51 +42,6 @@ void PycTuple::load(PycData* stream, PycModule* mod)
     m_values.resize(m_size);
     for (int i=0; i<m_size; i++)
         m_values[i] = LoadObject(stream, mod);
-}
-
-bool PycTuple::isEqual(PycRef<PycObject> obj) const
-{
-    if (type() != obj.type())
-        return false;
-
-    PycRef<PycTuple> tupleObj = obj.cast<PycTuple>();
-    if (m_size != tupleObj->m_size)
-        return false;
-    auto it1 = m_values.cbegin();
-    auto it2 = tupleObj->m_values.cbegin();
-    while (it1 != m_values.cend()) {
-        if (!(*it1)->isEqual(*it2))
-            return false;
-        ++it1, ++it2;
-    }
-    return true;
-}
-
-
-/* PycList */
-void PycList::load(PycData* stream, PycModule* mod)
-{
-    m_size = stream->get32();
-    for (int i=0; i<m_size; i++)
-        m_values.push_back(LoadObject(stream, mod));
-}
-
-bool PycList::isEqual(PycRef<PycObject> obj) const
-{
-    if (type() != obj.type())
-        return false;
-
-    PycRef<PycList> listObj = obj.cast<PycList>();
-    if (m_size != listObj->m_size)
-        return false;
-    auto it1 = m_values.cbegin();
-    auto it2 = listObj->m_values.cbegin();
-    while (it1 != m_values.cend()) {
-        if (!(*it1)->isEqual(*it2))
-            return false;
-        ++it1, ++it2;
-    }
-    return true;
 }
 
 
@@ -125,45 +108,5 @@ PycRef<PycObject> PycDict::get(int idx) const
         ++it;
     if (it == m_values.cend())
         throw std::out_of_range("Dict index out of range");
-    return *it;
-}
-
-
-/* PycSet */
-void PycSet::load(PycData* stream, PycModule* mod)
-{
-    m_size = stream->get32();
-    for (int i=0; i<m_size; i++)
-        m_values.insert(LoadObject(stream, mod));
-}
-
-bool PycSet::isEqual(PycRef<PycObject> obj) const
-{
-    if (type() != obj.type())
-        return false;
-
-    PycRef<PycSet> setObj = obj.cast<PycSet>();
-    if (m_size != setObj->m_size)
-        return false;
-    auto it1 = m_values.cbegin();
-    auto it2 = setObj->m_values.cbegin();
-    while (it1 != m_values.cend()) {
-        if (!(*it1)->isEqual(*it2))
-            return false;
-        ++it1, ++it2;
-    }
-    return true;
-}
-
-PycRef<PycObject> PycSet::get(int idx) const
-{
-    if (idx < 0)
-        throw std::out_of_range("Set index out of range");
-
-    auto it = m_values.cbegin();
-    while (idx-- && it != m_values.cend())
-        ++it;
-    if (it == m_values.cend())
-        throw std::out_of_range("Set index out of range");
     return *it;
 }

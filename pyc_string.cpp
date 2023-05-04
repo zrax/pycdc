@@ -90,61 +90,54 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
 	ch = str->value();
 	len = str->length();
 
-	// Output the string
-	if (!parent_f_string_quote) {
-		if (triple)
-			fputs(useQuotes ? "\"\"\"" : "'''", F);
-		else
-			fputc(useQuotes ? '"' : '\'', F);
-	}
-
-	while (len--) {
-		if ((*ch > 0 && *ch < 0x20) || *ch == 0x7F) {
-			if (*ch == '\r') {
-				fputs("\\r", F);
-			}
-			else if (*ch == '\n') {
-				if (triple)
-					fputc('\n', F);
-				else
-					fputs("\\n", F);
-			}
-			else if (*ch == '\t') {
-				fputs("\\t", F);
-			}
-			else {
-				fprintf(F, "\\x%02x", (*ch & 0xFF));
-			}
-		}
-		else if ((unsigned char)(*ch) >= 0x80) {
-			if (str->type() == PycObject::TYPE_UNICODE) {
-				// Unicode stored as UTF-8...  Let the stream interpret it
-				fputc(*ch, F);
-			}
-			else {
-				fprintf(F, "\\x%x", (*ch & 0xFF));
-			}
-		}
-		else {
-			if (!useQuotes && *ch == '\'')
-				fputs("\\'", F);
-			else if (useQuotes && *ch == '"')
-				fputs("\\\"", F);
-			else if (*ch == '\\')
-				fputs("\\\\", F);
-			else if (parent_f_string_quote && *ch == '{')
-				fputs("{{", F);
-			else if (parent_f_string_quote && *ch == '}')
-				fputs("}}", F);
-			else
-				fputc(*ch, F);
-		}
-		ch++;
-	}
-	if (!parent_f_string_quote) {
-		if (triple)
-			fputs(useQuotes ? "\"\"\"" : "'''", F);
-		else
-			fputc(useQuotes ? '"' : '\'', F);
-	}
+    // Output the string
+    if (!parent_f_string_quote) {
+        if (triple)
+            fputs(useQuotes ? "\"\"\"" : "'''", F);
+        else
+            fputc(useQuotes ? '"' : '\'', F);
+    }
+    while (len--) {
+        if ((unsigned char)(*ch) < 0x20 || *ch == 0x7F) {
+            if (*ch == '\r') {
+                fputs("\\r", F);
+            } else if (*ch == '\n') {
+                if (triple)
+                    fputc('\n', F);
+                else
+                    fputs("\\n", F);
+            } else if (*ch == '\t') {
+                fputs("\\t", F);
+            } else {
+                fprintf(F, "\\x%02x", (*ch & 0xFF));
+            }
+        } else if ((unsigned char)(*ch) >= 0x80) {
+            if (str->type() == PycObject::TYPE_UNICODE) {
+                // Unicode stored as UTF-8...  Let the stream interpret it
+                fputc(*ch, F);
+            } else {
+                fprintf(F, "\\x%x", (*ch & 0xFF));
+            }
+        } else {
+            if (!useQuotes && *ch == '\'')
+                fputs("\\'", F);
+            else if (useQuotes && *ch == '"')
+                fputs("\\\"", F);
+            else if (*ch == '\\')
+                fputs("\\\\", F);
+            else if (parent_f_string_quote && *ch == '{')
+                fputs("{{", F);
+            else if (parent_f_string_quote && *ch == '}')
+                fputs("}}", F);
+            else
+                fputc(*ch, F);
+        }
+        ch++;
+    }
+    if (!parent_f_string_quote) {
+        if (triple)
+            fputs(useQuotes ? "\"\"\"" : "'''", F);
+        else
+            fputc(useQuotes ? '"' : '\'', F);
+    }
 }

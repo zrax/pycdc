@@ -3,6 +3,7 @@
 
 #include "pyc_module.h"
 #include <list>
+#include <deque>
 
 /* Similar interface to PycObject, so PycRef can work on it... *
  * However, this does *NOT* mean the two are interchangeable!  */
@@ -12,7 +13,7 @@ public:
         NODE_INVALID, NODE_NODELIST, NODE_OBJECT, NODE_UNARY, NODE_BINARY,
         NODE_COMPARE, NODE_SLICE, NODE_STORE, NODE_RETURN, NODE_NAME,
         NODE_DELETE, NODE_FUNCTION, NODE_CLASS, NODE_CALL, NODE_IMPORT,
-        NODE_TUPLE, NODE_LIST, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
+        NODE_TUPLE, NODE_LIST, NODE_SET, NODE_MAP, NODE_SUBSCR, NODE_PRINT,
         NODE_CONVERT, NODE_KEYWORD, NODE_RAISE, NODE_EXEC, NODE_BLOCK,
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
@@ -358,6 +359,18 @@ private:
     value_t m_values;
 };
 
+class ASTSet : public ASTNode {
+public:
+    typedef std::deque<PycRef<ASTNode>> value_t;
+
+    ASTSet(value_t values)
+        : ASTNode(NODE_SET), m_values(std::move(values)) { }
+
+    const value_t& values() const { return m_values; }
+
+private:
+    value_t m_values;
+};
 
 class ASTMap : public ASTNode {
 public:

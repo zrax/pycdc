@@ -1,0 +1,7 @@
+import sys <EOL>
+import os <EOL>
+sys . stdout . write ( 'Test\n' ) <EOL>
+sys . stdout . write ( os . path . join ( 'foo' , 'bar' ) ) <EOL>
+print ( '\n' ) <EOL>
+print ( eval ( '4 * 13' ) ) <EOL>
+print ( ) <EOL>
