@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cstdint>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"

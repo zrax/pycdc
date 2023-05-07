@@ -1,6 +1,7 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 #include <stdexcept>
+#include <cstdint>
 #include <cmath>
 
 #ifdef _MSC_VER
