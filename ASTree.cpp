@@ -157,6 +157,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         }
 
         switch (opcode) {
+        case Pyc::BINARY_OP_A:
         case Pyc::BINARY_ADD:
             {
                 PycRef<ASTNode> right = stack.top();
