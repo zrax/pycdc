@@ -1,0 +1,5 @@
+def add ( a , b ) : <EOL>
+<INDENT>
+return a + b <EOL>
+<OUTDENT>
+print ( add ( add ( 1 , 3 ) , add ( 2 , 4 ) ) ) <EOL>
