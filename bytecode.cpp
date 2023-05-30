@@ -371,6 +371,12 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
     };
     static const size_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
 
+    static const char *binop_strings[] = {
+        "+", "&", "//", "<<", "@", "*", "%", "|", "**", ">>", "-", "/", "^",
+        "+=", "&=", "//=", "<<=", "@=", "*=", "%=", "|=", "**=", ">>=", "-=", "/=", "^=",
+    };
+    static const size_t binop_strings_len = sizeof(binop_strings) / sizeof(binop_strings[0]);
+
     PycBuffer source(code->code()->value(), code->code()->length());
 
     int opcode, operand;
@@ -435,6 +441,11 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
             } else if (Pyc::IsCompareArg(opcode)) {
                 if (static_cast<size_t>(operand) < cmp_strings_len)
                     fprintf(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
+                else
+                    fprintf(pyc_output, "%d (UNKNOWN)", operand);
+            } else if (opcode == Pyc::BINARY_OP_A) {
+                if (static_cast<size_t>(operand) < binop_strings_len)
+                    fprintf(pyc_output, "%d (%s)", operand, binop_strings[operand]);
                 else
                     fprintf(pyc_output, "%d (UNKNOWN)", operand);
             } else if (opcode == Pyc::IS_OP_A) {
