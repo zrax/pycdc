@@ -5,8 +5,6 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 
-#include <iostream>
-
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
 // E.g. f"""{"interpolated "123' literal"}"""    -> valid.
@@ -163,7 +161,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         {
             ASTBinary::BinOp op = ASTBinary::getBinOpFromOperand(operand);
             if (op == ASTBinary::BIN_INVALID) {
-                std::cout << "Error: Invalid operand value" << std::endl;
+                fprintf(stderr, "Unsupported `BINARY_OP` operand value: %s\n", operand);
             }
             else {
                 PycRef<ASTNode> right = stack.top();
