@@ -37,7 +37,8 @@ const char* ASTBinary::op_str() const
     return s_op_strings[op()];
 }
 
-const ASTBinary::BinOp ASTBinary::getBinOpFromOperand(int operand) {
+ASTBinary::BinOp ASTBinary::getBinOpFromOperand(int operand)
+{
     switch (operand) {
     case 0:
         return BIN_ADD;
