@@ -149,7 +149,7 @@ public:
     int op() const { return m_op; }
     bool is_inplace() const { return m_op >= BIN_IP_ADD; }
     virtual const char* op_str() const;
-    static const BinOp getBinOpFromOperand(int operand);
+    static BinOp getBinOpFromOperand(int operand);
 
 protected:
     int m_op;
