@@ -12,8 +12,6 @@ print ( 'Greater than or equal to:' , a >= b ) <EOL>
 print ( 'Less than or equal to:' , a <= b ) <EOL>
 print ( 'Equal to:' , a == b ) <EOL>
 print ( 'Not equal to:' , a != b ) <EOL>
-print ( 'Logical AND:' , a and b ) <EOL>
-print ( 'Logical OR:' , a or b ) <EOL>
 print ( 'Bitwise AND:' , a & b ) <EOL>
 print ( 'Bitwise OR:' , a | b ) <EOL>
 print ( 'Bitwise XOR:' , a ^ b ) <EOL>
