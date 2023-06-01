@@ -157,6 +157,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         }
 
         switch (opcode) {
+        case Pyc::BINARY_OP_A:
+            {
+                ASTBinary::BinOp op = ASTBinary::getBinOpFromOperand(operand);
+                if (op == ASTBinary::BIN_INVALID)
+                    fprintf(stderr, "Unsupported `BINARY_OP` operand value: %d\n", operand);
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTBinary(left, right, op));
+            }
+            break;
         case Pyc::BINARY_ADD:
             {
                 PycRef<ASTNode> right = stack.top();

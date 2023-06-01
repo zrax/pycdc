@@ -1,0 +1,23 @@
+( a , b ) = ( 10 , 3 ) <EOL>
+print ( 'Addition:' , a + b ) <EOL>
+print ( 'Subtraction:' , a - b ) <EOL>
+print ( 'Multiplication:' , a * b ) <EOL>
+print ( 'Division:' , a / b ) <EOL>
+print ( 'Modulo:' , a % b ) <EOL>
+print ( 'Floor Division:' , a // b ) <EOL>
+print ( 'Exponentiation:' , a ** b ) <EOL>
+print ( 'Greater than:' , a > b ) <EOL>
+print ( 'Less than:' , a < b ) <EOL>
+print ( 'Greater than or equal to:' , a >= b ) <EOL>
+print ( 'Less than or equal to:' , a <= b ) <EOL>
+print ( 'Equal to:' , a == b ) <EOL>
+print ( 'Not equal to:' , a != b ) <EOL>
+print ( 'Bitwise AND:' , a & b ) <EOL>
+print ( 'Bitwise OR:' , a | b ) <EOL>
+print ( 'Bitwise XOR:' , a ^ b ) <EOL>
+print ( 'Bitwise left shift:' , a << b ) <EOL>
+print ( 'Bitwise right shift:' , a >> b ) <EOL>
+print ( 'Membership in:' , a in b ) <EOL>
+print ( 'Membership not in:' , a not in b ) <EOL>
+print ( 'Identity equality:' , a is b ) <EOL>
+print ( 'Identity inequality:' , a is not b ) <EOL>
