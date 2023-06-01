@@ -31,7 +31,7 @@ private:
     std::string m_value;
 };
 
-void OutputString(PycRef<PycString> str, char prefix = 0, bool triple = false,
-                  FILE* F = pyc_output, const char* parent_f_string_quote = nullptr);
+void OutputString(PycRef<PycString> str, char prefix, bool triple,
+                  std::ostream& stream, const char* parent_f_string_quote = nullptr);
 
 #endif

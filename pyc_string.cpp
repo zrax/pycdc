@@ -2,6 +2,7 @@
 #include "pyc_module.h"
 #include "data.h"
 #include <stdexcept>
+#include <ostream>
 
 static bool check_ascii(const std::string& data)
 {
@@ -56,15 +57,15 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, const char* parent_f_string_quote)
+void OutputString(PycRef<PycString> str, char prefix, bool triple, std::ostream &pyc_output, const char* parent_f_string_quote)
 {
     if (prefix != 0)
-        fputc(prefix, F);
+        pyc_output << prefix;
 
     const char* ch = str->value();
     int len = str->length();
     if (ch == 0) {
-        fputs("''", F);
+        pyc_output << "''";
         return;
     }
 
@@ -89,51 +90,51 @@ void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, cons
     // Output the string
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            pyc_output << (useQuotes ? "\"\"\"" : "'''");
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            pyc_output << (useQuotes ? '"' : '\'');
     }
     while (len--) {
         if ((unsigned char)(*ch) < 0x20 || *ch == 0x7F) {
             if (*ch == '\r') {
-                fputs("\\r", F);
+                pyc_output << "\\r";
             } else if (*ch == '\n') {
                 if (triple)
-                    fputc('\n', F);
+                    pyc_output << '\n';
                 else
-                    fputs("\\n", F);
+                    pyc_output << "\\n";
             } else if (*ch == '\t') {
-                fputs("\\t", F);
+                pyc_output << "\\t";
             } else {
-                fprintf(F, "\\x%02x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%02x", (*ch & 0xFF));
             }
         } else if ((unsigned char)(*ch) >= 0x80) {
             if (str->type() == PycObject::TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
-                fputc(*ch, F);
+                pyc_output << *ch;
             } else {
-                fprintf(F, "\\x%x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%x", (*ch & 0xFF));
             }
         } else {
             if (!useQuotes && *ch == '\'')
-                fputs("\\'", F);
+                pyc_output << "\\'";
             else if (useQuotes && *ch == '"')
-                fputs("\\\"", F);
+                pyc_output << "\\\"";
             else if (*ch == '\\')
-                fputs("\\\\", F);
+                pyc_output << "\\\\";
             else if (parent_f_string_quote && *ch == '{')
-                fputs("{{", F);
+                pyc_output << "{{";
             else if (parent_f_string_quote && *ch == '}')
-                fputs("}}", F);
+                pyc_output << "}}";
             else
-                fputc(*ch, F);
+                pyc_output << *ch;
         }
         ch++;
     }
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            pyc_output << (useQuotes ? "\"\"\"" : "'''");
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            pyc_output << (useQuotes ? '"' : '\'');
     }
 }
