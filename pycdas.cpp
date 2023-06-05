@@ -58,11 +58,12 @@ static void iputs(std::ostream& pyc_output, int indent, const char* text)
     pyc_output << text;
 }
 
-static void ivprintf(std::ostream& pyc_output, int indent, const char* fmt, va_list varargs)
+static void ivprintf(std::ostream& pyc_output, int indent, const char* fmt,
+                     va_list varargs)
 {
     for (int i=0; i<indent; i++)
         pyc_output << "    ";
-    formatted_print(pyc_output, fmt, varargs);
+    formatted_printv(pyc_output, fmt, varargs);
 }
 
 static void iprintf(std::ostream& pyc_output, int indent, const char* fmt, ...)

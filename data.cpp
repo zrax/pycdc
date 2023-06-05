@@ -1,6 +1,6 @@
 #include "data.h"
 #include <cstring>
-#include <ostream>
+#include <cstdarg>
 #include <vector>
 
 /* PycData */
@@ -83,20 +83,27 @@ int PycBuffer::getBuffer(int bytes, void* buffer)
     return bytes;
 }
 
-
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvarargs"
-int	 formatted_print(std::ostream& stream, const std::string& format, ...) {
+int formatted_print(std::ostream& stream, const char* format, ...)
+{
     va_list args;
     va_start(args, format);
-    size_t len = std::vsnprintf(NULL, 0, format.c_str(), args);
+    int result = formatted_printv(stream, format, args);
     va_end(args);
-    std::vector<char> vec(len + 1);
-    va_start(args, format);
-    std::vsnprintf(&vec[0], len + 1, format.c_str(), args);
-    va_end(args);
-    stream << &vec[0];
-    return 0;
+    return result;
 }
-#pragma clang diagnostic pop
+
+int formatted_printv(std::ostream& stream, const char* format, va_list args)
+{
+    va_list saved_args;
+    va_copy(saved_args, args);
+    int len = std::vsnprintf(nullptr, 0, format, args);
+    if (len < 0)
+        return len;
+    std::vector<char> vec(static_cast<size_t>(len) + 1);
+    int written = std::vsnprintf(&vec[0], vec.size(), format, saved_args);
+    va_end(saved_args);
+
+    if (written >= 0)
+        stream << &vec[0];
+    return written;
+}

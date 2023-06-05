@@ -2,7 +2,6 @@
 #include "pyc_module.h"
 #include "data.h"
 #include <stdexcept>
-#include <ostream>
 
 static bool check_ascii(const std::string& data)
 {

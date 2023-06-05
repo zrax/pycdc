@@ -57,6 +57,7 @@ private:
     int m_size, m_pos;
 };
 
-int	 formatted_print(std::ostream& stream, const std::string& format, ...);
+int formatted_print(std::ostream& stream, const char* format, ...);
+int formatted_printv(std::ostream& stream, const char* format, va_list args);
 
 #endif
