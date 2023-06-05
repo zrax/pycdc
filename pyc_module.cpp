@@ -239,6 +239,44 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
     m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
+void PycModule::loadFromStream(PycData& stream)
+{
+    setVersion(stream.get32());
+    if (!isValid()) {
+        fputs("Bad MAGIC!\n", stderr);
+        return;
+    }
+
+    int flags = 0;
+    if (verCompare(3, 7) >= 0)
+        flags = stream.get32();
+
+    if (flags & 0x1) {
+        // Optional checksum added in Python 3.7
+        stream.get32();
+        stream.get32();
+    } else {
+        stream.get32(); // Timestamp -- who cares?
+
+        if (verCompare(3, 3) >= 0)
+            stream.get32(); // Size parameter added in Python 3.3
+    }
+
+    m_code = LoadObject(&stream, this).cast<PycCode>();
+}
+
+void PycModule::loadFromMarshalledStream(PycData& stream, int major, int minor)
+{
+    if (!isSupportedVersion(major, minor)) {
+        fprintf(stderr, "Unsupported version %d.%d\n", major, minor);
+        return;
+    }
+    m_maj = major;
+    m_min = minor;
+    m_unicode = (major >= 3);
+    m_code = LoadObject(&stream, this).cast<PycCode>();
+}
+
 PycRef<PycString> PycModule::getIntern(int ref) const
 {
     if (ref < 0 || (size_t)ref >= m_interns.size())

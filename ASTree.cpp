@@ -3007,7 +3007,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 } else {
                     pyc_output << "\n";
                     start_line(cur_indent, pyc_output);
-                    if (code_src->flags() & PycCode::CO_COROUTINE)
+                    if (code_src->flags() & PycCode::CO_COROUTINE_)
                         pyc_output << "async ";
                     pyc_output << "def ";
                     print_src(dest, mod, pyc_output);
@@ -3039,12 +3039,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                         }
                     }
                 }
-                if (code_src->flags() & PycCode::CO_VARARGS) {
+                if (code_src->flags() & PycCode::CO_VARARGS_) {
                     if (narg)
                         pyc_output << ", ";
                     pyc_output << "*" << code_src->getLocal(narg++)->value();
                 }
-                if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
+                if (code_src->flags() & PycCode::CO_VARKEYWORDS_) {
                     if (narg)
                         pyc_output << ", ";
                     pyc_output << "**" << code_src->getLocal(narg++)->value();
