@@ -3,10 +3,10 @@
 #include <cstdarg>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include "pyc_module.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
-#include <fstream>
 
 #ifdef WIN32
 #  define PATHSEP '\\'
@@ -265,20 +265,20 @@ int main(int argc, char* argv[])
     bool marshalled = false;
     const char* version = nullptr;
     unsigned disasm_flags = 0;
-    std::ostream &pyc_output = std::cout;
+    std::ostream* pyc_output = &std::cout;
+    std::ofstream out_file;
 
     for (int arg = 1; arg < argc; ++arg) {
         if (strcmp(argv[arg], "-o") == 0) {
             if (arg + 1 < argc) {
                 const char* filename = argv[++arg];
-
-                auto* outfile = new std::filebuf;
-                if(! outfile->open(filename, std::ios::out)) {
+                out_file.open(filename, std::ios_base::out);
+                if (out_file.fail()) {
                     fprintf(stderr, "Error opening file '%s' for writing\n",
-                            argv[arg]);
+                            filename);
                     return 1;
                 }
-                pyc_output.rdbuf(outfile);
+                pyc_output = &out_file;
             } else {
                 fputs("Option '-o' requires a filename\n", stderr);
                 return 1;
@@ -327,7 +327,7 @@ int main(int argc, char* argv[])
             fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
             return 1;
         }
-    }  else {
+    } else {
         if (!version) {
             fputs("Opening raw code objects requires a version to be specified\n", stderr);
             return 1;
@@ -344,10 +344,12 @@ int main(int argc, char* argv[])
     }
     const char* dispname = strrchr(infile, PATHSEP);
     dispname = (dispname == NULL) ? infile : dispname + 1;
-    formatted_print(pyc_output, "%s (Python %d.%d%s)\n", dispname, mod.majorVer(), mod.minorVer(),
-           (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
+    formatted_print(*pyc_output, "%s (Python %d.%d%s)\n", dispname,
+                    mod.majorVer(), mod.minorVer(),
+                    (mod.majorVer() < 3 && mod.isUnicode()) ? " -U" : "");
     try {
-        output_object(mod.code().try_cast<PycObject>(), &mod, 0, disasm_flags, pyc_output);
+        output_object(mod.code().try_cast<PycObject>(), &mod, 0, disasm_flags,
+                      *pyc_output);
     } catch (std::exception& ex) {
         fprintf(stderr, "Error disassembling %s: %s\n", infile, ex.what());
         return 1;
