@@ -160,7 +160,8 @@ bool Pyc::IsCompareArg(int opcode)
     return (opcode == Pyc::COMPARE_OP_A);
 }
 
-void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_string_quote, std::ostream& pyc_output)
+void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod,
+                 const char* parent_f_string_quote)
 {
     if (obj == NULL) {
         pyc_output << "<NULL>";
@@ -169,12 +170,12 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
 
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                     false, pyc_output, parent_f_string_quote);
+        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
+                     false, parent_f_string_quote);
         break;
     case PycObject::TYPE_UNICODE:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
-                     false, pyc_output, parent_f_string_quote);
+        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
+                     false, parent_f_string_quote);
         break;
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
@@ -182,10 +183,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
         if (mod->majorVer() >= 3)
-            OutputString(obj.cast<PycString>(), 0, false, pyc_output, parent_f_string_quote);
+            OutputString(pyc_output, obj.cast<PycString>(), 0, false, parent_f_string_quote);
         else
-            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                         false, pyc_output, parent_f_string_quote);
+            OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
+                         false, parent_f_string_quote);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
@@ -194,10 +195,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod, nullptr, pyc_output);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
                     pyc_output << ", ";
-                    print_const(*it, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *it, mod);
                 }
             }
             if (values.size() == 1)
@@ -212,10 +213,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             PycList::value_t values = obj.cast<PycList>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod, nullptr, pyc_output);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
                     pyc_output << ", ";
-                    print_const(*it, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *it, mod);
                 }
             }
             pyc_output << "]";
@@ -229,15 +230,15 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             auto ki = keys.cbegin();
             auto vi = values.cbegin();
             if (ki != keys.cend()) {
-                print_const(*ki, mod, nullptr, pyc_output);
+                print_const(pyc_output, *ki, mod);
                 pyc_output << ": ";
-                print_const(*vi, mod, nullptr, pyc_output);
+                print_const(pyc_output, *vi, mod);
                 while (++ki != keys.cend()) {
                     ++vi;
                     pyc_output << ", ";
-                    print_const(*ki, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *ki, mod);
                     pyc_output << ": ";
-                    print_const(*vi, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *vi, mod);
                 }
             }
             pyc_output << "}";
@@ -249,10 +250,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             PycSet::value_t values = obj.cast<PycSet>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod, nullptr, pyc_output);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
                     pyc_output << ", ";
-                    print_const(*it, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *it, mod);
                 }
             }
             pyc_output << "}";
@@ -264,10 +265,10 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             PycSet::value_t values = obj.cast<PycSet>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod, nullptr, pyc_output);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
                     pyc_output << ", ";
-                    print_const(*it, mod, nullptr, pyc_output);
+                    print_const(pyc_output, *it, mod);
                 }
             }
             pyc_output << "})";
@@ -326,7 +327,7 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
         break;
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
-        formatted_print(pyc_output, "<CODE> %s", obj.cast<PycCode>()->name()->value());
+        pyc_output << "<CODE> " << obj.cast<PycCode>()->name()->value();
         break;
     default:
         formatted_print(pyc_output, "<TYPE: %d>\n", obj->type());
@@ -363,7 +364,8 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
-void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags, std::ostream &pyc_output)
+void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
+               int indent, unsigned flags)
 {
     static const char *cmp_strings[] = {
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
@@ -396,7 +398,7 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags,
                 try {
                     auto constParam = code->getConst(operand);
                     formatted_print(pyc_output, "%d: ", operand);
-                    print_const(constParam, mod, nullptr, pyc_output);
+                    print_const(pyc_output, constParam, mod);
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }

@@ -14,8 +14,8 @@
 // NOTE: Nested f-strings not supported.
 #define F_STRING_QUOTE "'''"
 
-static void append_to_chain_store(PycRef<ASTNode> &chainStore, PycRef<ASTNode> item,
-        FastStack& stack, PycRef<ASTBlock> &curblock);
+static void append_to_chain_store(const PycRef<ASTNode>& chainStore,
+        PycRef<ASTNode> item, FastStack& stack, const PycRef<ASTBlock>& curblock);
 
 /* Use this to determine if an error occurred (and therefore, if we should
  * avoid cleaning the output tree) */
@@ -2398,8 +2398,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     return new ASTNodeList(defblock->nodes());
 }
 
-static void append_to_chain_store(PycRef<ASTNode> &chainStore, PycRef<ASTNode> item,
-        FastStack& stack, PycRef<ASTBlock> &curblock)
+static void append_to_chain_store(const PycRef<ASTNode> &chainStore,
+        PycRef<ASTNode> item, FastStack& stack, const PycRef<ASTBlock>& curblock)
 {
     stack.pop();    // ignore identical source object.
     chainStore.cast<ASTChainStore>()->append(item);
@@ -2502,7 +2502,9 @@ static void end_line(std::ostream& pyc_output)
 }
 
 int cur_indent = -1;
-static void print_block(PycRef<ASTBlock> blk, PycModule* mod, std::ostream& pyc_output) {
+static void print_block(PycRef<ASTBlock> blk, PycModule* mod,
+                        std::ostream& pyc_output)
+{
     ASTBlock::list_t lines = blk->nodes();
 
     if (lines.size() == 0) {
@@ -2522,7 +2524,8 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod, std::ostream& pyc_
     }
 }
 
-void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule* mod, std::ostream& pyc_output)
+void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule* mod,
+                           std::ostream& pyc_output)
 {
     pyc_output << "{";
     print_src(formatted_value->val(), mod, pyc_output);
@@ -2540,7 +2543,7 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
         pyc_output << "!a";
         break;
     case ASTFormattedValue::ConversionFlag::FMTSPEC:
-        pyc_output <<  ":" << formatted_value->format_spec().cast<ASTObject>()->object().cast<PycString>()->value();
+        pyc_output << ":" << formatted_value->format_spec().cast<ASTObject>()->object().cast<PycString>()->value();
         break;
     default:
         fprintf(stderr, "Unsupported NODE_FORMATTEDVALUE conversion flag: %d\n", formatted_value->conversion());
@@ -2548,7 +2551,7 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     pyc_output << "}";
 }
 
-void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream &pyc_output)
+void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
 {
     if (node == NULL) {
         pyc_output << "None";
@@ -2653,7 +2656,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream &pyc_output)
             case ASTNode::NODE_OBJECT:
                 // When printing a piece of the f-string, keep the quote style consistent.
                 // This avoids problems when ''' or """ is part of the string.
-                print_const(val.cast<ASTObject>()->object(), mod, F_STRING_QUOTE, pyc_output);
+                print_const(pyc_output, val.cast<ASTObject>()->object(), mod, F_STRING_QUOTE);
                 break;
             default:
                 fprintf(stderr, "Unsupported node type %d in NODE_JOINEDSTR\n", val.type());
@@ -2829,7 +2832,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream &pyc_output)
                 PycRef<PycCode> code = obj.cast<PycCode>();
                 decompyle(code, mod, pyc_output);
             } else {
-                print_const(obj, mod, nullptr, pyc_output);
+                print_const(pyc_output, obj, mod);
             }
         }
         break;
@@ -3217,7 +3220,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream &pyc_output)
     cleanBuild = true;
 }
 
-bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod, std::ostream& pyc_output)
+bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod,
+                     std::ostream& pyc_output)
 {
     // docstrings are translated from the bytecode __doc__ = 'string' to simply '''string'''
     signed char prefix = -1;
@@ -3241,7 +3245,7 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod, std::ost
     }
     if (prefix != -1) {
         start_line(indent, pyc_output);
-        OutputString(obj.cast<PycString>(), prefix, true, pyc_output);
+        OutputString(pyc_output, obj.cast<PycString>(), prefix, true);
         pyc_output << "\n";
         return true;
     } else

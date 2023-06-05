@@ -139,7 +139,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
                 output_object(codeObj->consts()->get(i), mod, indent + 2, flags, pyc_output);
 
             iputs(pyc_output, indent + 1, "[Disassembly]\n");
-            bc_disasm(codeObj, mod, indent + 2, flags, pyc_output);
+            bc_disasm(pyc_output, codeObj, mod, indent + 2, flags);
 
             if (mod->verCompare(1, 5) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
                 iputs(pyc_output, indent + 1, "[Line Number Table]\n");
@@ -154,12 +154,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
         break;
     case PycObject::TYPE_STRING:
         iputs(pyc_output, indent, "");
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0, false, pyc_output);
+        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
         pyc_output << "\n";
         break;
     case PycObject::TYPE_UNICODE:
         iputs(pyc_output, indent, "");
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u', false, pyc_output);
+        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u');
         pyc_output << "\n";
         break;
     case PycObject::TYPE_INTERNED:
@@ -169,9 +169,9 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
         iputs(pyc_output, indent, "");
         if (mod->majorVer() >= 3)
-            OutputString(obj.cast<PycString>(), 0, false, pyc_output);
+            OutputString(pyc_output, obj.cast<PycString>(), 0);
         else
-            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0, false, pyc_output);
+            OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0);
         pyc_output << "\n";
         break;
     case PycObject::TYPE_TUPLE:

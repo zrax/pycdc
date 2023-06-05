@@ -56,7 +56,8 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void OutputString(PycRef<PycString> str, char prefix, bool triple, std::ostream &pyc_output, const char* parent_f_string_quote)
+void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
+                  bool triple, const char* parent_f_string_quote)
 {
     if (prefix != 0)
         pyc_output << prefix;
