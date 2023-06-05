@@ -1,7 +1,7 @@
 #include "data.h"
 #include <cstring>
-
-FILE* pyc_output = stdout;
+#include <ostream>
+#include <vector>
 
 /* PycData */
 int PycData::get16()
@@ -82,3 +82,21 @@ int PycBuffer::getBuffer(int bytes, void* buffer)
         memcpy(buffer, (m_buffer + m_pos), bytes);
     return bytes;
 }
+
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvarargs"
+int	 formatted_print(std::ostream& stream, const std::string& format, ...) {
+    va_list args;
+    va_start(args, format);
+    size_t len = std::vsnprintf(NULL, 0, format.c_str(), args);
+    va_end(args);
+    std::vector<char> vec(len + 1);
+    va_start(args, format);
+    std::vsnprintf(&vec[0], len + 1, format.c_str(), args);
+    va_end(args);
+    stream << &vec[0];
+    return 0;
+}
+#pragma clang diagnostic pop
