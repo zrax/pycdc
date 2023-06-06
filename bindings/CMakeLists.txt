@@ -1,5 +1,5 @@
 # Find the interpreter as well for byte files generation
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
 # Find pybind11
 execute_process(

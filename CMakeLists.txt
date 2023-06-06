@@ -25,6 +25,8 @@ if (EXISTS "${PYTHON_VENV_PATH}")
 endif()
 
 if (ENABLE_BINDINGS)
+    # -fPIC since bindings are built as a shared lib
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_subdirectory(bindings)
 else()
     find_package(Python REQUIRED Interpreter)
