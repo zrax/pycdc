@@ -1,3 +1,7 @@
+![Tests](https://img.shields.io/github/actions/workflow/status/zrax/pycdc/linux-ci.yml?branch=master&label=tests&style=flat-square)
+[![PyPI](https://img.shields.io/pypi/v/pycdc?color=blue&style=flat-square)](https://pypi.org/project/pycdc/)
+[![Python](https://img.shields.io/pypi/pyversions/pycdc?color=blue&style=flat-square)](https://pypi.org/project/pycdc/)
+
 # Decompyle++ 
 ***A Python Byte-code Disassembler/Decompiler***
 
@@ -51,7 +55,15 @@ Both tools support Python marshalled code objects, as output from `marshal.dumps
 
 To use this feature, specify `-c -v <version>` on the command line - the version must be specified as the objects themselves do not contain version metadata.
 
-**To use the Python bindings**, run the following Python script:
+**To use the Python bindings**
+
+Ensure the `pycdc` Python package is installed:
+
+- either from source (see [above](#building-and-installing-the-python-package))
+- or from PyPi : `pip install pycdc`
+
+Then, use it as below:
+
 ```python
 import marshal
 from pycdc import decompyle
