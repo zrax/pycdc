@@ -62,6 +62,8 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.cibuildwheel]
+test-requires = "pytest"
+test-command = "pytest {project}/tests/test_bindings.py"
 skip = [
     "*p36-*", # Skip Python 3.6
     "pp*", # Skip PyPy
