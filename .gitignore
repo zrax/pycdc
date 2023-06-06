@@ -31,13 +31,3 @@ tests/tests
 # CMake/Ninja artifacts
 *.cmake
 cmake-build-debug/
-CMakeFiles/
-Testing/
-CMakeCache.txt
-build.ninja
-.ninja_deps
-.ninja_log
-
-# Executables
-pycdc
-pycdas
