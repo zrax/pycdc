@@ -198,28 +198,7 @@ void PycModule::loadFromFile(const char* filename)
         fprintf(stderr, "Error opening file %s\n", filename);
         return;
     }
-    setVersion(in.get32());
-    if (!isValid()) {
-        fputs("Bad MAGIC!\n", stderr);
-        return;
-    }
-
-    int flags = 0;
-    if (verCompare(3, 7) >= 0)
-        flags = in.get32();
-
-    if (flags & 0x1) {
-        // Optional checksum added in Python 3.7
-        in.get32();
-        in.get32();
-    } else {
-        in.get32(); // Timestamp -- who cares?
-
-        if (verCompare(3, 3) >= 0)
-            in.get32(); // Size parameter added in Python 3.3
-    }
-
-    m_code = LoadObject(&in, this).cast<PycCode>();
+    loadFromStream(in);
 }
 
 void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
@@ -229,14 +208,7 @@ void PycModule::loadFromMarshalledFile(const char* filename, int major, int mino
         fprintf(stderr, "Error opening file %s\n", filename);
         return;
     }
-    if (!isSupportedVersion(major, minor)) {
-        fprintf(stderr, "Unsupported version %d.%d\n", major, minor);
-        return;
-    }
-    m_maj = major;
-    m_min = minor;
-    m_unicode = (major >= 3);
-    m_code = LoadObject(&in, this).cast<PycCode>();
+    loadFromMarshalledStream(in, major, minor);
 }
 
 void PycModule::loadFromStream(PycData& stream)
