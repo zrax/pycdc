@@ -64,7 +64,7 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
 
     const char* ch = str->value();
     int len = str->length();
-    if (ch == 0) {
+    if (len == 0) {
         pyc_output << "''";
         return;
     }
@@ -90,7 +90,7 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
     // Output the string
     if (!parent_f_string_quote) {
         if (triple)
-            pyc_output << (useQuotes ? "\"\"\"" : "'''");
+            pyc_output << (useQuotes ? R"(""")" : "'''");
         else
             pyc_output << (useQuotes ? '"' : '\'');
     }
@@ -117,11 +117,11 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
             }
         } else {
             if (!useQuotes && *ch == '\'')
-                pyc_output << "\\'";
+                pyc_output << R"(\')";
             else if (useQuotes && *ch == '"')
-                pyc_output << "\\\"";
+                pyc_output << R"(\")";
             else if (*ch == '\\')
-                pyc_output << "\\\\";
+                pyc_output << R"(\\)";
             else if (parent_f_string_quote && *ch == '{')
                 pyc_output << "{{";
             else if (parent_f_string_quote && *ch == '}')
@@ -133,7 +133,7 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
     }
     if (!parent_f_string_quote) {
         if (triple)
-            pyc_output << (useQuotes ? "\"\"\"" : "'''");
+            pyc_output << (useQuotes ? R"(""")" : "'''");
         else
             pyc_output << (useQuotes ? '"' : '\'');
     }
