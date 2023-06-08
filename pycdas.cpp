@@ -110,7 +110,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             for (int i=0; i<codeObj->names()->size(); i++)
                 output_object(codeObj->names()->get(i), mod, indent + 2, flags, pyc_output);
 
-            if (mod->verCompare(1, 3) >= 0 && mod->verCompare(3, 11) < 0) {
+            if (mod->verCompare(1, 3) >= 0) {
                 if (mod->verCompare(3, 11) >= 0)
                     iputs(pyc_output, indent + 1, "[Locals+Names]\n");
                 else
