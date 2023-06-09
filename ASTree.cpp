@@ -3224,32 +3224,14 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod,
                      std::ostream& pyc_output)
 {
     // docstrings are translated from the bytecode __doc__ = 'string' to simply '''string'''
-    signed char prefix = -1;
-    switch (obj.type()) {
-    case PycObject::TYPE_STRING:
-        prefix = mod->strIsUnicode() ? 'b' : 0;
-        break;
-    case PycObject::TYPE_UNICODE:
-        prefix = mod->strIsUnicode() ? 0 : 'u';
-        break;
-    case PycObject::TYPE_INTERNED:
-    case PycObject::TYPE_ASCII:
-    case PycObject::TYPE_ASCII_INTERNED:
-    case PycObject::TYPE_SHORT_ASCII:
-    case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        if (mod->majorVer() >= 3)
-            prefix = 0;
-        else
-            prefix = mod->strIsUnicode() ? 'b' : 0;
-        break;
-    }
-    if (prefix != -1) {
+    auto doc = obj.try_cast<PycString>();
+    if (doc != nullptr) {
         start_line(indent, pyc_output);
-        OutputString(pyc_output, obj.cast<PycString>(), prefix, true);
+        doc->print(pyc_output, mod, true);
         pyc_output << "\n";
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 
 void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)

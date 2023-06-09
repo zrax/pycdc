@@ -56,15 +56,35 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
-                  bool triple, const char* parent_f_string_quote)
+void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
+                      const char* parent_f_string_quote)
 {
+    char prefix = 0;
+    switch (type()) {
+    case TYPE_STRING:
+        prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    case PycObject::TYPE_UNICODE:
+        prefix = mod->strIsUnicode() ? 0 : 'u';
+        break;
+    case PycObject::TYPE_INTERNED:
+    case PycObject::TYPE_ASCII:
+    case PycObject::TYPE_ASCII_INTERNED:
+    case PycObject::TYPE_SHORT_ASCII:
+    case PycObject::TYPE_SHORT_ASCII_INTERNED:
+        if (mod->majorVer() >= 3)
+            prefix = 0;
+        else
+            prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    default:
+        throw std::runtime_error("Invalid string type");
+    }
+
     if (prefix != 0)
         pyc_output << prefix;
 
-    const char* ch = str->value();
-    int len = str->length();
-    if (len == 0) {
+    if (m_value.empty()) {
         pyc_output << "''";
         return;
     }
@@ -72,20 +92,17 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
     // Determine preferred quote style (Emulate Python's method)
     bool useQuotes = false;
     if (!parent_f_string_quote) {
-        while (len--) {
-            if (*ch == '\'') {
+        for (char ch : m_value) {
+            if (ch == '\'') {
                 useQuotes = true;
-            } else if (*ch == '"') {
+            } else if (ch == '"') {
                 useQuotes = false;
                 break;
             }
-            ch++;
         }
     } else {
         useQuotes = parent_f_string_quote[0] == '"';
     }
-    ch = str->value();
-    len = str->length();
 
     // Output the string
     if (!parent_f_string_quote) {
@@ -94,42 +111,41 @@ void OutputString(std::ostream &pyc_output, PycRef<PycString> str, char prefix,
         else
             pyc_output << (useQuotes ? '"' : '\'');
     }
-    while (len--) {
-        if ((unsigned char)(*ch) < 0x20 || *ch == 0x7F) {
-            if (*ch == '\r') {
+    for (char ch : m_value) {
+        if (static_cast<unsigned char>(ch) < 0x20 || ch == 0x7F) {
+            if (ch == '\r') {
                 pyc_output << "\\r";
-            } else if (*ch == '\n') {
+            } else if (ch == '\n') {
                 if (triple)
                     pyc_output << '\n';
                 else
                     pyc_output << "\\n";
-            } else if (*ch == '\t') {
+            } else if (ch == '\t') {
                 pyc_output << "\\t";
             } else {
-                formatted_print(pyc_output, "\\x%02x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
-        } else if ((unsigned char)(*ch) >= 0x80) {
-            if (str->type() == PycObject::TYPE_UNICODE) {
+        } else if (static_cast<unsigned char>(ch) >= 0x80) {
+            if (type() == TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
-                pyc_output << *ch;
+                pyc_output << ch;
             } else {
-                formatted_print(pyc_output, "\\x%x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%x", (ch & 0xFF));
             }
         } else {
-            if (!useQuotes && *ch == '\'')
+            if (!useQuotes && ch == '\'')
                 pyc_output << R"(\')";
-            else if (useQuotes && *ch == '"')
+            else if (useQuotes && ch == '"')
                 pyc_output << R"(\")";
-            else if (*ch == '\\')
+            else if (ch == '\\')
                 pyc_output << R"(\\)";
-            else if (parent_f_string_quote && *ch == '{')
+            else if (parent_f_string_quote && ch == '{')
                 pyc_output << "{{";
-            else if (parent_f_string_quote && *ch == '}')
+            else if (parent_f_string_quote && ch == '}')
                 pyc_output << "}}";
             else
-                pyc_output << *ch;
+                pyc_output << ch;
         }
-        ch++;
     }
     if (!parent_f_string_quote) {
         if (triple)

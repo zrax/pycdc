@@ -170,23 +170,13 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
 
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
-        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                     false, parent_f_string_quote);
-        break;
     case PycObject::TYPE_UNICODE:
-        OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
-                     false, parent_f_string_quote);
-        break;
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        if (mod->majorVer() >= 3)
-            OutputString(pyc_output, obj.cast<PycString>(), 0, false, parent_f_string_quote);
-        else
-            OutputString(pyc_output, obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                         false, parent_f_string_quote);
+        obj.cast<PycString>()->print(pyc_output, mod, false, parent_f_string_quote);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
