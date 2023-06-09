@@ -1,7 +1,33 @@
+# IDE/Filesystem
+.idea
+.vscode
+.DS_Store
+
 *.swp
 *.swo
 *.gcno
 *.gcda
 *.kdev4
 /.kdev4
+
+# Python
 __pycache__
+*.egg-info
+.venv
+build/
+
+# Build outputs
+bytes/*.cpp
+*.so
+*.o
+*.a
+
+# Test artifacts
+tests/*.tok.*
+tests/*.src.*
+tests/*.err
+tests/tests
+
+# CMake/Ninja artifacts
+*.cmake
+cmake-build-debug/

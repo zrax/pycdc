@@ -1,6 +1,7 @@
 #include "data.h"
 #include <cstring>
 #include <cstdarg>
+#include <ostream>
 #include <vector>
 
 /* PycData */
@@ -80,6 +81,7 @@ int PycBuffer::getBuffer(int bytes, void* buffer)
         bytes = m_size - m_pos;
     if (bytes != 0)
         memcpy(buffer, (m_buffer + m_pos), bytes);
+    m_pos += bytes;
     return bytes;
 }
 

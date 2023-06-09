@@ -1,0 +1,87 @@
+[project]
+name = "pycdc"
+description = "Python bindings for Decompyle++"
+license = { file = "LICENSE" }
+readme = "README.md"
+urls.homepage = "https://github.com/zrax/pycdc"
+dynamic = ["version"]
+requires-python = ">3.7.6,<3.11"
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+
+[tool.setuptools]
+packages = ["pycdc"]
+package-dir = { "pycdc" = "bindings" }
+
+[tool.setuptools.dynamic]
+version = { attr = "bindings.__version__" }
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = false
+ignore-semiprivate = false
+ignore-private = false
+ignore-property-decorators = false
+ignore-module = true
+ignore-nested-functions = false
+ignore-nested-classes = true
+ignore-setters = false
+fail-under = 10
+exclude = ["docs", "build", "tests"]
+verbose = 0
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+
+[build-system]
+requires = [
+    "setuptools",
+    "pybind11>=2.10.4",
+]
+build-backend = "setuptools.build_meta"
+
+
+[tool.cibuildwheel]
+skip = [
+    "*p36-*", # Skip Python 3.6
+    "pp*", # Skip PyPy
+    "*-win32", # Skip 32-bit Windows
+    "*-manylinux_i686", # Skip 32-bit Linux
+    "*-win_arm64", # Skip experimental Windows on ARM
+    "*-musllinux*", # Skip slow Linux
+    "*-manylinux_aarch64", # Skip slow Linux
+    "*-manylinux_ppc64le", # Skip slow Linux
+    "*-manylinux_s390x", # Skip slow Linux
+]
+
+[tool.ruff]
+fix = true
+exclude = [
+    ".git",
+    "__pycache__",
+    "__init__.py",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    "build",
+]
+ignore = []
+line-length = 88
+select = [
+    "E",
+    "F",
+    "W",
+    "I001"
+]
+fixable = ["E", "F", "W", "I"]

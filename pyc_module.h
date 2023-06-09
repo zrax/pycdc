@@ -44,6 +44,8 @@ public:
 
     void loadFromFile(const char* filename);
     void loadFromMarshalledFile(const char *filename, int major, int minor);
+    void loadFromStream(PycData& stream);
+    void loadFromMarshalledStream(PycData& stream, int major, int minor);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
 
     int majorVer() const { return m_maj; }
@@ -60,7 +62,7 @@ public:
 
     bool strIsUnicode() const
     {
-        return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+        return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS_) != 0;
     }
 
     PycRef<PycCode> code() const { return m_code; }
