@@ -1,3 +1,7 @@
+![Tests](https://img.shields.io/github/actions/workflow/status/zrax/pycdc/linux-ci.yml?branch=master&label=tests&style=flat-square)
+[![PyPI](https://img.shields.io/pypi/v/pycdc?color=blue&style=flat-square)](https://pypi.org/project/pycdc/)
+[![Python](https://img.shields.io/pypi/pyversions/pycdc?color=blue&style=flat-square)](https://pypi.org/project/pycdc/)
+
 # Decompyle++ 
 ***A Python Byte-code Disassembler/Decompiler***
 
@@ -28,6 +32,14 @@ https://github.com/zrax/pycdc
   * For makefiles, just run `make`
   * To run tests (on \*nix or MSYS), run `make check`
 
+## Building and installing the Python package
+
+This step does not require building the executables of the previous sections.
+
+* Ensure `CMake >= 3.12` is installed
+* Create a virtual environment `python3 -m venv venv`
+* Run `pip install .`
+
 ## Usage
 **To run pycdas**, the PYC Disassembler:
 `./pycdas [PATH TO PYC FILE]`
@@ -42,6 +54,37 @@ Any errors are printed to stderr.
 Both tools support Python marshalled code objects, as output from `marshal.dumps(compile(...))`.
 
 To use this feature, specify `-c -v <version>` on the command line - the version must be specified as the objects themselves do not contain version metadata.
+
+**To use the Python bindings**
+
+Ensure the `pycdc` Python package is installed:
+
+- either from source (see [above](#building-and-installing-the-python-package))
+- or from PyPi : `pip install pycdc`
+
+Then, use it as below:
+
+```python
+import marshal
+from pycdc import decompyle
+
+async def test():
+    a = 5
+    data = foobar(a)
+    return data
+
+print(decompyle(marshal.dumps(test.__code__)))
+```
+
+or from a `.pyc` file:
+
+```python
+from pycdc import decompyle
+
+with open('test.pyc', 'rb') as f:
+    # pass version=None to infer from the file, or specify a version tuple
+    print(decompyle(f.read(), version=None))
+```
 
 ## Authors, Licence, Credits
 Decompyle++ is the work of Michael Hansen and Darryl Pogue.
