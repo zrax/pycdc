@@ -123,6 +123,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::JUMP_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_FALSE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_FALSE_A
+				&& opcode != Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_TRUE_A
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_TRUE_A
@@ -1003,6 +1004,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_FALSE_OR_POP_A:
         case Pyc::JUMP_IF_TRUE_OR_POP_A:
         case Pyc::POP_JUMP_IF_FALSE_A:
+		case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_IF_TRUE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
@@ -1010,6 +1012,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 int popped = ASTCondBlock::UNINITED;
 
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
                     stack.pop();
@@ -1038,6 +1041,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::JUMP_IF_TRUE_A) {
                     /* Offset is relative in these cases */
                     offs = pos + operand;
+                }
+                else if (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
+                    offs += pos;
                 }
 
                 if (cond.type() == ASTNode::NODE_COMPARE
