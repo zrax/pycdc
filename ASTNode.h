@@ -18,6 +18,7 @@ public:
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
         NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
+        NODE_KW_NAMES_MAP,
 
         // Empty node types
         NODE_LOCALS,
@@ -382,6 +383,23 @@ public:
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> map_t;
 
     ASTMap() : ASTNode(NODE_MAP) { }
+
+    void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
+    {
+        m_values.emplace_back(std::move(key), std::move(value));
+    }
+
+    const map_t& values() const { return m_values; }
+
+private:
+    map_t m_values;
+};
+
+class ASTKwNamesMap : public ASTNode {
+public:
+    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> map_t;
+
+    ASTKwNamesMap() : ASTNode(NODE_KW_NAMES_MAP) { }
 
     void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
     {
