@@ -1,7 +1,7 @@
 #include "data.h"
 #include <cstring>
-
-FILE* pyc_output = stdout;
+#include <cstdarg>
+#include <vector>
 
 /* PycData */
 int PycData::get16()
@@ -81,4 +81,29 @@ int PycBuffer::getBuffer(int bytes, void* buffer)
     if (bytes != 0)
         memcpy(buffer, (m_buffer + m_pos), bytes);
     return bytes;
+}
+
+int formatted_print(std::ostream& stream, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    int result = formatted_printv(stream, format, args);
+    va_end(args);
+    return result;
+}
+
+int formatted_printv(std::ostream& stream, const char* format, va_list args)
+{
+    va_list saved_args;
+    va_copy(saved_args, args);
+    int len = std::vsnprintf(nullptr, 0, format, args);
+    if (len < 0)
+        return len;
+    std::vector<char> vec(static_cast<size_t>(len) + 1);
+    int written = std::vsnprintf(&vec[0], vec.size(), format, saved_args);
+    va_end(saved_args);
+
+    if (written >= 0)
+        stream << &vec[0];
+    return written;
 }

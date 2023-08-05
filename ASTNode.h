@@ -129,13 +129,15 @@ private:
 class ASTBinary : public ASTNode {
 public:
     enum BinOp {
-        BIN_ATTR, BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_FLOOR, BIN_MODULO,
-        BIN_ADD, BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND, BIN_XOR,
-        BIN_OR, BIN_LOG_AND, BIN_LOG_OR, BIN_MAT_MULTIPLY,
+        BIN_ATTR, BIN_POWER, BIN_MULTIPLY, BIN_DIVIDE, BIN_FLOOR_DIVIDE,
+        BIN_MODULO, BIN_ADD, BIN_SUBTRACT, BIN_LSHIFT, BIN_RSHIFT, BIN_AND,
+        BIN_XOR, BIN_OR, BIN_LOG_AND, BIN_LOG_OR, BIN_MAT_MULTIPLY,
         /* Inplace operations */
         BIN_IP_ADD, BIN_IP_SUBTRACT, BIN_IP_MULTIPLY, BIN_IP_DIVIDE,
         BIN_IP_MODULO, BIN_IP_POWER, BIN_IP_LSHIFT, BIN_IP_RSHIFT, BIN_IP_AND,
-        BIN_IP_XOR, BIN_IP_OR, BIN_IP_FLOOR, BIN_IP_MAT_MULTIPLY,
+        BIN_IP_XOR, BIN_IP_OR, BIN_IP_FLOOR_DIVIDE, BIN_IP_MAT_MULTIPLY,
+        /* Error Case */
+        BIN_INVALID
     };
 
     ASTBinary(PycRef<ASTNode> left, PycRef<ASTNode> right, int op,
@@ -147,6 +149,9 @@ public:
     int op() const { return m_op; }
     bool is_inplace() const { return m_op >= BIN_IP_ADD; }
     virtual const char* op_str() const;
+
+    static BinOp from_opcode(int opcode);
+    static BinOp from_binary_op(int operand);
 
 protected:
     int m_op;

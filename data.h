@@ -2,6 +2,7 @@
 #define _PYC_FILE_H
 
 #include <cstdio>
+#include <ostream>
 
 #ifdef WIN32
 typedef __int64 Pyc_INT64;
@@ -56,6 +57,7 @@ private:
     int m_size, m_pos;
 };
 
-extern FILE* pyc_output;
+int formatted_print(std::ostream& stream, const char* format, ...);
+int formatted_printv(std::ostream& stream, const char* format, va_list args);
 
 #endif

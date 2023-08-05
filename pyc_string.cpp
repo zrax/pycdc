@@ -58,86 +58,101 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
 	return isEqual(strObj->m_value);
 }
 
-void OutputString(PycRef<PycString> str, char prefix, bool triple, FILE* F, const char* parent_f_string_quote)
+void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
+                      const char* parent_f_string_quote)
 {
-	if (prefix != 0)
-		fputc(prefix, F);
+    char prefix = 0;
+    switch (type()) {
+    case TYPE_STRING:
+        prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    case PycObject::TYPE_UNICODE:
+        prefix = mod->strIsUnicode() ? 0 : 'u';
+        break;
+    case PycObject::TYPE_INTERNED:
+    case PycObject::TYPE_ASCII:
+    case PycObject::TYPE_ASCII_INTERNED:
+    case PycObject::TYPE_SHORT_ASCII:
+    case PycObject::TYPE_SHORT_ASCII_INTERNED:
+        if (mod->majorVer() >= 3)
+            prefix = 0;
+        else
+            prefix = mod->strIsUnicode() ? 'b' : 0;
+        break;
+    default:
+        throw std::runtime_error("Invalid string type");
+    }
 
-	const char* ch = str->value();
-	int len = str->length();
-	if (ch == 0) {
-		fputs("''", F);
-		return;
-	}
+    if (prefix != 0)
+        pyc_output << prefix;
 
-	// Determine preferred quote style (Emulate Python's method)
-	bool useQuotes = false;
-	if (!parent_f_string_quote) {
-		while (len--) {
-			if (*ch == '\'') {
-				useQuotes = true;
-			}
-			else if (*ch == '"') {
-				useQuotes = false;
-				break;
-			}
-			ch++;
-		}
-	}
-	else {
-		useQuotes = parent_f_string_quote[0] == '"';
-	}
-	ch = str->value();
-	len = str->length();
+    if (m_value.empty()) {
+        pyc_output << "''";
+        return;
+    }
+
+    // Determine preferred quote style (Emulate Python's method)
+    bool useQuotes = false;
+    if (!parent_f_string_quote) {
+        for (char ch : m_value) {
+            if (ch == '\'') {
+                useQuotes = true;
+            } else if (ch == '"') {
+                useQuotes = false;
+                break;
+            }
+        }
+    } else {
+        useQuotes = parent_f_string_quote[0] == '"';
+    }
 
     // Output the string
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            pyc_output << (useQuotes ? R"(""")" : "'''");
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            pyc_output << (useQuotes ? '"' : '\'');
     }
-    while (len--) {
-        if ((unsigned char)(*ch) < 0x20 || *ch == 0x7F) {
-            if (*ch == '\r') {
-                fputs("\\r", F);
-            } else if (*ch == '\n') {
+    for (char ch : m_value) {
+        if (static_cast<unsigned char>(ch) < 0x20 || ch == 0x7F) {
+            if (ch == '\r') {
+                pyc_output << "\\r";
+            } else if (ch == '\n') {
                 if (triple)
-                    fputc('\n', F);
+                    pyc_output << '\n';
                 else
-                    fputs("\\n", F);
-            } else if (*ch == '\t') {
-                fputs("\\t", F);
+                    pyc_output << "\\n";
+            } else if (ch == '\t') {
+                pyc_output << "\\t";
             } else {
-                fprintf(F, "\\x%02x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
-        } else if ((unsigned char)(*ch) >= 0x80) {
-            if (str->type() == PycObject::TYPE_UNICODE) {
+        } else if (static_cast<unsigned char>(ch) >= 0x80) {
+            if (type() == TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
-                fputc(*ch, F);
+                pyc_output << ch;
             } else {
-                fprintf(F, "\\x%x", (*ch & 0xFF));
+                formatted_print(pyc_output, "\\x%x", (ch & 0xFF));
             }
         } else {
-            if (!useQuotes && *ch == '\'')
-                fputs("\\'", F);
-            else if (useQuotes && *ch == '"')
-                fputs("\\\"", F);
-            else if (*ch == '\\')
-                fputs("\\\\", F);
-            else if (parent_f_string_quote && *ch == '{')
-                fputs("{{", F);
-            else if (parent_f_string_quote && *ch == '}')
-                fputs("}}", F);
+            if (!useQuotes && ch == '\'')
+                pyc_output << R"(\')";
+            else if (useQuotes && ch == '"')
+                pyc_output << R"(\")";
+            else if (ch == '\\')
+                pyc_output << R"(\\)";
+            else if (parent_f_string_quote && ch == '{')
+                pyc_output << "{{";
+            else if (parent_f_string_quote && ch == '}')
+                pyc_output << "}}";
             else
-                fputc(*ch, F);
+                pyc_output << ch;
         }
-        ch++;
     }
     if (!parent_f_string_quote) {
         if (triple)
-            fputs(useQuotes ? "\"\"\"" : "'''", F);
+            pyc_output << (useQuotes ? R"(""")" : "'''");
         else
-            fputc(useQuotes ? '"' : '\'', F);
+            pyc_output << (useQuotes ? '"' : '\'');
     }
 }

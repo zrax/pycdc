@@ -35,6 +35,8 @@ bool IsCompareArg(int opcode);
 
 }
 
-void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_string_quote = nullptr);
+void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod,
+                 const char* parent_f_string_quote = nullptr);
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos);
-void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags);
+void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
+               int indent, unsigned flags);

@@ -27,11 +27,11 @@ public:
 
     void setValue(std::string str) { m_value = std::move(str); }
 
+    void print(std::ostream& stream, class PycModule* mod, bool triple = false,
+               const char* parent_f_string_quote = nullptr);
+
 private:
     std::string m_value;
 };
-
-void OutputString(PycRef<PycString> str, char prefix = 0, bool triple = false,
-                  FILE* F = pyc_output, const char* parent_f_string_quote = nullptr);
 
 #endif

@@ -1,6 +1,7 @@
 #include "pyc_numeric.h"
 #include "bytecode.h"
 #include <stdexcept>
+#include <cstdint>
 #include <cmath>
 
 #ifdef _MSC_VER
@@ -159,142 +160,133 @@ bool Pyc::IsCompareArg(int opcode)
     return (opcode == Pyc::COMPARE_OP_A);
 }
 
-void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_string_quote)
+void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod,
+                 const char* parent_f_string_quote)
 {
     if (obj == NULL) {
-        fputs("<NULL>", pyc_output);
+        pyc_output << "<NULL>";
         return;
     }
 
     switch (obj->type()) {
     case PycObject::TYPE_STRING:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                     false, pyc_output, parent_f_string_quote);
-        break;
     case PycObject::TYPE_UNICODE:
-        OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 0 : 'u',
-                     false, pyc_output, parent_f_string_quote);
-        break;
     case PycObject::TYPE_INTERNED:
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        if (mod->majorVer() >= 3)
-            OutputString(obj.cast<PycString>(), 0, false, pyc_output, parent_f_string_quote);
-        else
-            OutputString(obj.cast<PycString>(), mod->strIsUnicode() ? 'b' : 0,
-                         false, pyc_output, parent_f_string_quote);
+        obj.cast<PycString>()->print(pyc_output, mod, false, parent_f_string_quote);
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:
         {
-            fputs("(", pyc_output);
+            pyc_output << "(";
             PycTuple::value_t values = obj.cast<PycTuple>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
-                    fputs(", ", pyc_output);
-                    print_const(*it, mod);
+                    pyc_output << ", ";
+                    print_const(pyc_output, *it, mod);
                 }
             }
             if (values.size() == 1)
-                fputs(",)", pyc_output);
+                pyc_output << ",)";
             else
-                fputs(")", pyc_output);
+                pyc_output << ")";
         }
         break;
     case PycObject::TYPE_LIST:
         {
-            fputs("[", pyc_output);
+            pyc_output << "[";
             PycList::value_t values = obj.cast<PycList>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
-                    fputs(", ", pyc_output);
-                    print_const(*it, mod);
+                    pyc_output << ", ";
+                    print_const(pyc_output, *it, mod);
                 }
             }
-            fputs("]", pyc_output);
+            pyc_output << "]";
         }
         break;
     case PycObject::TYPE_DICT:
         {
-            fputs("{", pyc_output);
+            pyc_output << "{";
             PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
             auto ki = keys.cbegin();
             auto vi = values.cbegin();
             if (ki != keys.cend()) {
-                print_const(*ki, mod);
-                fputs(": ", pyc_output);
-                print_const(*vi, mod);
+                print_const(pyc_output, *ki, mod);
+                pyc_output << ": ";
+                print_const(pyc_output, *vi, mod);
                 while (++ki != keys.cend()) {
                     ++vi;
-                    fputs(", ", pyc_output);
-                    print_const(*ki, mod);
-                    fputs(": ", pyc_output);
-                    print_const(*vi, mod);
+                    pyc_output << ", ";
+                    print_const(pyc_output, *ki, mod);
+                    pyc_output << ": ";
+                    print_const(pyc_output, *vi, mod);
                 }
             }
-            fputs("}", pyc_output);
+            pyc_output << "}";
         }
         break;
     case PycObject::TYPE_SET:
         {
-            fputs("{", pyc_output);
+            pyc_output << "{";
             PycSet::value_t values = obj.cast<PycSet>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
-                    fputs(", ", pyc_output);
-                    print_const(*it, mod);
+                    pyc_output << ", ";
+                    print_const(pyc_output, *it, mod);
                 }
             }
-            fputs("}", pyc_output);
+            pyc_output << "}";
         }
         break;
     case PycObject::TYPE_FROZENSET:
         {
-            fputs("frozenset({", pyc_output);
+            pyc_output << "frozenset({";
             PycSet::value_t values = obj.cast<PycSet>()->values();
             auto it = values.cbegin();
             if (it != values.cend()) {
-                print_const(*it, mod);
+                print_const(pyc_output, *it, mod);
                 while (++it != values.cend()) {
-                    fputs(", ", pyc_output);
-                    print_const(*it, mod);
+                    pyc_output << ", ";
+                    print_const(pyc_output, *it, mod);
                 }
             }
-            fputs("})", pyc_output);
+            pyc_output << "})";
         }
         break;
     case PycObject::TYPE_NONE:
-        fputs("None", pyc_output);
+        pyc_output << "None";
         break;
     case PycObject::TYPE_TRUE:
-        fputs("True", pyc_output);
+        pyc_output << "True";
         break;
     case PycObject::TYPE_FALSE:
-        fputs("False", pyc_output);
+        pyc_output << "False";
         break;
     case PycObject::TYPE_ELLIPSIS:
-        fputs("...", pyc_output);
+        pyc_output << "...";
         break;
     case PycObject::TYPE_INT:
-        fprintf(pyc_output, "%d", obj.cast<PycInt>()->value());
+        formatted_print(pyc_output, "%d", obj.cast<PycInt>()->value());
         break;
     case PycObject::TYPE_LONG:
-        fprintf(pyc_output, "%s", obj.cast<PycLong>()->repr().c_str());
+        formatted_print(pyc_output, "%s", obj.cast<PycLong>()->repr().c_str());
         break;
     case PycObject::TYPE_FLOAT:
-        fprintf(pyc_output, "%s", obj.cast<PycFloat>()->value());
+        formatted_print(pyc_output, "%s", obj.cast<PycFloat>()->value());
         break;
     case PycObject::TYPE_COMPLEX:
-        fprintf(pyc_output, "(%s+%sj)", obj.cast<PycComplex>()->value(),
+        formatted_print(pyc_output, "(%s+%sj)", obj.cast<PycComplex>()->value(),
                                         obj.cast<PycComplex>()->imag());
         break;
     case PycObject::TYPE_BINARY_FLOAT:
@@ -304,31 +296,31 @@ void print_const(PycRef<PycObject> obj, PycModule* mod, const char* parent_f_str
             bool is_negative = std::signbit(value);
             if (std::isnan(value)) {
                 if (is_negative) {
-                    fprintf(pyc_output, "float('-nan')");
+                    pyc_output << "float('-nan')";
                 } else {
-                    fprintf(pyc_output, "float('nan')");
+                    pyc_output << "float('nan')";
                 }
             } else if (std::isinf(value)) {
                 if (is_negative) {
-                    fprintf(pyc_output, "float('-inf')");
+                    pyc_output << "float('-inf')";
                 } else {
-                    fprintf(pyc_output, "float('inf')");
+                    pyc_output << "float('inf')";
                 }
             } else {
-                fprintf(pyc_output, "%g", value);
+                formatted_print(pyc_output, "%g", value);
             }
         }
         break;
     case PycObject::TYPE_BINARY_COMPLEX:
-        fprintf(pyc_output, "(%g+%gj)", obj.cast<PycCComplex>()->value(),
+        formatted_print(pyc_output, "(%g+%gj)", obj.cast<PycCComplex>()->value(),
                                         obj.cast<PycCComplex>()->imag());
         break;
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
-        fprintf(pyc_output, "<CODE> %s", obj.cast<PycCode>()->name()->value());
+        pyc_output << "<CODE> " << obj.cast<PycCode>()->name()->value();
         break;
     default:
-        fprintf(pyc_output, "<TYPE: %d>\n", obj->type());
+        formatted_print(pyc_output, "<TYPE: %d>\n", obj->type());
     }
 }
 
@@ -362,13 +354,20 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
-void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
+void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
+               int indent, unsigned flags)
 {
     static const char *cmp_strings[] = {
         "<", "<=", "==", "!=", ">", ">=", "in", "not in", "is", "is not",
         "<EXCEPTION MATCH>", "<BAD>"
     };
     static const size_t cmp_strings_len = sizeof(cmp_strings) / sizeof(cmp_strings[0]);
+
+    static const char *binop_strings[] = {
+        "+", "&", "//", "<<", "@", "*", "%", "|", "**", ">>", "-", "/", "^",
+        "+=", "&=", "//=", "<<=", "@=", "*=", "%=", "|=", "**=", ">>=", "-=", "/=", "^=",
+    };
+    static const size_t binop_strings_len = sizeof(binop_strings) / sizeof(binop_strings[0]);
 
     PycBuffer source(code->code()->value(), code->code()->length());
 
@@ -381,73 +380,78 @@ void bc_disasm(PycRef<PycCode> code, PycModule* mod, int indent, unsigned flags)
             continue;
 
         for (int i=0; i<indent; i++)
-            fputs("    ", pyc_output);
-        fprintf(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
+            pyc_output << "    ";
+        formatted_print(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             if (Pyc::IsConstArg(opcode)) {
                 try {
                     auto constParam = code->getConst(operand);
-                    fprintf(pyc_output, "%d: ", operand);
-                    print_const(constParam, mod);
+                    formatted_print(pyc_output, "%d: ", operand);
+                    print_const(pyc_output, constParam, mod);
                 } catch (const std::out_of_range &) {
-                    fprintf(pyc_output, "%d <INVALID>", operand);
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (opcode == Pyc::LOAD_GLOBAL_A) {
                 // Special case for Python 3.11+
                 try {
                     if (operand & 1)
-                        fprintf(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                        formatted_print(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
                     else
-                        fprintf(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
+                        formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
                 } catch (const std::out_of_range &) {
-                    fprintf(pyc_output, "%d <INVALID>", operand);
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsNameArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+                    formatted_print(pyc_output, "%d: %s", operand, code->getName(operand)->value());
                 } catch (const std::out_of_range &) {
-                    fprintf(pyc_output, "%d <INVALID>", operand);
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsVarNameArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getLocal(operand)->value());
+                    formatted_print(pyc_output, "%d: %s", operand, code->getLocal(operand)->value());
                 } catch (const std::out_of_range &) {
-                    fprintf(pyc_output, "%d <INVALID>", operand);
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsCellArg(opcode)) {
                 try {
-                    fprintf(pyc_output, "%d: %s", operand, code->getCellVar(mod, operand)->value());
+                    formatted_print(pyc_output, "%d: %s", operand, code->getCellVar(mod, operand)->value());
                 } catch (const std::out_of_range &) {
-                    fprintf(pyc_output, "%d <INVALID>", operand);
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (Pyc::IsJumpOffsetArg(opcode)) {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // BPO-27129
-                fprintf(pyc_output, "%d (to %d)", operand, pos+offs);
+                formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
             } else if (Pyc::IsJumpArg(opcode)) {
                 if (mod->verCompare(3, 10) >= 0) // BPO-27129
-                    fprintf(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
+                    formatted_print(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
                 else
-                    fprintf(pyc_output, "%d", operand);
+                    formatted_print(pyc_output, "%d", operand);
             } else if (Pyc::IsCompareArg(opcode)) {
                 if (static_cast<size_t>(operand) < cmp_strings_len)
-                    fprintf(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
+                    formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
                 else
-                    fprintf(pyc_output, "%d (UNKNOWN)", operand);
+                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+            } else if (opcode == Pyc::BINARY_OP_A) {
+                if (static_cast<size_t>(operand) < binop_strings_len)
+                    formatted_print(pyc_output, "%d (%s)", operand, binop_strings[operand]);
+                else
+                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
             } else if (opcode == Pyc::IS_OP_A) {
-                fprintf(pyc_output, "%d (%s)", operand, (operand == 0) ? "is"
+                formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "is"
                                                       : (operand == 1) ? "is not"
                                                       : "UNKNOWN");
             } else if (opcode == Pyc::CONTAINS_OP_A) {
-                fprintf(pyc_output, "%d (%s)", operand, (operand == 0) ? "in"
+                formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "in"
                                                       : (operand == 1) ? "not in"
                                                       : "UNKNOWN");
             } else {
-                fprintf(pyc_output, "%d", operand);
+                formatted_print(pyc_output, "%d", operand);
             }
         }
-        fputs("\n", pyc_output);
+        pyc_output << "\n";
     }
 }

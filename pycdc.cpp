@@ -1,4 +1,6 @@
 #include <cstring>
+#include <fstream>
+#include <iostream>
 #include "ASTree.h"
 
 #ifdef WIN32
@@ -12,17 +14,20 @@ int main(int argc, char* argv[])
     const char* infile = nullptr;
     bool marshalled = false;
     const char* version = nullptr;
+    std::ostream* pyc_output = &std::cout;
+    std::ofstream out_file;
+
     for (int arg = 1; arg < argc; ++arg) {
         if (strcmp(argv[arg], "-o") == 0) {
             if (arg + 1 < argc) {
                 const char* filename = argv[++arg];
-                FILE* outfile = fopen(filename, "w");
-                if (!outfile) {
+                out_file.open(filename, std::ios_base::out);
+                if (out_file.fail()) {
                     fprintf(stderr, "Error opening file '%s' for writing\n",
-                            argv[arg]);
+                            filename);
                     return 1;
                 }
-                pyc_output = outfile;
+                pyc_output = &out_file;
             } else {
                 fputs("Option '-o' requires a filename\n", stderr);
                 return 1;
@@ -84,11 +89,12 @@ int main(int argc, char* argv[])
     }
     const char* dispname = strrchr(infile, PATHSEP);
     dispname = (dispname == NULL) ? infile : dispname + 1;
-    fputs("# Source Generated with Decompyle++ , apply in pydumpck\n", pyc_output);
-    fprintf(pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname, mod.majorVer(), mod.minorVer(),
-            (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
+    *pyc_output << "# Source Generated with Decompyle++ , apply in pydumpck\n";
+    formatted_print(*pyc_output, "# File: %s (Python %d.%d%s)\n\n", dispname,
+                    mod.majorVer(), mod.minorVer(),
+                    (mod.majorVer() < 3 && mod.isUnicode()) ? " Unicode" : "");
     try {
-        decompyle(mod.code(), &mod);
+        decompyle(mod.code(), &mod, *pyc_output);
     } catch (std::exception& ex) {
         fprintf(stderr, "Error decompyling %s: %s\n", infile, ex.what());
         return 1;
