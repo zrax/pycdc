@@ -395,10 +395,14 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             } else if (opcode == Pyc::LOAD_GLOBAL_A) {
                 // Special case for Python 3.11+
                 try {
-                    if (operand & 1)
-                        formatted_print(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                    // Explicitly check for 3.11+
+                    if (mod->verCompare(3, 11) >= 0)
+                        if (operand & 1)
+                            formatted_print(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                        else
+                            formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
                     else
-                        formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
+                        formatted_print(pyc_output, "%d: %s", operand, code->getName(operand)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
