@@ -123,9 +123,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::JUMP_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_FALSE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_FALSE_A
+                && opcode != Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_TRUE_A
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_TRUE_A
+                && opcode != Pyc::POP_JUMP_FORWARD_IF_TRUE_A
                 && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
@@ -401,6 +403,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTTuple(values));
             }
             break;
+        case Pyc::KW_NAMES_A:
+            {
+
+                int kwparams = code->getConst(operand).cast<PycTuple>()->size();
+                ASTKwNamesMap kwparamList;
+                std::vector<PycRef<PycObject>> keys = code->getConst(operand).cast<PycSimpleSequence>()->values();
+                for (int i = 0; i < kwparams; i++) {
+                    kwparamList.add(new ASTObject(keys[kwparams - i - 1]), stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTKwNamesMap(kwparamList));
+            }
+            break;
         case Pyc::CALL_A:
         case Pyc::CALL_FUNCTION_A:
             {
@@ -445,12 +460,31 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack_hist.pop();
                 }
 
-                for (int i=0; i<kwparams; i++) {
-                    PycRef<ASTNode> val = stack.top();
-                    stack.pop();
-                    PycRef<ASTNode> key = stack.top();
-                    stack.pop();
-                    kwparamList.push_front(std::make_pair(key, val));
+                /*
+                KW_NAMES(i)
+                    Stores a reference to co_consts[consti] into an internal variable for use by CALL.
+                    co_consts[consti] must be a tuple of strings.
+                    New in version 3.11.
+                */
+                if (mod->verCompare(3, 11) >= 0) {
+                    PycRef<ASTNode> object_or_map = stack.top();
+                    if (object_or_map.type() == ASTNode::NODE_KW_NAMES_MAP) {
+                        stack.pop();
+                        PycRef<ASTKwNamesMap> kwparams_map = object_or_map.cast<ASTKwNamesMap>();
+                        for (ASTKwNamesMap::map_t::const_iterator it = kwparams_map->values().begin(); it != kwparams_map->values().end(); it++) {
+                            kwparamList.push_front(std::make_pair(it->first, it->second));
+                            pparams -= 1;
+                        }
+                    }
+                }
+                else {
+                    for (int i = 0; i < kwparams; i++) {
+                        PycRef<ASTNode> val = stack.top();
+                        stack.pop();
+                        PycRef<ASTNode> key = stack.top();
+                        stack.pop();
+                        kwparamList.push_front(std::make_pair(key, val));
+                    }
                 }
                 for (int i=0; i<pparams; i++) {
                     PycRef<ASTNode> param = stack.top();
@@ -1004,13 +1038,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_TRUE_OR_POP_A:
         case Pyc::POP_JUMP_IF_FALSE_A:
         case Pyc::POP_JUMP_IF_TRUE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
 
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
-                        || opcode == Pyc::POP_JUMP_IF_TRUE_A) {
+                        || opcode == Pyc::POP_JUMP_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A) {
                     /* Pop condition before the jump */
                     stack.pop();
                     popped = ASTCondBlock::PRE_POPPED;
@@ -1029,15 +1067,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 /* "Jump if true" means "Jump if not false" */
                 bool neg = opcode == Pyc::JUMP_IF_TRUE_A
                         || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A
-                        || opcode == Pyc::POP_JUMP_IF_TRUE_A;
+                        || opcode == Pyc::POP_JUMP_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A;
 
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129
                 if (opcode == Pyc::JUMP_IF_FALSE_A
-                        || opcode == Pyc::JUMP_IF_TRUE_A) {
+                        || opcode == Pyc::JUMP_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
                     /* Offset is relative in these cases */
-                    offs = pos + operand;
+                    offs += pos;
                 }
 
                 if (cond.type() == ASTNode::NODE_COMPARE
@@ -1455,6 +1496,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTName(code->getLocal(operand)));
             break;
         case Pyc::LOAD_GLOBAL_A:
+            if (mod->verCompare(3, 11) >= 0) {
+                if (operand & 1) {
+                    /* Changed in version 3.11: 
+                    If the low bit of "NAMEI" (operand) is set, 
+                    then a NULL is pushed to the stack before the global variable. */
+                    stack.push(nullptr);
+                    /*
+                    and thats because for some reason for example 3 global functions: input, int, print.
+                    it tries to load: 1, 3, 5
+                    all though we have only 3 names, so thats should be: (1-1)/2 = 0, (3-1)/2 = 1, (5-1)/2 = 2
+                    i dont know why, maybe because of the null push, but thats a FIX for now.
+                    */
+                    operand = (int)((operand - 1) / 2);
+                }
+            }
             stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::LOAD_LOCALS:

@@ -1,0 +1,5 @@
+if not 1 == 0 : <EOL>
+<INDENT>
+print ( 'not true' ) <EOL>
+<OUTDENT>
+print ( 'true (so jumping forward)' ) <EOL>
