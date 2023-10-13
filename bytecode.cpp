@@ -152,7 +152,8 @@ bool Pyc::IsJumpOffsetArg(int opcode)
     return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
            (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
            (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A) ||
-           (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A);
+           (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A) ||
+		   (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A);
 }
 
 bool Pyc::IsCompareArg(int opcode)
@@ -393,12 +394,16 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
             } else if (opcode == Pyc::LOAD_GLOBAL_A) {
-                // Special case for Python 3.11+
                 try {
-                    if (operand & 1)
-                        formatted_print(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
-                    else
-                        formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
+                    // Special case for Python 3.11+
+                    if (mod->verCompare(3, 11) >= 0) {
+                        if (operand & 1)
+                            formatted_print(pyc_output, "%d: NULL + %s", operand, code->getName(operand >> 1)->value());
+                        else
+                            formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 1)->value());
+                    } else {
+                        formatted_print(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+                    }
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
