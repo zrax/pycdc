@@ -1469,6 +1469,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::LOAD_CLOSURE_A:
             /* Ignore this */
+            stack.push(new ASTNode());
             break;
         case Pyc::LOAD_CONST_A:
             {
