@@ -1545,15 +1545,42 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 ASTFunction::defarg_t defArgs, kwDefArgs;
-                const int defCount = operand & 0xFF;
-                const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop();
+
+                if (mod->minorVer() <= 5) {
+                    const int defCount = operand & 0xFF;
+                    const int kwDefCount = (operand >> 8) & 0xFF;
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                } else {
+                    if (operand & 0x08) {
+                        stack.pop();
+                    }
+
+                    if (operand & 0x04) {
+                        stack.pop();
+                    }
+
+                    if (operand & 0x02) {
+                        PycRef<ASTConstMap> defaultsDict = stack.top().cast<ASTConstMap>();
+                        stack.pop();
+
+                        for (PycRef<ASTNode> value : defaultsDict->values())
+                            kwDefArgs.push_front(value);
+                    }
+
+                    if (operand & 0x01) {
+                        PycRef<PycTuple> defaultsTuple = stack.top().cast<ASTObject>()->object().cast<PycTuple>();
+                        stack.pop();
+
+                        for (PycRef<PycObject> value : defaultsTuple->values())
+                            defArgs.push_back(new ASTObject(value));
+                    }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
