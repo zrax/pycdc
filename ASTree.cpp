@@ -1467,10 +1467,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_BUILD_CLASS:
             stack.push(new ASTLoadBuildClass(new PycObject()));
             break;
-        case Pyc::LOAD_CLOSURE_A:
-            /* Ignore this */
-            stack.push(new ASTNode());
-            break;
         case Pyc::LOAD_CONST_A:
             {
                 PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
@@ -1488,6 +1484,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_DEREF_A:
+        case Pyc::LOAD_CLOSURE_A:
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
@@ -1547,7 +1544,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 ASTFunction::defarg_t defArgs, kwDefArgs;
 
-                if (mod->minorVer() <= 5) {
+                if (mod->verCompare(3, 6) < 0) {
                     const int defCount = operand & 0xFF;
                     const int kwDefCount = (operand >> 8) & 0xFF;
                     for (int i = 0; i < defCount; ++i) {
