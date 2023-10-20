@@ -1,11 +1,3 @@
-def GS0 ( ) : <EOL>
-<INDENT>
-yield 0 <EOL>
-<OUTDENT>
-async def GS1 ( ) : <EOL>
-<INDENT>
-pass <EOL>
-<OUTDENT>
-async def GS2 ( ) : <EOL>
+def GEN_START ( ) : <EOL>
 <INDENT>
 yield 0 <EOL>
