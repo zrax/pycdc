@@ -54,8 +54,7 @@ void PycDict::load(PycData* stream, PycModule* mod)
         if (key == NULL)
             break;
         val = LoadObject(stream, mod);
-        m_keys.push_back(key);
-        m_values.push_back(val);
+        m_values.emplace_back(std::make_tuple(key, val));
     }
 }
 
@@ -65,23 +64,17 @@ bool PycDict::isEqual(PycRef<PycObject> obj) const
         return false;
 
     PycRef<PycDict> dictObj = obj.cast<PycDict>();
-    if (m_keys.size() != dictObj->m_keys.size())
+    if (m_values.size() != dictObj->m_values.size())
         return false;
 
-    auto ki1 = m_keys.cbegin();
-    auto ki2 = dictObj->m_keys.cbegin();
-    while (ki1 != m_keys.cend()) {
-        if (!(*ki1)->isEqual(*ki2))
+    auto it1 = m_values.cbegin();
+    auto it2 = dictObj->m_values.cbegin();
+    while (it1 != m_values.cend()) {
+        if (!std::get<0>(*it1)->isEqual(std::get<0>(*it2)))
             return false;
-        ++ki1, ++ki2;
-    }
-
-    auto vi1 = m_values.cbegin();
-    auto vi2 = dictObj->m_values.cbegin();
-    while (vi1 != m_values.cend()) {
-        if (!(*vi1)->isEqual(*vi2))
+        if (!std::get<1>(*it1)->isEqual(std::get<1>(*it2)))
             return false;
-        ++vi1, ++vi2;
+        ++it1, ++it2;
     }
     return true;
 }

@@ -2,6 +2,7 @@
 #define _PYC_SEQUENCE_H
 
 #include "pyc_object.h"
+#include <tuple>
 #include <vector>
 
 class PycSequence : public PycObject {
@@ -54,8 +55,8 @@ public:
 
 class PycDict : public PycObject {
 public:
-    typedef std::vector<PycRef<PycObject>> key_t;
-    typedef std::vector<PycRef<PycObject>> value_t;
+    typedef std::tuple<PycRef<PycObject>, PycRef<PycObject>> item_t;
+    typedef std::vector<item_t> value_t;
 
     PycDict(int type = TYPE_DICT) : PycObject(type) { }
 
@@ -63,11 +64,9 @@ public:
 
     void load(class PycData* stream, class PycModule* mod) override;
 
-    const key_t& keys() const { return m_keys; }
     const value_t& values() const { return m_values; }
 
 private:
-    key_t m_keys;
     value_t m_values;
 };
 

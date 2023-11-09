@@ -219,20 +219,17 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
     case PycObject::TYPE_DICT:
         {
             pyc_output << "{";
-            PycDict::key_t keys = obj.cast<PycDict>()->keys();
             PycDict::value_t values = obj.cast<PycDict>()->values();
-            auto ki = keys.cbegin();
-            auto vi = values.cbegin();
-            if (ki != keys.cend()) {
-                print_const(pyc_output, *ki, mod);
+            auto it = values.cbegin();
+            if (it != values.cend()) {
+                print_const(pyc_output, std::get<0>(*it), mod);
                 pyc_output << ": ";
-                print_const(pyc_output, *vi, mod);
-                while (++ki != keys.cend()) {
-                    ++vi;
+                print_const(pyc_output, std::get<1>(*it), mod);
+                while (++it != values.cend()) {
                     pyc_output << ", ";
-                    print_const(pyc_output, *ki, mod);
+                    print_const(pyc_output, std::get<0>(*it), mod);
                     pyc_output << ": ";
-                    print_const(pyc_output, *vi, mod);
+                    print_const(pyc_output, std::get<1>(*it), mod);
                 }
             }
             pyc_output << "}";
