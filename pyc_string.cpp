@@ -68,14 +68,14 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
         prefix = mod->strIsUnicode() ? 0 : 'u';
         break;
     case PycObject::TYPE_INTERNED:
+        prefix = mod->internIsBytes() ? 'b' : 0;
+        break;
     case PycObject::TYPE_ASCII:
     case PycObject::TYPE_ASCII_INTERNED:
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
-        if (mod->majorVer() >= 3)
-            prefix = 0;
-        else
-            prefix = mod->strIsUnicode() ? 'b' : 0;
+        // These types don't exist until Python 3.4
+        prefix = 0;
         break;
     default:
         throw std::runtime_error("Invalid string type");

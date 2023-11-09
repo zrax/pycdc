@@ -64,6 +64,11 @@ public:
         return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
     }
 
+    bool internIsBytes() const
+    {
+        return (m_maj < 3) && (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+    }
+
     PycRef<PycCode> code() const { return m_code; }
 
     void intern(PycRef<PycString> str) { m_interns.emplace_back(std::move(str)); }
