@@ -38,6 +38,7 @@ DECLARE_PYTHON(3, 8)
 DECLARE_PYTHON(3, 9)
 DECLARE_PYTHON(3, 10)
 DECLARE_PYTHON(3, 11)
+DECLARE_PYTHON(3, 12)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -106,6 +107,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 9: return python_39_map(opcode);
         case 10: return python_310_map(opcode);
         case 11: return python_311_map(opcode);
+        case 12: return python_312_map(opcode);
         }
         break;
     }
@@ -114,7 +116,8 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
 
 bool Pyc::IsConstArg(int opcode)
 {
-    return (opcode == Pyc::LOAD_CONST_A) || (opcode == Pyc::RESERVE_FAST_A);
+    return (opcode == Pyc::LOAD_CONST_A) || (opcode == Pyc::RESERVE_FAST_A) ||
+           (opcode == Pyc::RETURN_CONST_A);
 }
 
 bool Pyc::IsNameArg(int opcode)
@@ -370,6 +373,22 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
     };
     static const size_t binop_strings_len = sizeof(binop_strings) / sizeof(binop_strings[0]);
 
+    static const char *intrinsic1_names[] = {
+        "INTRINSIC_1_INVALID", "INTRINSIC_PRINT", "INTRINSIC_IMPORT_STAR",
+        "INTRINSIC_STOPITERATION_ERROR", "INTRINSIC_ASYNC_GEN_WRAP",
+        "INTRINSIC_UNARY_POSITIVE", "INTRINSIC_LIST_TO_TUPLE", "INTRINSIC_TYPEVAR",
+        "INTRINSIC_PARAMSPEC", "INTRINSIC_TYPEVARTUPLE",
+        "INTRINSIC_SUBSCRIPT_GENERIC", "INTRINSIC_TYPEALIAS",
+    };
+    static const size_t intrinsic1_names_len = sizeof(intrinsic1_names) / sizeof(intrinsic1_names[0]);
+
+    static const char *intrinsic2_names[] = {
+        "INTRINSIC_2_INVALID", "INTRINSIC_PREP_RERAISE_STAR",
+        "INTRINSIC_TYPEVAR_WITH_BOUND", "INTRINSIC_TYPEVAR_WITH_CONSTRAINTS",
+        "INTRINSIC_SET_FUNCTION_TYPE_PARAMS",
+    };
+    static const size_t intrinsic2_names_len = sizeof(intrinsic2_names) / sizeof(intrinsic2_names[0]);
+
     PycBuffer source(code->code()->value(), code->code()->length());
 
     int opcode, operand;
@@ -453,6 +472,16 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "in"
                                                       : (operand == 1) ? "not in"
                                                       : "UNKNOWN");
+            } else if (opcode == Pyc::CALL_INTRINSIC_1_A) {
+                if (static_cast<size_t>(operand) < intrinsic1_names_len)
+                    formatted_print(pyc_output, "%d (%s)", operand, intrinsic1_names[operand]);
+                else
+                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+            } else if (opcode == Pyc::CALL_INTRINSIC_2_A) {
+                if (static_cast<size_t>(operand) < intrinsic2_names_len)
+                    formatted_print(pyc_output, "%d (%s)", operand, intrinsic2_names[operand]);
+                else
+                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
             } else {
                 formatted_print(pyc_output, "%d", operand);
             }

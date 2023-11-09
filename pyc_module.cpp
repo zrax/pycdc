@@ -170,6 +170,12 @@ void PycModule::setVersion(unsigned int magic)
         m_unicode = true;
         break;
 
+    case MAGIC_3_12:
+        m_maj = 3;
+        m_min = 12;
+        m_unicode = true;
+        break;
+
     /* Bad Magic detected */
     default:
         m_maj = -1;
@@ -185,7 +191,7 @@ bool PycModule::isSupportedVersion(int major, int minor)
     case 2:
         return (minor >= 0 && minor <= 7);
     case 3:
-        return (minor >= 0 && minor <= 11);
+        return (minor >= 0 && minor <= 12);
     default:
         return false;
     }

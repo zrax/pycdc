@@ -130,7 +130,7 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
                 // Unicode stored as UTF-8...  Let the stream interpret it
                 pyc_output << ch;
             } else {
-                formatted_print(pyc_output, "\\x%x", (ch & 0xFF));
+                formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
         } else {
             if (!useQuotes && ch == '\'')
