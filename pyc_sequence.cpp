@@ -65,7 +65,7 @@ bool PycDict::isEqual(PycRef<PycObject> obj) const
         return false;
 
     PycRef<PycDict> dictObj = obj.cast<PycDict>();
-    if (m_size != dictObj->m_size)
+    if (m_keys.size() != dictObj->m_keys.size())
         return false;
 
     auto ki1 = m_keys.cbegin();
@@ -84,29 +84,4 @@ bool PycDict::isEqual(PycRef<PycObject> obj) const
         ++vi1, ++vi2;
     }
     return true;
-}
-
-PycRef<PycObject> PycDict::get(PycRef<PycObject> key) const
-{
-    auto ki = m_keys.cbegin();
-    auto vi = m_values.cbegin();
-    while (ki != m_keys.cend()) {
-        if ((*ki)->isEqual(key))
-            return *vi;
-        ++ki, ++vi;
-    }
-    return NULL; // Disassembly shouldn't get non-existent keys
-}
-
-PycRef<PycObject> PycDict::get(int idx) const
-{
-    if (idx < 0)
-        throw std::out_of_range("Dict index out of range");
-
-    auto it = m_values.cbegin();
-    while (idx-- && it != m_values.cend())
-        ++it;
-    if (it == m_values.cend())
-        throw std::out_of_range("Dict index out of range");
-    return *it;
 }

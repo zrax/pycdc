@@ -46,32 +46,29 @@ public:
     PycList(int type = TYPE_LIST) : PycSimpleSequence(type) { }
 };
 
-class PycDict : public PycSequence {
+class PycSet : public PycSimpleSequence {
+public:
+    typedef PycSimpleSequence::value_t value_t;
+    PycSet(int type = TYPE_SET) : PycSimpleSequence(type) { }
+};
+
+class PycDict : public PycObject {
 public:
     typedef std::vector<PycRef<PycObject>> key_t;
     typedef std::vector<PycRef<PycObject>> value_t;
 
-    PycDict(int type = TYPE_DICT) : PycSequence(type) { }
+    PycDict(int type = TYPE_DICT) : PycObject(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
     void load(class PycData* stream, class PycModule* mod) override;
 
-    PycRef<PycObject> get(PycRef<PycObject> key) const;
     const key_t& keys() const { return m_keys; }
     const value_t& values() const { return m_values; }
-
-    PycRef<PycObject> get(int idx) const override;
 
 private:
     key_t m_keys;
     value_t m_values;
-};
-
-class PycSet : public PycSimpleSequence {
-public:
-    typedef PycSimpleSequence::value_t value_t;
-    PycSet(int type = TYPE_SET) : PycSimpleSequence(type) { }
 };
 
 #endif
