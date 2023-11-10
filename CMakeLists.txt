@@ -17,7 +17,7 @@ if (ENABLE_STACK_DEBUG)
 endif()
 
 # For generating the bytes tables
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Werror ${CMAKE_CXX_FLAGS}")
