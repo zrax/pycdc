@@ -34,6 +34,7 @@ enum PycMagic {
     MAGIC_3_9 = 0x0A0D0D61,
     MAGIC_3_10 = 0x0A0D0D6F,
     MAGIC_3_11 = 0x0A0D0DA7,
+    MAGIC_3_12 = 0x0A0D0DCB,
 
     INVALID = 0,
 };
@@ -61,6 +62,11 @@ public:
     bool strIsUnicode() const
     {
         return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+    }
+
+    bool internIsBytes() const
+    {
+        return (m_maj < 3) && (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
     }
 
     PycRef<PycCode> code() const { return m_code; }

@@ -1796,6 +1796,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::RETURN_CONST_A:
+            {
+                PycRef<ASTObject> value = new ASTObject(code->getConst(operand));
+                curblock->append(new ASTReturn(value.cast<ASTNode>()));
+            }
+            break;
         case Pyc::ROT_TWO:
             {
                 PycRef<ASTNode> one = stack.top();
@@ -3347,7 +3353,9 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
         if (clean->nodes().back().type() == ASTNode::NODE_RETURN) {
             PycRef<ASTReturn> ret = clean->nodes().back().cast<ASTReturn>();
 
-            if (ret->value() == NULL || ret->value().type() == ASTNode::NODE_LOCALS) {
+            PycRef<ASTObject> retObj = ret->value().try_cast<ASTObject>();
+            if (ret->value() == NULL || ret->value().type() == ASTNode::NODE_LOCALS ||
+                    (retObj && retObj->object().type() == PycObject::TYPE_NONE)) {
                 clean->removeLast();  // Always an extraneous return statement
             }
         }
