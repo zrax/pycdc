@@ -1,4 +1,4 @@
-import TEST<EOL>
-class MyNet(Test.t):<EOL>
+import Test <EOL>
+class MyNet ( Test . t ) : <EOL>
 <INDENT>
-pass<EOL>
+pass <EOL>
