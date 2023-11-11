@@ -431,7 +431,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 bases.resize(basecnt);
                 PycRef<ASTNode> TOS = stack.top();
                 int TOS_type = TOS.type();
-                // bases are NODE_NAME at TOS
+                // bases are NODE_NAME and NODE_BINARY at TOS
                 while (TOS_type == ASTNode::NODE_NAME || TOS_type == ASTNode::NODE_BINARY) {
                     bases.resize(basecnt + 1);
                     bases[basecnt] = TOS;
