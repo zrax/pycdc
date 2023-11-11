@@ -1,0 +1,4 @@
+import Test <EOL>
+class MyNet ( Test . t ) : <EOL>
+<INDENT>
+pass <EOL>
