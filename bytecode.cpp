@@ -156,7 +156,7 @@ bool Pyc::IsJumpOffsetArg(int opcode)
            (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
            (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A) ||
            (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A) ||
-		   (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A);
+           (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A);
 }
 
 bool Pyc::IsCompareArg(int opcode)
@@ -328,30 +328,26 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
 {
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-    bool py36_opcode = (mod->verCompare(3, 6) >= 0);
-    if (py36_opcode) {
+    if (mod->verCompare(3, 6) >= 0) {
         operand = source.getByte();
         pos += 2;
+        if (opcode == Pyc::EXTENDED_ARG_A) {
+            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+            operand = (operand << 8) | source.getByte();
+            pos += 2;
+        }
     } else {
         operand = 0;
         pos += 1;
-    }
-
-    if (opcode == Pyc::EXTENDED_ARG_A) {
-        if (py36_opcode) {
-            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-            operand <<= 8;
-            operand |= source.getByte();
-            pos += 2;
-        } else {
+        if (opcode == Pyc::EXTENDED_ARG_A) {
             operand = source.get16() << 16;
             opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
             pos += 3;
         }
-    }
-    if (!py36_opcode && (opcode >= Pyc::PYC_HAVE_ARG)) {
-        operand |= source.get16();
-        pos += 2;
+        if (opcode >= Pyc::PYC_HAVE_ARG) {
+            operand |= source.get16();
+            pos += 2;
+        }
     }
 }
 
