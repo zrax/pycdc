@@ -9,8 +9,7 @@
 #endif
 
 #define DECLARE_PYTHON(maj, min) \
-    extern int python_##maj##min##_map(int); \
-    extern int python_##maj##min##_unmap(int);
+    extern int python_##maj##min##_map(int);
 
 DECLARE_PYTHON(1, 0)
 DECLARE_PYTHON(1, 1)

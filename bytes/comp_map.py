@@ -34,11 +34,9 @@ for mapver in maplist:
     outfile = open(os.path.join(sys.argv[2], 'python_%d.cpp' % mapver), 'wt')
 
     idToOpcode = {}
-    opcodeToId = {}
     for ln in infile.readlines():
         fileid, code = ln.split()
         idToOpcode[int(fileid)] = code
-        opcodeToId[code] = int(fileid)
 
     outfile.write('/* This file was auto-generated with comp_map.py.  DO NOT EDIT! */\n\n')
     outfile.write('#include "bytecode.h"\n\n')
@@ -48,14 +46,6 @@ for mapver in maplist:
     for i in sorted(idToOpcode):
         outfile.write('    case %d: return Pyc::%s;\n' % (i, idToOpcode[i]))
     outfile.write('    default: return Pyc::PYC_INVALID_OPCODE;\n')
-    outfile.write('    }\n')
-    outfile.write('}\n\n')
-    outfile.write('int python_%d_unmap(int id)\n' % mapver)
-    outfile.write('{\n')
-    outfile.write('    switch (id) {\n')
-    for i in sorted(opcodeToId):
-        outfile.write('    case Pyc::%s: return %d;\n' % (i, opcodeToId[i]))
-    outfile.write('    default: return -1;\n')
     outfile.write('    }\n')
     outfile.write('}\n')
 
