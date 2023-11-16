@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 project(pycdc)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -17,7 +17,7 @@ if (ENABLE_STACK_DEBUG)
 endif()
 
 # For generating the bytes tables
-find_package(PythonInterp REQUIRED)
+find_package(Python COMPONENTS Interpreter REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Werror ${CMAKE_CXX_FLAGS}")
@@ -38,7 +38,7 @@ foreach(ver ${PYTHON_VERSIONS})
 endforeach()
 
 add_custom_command(OUTPUT ${MAP_SOURCES}
-                   COMMAND ${PYTHON_EXECUTABLE}
+                   COMMAND ${Python_EXECUTABLE}
                            ${CMAKE_CURRENT_SOURCE_DIR}/bytes/comp_map.py
                            ${CMAKE_CURRENT_SOURCE_DIR}/bytes
                            ${CMAKE_CURRENT_BINARY_DIR}/bytes
