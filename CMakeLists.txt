@@ -38,7 +38,7 @@ foreach(ver ${PYTHON_VERSIONS})
 endforeach()
 
 add_custom_command(OUTPUT ${MAP_SOURCES}
-                   COMMAND ${PYTHON_EXECUTABLE}
+                   COMMAND ${Python_EXECUTABLE}
                            ${CMAKE_CURRENT_SOURCE_DIR}/bytes/comp_map.py
                            ${CMAKE_CURRENT_SOURCE_DIR}/bytes
                            ${CMAKE_CURRENT_BINARY_DIR}/bytes
