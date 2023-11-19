@@ -418,6 +418,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::CALL_A:
         case Pyc::CALL_FUNCTION_A:
+        case Pyc::INSTRUMENTED_CALL_A:
             {
                 int kwparams = (operand & 0xFF00) >> 8;
                 int pparams = (operand & 0xFF);
@@ -508,8 +509,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if (opcode == Pyc::CALL_A && stack.top() == nullptr)
+                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
+                        stack.top() == nullptr) {
                     stack.pop();
+                }
 
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
@@ -880,6 +883,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::FOR_ITER_A:
+        case Pyc::INSTRUMENTED_FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
                 stack.pop();
@@ -1040,6 +1044,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_IF_TRUE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+        case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+        case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
@@ -1048,7 +1054,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A) {
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
                     stack.pop();
                     popped = ASTCondBlock::PRE_POPPED;
@@ -1068,12 +1076,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 bool neg = opcode == Pyc::JUMP_IF_TRUE_A
                         || opcode == Pyc::JUMP_IF_TRUE_OR_POP_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A;
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A;
 
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129
-                if (opcode == Pyc::JUMP_IF_FALSE_A
+                if (mod->verCompare(3, 12) >= 0
+                        || opcode == Pyc::JUMP_IF_FALSE_A
                         || opcode == Pyc::JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
@@ -1270,6 +1280,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_FORWARD_A:
+        case Pyc::INSTRUMENTED_JUMP_FORWARD_A:
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
@@ -1775,6 +1786,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::RETURN_VALUE:
+        case Pyc::INSTRUMENTED_RETURN_VALUE_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -1797,6 +1809,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::RETURN_CONST_A:
+        case Pyc::INSTRUMENTED_RETURN_CONST_A:
             {
                 PycRef<ASTObject> value = new ASTObject(code->getConst(operand));
                 curblock->append(new ASTReturn(value.cast<ASTNode>()));
@@ -2403,6 +2416,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::YIELD_VALUE:
+        case Pyc::INSTRUMENTED_YIELD_VALUE_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -2414,6 +2428,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::PRECALL_A:
         case Pyc::RESUME_A:
+        case Pyc::INSTRUMENTED_RESUME_A:
             /* We just entirely ignore this / no-op */
             break;
         case Pyc::CACHE:
