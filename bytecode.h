@@ -29,8 +29,9 @@ bool IsConstArg(int opcode);
 bool IsNameArg(int opcode);
 bool IsVarNameArg(int opcode);
 bool IsCellArg(int opcode);
-bool IsJumpOffsetArg(int opcode);
-bool IsJumpArg(int opcode);
+bool IsJumpAbsArg(int opcode);
+bool IsJumpRelArg(int opcode);
+bool IsJumpBackArg(int opcode);
 bool IsCompareArg(int opcode);
 
 }

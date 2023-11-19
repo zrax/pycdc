@@ -116,7 +116,8 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
 bool Pyc::IsConstArg(int opcode)
 {
     return (opcode == Pyc::LOAD_CONST_A) || (opcode == Pyc::RESERVE_FAST_A) ||
-           (opcode == Pyc::RETURN_CONST_A);
+           (opcode == Pyc::KW_NAMES_A) || (opcode == Pyc::RETURN_CONST_A) ||
+           (opcode == Pyc::INSTRUMENTED_RETURN_CONST_A);
 }
 
 bool Pyc::IsNameArg(int opcode)
@@ -127,35 +128,59 @@ bool Pyc::IsNameArg(int opcode)
            (opcode == Pyc::LOAD_GLOBAL_A) || (opcode == Pyc::LOAD_LOCAL_A) ||
            (opcode == Pyc::LOAD_NAME_A) || (opcode == Pyc::STORE_ATTR_A) ||
            (opcode == Pyc::STORE_GLOBAL_A) || (opcode == Pyc::STORE_NAME_A) ||
-           (opcode == Pyc::LOAD_METHOD_A);
+           (opcode == Pyc::STORE_ANNOTATION_A) || (opcode == Pyc::LOAD_METHOD_A) ||
+           (opcode == Pyc::LOAD_SUPER_ATTR_A) || (opcode == Pyc::LOAD_FROM_DICT_OR_GLOBALS_A);
 }
 
 bool Pyc::IsVarNameArg(int opcode)
 {
     return (opcode == Pyc::DELETE_FAST_A) || (opcode == Pyc::LOAD_FAST_A) ||
-           (opcode == Pyc::STORE_FAST_A);
+           (opcode == Pyc::STORE_FAST_A) || (opcode == Pyc::LOAD_FAST_CHECK_A) ||
+           (opcode == Pyc::LOAD_FAST_AND_CLEAR_A);
 }
 
 bool Pyc::IsCellArg(int opcode)
 {
     return (opcode == Pyc::LOAD_CLOSURE_A) || (opcode == Pyc::LOAD_DEREF_A) ||
-           (opcode == Pyc::STORE_DEREF_A);
+           (opcode == Pyc::STORE_DEREF_A) || (opcode == Pyc::DELETE_DEREF_A) ||
+           (opcode == Pyc::MAKE_CELL_A) || (opcode == Pyc::CALL_FINALLY_A) ||
+           (opcode == Pyc::LOAD_FROM_DICT_OR_DEREF_A);
 }
 
-bool Pyc::IsJumpArg(int opcode)
+bool Pyc::IsJumpAbsArg(int opcode)
 {
     return (opcode == Pyc::POP_JUMP_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_IF_TRUE_A) ||
-           (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A) || (opcode == JUMP_IF_TRUE_OR_POP_A) ||
+           (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A) || (opcode == Pyc::JUMP_IF_TRUE_OR_POP_A) ||
            (opcode == Pyc::JUMP_ABSOLUTE_A) || (opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A);
 }
 
-bool Pyc::IsJumpOffsetArg(int opcode)
+bool Pyc::IsJumpRelArg(int opcode)
 {
     return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
            (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
            (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A) ||
            (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A) ||
-           (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A);
+           (opcode == Pyc::SETUP_WITH_A) || (opcode == Pyc::SETUP_ASYNC_WITH_A) ||
+           (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) ||
+           (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A) || (opcode == Pyc::SEND_A) ||
+           (opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) ||
+           (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A) ||
+           (opcode == Pyc::POP_JUMP_IF_NOT_NONE_A) || (opcode == Pyc::POP_JUMP_IF_NONE_A) ||
+           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A) ||
+           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A) ||
+           (opcode == Pyc::INSTRUMENTED_JUMP_FORWARD_A) || (opcode == Pyc::INSTRUMENTED_FOR_ITER_A) ||
+           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A) ||
+           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A);
+}
+
+bool Pyc::IsJumpBackArg(int opcode)
+{
+    return (opcode == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) || (opcode == Pyc::JUMP_BACKWARD_A) ||
+           (opcode == Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A) ||
+           (opcode == Pyc::POP_JUMP_BACKWARD_IF_NONE_A) ||
+           (opcode == Pyc::POP_JUMP_BACKWARD_IF_FALSE_A) ||
+           (opcode == Pyc::POP_JUMP_BACKWARD_IF_TRUE_A) ||
+           (opcode == Pyc::INSTRUMENTED_JUMP_BACKWARD_A);
 }
 
 bool Pyc::IsCompareArg(int opcode)
@@ -436,21 +461,39 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (Pyc::IsJumpOffsetArg(opcode)) {
+            } else if (Pyc::IsJumpRelArg(opcode)) {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // BPO-27129
                 formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
-            } else if (Pyc::IsJumpArg(opcode)) {
-                if (mod->verCompare(3, 10) >= 0) // BPO-27129
-                    formatted_print(pyc_output, "%d (to %d)", operand, int(operand * sizeof(uint16_t)));
-                else
+            } else if (Pyc::IsJumpBackArg(opcode)) {
+                // BACKWARD jumps were only introduced in Python 3.11
+                int offs = operand * sizeof(uint16_t); // BPO-27129
+                formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
+            } else if (Pyc::IsJumpAbsArg(opcode)) {
+                if (mod->verCompare(3, 12) >= 0) {
+                    // These are now relative as well
+                    int offs = operand * sizeof(uint16_t);
+                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
+                } else if (mod->verCompare(3, 10) >= 0) {
+                    // BPO-27129
+                    formatted_print(pyc_output, "%d (to %d)", operand,
+                                    int(operand * sizeof(uint16_t)));
+                } else {
                     formatted_print(pyc_output, "%d", operand);
+                }
             } else if (Pyc::IsCompareArg(opcode)) {
                 if (static_cast<size_t>(operand) < cmp_strings_len)
                     formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+            } else if ((opcode == Pyc::LOAD_SUPER_ATTR_A) ||
+                       (opcode == Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A)) {
+                try {
+                    formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 2)->value());
+                } catch (const std::out_of_range &) {
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
+                }
             } else if (opcode == Pyc::BINARY_OP_A) {
                 if (static_cast<size_t>(operand) < binop_strings_len)
                     formatted_print(pyc_output, "%d (%s)", operand, binop_strings[operand]);
