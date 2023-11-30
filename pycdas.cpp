@@ -142,6 +142,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             bc_disasm(pyc_output, codeObj, mod, indent + 2, flags);
 
             if (mod->verCompare(1, 5) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
+                iprintf(pyc_output, indent + 1, "First Line: %d\n", codeObj->firstLine());
                 iputs(pyc_output, indent + 1, "[Line Number Table]\n");
                 output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
             }
