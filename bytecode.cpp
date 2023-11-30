@@ -395,6 +395,14 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
                 break;
+            case Pyc::LOAD_SUPER_ATTR_A:
+            case Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A:
+                try {
+                    formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 2)->value());
+                } catch (const std::out_of_range &) {
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
+                }
+                break;
             case Pyc::DELETE_FAST_A:
             case Pyc::LOAD_FAST_A:
             case Pyc::STORE_FAST_A:
@@ -485,14 +493,6 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                     formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
-                break;
-            case Pyc::LOAD_SUPER_ATTR_A:
-            case Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A:
-                try {
-                    formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 2)->value());
-                } catch (const std::out_of_range &) {
-                    formatted_print(pyc_output, "%d <INVALID>", operand);
-                }
                 break;
             case Pyc::BINARY_OP_A:
                 if (static_cast<size_t>(operand) < binop_strings_len)
