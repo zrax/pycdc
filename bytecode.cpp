@@ -113,81 +113,6 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
     return PYC_INVALID_OPCODE;
 }
 
-bool Pyc::IsConstArg(int opcode)
-{
-    return (opcode == Pyc::LOAD_CONST_A) || (opcode == Pyc::RESERVE_FAST_A) ||
-           (opcode == Pyc::KW_NAMES_A) || (opcode == Pyc::RETURN_CONST_A) ||
-           (opcode == Pyc::INSTRUMENTED_RETURN_CONST_A);
-}
-
-bool Pyc::IsNameArg(int opcode)
-{
-    return (opcode == Pyc::DELETE_ATTR_A) || (opcode == Pyc::DELETE_GLOBAL_A) ||
-           (opcode == Pyc::DELETE_NAME_A) || (opcode == Pyc::IMPORT_FROM_A) ||
-           (opcode == Pyc::IMPORT_NAME_A) || (opcode == Pyc::LOAD_ATTR_A) ||
-           (opcode == Pyc::LOAD_GLOBAL_A) || (opcode == Pyc::LOAD_LOCAL_A) ||
-           (opcode == Pyc::LOAD_NAME_A) || (opcode == Pyc::STORE_ATTR_A) ||
-           (opcode == Pyc::STORE_GLOBAL_A) || (opcode == Pyc::STORE_NAME_A) ||
-           (opcode == Pyc::STORE_ANNOTATION_A) || (opcode == Pyc::LOAD_METHOD_A) ||
-           (opcode == Pyc::LOAD_SUPER_ATTR_A) || (opcode == Pyc::LOAD_FROM_DICT_OR_GLOBALS_A);
-}
-
-bool Pyc::IsVarNameArg(int opcode)
-{
-    return (opcode == Pyc::DELETE_FAST_A) || (opcode == Pyc::LOAD_FAST_A) ||
-           (opcode == Pyc::STORE_FAST_A) || (opcode == Pyc::LOAD_FAST_CHECK_A) ||
-           (opcode == Pyc::LOAD_FAST_AND_CLEAR_A);
-}
-
-bool Pyc::IsCellArg(int opcode)
-{
-    return (opcode == Pyc::LOAD_CLOSURE_A) || (opcode == Pyc::LOAD_DEREF_A) ||
-           (opcode == Pyc::STORE_DEREF_A) || (opcode == Pyc::DELETE_DEREF_A) ||
-           (opcode == Pyc::MAKE_CELL_A) || (opcode == Pyc::CALL_FINALLY_A) ||
-           (opcode == Pyc::LOAD_FROM_DICT_OR_DEREF_A);
-}
-
-bool Pyc::IsJumpAbsArg(int opcode)
-{
-    return (opcode == Pyc::POP_JUMP_IF_FALSE_A) || (opcode == Pyc::POP_JUMP_IF_TRUE_A) ||
-           (opcode == Pyc::JUMP_IF_FALSE_OR_POP_A) || (opcode == Pyc::JUMP_IF_TRUE_OR_POP_A) ||
-           (opcode == Pyc::JUMP_ABSOLUTE_A) || (opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A);
-}
-
-bool Pyc::IsJumpRelArg(int opcode)
-{
-    return (opcode == Pyc::JUMP_FORWARD_A) || (opcode == Pyc::JUMP_IF_FALSE_A) ||
-           (opcode == Pyc::JUMP_IF_TRUE_A) || (opcode == Pyc::SETUP_LOOP_A) ||
-           (opcode == Pyc::SETUP_FINALLY_A) || (opcode == Pyc::SETUP_EXCEPT_A) ||
-           (opcode == Pyc::FOR_LOOP_A) || (opcode == Pyc::FOR_ITER_A) ||
-           (opcode == Pyc::SETUP_WITH_A) || (opcode == Pyc::SETUP_ASYNC_WITH_A) ||
-           (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) ||
-           (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A) || (opcode == Pyc::SEND_A) ||
-           (opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) ||
-           (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A) ||
-           (opcode == Pyc::POP_JUMP_IF_NOT_NONE_A) || (opcode == Pyc::POP_JUMP_IF_NONE_A) ||
-           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A) ||
-           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A) ||
-           (opcode == Pyc::INSTRUMENTED_JUMP_FORWARD_A) || (opcode == Pyc::INSTRUMENTED_FOR_ITER_A) ||
-           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A) ||
-           (opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A);
-}
-
-bool Pyc::IsJumpBackArg(int opcode)
-{
-    return (opcode == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) || (opcode == Pyc::JUMP_BACKWARD_A) ||
-           (opcode == Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A) ||
-           (opcode == Pyc::POP_JUMP_BACKWARD_IF_NONE_A) ||
-           (opcode == Pyc::POP_JUMP_BACKWARD_IF_FALSE_A) ||
-           (opcode == Pyc::POP_JUMP_BACKWARD_IF_TRUE_A) ||
-           (opcode == Pyc::INSTRUMENTED_JUMP_BACKWARD_A);
-}
-
-bool Pyc::IsCompareArg(int opcode)
-{
-    return (opcode == Pyc::COMPARE_OP_A);
-}
-
 void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod,
                  const char* parent_f_string_quote)
 {
@@ -421,7 +346,12 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
         formatted_print(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
-            if (Pyc::IsConstArg(opcode)) {
+            switch (opcode) {
+            case Pyc::LOAD_CONST_A:
+            case Pyc::RESERVE_FAST_A:
+            case Pyc::KW_NAMES_A:
+            case Pyc::RETURN_CONST_A:
+            case Pyc::INSTRUMENTED_RETURN_CONST_A:
                 try {
                     auto constParam = code->getConst(operand);
                     formatted_print(pyc_output, "%d: ", operand);
@@ -429,7 +359,8 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (opcode == Pyc::LOAD_GLOBAL_A) {
+                break;
+            case Pyc::LOAD_GLOBAL_A:
                 try {
                     // Special case for Python 3.11+
                     if (mod->verCompare(3, 11) >= 0) {
@@ -443,34 +374,100 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (Pyc::IsNameArg(opcode)) {
+                break;
+            case Pyc::DELETE_ATTR_A:
+            case Pyc::DELETE_GLOBAL_A:
+            case Pyc::DELETE_NAME_A:
+            case Pyc::IMPORT_FROM_A:
+            case Pyc::IMPORT_NAME_A:
+            case Pyc::LOAD_ATTR_A:
+            case Pyc::LOAD_LOCAL_A:
+            case Pyc::LOAD_NAME_A:
+            case Pyc::STORE_ATTR_A:
+            case Pyc::STORE_GLOBAL_A:
+            case Pyc::STORE_NAME_A:
+            case Pyc::STORE_ANNOTATION_A:
+            case Pyc::LOAD_METHOD_A:
+            case Pyc::LOAD_FROM_DICT_OR_GLOBALS_A:
                 try {
                     formatted_print(pyc_output, "%d: %s", operand, code->getName(operand)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (Pyc::IsVarNameArg(opcode)) {
+                break;
+            case Pyc::DELETE_FAST_A:
+            case Pyc::LOAD_FAST_A:
+            case Pyc::STORE_FAST_A:
+            case Pyc::LOAD_FAST_CHECK_A:
+            case Pyc::LOAD_FAST_AND_CLEAR_A:
                 try {
                     formatted_print(pyc_output, "%d: %s", operand, code->getLocal(operand)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (Pyc::IsCellArg(opcode)) {
+                break;
+            case Pyc::LOAD_CLOSURE_A:
+            case Pyc::LOAD_DEREF_A:
+            case Pyc::STORE_DEREF_A:
+            case Pyc::DELETE_DEREF_A:
+            case Pyc::MAKE_CELL_A:
+            case Pyc::CALL_FINALLY_A:
+            case Pyc::LOAD_FROM_DICT_OR_DEREF_A:
                 try {
                     formatted_print(pyc_output, "%d: %s", operand, code->getCellVar(mod, operand)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (Pyc::IsJumpRelArg(opcode)) {
-                int offs = operand;
-                if (mod->verCompare(3, 10) >= 0)
-                    offs *= sizeof(uint16_t); // BPO-27129
-                formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
-            } else if (Pyc::IsJumpBackArg(opcode)) {
-                // BACKWARD jumps were only introduced in Python 3.11
-                int offs = operand * sizeof(uint16_t); // BPO-27129
-                formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
-            } else if (Pyc::IsJumpAbsArg(opcode)) {
+                break;
+            case Pyc::JUMP_FORWARD_A:
+            case Pyc::JUMP_IF_FALSE_A:
+            case Pyc::JUMP_IF_TRUE_A:
+            case Pyc::SETUP_LOOP_A:
+            case Pyc::SETUP_FINALLY_A:
+            case Pyc::SETUP_EXCEPT_A:
+            case Pyc::FOR_LOOP_A:
+            case Pyc::FOR_ITER_A:
+            case Pyc::SETUP_WITH_A:
+            case Pyc::SETUP_ASYNC_WITH_A:
+            case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+            case Pyc::SEND_A:
+            case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+            case Pyc::POP_JUMP_IF_NOT_NONE_A:
+            case Pyc::POP_JUMP_IF_NONE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+            case Pyc::INSTRUMENTED_JUMP_FORWARD_A:
+            case Pyc::INSTRUMENTED_FOR_ITER_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+                {
+                    int offs = operand;
+                    if (mod->verCompare(3, 10) >= 0)
+                        offs *= sizeof(uint16_t); // BPO-27129
+                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
+                }
+                break;
+            case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+            case Pyc::JUMP_BACKWARD_A:
+            case Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A:
+            case Pyc::POP_JUMP_BACKWARD_IF_NONE_A:
+            case Pyc::POP_JUMP_BACKWARD_IF_FALSE_A:
+            case Pyc::POP_JUMP_BACKWARD_IF_TRUE_A:
+            case Pyc::INSTRUMENTED_JUMP_BACKWARD_A:
+                {
+                    // BACKWARD jumps were only introduced in Python 3.11
+                    int offs = operand * sizeof(uint16_t); // BPO-27129
+                    formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
+                }
+                break;
+            case Pyc::POP_JUMP_IF_FALSE_A:
+            case Pyc::POP_JUMP_IF_TRUE_A:
+            case Pyc::JUMP_IF_FALSE_OR_POP_A:
+            case Pyc::JUMP_IF_TRUE_OR_POP_A:
+            case Pyc::JUMP_ABSOLUTE_A:
+            case Pyc::JUMP_IF_NOT_EXC_MATCH_A:
                 if (mod->verCompare(3, 12) >= 0) {
                     // These are now relative as well
                     int offs = operand * sizeof(uint16_t);
@@ -482,43 +479,52 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 } else {
                     formatted_print(pyc_output, "%d", operand);
                 }
-            } else if (Pyc::IsCompareArg(opcode)) {
+                break;
+            case Pyc::COMPARE_OP_A:
                 if (static_cast<size_t>(operand) < cmp_strings_len)
                     formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
-            } else if ((opcode == Pyc::LOAD_SUPER_ATTR_A) ||
-                       (opcode == Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A)) {
+                break;
+            case Pyc::LOAD_SUPER_ATTR_A:
+            case Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A:
                 try {
                     formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 2)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
-            } else if (opcode == Pyc::BINARY_OP_A) {
+                break;
+            case Pyc::BINARY_OP_A:
                 if (static_cast<size_t>(operand) < binop_strings_len)
                     formatted_print(pyc_output, "%d (%s)", operand, binop_strings[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
-            } else if (opcode == Pyc::IS_OP_A) {
+                break;
+            case Pyc::IS_OP_A:
                 formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "is"
                                                       : (operand == 1) ? "is not"
                                                       : "UNKNOWN");
-            } else if (opcode == Pyc::CONTAINS_OP_A) {
+                break;
+            case Pyc::CONTAINS_OP_A:
                 formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "in"
                                                       : (operand == 1) ? "not in"
                                                       : "UNKNOWN");
-            } else if (opcode == Pyc::CALL_INTRINSIC_1_A) {
+                break;
+            case Pyc::CALL_INTRINSIC_1_A:
                 if (static_cast<size_t>(operand) < intrinsic1_names_len)
                     formatted_print(pyc_output, "%d (%s)", operand, intrinsic1_names[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
-            } else if (opcode == Pyc::CALL_INTRINSIC_2_A) {
+                break;
+            case Pyc::CALL_INTRINSIC_2_A:
                 if (static_cast<size_t>(operand) < intrinsic2_names_len)
                     formatted_print(pyc_output, "%d (%s)", operand, intrinsic2_names[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
-            } else {
+                break;
+            default:
                 formatted_print(pyc_output, "%d", operand);
+                break;
             }
         }
         pyc_output << "\n";
