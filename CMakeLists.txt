@@ -16,35 +16,12 @@ if (ENABLE_STACK_DEBUG)
     add_definitions(-DSTACK_DEBUG)
 endif()
 
-# For generating the bytes tables
-find_package(Python COMPONENTS Interpreter REQUIRED)
-
 if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Werror ${CMAKE_CXX_FLAGS}")
 elseif(MSVC)
     set(CMAKE_CXX_FLAGS "/WX ${CMAKE_CXX_FLAGS}")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
-
-set(PYTHON_VERSIONS
-    10 11    13 14 15 16            # Python 1.1 and 1.2 are marshal-identical
-    20 21 22 23 24 25 26 27
-    30 31 32 33 34 35 36 37 38 39 310 311 312
-)
-
-foreach(ver ${PYTHON_VERSIONS})
-    list(APPEND MAP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/bytes/python_${ver}.map)
-    list(APPEND MAP_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/bytes/python_${ver}.cpp)
-endforeach()
-
-add_custom_command(OUTPUT ${MAP_SOURCES}
-                   COMMAND ${Python_EXECUTABLE}
-                           ${CMAKE_CURRENT_SOURCE_DIR}/bytes/comp_map.py
-                           ${CMAKE_CURRENT_SOURCE_DIR}/bytes
-                           ${CMAKE_CURRENT_BINARY_DIR}/bytes
-                   DEPENDS ${MAP_FILES}
-                           ${CMAKE_CURRENT_SOURCE_DIR}/bytes/comp_map.py
-)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -57,7 +34,33 @@ add_library(pycxx STATIC
     pyc_object.cpp
     pyc_sequence.cpp
     pyc_string.cpp
-    ${MAP_SOURCES}
+    bytes/python_1_0.cpp
+    bytes/python_1_1.cpp
+    bytes/python_1_3.cpp
+    bytes/python_1_4.cpp
+    bytes/python_1_5.cpp
+    bytes/python_1_6.cpp
+    bytes/python_2_0.cpp
+    bytes/python_2_1.cpp
+    bytes/python_2_2.cpp
+    bytes/python_2_3.cpp
+    bytes/python_2_4.cpp
+    bytes/python_2_5.cpp
+    bytes/python_2_6.cpp
+    bytes/python_2_7.cpp
+    bytes/python_3_0.cpp
+    bytes/python_3_1.cpp
+    bytes/python_3_2.cpp
+    bytes/python_3_3.cpp
+    bytes/python_3_4.cpp
+    bytes/python_3_5.cpp
+    bytes/python_3_6.cpp
+    bytes/python_3_7.cpp
+    bytes/python_3_8.cpp
+    bytes/python_3_9.cpp
+    bytes/python_3_10.cpp
+    bytes/python_3_11.cpp
+    bytes/python_3_12.cpp
 )
 
 add_executable(pycdas pycdas.cpp)

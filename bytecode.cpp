@@ -9,7 +9,7 @@
 #endif
 
 #define DECLARE_PYTHON(maj, min) \
-    extern int python_##maj##min##_map(int);
+    extern int python_##maj##_##min##_map(int);
 
 DECLARE_PYTHON(1, 0)
 DECLARE_PYTHON(1, 1)
@@ -72,41 +72,41 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
     switch (maj) {
     case 1:
         switch (min) {
-        case 0: return python_10_map(opcode);
-        case 1: return python_11_map(opcode);
-        case 3: return python_13_map(opcode);
-        case 4: return python_14_map(opcode);
-        case 5: return python_15_map(opcode);
-        case 6: return python_16_map(opcode);
+        case 0: return python_1_0_map(opcode);
+        case 1: return python_1_1_map(opcode);
+        case 3: return python_1_3_map(opcode);
+        case 4: return python_1_4_map(opcode);
+        case 5: return python_1_5_map(opcode);
+        case 6: return python_1_6_map(opcode);
         }
         break;
     case 2:
         switch (min) {
-        case 0: return python_20_map(opcode);
-        case 1: return python_21_map(opcode);
-        case 2: return python_22_map(opcode);
-        case 3: return python_23_map(opcode);
-        case 4: return python_24_map(opcode);
-        case 5: return python_25_map(opcode);
-        case 6: return python_26_map(opcode);
-        case 7: return python_27_map(opcode);
+        case 0: return python_2_0_map(opcode);
+        case 1: return python_2_1_map(opcode);
+        case 2: return python_2_2_map(opcode);
+        case 3: return python_2_3_map(opcode);
+        case 4: return python_2_4_map(opcode);
+        case 5: return python_2_5_map(opcode);
+        case 6: return python_2_6_map(opcode);
+        case 7: return python_2_7_map(opcode);
         }
         break;
     case 3:
         switch (min) {
-        case 0: return python_30_map(opcode);
-        case 1: return python_31_map(opcode);
-        case 2: return python_32_map(opcode);
-        case 3: return python_33_map(opcode);
-        case 4: return python_34_map(opcode);
-        case 5: return python_35_map(opcode);
-        case 6: return python_36_map(opcode);
-        case 7: return python_37_map(opcode);
-        case 8: return python_38_map(opcode);
-        case 9: return python_39_map(opcode);
-        case 10: return python_310_map(opcode);
-        case 11: return python_311_map(opcode);
-        case 12: return python_312_map(opcode);
+        case 0: return python_3_0_map(opcode);
+        case 1: return python_3_1_map(opcode);
+        case 2: return python_3_2_map(opcode);
+        case 3: return python_3_3_map(opcode);
+        case 4: return python_3_4_map(opcode);
+        case 5: return python_3_5_map(opcode);
+        case 6: return python_3_6_map(opcode);
+        case 7: return python_3_7_map(opcode);
+        case 8: return python_3_8_map(opcode);
+        case 9: return python_3_9_map(opcode);
+        case 10: return python_3_10_map(opcode);
+        case 11: return python_3_11_map(opcode);
+        case 12: return python_3_12_map(opcode);
         }
         break;
     }
