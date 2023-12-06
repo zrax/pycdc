@@ -343,7 +343,7 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
 
         for (int i=0; i<indent; i++)
             pyc_output << "    ";
-        formatted_print(pyc_output, "%-7d %-30s", start_pos, Pyc::OpcodeName(opcode));
+        formatted_print(pyc_output, "%-7d %-30s  ", start_pos, Pyc::OpcodeName(opcode));
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             switch (opcode) {
