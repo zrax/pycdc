@@ -638,7 +638,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> left = stack.top();
                 stack.pop();
-                stack.push(new ASTCompare(left, right, operand));
+                auto arg = operand;
+                if (mod->verCompare(3, 12) >= 0)
+                    arg >>= 4; // changed under GH-100923
+                stack.push(new ASTCompare(left, right, arg));
             }
             break;
         case Pyc::CONTAINS_OP_A:
