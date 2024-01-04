@@ -489,10 +489,15 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 }
                 break;
             case Pyc::COMPARE_OP_A:
-                if (static_cast<size_t>(operand) < cmp_strings_len)
-                    formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[operand]);
-                else
-                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+                {
+                    auto arg = operand;
+                    if (mod->verCompare(3, 12) >= 0)
+                        arg >>= 4; // changed under GH-100923
+                    if (static_cast<size_t>(arg) < cmp_strings_len)
+                        formatted_print(pyc_output, "%d (%s)", operand, cmp_strings[arg]);
+                    else
+                        formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+                }
                 break;
             case Pyc::BINARY_OP_A:
                 if (static_cast<size_t>(operand) < binop_strings_len)
