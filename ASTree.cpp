@@ -1473,8 +1473,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> name = stack.top();
                 if (name.type() != ASTNode::NODE_IMPORT) {
+                    auto arg = operand;
+                    if (mod->verCompare(3, 12) >= 0 && (arg & 1))
+                        arg >>= 1;
                     stack.pop();
-                    stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                    stack.push(new ASTBinary(name, new ASTName(code->getName(arg)), ASTBinary::BIN_ATTR));
                 }
             }
             break;
