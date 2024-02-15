@@ -1481,9 +1481,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_BUILD_CLASS:
             stack.push(new ASTLoadBuildClass(new PycObject()));
             break;
-        case Pyc::LOAD_CLOSURE_A:
-            /* Ignore this */
-            break;
         case Pyc::LOAD_CONST_A:
             {
                 PycRef<ASTObject> t_ob = new ASTObject(code->getConst(operand));
@@ -1501,6 +1498,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_DEREF_A:
+        case Pyc::LOAD_CLOSURE_A:
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
@@ -1559,15 +1557,42 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 ASTFunction::defarg_t defArgs, kwDefArgs;
-                const int defCount = operand & 0xFF;
-                const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop();
+
+                if (mod->verCompare(3, 6) < 0) {
+                    const int defCount = operand & 0xFF;
+                    const int kwDefCount = (operand >> 8) & 0xFF;
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                } else {
+                    if (operand & 0x08) {
+                        stack.pop();
+                    }
+
+                    if (operand & 0x04) {
+                        stack.pop();
+                    }
+
+                    if (operand & 0x02) {
+                        PycRef<ASTConstMap> defaultsDict = stack.top().cast<ASTConstMap>();
+                        stack.pop();
+
+                        for (PycRef<ASTNode> value : defaultsDict->values())
+                            kwDefArgs.push_front(value);
+                    }
+
+                    if (operand & 0x01) {
+                        PycRef<PycTuple> defaultsTuple = stack.top().cast<ASTObject>()->object().cast<PycTuple>();
+                        stack.pop();
+
+                        for (PycRef<PycObject> value : defaultsTuple->values())
+                            defArgs.push_back(new ASTObject(value));
+                    }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
