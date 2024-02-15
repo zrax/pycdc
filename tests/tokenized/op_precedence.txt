@@ -1,0 +1,11 @@
+def foo ( a , b , c ) : <EOL>
+<INDENT>
+return c - ( a + b ) <EOL>
+<OUTDENT>
+def bar ( a , b , c , d ) : <EOL>
+<INDENT>
+return a / ( b ** c * d ) <EOL>
+<OUTDENT>
+def baz ( a , b , c , d ) : <EOL>
+<INDENT>
+return a - ( ( b ^ c ) + d ) <EOL>
