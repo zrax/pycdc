@@ -394,6 +394,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::BUILD_TUPLE_A:
             {
+                // if class is a closure code, ignore this tuple
+                PycRef<ASTNode> tos = stack.top();
+                if (tos->type() == ASTNode::NODE_LOADBUILDCLASS) {
+                    break;
+                }
+
                 ASTTuple::value_t values;
                 values.resize(operand);
                 for (int i=0; i<operand; i++) {
@@ -1501,6 +1507,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_DEREF_A:
+        case Pyc::LOAD_CLASSDEREF_A:
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
@@ -3358,8 +3365,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                 PycRef<ASTObject> src = store->src().cast<ASTObject>();
                 PycRef<PycString> srcString = src->object().try_cast<PycString>();
                 PycRef<ASTName> dest = store->dest().cast<ASTName>();
-                if (srcString != nullptr && srcString->isEqual(code->name().cast<PycObject>())
-                        && dest->name()->isEqual("__qualname__")) {
+                if (dest->name()->isEqual("__qualname__")) {
                     // __qualname__ = '<Class Name>'
                     // Automatically added by Python 3.3 and later
                     clean->removeFirst();
