@@ -1480,6 +1480,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> name = stack.top();
                 if (name.type() != ASTNode::NODE_IMPORT) {
                     stack.pop();
+
+                    if (mod->verCompare(3, 12) >= 0)
+                    {
+                        if (operand & 1) {
+                            /* Changed in version 3.12:
+                            If the low bit of namei is set, then a NULL or self is pushed to the stack
+                            before the attribute or unbound method respectively. */
+                            stack.push(nullptr);
+                        }
+                        operand >>= 1;
+                    }
+
                     stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
                 }
             }
@@ -1518,19 +1530,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::LOAD_GLOBAL_A:
             if (mod->verCompare(3, 11) >= 0) {
+                // Loads the global named co_names[namei>>1] onto the stack.
                 if (operand & 1) {
                     /* Changed in version 3.11: 
                     If the low bit of "NAMEI" (operand) is set, 
                     then a NULL is pushed to the stack before the global variable. */
                     stack.push(nullptr);
-                    /*
-                    and thats because for some reason for example 3 global functions: input, int, print.
-                    it tries to load: 1, 3, 5
-                    all though we have only 3 names, so thats should be: (1-1)/2 = 0, (3-1)/2 = 1, (5-1)/2 = 2
-                    i dont know why, maybe because of the null push, but thats a FIX for now.
-                    */
-                    operand = (int)((operand - 1) / 2);
                 }
+                operand >>= 1;
             }
             stack.push(new ASTName(code->getName(operand)));
             break;
