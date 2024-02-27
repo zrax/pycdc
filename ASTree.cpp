@@ -1885,6 +1885,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::WITH_CLEANUP:
+        case Pyc::WITH_CLEANUP_START:
             {
                 // Stack top should be a None. Ignore it.
                 PycRef<ASTNode> none = stack.top();
@@ -1906,6 +1907,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
                 }
             }
+            break;
+        case Pyc::WITH_CLEANUP_FINISH:
+            /* Ignore this */
             break;
         case Pyc::SETUP_EXCEPT_A:
             {
