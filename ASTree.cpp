@@ -1481,8 +1481,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (name.type() != ASTNode::NODE_IMPORT) {
                     stack.pop();
 
-                    if (mod->verCompare(3, 12) >= 0)
-                    {
+                    if (mod->verCompare(3, 12) >= 0) {
                         if (operand & 1) {
                             /* Changed in version 3.12:
                             If the low bit of namei is set, then a NULL or self is pushed to the stack

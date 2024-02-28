@@ -390,7 +390,10 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::LOAD_METHOD_A:
             case Pyc::LOAD_FROM_DICT_OR_GLOBALS_A:
                 try {
-                    formatted_print(pyc_output, "%d: %s", operand, code->getName(operand)->value());
+                    auto arg = operand;
+                    if (opcode == Pyc::LOAD_ATTR_A && mod->verCompare(3, 12) >= 0)
+                        arg >>= 1;
+                    formatted_print(pyc_output, "%d: %s", operand, code->getName(arg)->value());
                 } catch (const std::out_of_range &) {
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
