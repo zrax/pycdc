@@ -609,15 +609,15 @@ private:
 
 class ASTContainerBlock : public ASTBlock {
 public:
-    ASTContainerBlock(int _finally, int _except = 0)
-        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_finally(_finally), m_except(_except) { }
+    ASTContainerBlock(int finally_, int except_ = 0)
+        : ASTBlock(ASTBlock::BLK_CONTAINER, 0), m_finally(finally_), m_except(except_) { }
 
     bool hasFinally() const { return m_finally != 0; }
     bool hasExcept() const { return m_except != 0; }
     int finally() const { return m_finally; }
     int except() const { return m_except; }
 
-    void setExcept(int _except) { m_except = _except; }
+    void setExcept(int except_) { m_except = except_; }
 
 private:
     int m_finally;
