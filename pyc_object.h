@@ -129,7 +129,7 @@ public:
         TYPE_SHORT_ASCII_INTERNED = 'Z',    // Python 3.4 ->
     };
 
-    PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }
+    PycObject(int _type = TYPE_UNKNOWN) : m_refs(0), m_type(_type) { }
     virtual ~PycObject() { }
 
     int type() const { return m_type; }

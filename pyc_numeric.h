@@ -8,8 +8,8 @@
 
 class PycInt : public PycObject {
 public:
-    PycInt(int value = 0, int type = TYPE_INT)
-        : PycObject(type), m_value(value) { }
+    PycInt(int _value = 0, int _type = TYPE_INT)
+        : PycObject(_type), m_value(_value) { }
 
     bool isEqual(PycRef<PycObject> obj) const override
     {
@@ -27,8 +27,8 @@ private:
 
 class PycLong : public PycObject {
 public:
-    PycLong(int type = TYPE_LONG)
-        : PycObject(type), m_size(0) { }
+    PycLong(int _type = TYPE_LONG)
+        : PycObject(_type), m_size(0) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
@@ -46,8 +46,8 @@ private:
 
 class PycFloat : public PycObject {
 public:
-    PycFloat(int type = TYPE_FLOAT)
-        : PycObject(type) { }
+    PycFloat(int _type = TYPE_FLOAT)
+        : PycObject(_type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
@@ -61,8 +61,8 @@ private:
 
 class PycComplex : public PycFloat {
 public:
-    PycComplex(int type = TYPE_COMPLEX)
-        : PycFloat(type) { }
+    PycComplex(int _type = TYPE_COMPLEX)
+        : PycFloat(_type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
 
@@ -76,8 +76,8 @@ private:
 
 class PycCFloat : public PycObject {
 public:
-    PycCFloat(int type = TYPE_BINARY_FLOAT)
-        : PycObject(type), m_value(0.0) { }
+    PycCFloat(int _type = TYPE_BINARY_FLOAT)
+        : PycObject(_type), m_value(0.0) { }
 
     bool isEqual(PycRef<PycObject> obj) const override
     {
@@ -95,8 +95,8 @@ private:
 
 class PycCComplex : public PycCFloat {
 public:
-    PycCComplex(int type = TYPE_BINARY_COMPLEX)
-        : PycCFloat(type), m_imag(0.0) { }
+    PycCComplex(int _type = TYPE_BINARY_COMPLEX)
+        : PycCFloat(_type), m_imag(0.0) { }
 
     bool isEqual(PycRef<PycObject> obj) const override
     {

@@ -22,18 +22,18 @@ void PycString::load(PycData* stream, PycModule* mod)
         m_type = str->m_type;
         m_value = str->m_value;
     } else {
-        int length;
+        int _length;
         if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-            length = stream->getByte();
+            _length = stream->getByte();
         else
-            length = stream->get32();
+            _length = stream->get32();
 
-        if (length < 0)
+        if (_length < 0)
             throw std::bad_alloc();
 
-        m_value.resize(length);
-        if (length) {
-            stream->getBuffer(length, &m_value.front());
+        m_value.resize(_length);
+        if (_length) {
+            stream->getBuffer(_length, &m_value.front());
             if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
                     type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED) {
                 if (!check_ascii(m_value))
