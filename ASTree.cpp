@@ -34,7 +34,7 @@ static bool printClassDocstring = true;
 // shortcut for all top/pop calls
 static PycRef<ASTNode> StackPopTop(FastStack& stack)
 {
-    const auto node(stack.top());
+    const auto node{ stack.top() };
     stack.pop();
     return node;
 }
