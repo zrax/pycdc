@@ -31,8 +31,8 @@ public:
         CO_FUTURE_GENERATOR_STOP = 0x80000,
     };
 
-    PycCode(int _type = TYPE_CODE)
-        : PycObject(_type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
+    PycCode(int type = TYPE_CODE)
+        : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
           m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
 
     void load(PycData* stream, PycModule* mod) override;

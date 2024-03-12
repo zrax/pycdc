@@ -8,8 +8,8 @@
 
 class PycString : public PycObject {
 public:
-    PycString(int _type = TYPE_STRING)
-        : PycObject(_type) { }
+    PycString(int type = TYPE_STRING)
+        : PycObject(type) { }
 
     bool isEqual(PycRef<PycObject> obj) const override;
     bool isEqual(const std::string& str) const { return m_value == str; }
