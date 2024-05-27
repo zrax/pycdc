@@ -40,3 +40,5 @@ bld/
 /CMakeCache.txt
 /cmake_install.cmake
 /.vs/pycdc
+/tests/tests
+/tests/pycdc.exe

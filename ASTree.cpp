@@ -1883,6 +1883,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SET_LINENO_A:
             // Ignore
             break;
+        case::Pyc::WITH_EXCEPT_START:
         case Pyc::SETUP_WITH_A:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
@@ -2462,6 +2463,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::GEN_START_A:
             stack.pop();
+            break;
+        case Pyc::SWAP_A:
+         //Swap the top of the stack with the i-th element:
+        {
+            std::vector<PycRef<ASTNode>> temp;
+            for (int i = 0; i < operand; i++) {
+                PycRef<ASTNode> va1 = stack.top();
+                temp.emplace_back(va1);
+                stack.pop();
+            }
+            for (int j = 0; j <= temp.size() - 1; j++) {
+                stack.push(temp[j]);
+            }
+        }
             break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
