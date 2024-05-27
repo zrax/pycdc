@@ -2473,7 +2473,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 temp.emplace_back(va1);
                 stack.pop();
             }
-            for (int j = 0; j <= temp.size() - 1; j++) {
+            for (int j = 0; j <= static_cast<int>(temp.size() - 1); j++) {
                 stack.push(temp[j]);
             }
         }
