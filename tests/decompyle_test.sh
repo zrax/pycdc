@@ -6,7 +6,7 @@ testname="$1"
 outdir="$2"
 
 if [[ -z "$PYTHON_EXE" ]]; then
-    PYTHON_EXE="$(which python)"
+    PYTHON_EXE="$(which python3)"
 fi
 
 if [[ -z "$testname" ]]; then

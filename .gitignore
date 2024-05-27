@@ -5,20 +5,14 @@
 *.kdev4
 /.kdev4
 __pycache__
-# User-specific files
+
 *.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-
-# User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-
-# Mono auto generated files
 mono_crash.*
-
-# Build results
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
