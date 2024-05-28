@@ -2467,15 +2467,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SWAP_A:
          //Swap the top of the stack with the i-th element:
         {
-            std::vector<PycRef<ASTNode>> temp;
+            unpack = operand;
+            ASTTuple::value_t values;
+            ASTTuple::value_t next_tuple;
+            values.resize(operand);
             for (int i = 0; i < operand; i++) {
-                PycRef<ASTNode> va1 = stack.top();
-                temp.emplace_back(va1);
+                values[operand - i - 1] = stack.top();
                 stack.pop();
             }
-            for (int j = 0; j <= static_cast<int>(temp.size() - 1); j++) {
-                stack.push(temp[j]);
-            }
+            stack.push(new ASTTuple(values));
+            stack.push(new ASTTuple(next_tuple));
         }
             break;
         default:
