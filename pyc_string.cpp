@@ -2,58 +2,60 @@
 #include "pyc_module.h"
 #include "data.h"
 #include <stdexcept>
+#include <wchar.h>
 
 static bool check_ascii(const std::string& data)
 {
-    auto cp = reinterpret_cast<const unsigned char*>(data.c_str());
-    while (*cp) {
-        if (*cp & 0x80)
-            return false;
-        ++cp;
-    }
-    return true;
+	auto cp = reinterpret_cast<const unsigned char*>(data.c_str());
+	while (*cp) {
+		if (*cp & 0x80)
+			return false;
+		++cp;
+	}
+	return true;
 }
 
 /* PycString */
 void PycString::load(PycData* stream, PycModule* mod)
 {
-    if (type() == TYPE_STRINGREF) {
-        PycRef<PycString> str = mod->getIntern(stream->get32());
-        m_type = str->m_type;
-        m_value = str->m_value;
-    } else {
-        int length;
-        if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
-            length = stream->getByte();
-        else
-            length = stream->get32();
+	if (type() == TYPE_STRINGREF) {
+		PycRef<PycString> str = mod->getIntern(stream->get32());
+		m_type = str->m_type;
+		m_value = str->m_value;
+	}
+	else {
+		int length;
+		if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
+			length = stream->getByte();
+		else
+			length = stream->get32();
 
-        if (length < 0)
-            throw std::bad_alloc();
+		if (length < 0)
+			throw std::bad_alloc();
 
-        m_value.resize(length);
-        if (length) {
-            stream->getBuffer(length, &m_value.front());
-            if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
-                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED) {
-                if (!check_ascii(m_value))
-                    throw std::runtime_error("Invalid bytes in ASCII string");
-            }
-        }
+		m_value.resize(length);
+		if (length) {
+			stream->getBuffer(length, &m_value.front());
+			if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
+				type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED) {
+				if (!check_ascii(m_value))
+					throw std::runtime_error("Invalid bytes in ASCII string");
+			}
+		}
 
-        if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
-                type() == TYPE_SHORT_ASCII_INTERNED)
-            mod->intern(this);
-    }
+		if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
+			type() == TYPE_SHORT_ASCII_INTERNED)
+			mod->intern(this);
+	}
 }
 
 bool PycString::isEqual(PycRef<PycObject> obj) const
 {
-    if (type() != obj.type())
-        return false;
+	if (type() != obj.type())
+		return false;
 
-    PycRef<PycString> strObj = obj.cast<PycString>();
-    return isEqual(strObj->m_value);
+	PycRef<PycString> strObj = obj.cast<PycString>();
+	return isEqual(strObj->m_value);
 }
 
 void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
