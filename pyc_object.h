@@ -25,7 +25,7 @@ public:
         obj.m_obj = nullptr;
     }
 
-    ~PycRef<_Obj>()
+    ~PycRef()
     {
         if (m_obj)
             m_obj->delRef();
