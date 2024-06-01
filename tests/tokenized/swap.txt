@@ -3,4 +3,4 @@ def SWAP ( ) : <EOL>
 my_array = [ 1 , 2 , 3 , 4 , 5 , 6 , 8 ] <EOL>
 i = 1 <EOL>
 j = 3 <EOL>
-( my_array [ i ] , my_array [ j ] , my_array [ 2 ] ) = ( my_array [ j ] , my_array [ i ] , my_array [ 4 ] ) <EOL>
+my_array [ i ] , my_array [ j ] , my_array [ 2 ] = my_array [ j ] , my_array [ i ] , my_array [ 4 ] <EOL>

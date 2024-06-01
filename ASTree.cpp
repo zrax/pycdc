@@ -2465,20 +2465,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.pop();
             break;
         case Pyc::SWAP_A:
-         //Swap the top of the stack with the i-th element:
         {
             unpack = operand;
             ASTTuple::value_t values;
             ASTTuple::value_t next_tuple;
             values.resize(operand);
-            for (int i = 0; i < operand; i++) {
+            for (int i = 0; i < operand; i++)
+            {
                 values[operand - i - 1] = stack.top();
                 stack.pop();
             }
-            stack.push(new ASTTuple(values));
-            stack.push(new ASTTuple(next_tuple));
+            auto tup = new ASTTuple(values);
+            tup->setRequireParens(false);
+            auto next_tup = new ASTTuple(next_tuple);
+            next_tup->setRequireParens(false);
+            stack.push(tup);
+            stack.push(next_tup);
         }
-            break;
+        break;
         default:
             fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
             cleanBuild = false;
