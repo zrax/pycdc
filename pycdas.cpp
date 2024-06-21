@@ -223,7 +223,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
         iprintf(pyc_output, indent, "%d\n", obj.cast<PycInt>()->value());
         break;
     case PycObject::TYPE_LONG:
-        iprintf(pyc_output, indent, "%s\n", obj.cast<PycLong>()->repr().c_str());
+        iprintf(pyc_output, indent, "%s\n", obj.cast<PycLong>()->repr(mod).c_str());
         break;
     case PycObject::TYPE_FLOAT:
         iprintf(pyc_output, indent, "%s\n", obj.cast<PycFloat>()->value());

@@ -230,7 +230,7 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
         formatted_print(pyc_output, "%d", obj.cast<PycInt>()->value());
         break;
     case PycObject::TYPE_LONG:
-        formatted_print(pyc_output, "%s", obj.cast<PycLong>()->repr().c_str());
+        formatted_print(pyc_output, "%s", obj.cast<PycLong>()->repr(mod).c_str());
         break;
     case PycObject::TYPE_FLOAT:
         formatted_print(pyc_output, "%s", obj.cast<PycFloat>()->value());
