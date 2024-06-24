@@ -3,17 +3,17 @@ try : <EOL>
 import sys <EOL>
 try : <EOL>
 <INDENT>
-print ( 'something else' ) <EOL>
+print 'something else' <EOL>
 <OUTDENT>
 except AssertionError : <EOL>
 <INDENT>
-print ( '...failed' ) <EOL>
+print '...failed' <EOL>
 <OUTDENT>
 <OUTDENT>
 except ImportError : <EOL>
 <INDENT>
-print ( 'Oh Noes!' ) <EOL>
+print 'Oh Noes!' <EOL>
 <OUTDENT>
 finally : <EOL>
 <INDENT>
-print ( 'Exiting' ) <EOL>
+print 'Exiting' <EOL>

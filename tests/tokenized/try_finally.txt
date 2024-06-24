@@ -1,0 +1,30 @@
+try : <EOL>
+<INDENT>
+import sys <EOL>
+try : <EOL>
+<INDENT>
+print ( 'something else' ) <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( '...ok' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( 'Exiting' ) <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+print ( 'try' ) <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( 'finally in' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( 'finally out' ) <EOL>
