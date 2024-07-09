@@ -61,6 +61,7 @@ add_library(pycxx STATIC
     bytes/python_3_10.cpp
     bytes/python_3_11.cpp
     bytes/python_3_12.cpp
+    bytes/python_3_13.cpp
 )
 
 add_executable(pycdas pycdas.cpp)
