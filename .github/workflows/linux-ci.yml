@@ -13,8 +13,8 @@ jobs:
         run: |
           mkdir build && cd build
           cmake -DCMAKE_BUILD_TYPE=Debug ..
-          make -j2
+          make -j4
       - name: Test
         run: |
           cd build
-          make check
+          make check JOBS=4

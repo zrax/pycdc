@@ -37,7 +37,7 @@ public:
     int size() const { return m_size; }
     const std::vector<int>& value() const { return m_value; }
 
-    std::string repr() const;
+    std::string repr(PycModule* mod) const;
 
 private:
     int m_size;

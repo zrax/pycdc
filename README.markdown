@@ -26,7 +26,8 @@ https://github.com/zrax/pycdc
 * Build the generated project or makefile
   * For projects (e.g. MSVC), open the generated project file and build it
   * For makefiles, just run `make`
-  * To run tests (on \*nix or MSYS), run `make check`
+  * To run tests (on \*nix or MSYS), run `make check JOBS=4` (optional
+    `FILTER=xxxx` to run only certain tests)
 
 ## Usage
 **To run pycdas**, the PYC Disassembler:
