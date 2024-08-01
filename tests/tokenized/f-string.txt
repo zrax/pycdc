@@ -27,5 +27,6 @@ print ( f'{var3 * x} {var3:.2f} {var3:.5f} {x:02} {x * x:3} {x * x * x:4} {s1:>1
 print ( f'some {{braces}} {\'inner literal: {braces} {{double braces}}\'}' ) <EOL>
 print ( f'f-string dict {some_dict[2]} and {{function call in expression}}: {max([\n    1,\n    20,\n    3])}' ) <EOL>
 print ( f'{(lambda x: x * 2)(3)}' ) <EOL>
+print ( f'{var3!s:4.5}' ) <EOL>
 msg = f'a {var1}coolmultiline {var2}\nf-string {var3}' <EOL>
 print ( f'{now:%Y-%m-%d %H:%M}' ) <EOL>
