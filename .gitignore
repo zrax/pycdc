@@ -6,15 +6,3 @@
 /.kdev4
 __pycache__
 tests-out
-
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-*.user
-*.filters
-*.vcxproj
-*.sln
-.vs/
-Debug/
-x64/
-*.dir/
