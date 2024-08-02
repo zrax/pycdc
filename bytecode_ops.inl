@@ -122,6 +122,7 @@ OPCODE(BINARY_OP_INPLACE_ADD_UNICODE)   // Python 3.13 ->
 OPCODE(EXIT_INIT_CHECK)                 // Python 3.13 ->
 OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
+OPCODE(MAKE_FUNCTION)                   // Python 3.13 ->
 OPCODE(TO_BOOL)                         // Python 3.13 ->
 OPCODE(UNPACK_SEQUENCE_LIST)            // Python 3.13 ->
 OPCODE(UNPACK_SEQUENCE_TUPLE)           // Python 3.13 ->
