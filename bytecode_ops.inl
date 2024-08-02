@@ -124,9 +124,6 @@ OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
 OPCODE(MAKE_FUNCTION)                   // Python 3.13 ->
 OPCODE(TO_BOOL)                         // Python 3.13 ->
-OPCODE(UNPACK_SEQUENCE_LIST)            // Python 3.13 ->
-OPCODE(UNPACK_SEQUENCE_TUPLE)           // Python 3.13 ->
-OPCODE(UNPACK_SEQUENCE_TWO_TUPLE)       // Python 3.13 ->
 
 /* Has parameter word */
 OPCODE_A_FIRST(STORE_NAME)              // Python 1.0 ->                names[A]
