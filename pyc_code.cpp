@@ -64,6 +64,13 @@ void PycCode::load(PycData* stream, PycModule* mod)
     else
         m_flags = 0;
 
+    if (mod->verCompare(3, 8) < 0) {
+        // Remap flags to new values introduced in 3.8
+        if (m_flags & 0xF0000000)
+            throw std::runtime_error("Cannot remap unexpected flags");
+        m_flags = (m_flags & 0xFFFF) | ((m_flags & 0xFFF0000) << 4);
+    }
+
     m_code = LoadObject(stream, mod).cast<PycString>();
     m_consts = LoadObject(stream, mod).cast<PycSequence>();
     m_names = LoadObject(stream, mod).cast<PycSequence>();
