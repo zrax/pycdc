@@ -204,7 +204,7 @@ OPCODE_A(BUILD_MAP_UNPACK_WITH_CALL)    // Python 3.5                   A=(count
 OPCODE_A(BUILD_TUPLE_UNPACK)            // Python 3.5 - 3.8             A=count
 OPCODE_A(BUILD_SET_UNPACK)              // Python 3.5 - 3.8             A=count
 OPCODE_A(SETUP_ASYNC_WITH)              // Python 3.5 - 3.10            rel jmp +A
-OPCODE_A(FORMAT_VALUE)                  // Python 3.6 ->                A=conversion_type
+OPCODE_A(FORMAT_VALUE)                  // Python 3.6 ->                A=(conversion_type&0x3)+(flags)
 OPCODE_A(BUILD_CONST_KEY_MAP)           // Python 3.6 ->                A=count
 OPCODE_A(BUILD_STRING)                  // Python 3.6 ->                A=count
 OPCODE_A(BUILD_TUPLE_UNPACK_WITH_CALL)  // Python 3.6 - 3.8             A=count

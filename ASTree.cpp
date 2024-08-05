@@ -978,29 +978,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::FORMAT_VALUE_A:
             {
                 auto conversion_flag = static_cast<ASTFormattedValue::ConversionFlag>(operand);
-                switch (conversion_flag) {
-                case ASTFormattedValue::ConversionFlag::NONE:
-                case ASTFormattedValue::ConversionFlag::STR:
-                case ASTFormattedValue::ConversionFlag::REPR:
-                case ASTFormattedValue::ConversionFlag::ASCII:
-                    {
-                        auto val = stack.top();
-                        stack.pop();
-                        stack.push(new ASTFormattedValue(val, conversion_flag, nullptr));
-                    }
-                    break;
-                case ASTFormattedValue::ConversionFlag::FMTSPEC:
-                    {
-                        auto format_spec = stack.top();
-                        stack.pop();
-                        auto val = stack.top();
-                        stack.pop();
-                        stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
-                    }
-                    break;
-                default:
-                    fprintf(stderr, "Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
+                PycRef<ASTNode> format_spec = nullptr;
+                if (conversion_flag & ASTFormattedValue::HAVE_FMT_SPEC) {
+                    format_spec = stack.top();
+                    stack.pop();
                 }
+                auto val = stack.top();
+                stack.pop();
+                stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
             }
             break;
         case Pyc::GET_AWAITABLE:
@@ -2660,23 +2645,21 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     pyc_output << "{";
     print_src(formatted_value->val(), mod, pyc_output);
 
-    switch (formatted_value->conversion()) {
-    case ASTFormattedValue::ConversionFlag::NONE:
+    switch (formatted_value->conversion() & ASTFormattedValue::CONVERSION_MASK) {
+    case ASTFormattedValue::NONE:
         break;
-    case ASTFormattedValue::ConversionFlag::STR:
+    case ASTFormattedValue::STR:
         pyc_output << "!s";
         break;
-    case ASTFormattedValue::ConversionFlag::REPR:
+    case ASTFormattedValue::REPR:
         pyc_output << "!r";
         break;
-    case ASTFormattedValue::ConversionFlag::ASCII:
+    case ASTFormattedValue::ASCII:
         pyc_output << "!a";
         break;
-    case ASTFormattedValue::ConversionFlag::FMTSPEC:
+    }
+    if (formatted_value->conversion() & ASTFormattedValue::HAVE_FMT_SPEC) {
         pyc_output << ":" << formatted_value->format_spec().cast<ASTObject>()->object().cast<PycString>()->value();
-        break;
-    default:
-        fprintf(stderr, "Unsupported NODE_FORMATTEDVALUE conversion flag: %d\n", formatted_value->conversion());
     }
     pyc_output << "}";
 }
