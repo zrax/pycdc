@@ -1161,7 +1161,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_ABSOLUTE_A:
-        case Pyc::JUMP_BACKWARD_A: //bpo-47120: Replaced JUMP_ABSOLUTE by the relative jump JUMP_BACKWARD.
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
