@@ -396,7 +396,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 // if class is a closure code, ignore this tuple
                 PycRef<ASTNode> tos = stack.top();
-                if (tos->type() == ASTNode::NODE_LOADBUILDCLASS) {
+                if (tos && tos->type() == ASTNode::NODE_LOADBUILDCLASS) {
                     break;
                 }
 
