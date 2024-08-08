@@ -12,9 +12,12 @@ jobs:
       - name: Configure and Build
         run: |
           mkdir build && cd build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
-          ninja
+          cmake -G "Ninja Multi-Config" ..
+          cmake --build . --config Debug
+          cmake --build . --config Release
+
       - name: Test
         run: |
           cd build
-          ninja check
+          cmake --build . --config Debug --target check
+          cmake --build . --config Release --target check

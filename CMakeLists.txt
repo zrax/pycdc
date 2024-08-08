@@ -80,6 +80,6 @@ find_package(Python3 3.5 COMPONENTS Interpreter)
 if(Python3_FOUND)
     add_custom_target(check
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.py"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:pycdc>")
     add_dependencies(check pycdc)
 endif()
