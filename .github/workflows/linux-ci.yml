@@ -11,10 +11,19 @@ jobs:
       - uses: actions/checkout@v1
       - name: Configure and Build
         run: |
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
-          make -j4
+          (
+            mkdir build-debug && cd build-debug
+            cmake -DCMAKE_BUILD_TYPE=Debug ..
+            make -j4
+          )
+
+          (
+            mkdir build-release && cd build-release
+            cmake -DCMAKE_BUILD_TYPE=Debug ..
+            make -j4
+          )
+
       - name: Test
         run: |
-          cd build
-          make check JOBS=4
+          cmake --build build-debug --target check
+          cmake --build build-release --target check

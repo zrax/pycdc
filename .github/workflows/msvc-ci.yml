@@ -17,16 +17,10 @@ jobs:
           cmake --build . --config Debug
           cmake --build . --config Release
 
-      # This should probably be fixed to work from MSVC without needing to
-      # use a bash shell and the GNU userland tools...  But for now, the
-      # GH Actions environment provides what we need.
       - name: Test
         run: |
-          cd build\Debug
-          bash.exe ..\..\tests\all_tests.sh
-        env:
-          PYTHON_EXE: python.exe
-          JOBS: 4
+          cmake --build build --config Debug --target check
+          cmake --build build --config Release --target check
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
