@@ -15,26 +15,28 @@ def decompyle_one(test_name, pyc_file, outdir, tokenized_expect):
     out_base = os.path.join(outdir, os.path.basename(pyc_file))
     proc = subprocess.run(
             [os.path.join(os.getcwd(), 'pycdc'), pyc_file, '-o', out_base + '.src.py'],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    pycdc_output = proc.stdout.decode('utf-8', errors='replace')
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True,
+            encoding='utf-8', errors='replace')
+    pycdc_output = proc.stdout
     if proc.returncode != 0 or pycdc_output:
         with open(out_base + '.err', 'w') as errfile:
             errfile.write(pycdc_output)
-        return (False, [pycdc_output])
+        return False, [pycdc_output]
     elif os.path.exists(out_base + '.err'):
         os.unlink(out_base + '.err')
 
     proc = subprocess.run(
             [sys.executable, os.path.join(SCRIPTS_DIR, 'token_dump'), out_base + '.src.py'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    tokenized = proc.stdout.decode('utf-8', errors='replace')
-    token_dump_err = proc.stderr.decode('utf-8', errors='replace')
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
+            encoding='utf-8', errors='replace')
+    tokenized = proc.stdout
+    token_dump_err = proc.stderr
     with open(out_base + '.tok.txt', 'w') as tokfile:
         tokfile.write(tokenized)
     if proc.returncode != 0 or token_dump_err:
         with open(out_base + '.tok.err', 'w') as errfile:
             errfile.write(token_dump_err)
-        return (False, [token_dump_err])
+        return False, [token_dump_err]
     elif os.path.exists(out_base + '.tok.err'):
         os.unlink(out_base + '.tok.err')
 
@@ -46,9 +48,9 @@ def decompyle_one(test_name, pyc_file, outdir, tokenized_expect):
         diff = list(diff)
         with open(out_base + '.tok.diff', 'w') as diff_file:
             diff_file.writelines(diff)
-        return (False, ['Tokenized output does not match expected output:\n'] + diff)
+        return False, ['Tokenized output does not match expected output:\n'] + diff
 
-    return (True, [])
+    return True, []
 
 
 def run_test(test_file):
@@ -61,13 +63,14 @@ def run_test(test_file):
     compiled_files = glob.glob(os.path.join(TEST_DIR, 'compiled', test_name + '.?.*.pyc'))
     xfail_files = glob.glob(os.path.join(TEST_DIR, 'xfail', test_name + '.?.*.pyc'))
     if not compiled_files and not xfail_files:
-        return (1, 'No compiled/xfail modules found for {}\n'.format(test_name))
+        return 1, 'No compiled/xfail modules found for {}\n'.format(test_name)
 
     outdir = os.path.join(os.getcwd(), 'tests-out')
     os.makedirs(outdir, exist_ok=True)
 
-    with open(os.path.join(TEST_DIR, 'tokenized', test_name + '.txt'), 'rb') as tok_file:
-        tokenized_expect = tok_file.read().decode('utf-8', errors='replace')
+    with open(os.path.join(TEST_DIR, 'tokenized', test_name + '.txt'), 'r',
+              encoding='utf-8', errors='replace') as tok_file:
+        tokenized_expect = tok_file.read()
 
     status_line = '\033[1m*** {}:\033[0m '.format(test_name)
     errlines = []
@@ -103,7 +106,7 @@ def run_test(test_file):
         else:
             status_line += '\033[31mFAIL ({} of {})\033[0m\n'.format(fails, len(compiled_files))
 
-    return (fails, [status_line] + errlines)
+    return fails, [status_line] + errlines
 
 
 def main():

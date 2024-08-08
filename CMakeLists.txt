@@ -76,7 +76,7 @@ target_link_libraries(pycdc pycxx)
 install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
-find_package(Python3 3.5 COMPONENTS Interpreter)
+find_package(Python3 3.6 COMPONENTS Interpreter)
 if(Python3_FOUND)
     add_custom_target(check
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.py"
