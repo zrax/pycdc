@@ -12,9 +12,9 @@ jobs:
       - name: Configure and Build
         run: |
           mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug ..
-          make -j4
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+          ninja
       - name: Test
         run: |
           cd build
-          make check JOBS=4
+          ninja check

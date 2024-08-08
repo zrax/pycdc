@@ -76,6 +76,10 @@ target_link_libraries(pycdc pycxx)
 install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
-add_custom_target(check "${CMAKE_CURRENT_SOURCE_DIR}/tests/all_tests.sh"
-                  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-add_dependencies(check pycdc)
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    add_custom_target(check
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.py"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    add_dependencies(check pycdc)
+endif()

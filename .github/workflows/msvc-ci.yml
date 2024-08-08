@@ -23,10 +23,9 @@ jobs:
       - name: Test
         run: |
           cd build\Debug
-          bash.exe ..\..\tests\all_tests.sh
+          python ..\..\tests\run_tests.py
         env:
           PYTHON_EXE: python.exe
-          JOBS: 4
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
