@@ -19,9 +19,8 @@ jobs:
 
       - name: Test
         run: |
-          cd build
-          cmake --build . --config Debug --target check
-          cmake --build . --config Release --target check
+          cmake --build build --config Debug --target check
+          cmake --build build --config Release --target check
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
