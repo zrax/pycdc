@@ -90,7 +90,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int pos = 0;
     int unpack = 0;
     bool else_pop = false;
-    bool need_try = false;
     bool variable_annotations = false;
 
     while (!source.atEof()) {
@@ -110,15 +109,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         curpos = pos;
         bc_next(source, mod, opcode, operand, pos);
 
-        if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
-            need_try = false;
+        if (mod->verCompare(3, 9) >= 0
+            && opcode == Pyc::JUMP_FORWARD_A
+            && curblock->blktype() == ASTBlock::BLK_FINALLY)
+        {
+            /* Ignore all opcodes contained between this jump until
+               its target when we are dealing with Python 3.9 and 3.10
+               as they duplicate the code related to the FINALLY
+               block. Lukily, the target of this JUMP_FORWARD_A
+               exactly surrounds the duplicated code */
+            pos = pos + operand;
+            source.setPos(pos);
+            opcode = Pyc::END_FINALLY;
+        }
 
-            /* Store the current stack for the except/finally statement(s) */
-            stack_hist.push(stack);
-            PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, curblock->end(), true);
-            blocks.push(tryblock);
-            curblock = blocks.top();
-        } else if (else_pop
+        if (else_pop
                 && opcode != Pyc::JUMP_FORWARD_A
                 && opcode != Pyc::JUMP_IF_FALSE_A
                 && opcode != Pyc::JUMP_IF_FALSE_OR_POP_A
@@ -128,6 +133,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 && opcode != Pyc::JUMP_IF_TRUE_OR_POP_A
                 && opcode != Pyc::POP_JUMP_IF_TRUE_A
                 && opcode != Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                && opcode != Pyc::JUMP_IF_NOT_EXC_MATCH_A
                 && opcode != Pyc::POP_BLOCK) {
             else_pop = false;
 
@@ -804,6 +810,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::RERAISE:
+        case Pyc::RERAISE_A:
         case Pyc::END_FINALLY:
             {
                 bool isFinally = false;
@@ -1042,10 +1050,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+        case Pyc::JUMP_IF_NOT_EXC_MATCH_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
+
+                /* Emulate a CMP_EXCEPTION condition block before
+                   evaluating the jump */
+                if (opcode == Pyc::JUMP_IF_NOT_EXC_MATCH_A)
+                {
+                    PycRef<ASTNode> exc_type = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> raised_exc = stack.top();
+                    stack.pop();
+
+                    cond = new ASTCompare(raised_exc, exc_type, ASTCompare::CMP_EXCEPTION);
+                    popped = ASTCondBlock::PRE_POPPED;
+                }
 
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
@@ -1580,6 +1602,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::POP_BLOCK:
             {
+                if (mod->verCompare(3,9)>=0)
+                {
+                    /* Emulate a BEGIN_FINALLY for Python 3.9 when
+                       POP_BLOCK happens in a FINALLY block */
+                    int target_opcode, target_operand;
+                    bc_get_at(source, mod, target_opcode, target_operand, pos);
+                    if (target_opcode != Pyc::JUMP_FORWARD_A)
+                    {
+                        stack.push(NULL);
+                    }
+                }
+
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER ||
                         curblock->blktype() == ASTBlock::BLK_FINALLY) {
                     /* These should only be popped by an END_FINALLY */
@@ -1909,31 +1943,92 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::WITH_CLEANUP_FINISH:
             /* Ignore this */
             break;
-        case Pyc::SETUP_EXCEPT_A:
+        case Pyc::BEGIN_FINALLY:
             {
-                if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
-                    curblock.cast<ASTContainerBlock>()->setExcept(pos+operand);
-                } else {
-                    PycRef<ASTBlock> next = new ASTContainerBlock(0, pos+operand);
-                    blocks.push(next.cast<ASTBlock>());
-                }
-
-                /* Store the current stack for the except/finally statement(s) */
-                stack_hist.push(stack);
-                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
-                blocks.push(tryblock.cast<ASTBlock>());
-                curblock = blocks.top();
-
-                need_try = false;
+                /* Only in Python 3.8: Push NULL on the stack */
+                stack.push(NULL);
             }
             break;
+        case Pyc::SETUP_EXCEPT_A:
         case Pyc::SETUP_FINALLY_A:
             {
-                PycRef<ASTBlock> next = new ASTContainerBlock(pos+operand);
-                blocks.push(next.cast<ASTBlock>());
-                curblock = blocks.top();
+                /* Up til Python 3.7 */
+                bool is_except = opcode == Pyc::SETUP_EXCEPT_A;
 
-                need_try = true;
+                /* Starting from Python 3.8 */
+                if (mod->verCompare(3, 8) >= 0)
+                {
+                    /* Try to guess if we have an exception or finally
+                       block by looking at the opcode pointed by the operand */
+                    int target_opcode, target_operand;
+                    bc_get_at(source, mod, target_opcode, target_operand, pos+operand);
+
+                    /* POP_TOP (x3) and DUP_TOP usually mean it's the start of
+                       an exception block */
+                    if (target_opcode == Pyc::POP_TOP || target_opcode == Pyc::DUP_TOP)
+                    {
+                      is_except = true;
+                    }
+                }
+
+                if (is_except)
+                {
+                    if (curblock->blktype() == ASTBlock::BLK_CONTAINER)
+                    {
+                        curblock.cast<ASTContainerBlock>()->setExcept(pos+operand);
+                    }
+                    else
+                    {
+                        PycRef<ASTBlock> next = new ASTContainerBlock(0, pos+operand);
+                        blocks.push(next.cast<ASTBlock>());
+                    }
+
+                    /* Store the current stack for the except/finally statement(s) */
+                    stack_hist.push(stack);
+                    PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, pos+operand, true);
+                    blocks.push(tryblock.cast<ASTBlock>());
+                    curblock = blocks.top();
+                }
+                /* else it's a finally block */
+                else
+                {
+                    PycRef<ASTBlock> next = new ASTContainerBlock(pos+operand);
+                    blocks.push(next.cast<ASTBlock>());
+                    curblock = blocks.top();
+
+                    /* Look at the next opcode. If it is not an EXCEPT
+                       block, then push a new TRY block */
+                    int next_opcode, next_operand;
+                    int next_pos = bc_get_at(source, mod, next_opcode, next_operand, pos);
+
+                    /* Up til Python 3.7 */
+                    bool is_next_except = next_opcode == Pyc::SETUP_EXCEPT_A;
+
+                    /* Starting from Python 3.8 */
+                    if (mod->verCompare(3, 8) >= 0 && next_opcode == Pyc::SETUP_FINALLY_A)
+                    {
+                        /* Try to guess if we have an exception or finally
+                           block by looking at the opcode pointed by the operand */
+                        int target_opcode, target_operand;
+                        bc_get_at(source, mod, target_opcode, target_operand, next_pos+next_operand);
+
+                        /* POP_TOP (x3) and DUP_TOP usually mean it's the start of
+                           an exception block */
+                        if (target_opcode == Pyc::POP_TOP || target_opcode == Pyc::DUP_TOP)
+                        {
+                            is_next_except = true;
+                        }
+                    }
+
+                    if ( !is_next_except )
+                    {
+                        /* Store the current stack for the except/finally statement(s) */
+                        stack_hist.push(stack);
+                        PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, curblock->end(), true);
+                        blocks.push(tryblock);
+                        curblock = blocks.top();
+                    }
+                }
             }
             break;
         case Pyc::SETUP_LOOP_A:

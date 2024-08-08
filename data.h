@@ -20,6 +20,7 @@ public:
 
     virtual int getByte() = 0;
     virtual int getBuffer(int bytes, void* buffer) = 0;
+    virtual int setPos(int pos) = 0;
     int get16();
     int get32();
     Pyc_INT64 get64();
@@ -35,6 +36,7 @@ public:
 
     int getByte() override;
     int getBuffer(int bytes, void* buffer) override;
+    int setPos(int pos) override;
 
 private:
     FILE* m_stream;
@@ -51,6 +53,7 @@ public:
 
     int getByte() override;
     int getBuffer(int bytes, void* buffer) override;
+    int setPos(int pos) override;
 
 private:
     const unsigned char* m_buffer;
