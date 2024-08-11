@@ -61,6 +61,7 @@ add_library(pycxx STATIC
     bytes/python_3_10.cpp
     bytes/python_3_11.cpp
     bytes/python_3_12.cpp
+    bytes/python_3_13.cpp
 )
 
 add_executable(pycdas pycdas.cpp)
@@ -75,6 +76,10 @@ target_link_libraries(pycdc pycxx)
 install(TARGETS pycdc
     RUNTIME DESTINATION bin)
 
-add_custom_target(check "${CMAKE_CURRENT_SOURCE_DIR}/tests/all_tests.sh"
-                  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-add_dependencies(check pycdc)
+find_package(Python3 3.6 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    add_custom_target(check
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tests.py"
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:pycdc>")
+    add_dependencies(check pycdc)
+endif()
