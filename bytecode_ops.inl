@@ -118,7 +118,6 @@ OPCODE(RESERVED)                        // Python 3.12 ->
 OPCODE(BINARY_SLICE)                    // Python 3.12 ->
 OPCODE(STORE_SLICE)                     // Python 3.12 ->
 OPCODE(CLEANUP_THROW)                   // Python 3.12 ->
-OPCODE(BINARY_OP_INPLACE_ADD_UNICODE)   // Python 3.13 ->
 OPCODE(EXIT_INIT_CHECK)                 // Python 3.13 ->
 OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
