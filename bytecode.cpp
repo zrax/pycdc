@@ -276,14 +276,16 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
     }
 }
 
-void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
+void bc_next(PycBuffer& source, PycModule* mod, unsigned char& bytecode, int& opcode, int& operand, int& pos)
 {
-    opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+    bytecode = source.getByte();
+    opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), bytecode);
     if (mod->verCompare(3, 6) >= 0) {
         operand = source.getByte();
         pos += 2;
         if (opcode == Pyc::EXTENDED_ARG_A) {
-            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+            bytecode = source.getByte();
+            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), bytecode);
             operand = (operand << 8) | source.getByte();
             pos += 2;
         }
@@ -292,7 +294,8 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
         pos += 1;
         if (opcode == Pyc::EXTENDED_ARG_A) {
             operand = source.get16() << 16;
-            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
+            bytecode = source.getByte();
+            opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), bytecode);
             pos += 3;
         }
         if (opcode >= Pyc::PYC_HAVE_ARG) {
@@ -340,17 +343,25 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
 
     PycBuffer source(code->code()->value(), code->code()->length());
 
+    unsigned char bytecode;
     int opcode, operand;
     int pos = 0;
     while (!source.atEof()) {
         int start_pos = pos;
-        bc_next(source, mod, opcode, operand, pos);
+        bc_next(source, mod, bytecode, opcode, operand, pos);
         if (opcode == Pyc::CACHE && (flags & Pyc::DISASM_SHOW_CACHES) == 0)
             continue;
 
         for (int i=0; i<indent; i++)
             pyc_output << "    ";
-        formatted_print(pyc_output, "%-7d %-30s  ", start_pos, Pyc::OpcodeName(opcode));
+
+        auto opcode_name = Pyc::OpcodeName(opcode);
+        if (opcode == Pyc::Opcode::PYC_INVALID_OPCODE) {
+            // attempt to generate a more informative output for anyone doing copy-pasta Issue creation
+            formatted_print(pyc_output, "%-7d %-30s  (bytecode=%02Xh)", start_pos, opcode_name, bytecode);
+        } else {
+            formatted_print(pyc_output, "%-7d %-30s  ", start_pos, opcode_name);
+        }
 
         if (opcode >= Pyc::PYC_HAVE_ARG) {
             switch (opcode) {
