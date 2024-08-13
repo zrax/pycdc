@@ -1040,9 +1040,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_IF_TRUE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
+                // if POP_JUMP_FORWARD_IF_NONE_A or ...NOT_NONE - 
+                // then first push to the stack the ASTCompare to simulate like a IS_OP with a None were existed before this opcode
+                if (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) {
+                    PycRef<ASTNode> left = stack.top();
+                    stack.pop();
+                    stack.push(new ASTCompare(left, nullptr, (opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                        ? ASTCompare::CMP_IS : ASTCompare::CMP_IS_NOT)));
+                }
+
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
@@ -1051,6 +1063,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A) {
                     /* Pop condition before the jump */
@@ -1081,6 +1095,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (mod->verCompare(3, 12) >= 0
                         || opcode == Pyc::JUMP_IF_FALSE_A
                         || opcode == Pyc::JUMP_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
                     /* Offset is relative in these cases */

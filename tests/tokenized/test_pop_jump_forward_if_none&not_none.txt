@@ -1,0 +1,11 @@
+def func ( ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+if a is None : <EOL>
+<INDENT>
+print ( 'a is None' ) <EOL>
+<OUTDENT>
+if a is not None : <EOL>
+<INDENT>
+print ( 'a is not None' ) <EOL>
+return None <EOL>
