@@ -85,6 +85,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     PycRef<ASTBlock> curblock = defblock;
     blocks.push(defblock);
 
+    unsigned char bytecode;
     int opcode, operand;
     int curpos = 0;
     int pos = 0;
@@ -108,7 +109,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 #endif
 
         curpos = pos;
-        bc_next(source, mod, opcode, operand, pos);
+        bc_next(source, mod, bytecode, opcode, operand, pos);
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -1788,7 +1789,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    bc_next(source, mod, opcode, operand, pos);
+                    bc_next(source, mod, bytecode, opcode, operand, pos);
                 }
             }
             break;
@@ -1811,7 +1812,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    bc_next(source, mod, opcode, operand, pos);
+                    bc_next(source, mod, bytecode, opcode, operand, pos);
                 }
             }
             break;
@@ -2474,7 +2475,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         default:
-            fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
+            fprintf(stderr, "Unsupported opcode: %s (bytecode=%02Xh) at position %d.\n", Pyc::OpcodeName(opcode), bytecode, curpos);
             cleanBuild = false;
             return new ASTNodeList(defblock->nodes());
         }
