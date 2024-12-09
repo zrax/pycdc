@@ -2,6 +2,30 @@
 #include "pyc_module.h"
 #include "data.h"
 
+/* == Marshal structure for Code object ==
+                1.0     1.3     1.5     2.1     2.3     3.0     3.8     3.11
+argcount                short   short   short   long    long    long    long
+posonlyargc                                                     long    long
+kwonlyargc                                              long    long    long
+nlocals                 short   short   short   long    long    long
+stacksize                       short   short   long    long    long    long
+flags                   short   short   short   long    long    long    long
+code            Obj     Obj     Obj     Obj     Obj     Obj     Obj     Obj
+consts          Obj     Obj     Obj     Obj     Obj     Obj     Obj     Obj
+names           Obj     Obj     Obj     Obj     Obj     Obj     Obj     Obj
+varnames                Obj     Obj     Obj     Obj     Obj     Obj
+freevars                                Obj     Obj     Obj     Obj
+cellvars                                Obj     Obj     Obj     Obj
+locals+names                                                            Obj
+locals+kinds                                                            Obj
+filename        Obj     Obj     Obj     Obj     Obj     Obj     Obj     Obj
+name            Obj     Obj     Obj     Obj     Obj     Obj     Obj     Obj
+qualname                                                                Obj
+firstline                       short   short   long    long    long    long
+lntable                         Obj     Obj     Obj     Obj     Obj     Obj
+exceptiontable                                                          Obj
+*/
+
 void PycCode::load(PycData* stream, PycModule* mod)
 {
     if (mod->verCompare(1, 3) >= 0 && mod->verCompare(2, 3) < 0)
@@ -39,6 +63,13 @@ void PycCode::load(PycData* stream, PycModule* mod)
         m_flags = stream->get32();
     else
         m_flags = 0;
+
+    if (mod->verCompare(3, 8) < 0) {
+        // Remap flags to new values introduced in 3.8
+        if (m_flags & 0xF0000000)
+            throw std::runtime_error("Cannot remap unexpected flags");
+        m_flags = (m_flags & 0xFFFF) | ((m_flags & 0xFFF0000) << 4);
+    }
 
     m_code = LoadObject(stream, mod).cast<PycString>();
     m_consts = LoadObject(stream, mod).cast<PycSequence>();

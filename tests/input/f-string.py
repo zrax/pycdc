@@ -28,6 +28,7 @@ print(f'{var3 * x} {var3:.2f} {var3:.5f} {x:02} {x*x:3} {x*x*x:4} {s1:>10} {a:x}
 print(f'''some {{braces}} {"inner literal: {braces} {{double braces}}"}''')
 print(f'''f-string dict {some_dict[2]} and {{function call in expression}}: {max([1,20,3])}''')
 print(f'{(lambda x: x*2)(3)}')
+print(f'{var3!s:4.5}')
 msg = (
     f'a {var1}'
     f'cool'

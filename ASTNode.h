@@ -689,7 +689,9 @@ public:
         STR = 1,
         REPR = 2,
         ASCII = 3,
-        FMTSPEC = 4
+        CONVERSION_MASK = 0x03,
+
+        HAVE_FMT_SPEC = 4,
     };
 
     ASTFormattedValue(PycRef<ASTNode> val, ConversionFlag conversion,

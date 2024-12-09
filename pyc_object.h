@@ -25,7 +25,7 @@ public:
         obj.m_obj = nullptr;
     }
 
-    ~PycRef<_Obj>()
+    ~PycRef()
     {
         if (m_obj)
             m_obj->delRef();
@@ -96,37 +96,37 @@ class PycObject {
 public:
     enum Type {
         // From the Python Marshallers
-        TYPE_NULL = '0',
-        TYPE_NONE = 'N',
-        TYPE_FALSE = 'F',
-        TYPE_TRUE = 'T',
-        TYPE_STOPITER = 'S',
-        TYPE_ELLIPSIS = '.',
-        TYPE_INT = 'i',
-        TYPE_INT64 = 'I',
-        TYPE_FLOAT = 'f',
-        TYPE_BINARY_FLOAT = 'g',
-        TYPE_COMPLEX = 'x',
-        TYPE_BINARY_COMPLEX = 'y',
-        TYPE_LONG = 'l',
-        TYPE_STRING = 's',
-        TYPE_INTERNED = 't',
-        TYPE_STRINGREF = 'R',
-        TYPE_OBREF = 'r',
-        TYPE_TUPLE = '(',
-        TYPE_LIST = '[',
-        TYPE_DICT = '{',
-        TYPE_CODE = 'c',
-        TYPE_CODE2 = 'C',   // Used in Python 1.0 - 1.2
-        TYPE_UNICODE = 'u',
-        TYPE_UNKNOWN = '?',
-        TYPE_SET = '<',
-        TYPE_FROZENSET = '>',
-        TYPE_ASCII = 'a',
-        TYPE_ASCII_INTERNED = 'A',
-        TYPE_SMALL_TUPLE = ')',
-        TYPE_SHORT_ASCII = 'z',
-        TYPE_SHORT_ASCII_INTERNED = 'Z',
+        TYPE_NULL = '0',                    // Python 1.0 ->
+        TYPE_NONE = 'N',                    // Python 1.0 ->
+        TYPE_FALSE = 'F',                   // Python 2.3 ->
+        TYPE_TRUE = 'T',                    // Python 2.3 ->
+        TYPE_STOPITER = 'S',                // Python 2.2 ->
+        TYPE_ELLIPSIS = '.',                // Python 1.4 ->
+        TYPE_INT = 'i',                     // Python 1.0 ->
+        TYPE_INT64 = 'I',                   // Python 1.5 - 3.3
+        TYPE_FLOAT = 'f',                   // Python 1.0 ->
+        TYPE_BINARY_FLOAT = 'g',            // Python 2.5 ->
+        TYPE_COMPLEX = 'x',                 // Python 1.4 ->
+        TYPE_BINARY_COMPLEX = 'y',          // Python 2.5 ->
+        TYPE_LONG = 'l',                    // Python 1.0 ->
+        TYPE_STRING = 's',                  // Python 1.0 ->
+        TYPE_INTERNED = 't',                // Python 2.4 - 2.7, 3.4 ->
+        TYPE_STRINGREF = 'R',               // Python 2.4 - 2.7
+        TYPE_OBREF = 'r',                   // Python 3.4 ->
+        TYPE_TUPLE = '(',                   // Python 1.0 ->
+        TYPE_LIST = '[',                    // Python 1.0 ->
+        TYPE_DICT = '{',                    // Python 1.0 ->
+        TYPE_CODE = 'c',                    // Python 1.3 ->
+        TYPE_CODE2 = 'C',                   // Python 1.0 - 1.2
+        TYPE_UNICODE = 'u',                 // Python 1.6 ->
+        TYPE_UNKNOWN = '?',                 // Python 1.0 ->
+        TYPE_SET = '<',                     // Python 2.5 ->
+        TYPE_FROZENSET = '>',               // Python 2.5 ->
+        TYPE_ASCII = 'a',                   // Python 3.4 ->
+        TYPE_ASCII_INTERNED = 'A',          // Python 3.4 ->
+        TYPE_SMALL_TUPLE = ')',             // Python 3.4 ->
+        TYPE_SHORT_ASCII = 'z',             // Python 3.4 ->
+        TYPE_SHORT_ASCII_INTERNED = 'Z',    // Python 3.4 ->
     };
 
     PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }

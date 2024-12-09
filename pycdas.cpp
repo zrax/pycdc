@@ -17,13 +17,12 @@
 static const char* flag_names[] = {
     "CO_OPTIMIZED", "CO_NEWLOCALS", "CO_VARARGS", "CO_VARKEYWORDS",
     "CO_NESTED", "CO_GENERATOR", "CO_NOFREE", "CO_COROUTINE",
-    "CO_ITERABLE_COROUTINE", "<0x200>", "<0x400>", "<0x800>",
-    "CO_GENERATOR_ALLOWED", "CO_FUTURE_DIVISION",
-    "CO_FUTURE_ABSOLUTE_IMPORT", "CO_FUTURE_WITH_STATEMENT",
-    "CO_FUTURE_PRINT_FUNCTION", "CO_FUTURE_UNICODE_LITERALS",
-    "CO_FUTURE_BARRY_AS_BDFL", "CO_FUTURE_GENERATOR_STOP",
-    "<0x100000>", "<0x200000>", "<0x400000>", "<0x800000>",
-    "<0x1000000>", "<0x2000000>", "<0x4000000>", "<0x8000000>",
+    "CO_ITERABLE_COROUTINE", "CO_ASYNC_GENERATOR", "<0x400>", "<0x800>",
+    "CO_GENERATOR_ALLOWED", "<0x2000>", "<0x4000>", "<0x8000>",
+    "<0x10000>", "CO_FUTURE_DIVISION", "CO_FUTURE_ABSOLUTE_IMPORT", "CO_FUTURE_WITH_STATEMENT",
+    "CO_FUTURE_PRINT_FUNCTION", "CO_FUTURE_UNICODE_LITERALS", "CO_FUTURE_BARRY_AS_BDFL",
+            "CO_FUTURE_GENERATOR_STOP",
+    "CO_FUTURE_ANNOTATIONS", "CO_NO_MONITORING_EVENTS", "<0x4000000>", "<0x8000000>",
     "<0x10000000>", "<0x20000000>", "<0x40000000>", "<0x80000000>"
 };
 
@@ -102,7 +101,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             if (mod->verCompare(1, 5) >= 0)
                 iprintf(pyc_output, indent + 1, "Stack Size: %d\n", codeObj->stackSize());
             if (mod->verCompare(1, 3) >= 0) {
-                iprintf(pyc_output, indent + 1, "Flags: 0x%08X", codeObj->flags());
+                unsigned int orig_flags = codeObj->flags();
+                if (mod->verCompare(3, 8) < 0) {
+                    // Remap flags back to the value stored in the PyCode object
+                    orig_flags = (orig_flags & 0xFFFF) | ((orig_flags & 0xFFF00000) >> 4);
+                }
+                iprintf(pyc_output, indent + 1, "Flags: 0x%08X", orig_flags);
                 print_coflags(codeObj->flags(), pyc_output);
             }
 
@@ -142,6 +146,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             bc_disasm(pyc_output, codeObj, mod, indent + 2, flags);
 
             if (mod->verCompare(1, 5) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
+                iprintf(pyc_output, indent + 1, "First Line: %d\n", codeObj->firstLine());
                 iputs(pyc_output, indent + 1, "[Line Number Table]\n");
                 output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
             }
@@ -222,7 +227,7 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
         iprintf(pyc_output, indent, "%d\n", obj.cast<PycInt>()->value());
         break;
     case PycObject::TYPE_LONG:
-        iprintf(pyc_output, indent, "%s\n", obj.cast<PycLong>()->repr().c_str());
+        iprintf(pyc_output, indent, "%s\n", obj.cast<PycLong>()->repr(mod).c_str());
         break;
     case PycObject::TYPE_FLOAT:
         iprintf(pyc_output, indent, "%s\n", obj.cast<PycFloat>()->value());

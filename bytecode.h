@@ -25,15 +25,6 @@ enum DisassemblyFlags {
 const char* OpcodeName(int opcode);
 int ByteToOpcode(int maj, int min, int opcode);
 
-bool IsConstArg(int opcode);
-bool IsNameArg(int opcode);
-bool IsVarNameArg(int opcode);
-bool IsCellArg(int opcode);
-bool IsJumpAbsArg(int opcode);
-bool IsJumpRelArg(int opcode);
-bool IsJumpBackArg(int opcode);
-bool IsCompareArg(int opcode);
-
 }
 
 void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod,

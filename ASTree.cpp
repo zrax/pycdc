@@ -34,7 +34,7 @@ static bool printClassDocstring = true;
 // shortcut for all top/pop calls
 static PycRef<ASTNode> StackPopTop(FastStack& stack)
 {
-    const auto node{ stack.top() };
+    const auto node(stack.top());
     stack.pop();
     return node;
 }
@@ -390,6 +390,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::BUILD_TUPLE_A:
             {
+                // if class is a closure code, ignore this tuple
+                PycRef<ASTNode> tos = stack.top();
+                if (tos && tos->type() == ASTNode::NODE_LOADBUILDCLASS) {
+                    break;
+                }
+
                 ASTTuple::value_t values;
                 values.resize(operand);
                 for (int i=0; i<operand; i++) {
@@ -634,7 +640,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> left = stack.top();
                 stack.pop();
-                stack.push(new ASTCompare(left, right, operand));
+                auto arg = operand;
+                if (mod->verCompare(3, 12) == 0)
+                    arg >>= 4; // changed under GH-100923
+                else if (mod->verCompare(3, 13) >= 0)
+                    arg >>= 5;
+                stack.push(new ASTCompare(left, right, arg));
             }
             break;
         case Pyc::CONTAINS_OP_A:
@@ -965,29 +976,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::FORMAT_VALUE_A:
             {
                 auto conversion_flag = static_cast<ASTFormattedValue::ConversionFlag>(operand);
-                switch (conversion_flag) {
-                case ASTFormattedValue::ConversionFlag::NONE:
-                case ASTFormattedValue::ConversionFlag::STR:
-                case ASTFormattedValue::ConversionFlag::REPR:
-                case ASTFormattedValue::ConversionFlag::ASCII:
-                    {
-                        auto val = stack.top();
-                        stack.pop();
-                        stack.push(new ASTFormattedValue(val, conversion_flag, nullptr));
-                    }
-                    break;
-                case ASTFormattedValue::ConversionFlag::FMTSPEC:
-                    {
-                        auto format_spec = stack.top();
-                        stack.pop();
-                        auto val = stack.top();
-                        stack.pop();
-                        stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
-                    }
-                    break;
-                default:
-                    fprintf(stderr, "Unsupported FORMAT_VALUE_A conversion flag: %d\n", operand);
+                PycRef<ASTNode> format_spec = nullptr;
+                if (conversion_flag & ASTFormattedValue::HAVE_FMT_SPEC) {
+                    format_spec = stack.top();
+                    stack.pop();
                 }
+                auto val = stack.top();
+                stack.pop();
+                stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
             }
             break;
         case Pyc::GET_AWAITABLE:
@@ -1483,6 +1479,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> name = stack.top();
                 if (name.type() != ASTNode::NODE_IMPORT) {
                     stack.pop();
+
+                    if (mod->verCompare(3, 12) >= 0) {
+                        if (operand & 1) {
+                            /* Changed in version 3.12:
+                            If the low bit of name is set, then a NULL or self is pushed to the stack
+                            before the attribute or unbound method respectively. */
+                            stack.push(nullptr);
+                        }
+                        operand >>= 1;
+                    }
+
                     stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
                 }
             }
@@ -1510,6 +1517,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::LOAD_DEREF_A:
+        case Pyc::LOAD_CLASSDEREF_A:
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
@@ -1518,21 +1526,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             else
                 stack.push(new ASTName(code->getLocal(operand)));
             break;
+        case Pyc::LOAD_FAST_LOAD_FAST_A:
+            stack.push(new ASTName(code->getLocal(operand >> 4)));
+            stack.push(new ASTName(code->getLocal(operand & 0xF)));
+            break;
         case Pyc::LOAD_GLOBAL_A:
             if (mod->verCompare(3, 11) >= 0) {
+                // Loads the global named co_names[namei>>1] onto the stack.
                 if (operand & 1) {
                     /* Changed in version 3.11: 
                     If the low bit of "NAMEI" (operand) is set, 
                     then a NULL is pushed to the stack before the global variable. */
                     stack.push(nullptr);
-                    /*
-                    and thats because for some reason for example 3 global functions: input, int, print.
-                    it tries to load: 1, 3, 5
-                    all though we have only 3 names, so thats should be: (1-1)/2 = 0, (3-1)/2 = 1, (5-1)/2 = 2
-                    i dont know why, maybe because of the null push, but thats a FIX for now.
-                    */
-                    operand = (int)((operand - 1) / 2);
                 }
+                operand >>= 1;
             }
             stack.push(new ASTName(code->getName(operand)));
             break;
@@ -1880,6 +1887,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             // Ignore
             break;
         case Pyc::SETUP_WITH_A:
+        case Pyc::WITH_EXCEPT_START:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
                 blocks.push(withblock);
@@ -1887,6 +1895,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::WITH_CLEANUP:
+        case Pyc::WITH_CLEANUP_START:
             {
                 // Stack top should be a None. Ignore it.
                 PycRef<ASTNode> none = stack.top();
@@ -1908,6 +1917,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     fprintf(stderr, "Something TERRIBLE happened! No matching with block found for WITH_CLEANUP at %d\n", curpos);
                 }
             }
+            break;
+        case Pyc::WITH_CLEANUP_FINISH:
+            /* Ignore this */
             break;
         case Pyc::SETUP_EXCEPT_A:
             {
@@ -2455,8 +2467,26 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::GEN_START_A:
             stack.pop();
             break;
+        case Pyc::SWAP_A:
+            {
+                unpack = operand;
+                ASTTuple::value_t values;
+                ASTTuple::value_t next_tuple;
+                values.resize(operand);
+                for (int i = 0; i < operand; i++) {
+                    values[operand - i - 1] = stack.top();
+                    stack.pop();
+                }
+                auto tup = new ASTTuple(values);
+                tup->setRequireParens(false);
+                auto next_tup = new ASTTuple(next_tuple);
+                next_tup->setRequireParens(false);
+                stack.push(tup);
+                stack.push(next_tup);
+            }
+            break;
         default:
-            fprintf(stderr, "Unsupported opcode: %s\n", Pyc::OpcodeName(opcode & 0xFF));
+            fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
             return new ASTNodeList(defblock->nodes());
         }
@@ -2513,8 +2543,18 @@ static int cmp_prec(PycRef<ASTNode> parent, PycRef<ASTNode> child)
         return 1;   // Always parenthesize not(x)
     if (child.type() == ASTNode::NODE_BINARY) {
         PycRef<ASTBinary> binChild = child.cast<ASTBinary>();
-        if (parent.type() == ASTNode::NODE_BINARY)
-            return binChild->op() - parent.cast<ASTBinary>()->op();
+        if (parent.type() == ASTNode::NODE_BINARY) {
+            PycRef<ASTBinary> binParent = parent.cast<ASTBinary>();
+            if (binParent->right() == child) {
+                if (binParent->op() == ASTBinary::BIN_SUBTRACT &&
+                    binChild->op() == ASTBinary::BIN_ADD)
+                    return 1;
+                else if (binParent->op() == ASTBinary::BIN_DIVIDE &&
+                         binChild->op() == ASTBinary::BIN_MULTIPLY)
+                    return 1;
+            }
+            return binChild->op() - binParent->op();
+        }
         else if (parent.type() == ASTNode::NODE_COMPARE)
             return (binChild->op() == ASTBinary::BIN_LOG_AND ||
                     binChild->op() == ASTBinary::BIN_LOG_OR) ? 1 : -1;
@@ -2622,23 +2662,21 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     pyc_output << "{";
     print_src(formatted_value->val(), mod, pyc_output);
 
-    switch (formatted_value->conversion()) {
-    case ASTFormattedValue::ConversionFlag::NONE:
+    switch (formatted_value->conversion() & ASTFormattedValue::CONVERSION_MASK) {
+    case ASTFormattedValue::NONE:
         break;
-    case ASTFormattedValue::ConversionFlag::STR:
+    case ASTFormattedValue::STR:
         pyc_output << "!s";
         break;
-    case ASTFormattedValue::ConversionFlag::REPR:
+    case ASTFormattedValue::REPR:
         pyc_output << "!r";
         break;
-    case ASTFormattedValue::ConversionFlag::ASCII:
+    case ASTFormattedValue::ASCII:
         pyc_output << "!a";
         break;
-    case ASTFormattedValue::ConversionFlag::FMTSPEC:
+    }
+    if (formatted_value->conversion() & ASTFormattedValue::HAVE_FMT_SPEC) {
         pyc_output << ":" << formatted_value->format_spec().cast<ASTObject>()->object().cast<PycString>()->value();
-        break;
-    default:
-        fprintf(stderr, "Unsupported NODE_FORMATTEDVALUE conversion flag: %d\n", formatted_value->conversion());
     }
     pyc_output << "}";
 }
@@ -3357,8 +3395,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                 PycRef<ASTObject> src = store->src().cast<ASTObject>();
                 PycRef<PycString> srcString = src->object().try_cast<PycString>();
                 PycRef<ASTName> dest = store->dest().cast<ASTName>();
-                if (srcString != nullptr && srcString->isEqual(code->name().cast<PycObject>())
-                        && dest->name()->isEqual("__qualname__")) {
+                if (dest->name()->isEqual("__qualname__")) {
                     // __qualname__ = '<Class Name>'
                     // Automatically added by Python 3.3 and later
                     clean->removeFirst();

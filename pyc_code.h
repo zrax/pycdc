@@ -12,23 +12,29 @@ class PycCode : public PycObject {
 public:
     typedef std::vector<PycRef<PycString>> globals_t;
     enum CodeFlags {
-        CO_OPTIMIZED = 0x1,
-        CO_NEWLOCALS = 0x2,
-        CO_VARARGS = 0x4,
-        CO_VARKEYWORDS = 0x8,
-        CO_NESTED = 0x10,
-        CO_GENERATOR = 0x20,
-        CO_NOFREE = 0x40,
-        CO_COROUTINE = 0x80,
-        CO_ITERABLE_COROUTINE = 0x100,
-        CO_GENERATOR_ALLOWED = 0x1000,
-        CO_FUTURE_DIVISION = 0x2000,
-        CO_FUTURE_ABSOLUTE_IMPORT = 0x4000,
-        CO_FUTURE_WITH_STATEMENT = 0x8000,
-        CO_FUTURE_PRINT_FUNCTION = 0x10000,
-        CO_FUTURE_UNICODE_LITERALS = 0x20000,
-        CO_FUTURE_BARRY_AS_BDFL = 0x40000,
-        CO_FUTURE_GENERATOR_STOP = 0x80000,
+        CO_OPTIMIZED = 0x1,                                 // 1.3 ->
+        CO_NEWLOCALS = 0x2,                                 // 1.3 ->
+        CO_VARARGS = 0x4,                                   // 1.3 ->
+        CO_VARKEYWORDS = 0x8,                               // 1.3 ->
+        CO_NESTED = 0x10,                                   // 2.1 ->
+        CO_GENERATOR = 0x20,                                // 2.2 ->
+        CO_NOFREE = 0x40,                                   // 2.3 ->
+        CO_COROUTINE = 0x80,                                // 3.5 ->
+        CO_ITERABLE_COROUTINE = 0x100,                      // 3.5 ->
+        CO_ASYNC_GENERATOR = 0x200,                         // 3.6 ->
+        CO_GENERATOR_ALLOWED = 0x1000,                      // 2.3 only
+
+        // The FUTURE flags are shifted left 4 bits starting from Python 3.8
+        // Older versions are automatically mapped to the new values in load()
+        CO_FUTURE_DIVISION = 0x20000,                       // 2.3 - 2.7, 3.1 ->
+        CO_FUTURE_ABSOLUTE_IMPORT = 0x40000,                // 2.5 - 2.7, 3.1 ->
+        CO_FUTURE_WITH_STATEMENT = 0x80000,                 // 2.5 - 2.7, 3.1 ->
+        CO_FUTURE_PRINT_FUNCTION = 0x100000,                // 2.6 - 2.7, 3.1 ->
+        CO_FUTURE_UNICODE_LITERALS = 0x200000,              // 2.6 - 2.7, 3.1 ->
+        CO_FUTURE_BARRY_AS_BDFL = 0x400000,                 // 3.1 ->
+        CO_FUTURE_GENERATOR_STOP = 0x800000,                // 3.5 ->
+        CO_FUTURE_ANNOTATIONS = 0x1000000,                  // 3.7 ->
+        CO_NO_MONITORING_EVENTS = 0x2000000,                // 3.13 ->
     };
 
     PycCode(int type = TYPE_CODE)

@@ -53,13 +53,13 @@ bool PycLong::isEqual(PycRef<PycObject> obj) const
     return true;
 }
 
-std::string PycLong::repr() const
+std::string PycLong::repr(PycModule* mod) const
 {
     // Longs are printed as hex, since it's easier (and faster) to convert
     // arbitrary-length integers to a power of two than an arbitrary base
 
     if (m_size == 0)
-        return "0x0L";
+        return (mod->verCompare(3, 0) >= 0) ? "0x0" : "0x0L";
 
     // Realign to 32 bits, since Python uses only 15
     std::vector<unsigned> bits;
@@ -90,7 +90,8 @@ std::string PycLong::repr() const
     aptr += snprintf(aptr, 9, "%X", *iter++);
     while (iter != bits.rend())
         aptr += snprintf(aptr, 9, "%08X", *iter++);
-    *aptr++ = 'L';
+    if (mod->verCompare(3, 0) < 0)
+        *aptr++ = 'L';
     *aptr = 0;
     return accum;
 }

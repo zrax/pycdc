@@ -11,7 +11,7 @@ void ASTNodeList::removeLast()
 
 void ASTNodeList::removeFirst()
 {
-    m_nodes.erase(m_nodes.cbegin());
+    m_nodes.erase(m_nodes.begin());
 }
 
 
