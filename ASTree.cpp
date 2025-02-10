@@ -1565,12 +1565,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 ASTFunction::defarg_t defArgs, kwDefArgs;
                 const int defCount = operand & 0xFF;
                 const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
+                const int annotationCount = (operand >> 16) & 0x7FFF;
+                
+                if(annotationCount) {
+                    stack.pop(); // Tuple of param names for annotations
+                    for (int i = 0; i < annotationCount; ++i) {
+                        stack.pop(); // Pop annotation objects and ignore
+                    }
                 }
                 for (int i = 0; i < kwDefCount; ++i) {
                     kwDefArgs.push_front(stack.top());
+                    stack.pop(); // KW Pair object
+                    stack.pop(); // KW Pair name
+                }
+                for (int i = 0; i < defCount; ++i) {
+                    defArgs.push_front(stack.top());
                     stack.pop();
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
