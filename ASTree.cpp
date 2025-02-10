@@ -1567,6 +1567,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 const int kwDefCount = (operand >> 8) & 0xFF;
                 const int annotationCount = (operand >> 16) & 0x7FFF;
                 
+                /* Docs for 3.3 say KW Pairs come first, but reality disagrees */
+                if (mod->verCompare(3, 3) <= 0) {
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    /* KW Defaults not mentioned in docs, but they come after the positional args */
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop(); // KW Pair object
+                        stack.pop(); // KW Pair name
+                    }
+                } else {
                 if(annotationCount) {
                     stack.pop(); // Tuple of param names for annotations
                     for (int i = 0; i < annotationCount; ++i) {
@@ -1581,6 +1594,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 for (int i = 0; i < defCount; ++i) {
                     defArgs.push_front(stack.top());
                     stack.pop();
+                }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
