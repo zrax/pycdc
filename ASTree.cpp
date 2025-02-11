@@ -1580,21 +1580,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.pop(); // KW Pair name
                     }
                 } else {
-                if(annotationCount) {
-                    stack.pop(); // Tuple of param names for annotations
-                    for (int i = 0; i < annotationCount; ++i) {
-                        stack.pop(); // Pop annotation objects and ignore
+                    if(annotationCount) {
+                        stack.pop(); // Tuple of param names for annotations
+                        for (int i = 0; i < annotationCount; ++i) {
+                            stack.pop(); // Pop annotation objects and ignore
+                        }
                     }
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop(); // KW Pair object
-                    stack.pop(); // KW Pair name
-                }
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop(); // KW Pair object
+                        stack.pop(); // KW Pair name
+                    }
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
