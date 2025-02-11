@@ -77,3 +77,7 @@ pass <EOL>
 def x7d ( foo = 1 , * , bar = 2 , ** kwargs ) : <EOL>
 <INDENT>
 pass <EOL>
+<OUTDENT>
+def x7e ( foo = 1 , * , bar = 2 , baz = 3 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
