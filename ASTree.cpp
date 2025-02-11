@@ -1579,7 +1579,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.pop(); // KW Pair object
                         stack.pop(); // KW Pair name
                     }
-                } else {
+                } else if (mod->verCompare(3, 5) <= 0) {
+                    /* From Py 3.4 there can now be annotation params
+                    The order has also switched so Kwargs come before Pos Args */
                     if(annotationCount) {
                         stack.pop(); // Tuple of param names for annotations
                         for (int i = 0; i < annotationCount; ++i) {
@@ -1594,6 +1596,35 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     for (int i = 0; i < defCount; ++i) {
                         defArgs.push_front(stack.top());
                         stack.pop();
+                    }
+                } else {
+                    /* From Py 3.6  the operand stopped being an argument count
+                    and changed to a flag that indicates what is represented by
+                    preceding tuples on the stack. Docs for 3.7 are clearer,
+                    docs for 3.6 may have not been correctly updated */
+                    if(operand & 0x08) { // Cells for free vars to create a closure
+                        stack.pop(); // Ignore these for syntax generation
+                    }
+                    if(operand & 0x04) { // Annotation dict (3.6-9) or string (3.10+)
+                        stack.pop(); // Ignore annotations
+                    }
+                    if(operand & 0x02) { // Kwarg Defaults
+                        PycRef<ASTNode> kw_tuple = stack.top();
+                        stack.pop();
+                        std::vector<PycRef<ASTNode>> kw_values = kw_tuple.cast<ASTConstMap>()->values();
+                        
+                        for(const PycRef<ASTNode>& kw : kw_values) {
+                            kwDefArgs.push_front(kw);
+                        }
+                    }
+                    if(operand & 0x01) { // Positional Defaults (including positional-or-KW args)
+                        PycRef<ASTNode> pos_tuple = stack.top();
+                        stack.pop();
+                        std::vector<PycRef<PycObject>> pos_values = pos_tuple.cast<ASTObject>()->object().cast<PycTuple>()->values();
+                        
+                        for(const PycRef<PycObject>& pos : pos_values) {
+                            defArgs.push_back(new ASTObject(pos));
+                        }
                     }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
