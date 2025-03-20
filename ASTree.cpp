@@ -1033,9 +1033,34 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_IF_FALSE_A:
+        case Pyc::SET_FUNCTION_ATTRIBUTE_A:
+        case Pyc::COPY_FREE_VARS_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+        case Pyc::RERAISE:
+        case Pyc::RERAISE_A:
+        case Pyc::LIST_TO_TUPLE:
+        case Pyc::TO_BOOL:
+        case Pyc::END_FOR:
+        case Pyc::EXTENDED_ARG_A:
+        case Pyc::COPY_A:
+        case Pyc::MAKE_CELL_A:
+        case Pyc::POP_JUMP_IF_NOT_NONE_A:
+        case Pyc::RETURN_GENERATOR:
+        case Pyc::CALL_KW_A:
+        case Pyc::FORMAT_SIMPLE:
+        case Pyc::MAKE_FUNCTION:
+        case Pyc::CHECK_EXC_MATCH:
+        case Pyc::DICT_UPDATE_A:
+        case Pyc::PUSH_EXC_INFO:
+        case Pyc::MAP_ADD_A:
+        case Pyc::BEFORE_WITH:
+        case Pyc::JUMP_IF_NOT_EXC_MATCH_A:
+        case Pyc::JUMP_BACKWARD_A:
+        case Pyc::BINARY_SLICE:
         case Pyc::JUMP_IF_TRUE_A:
         case Pyc::JUMP_IF_FALSE_OR_POP_A:
         case Pyc::JUMP_IF_TRUE_OR_POP_A:
+        case Pyc::CALL_FUNCTION_EX_A:
         case Pyc::POP_JUMP_IF_FALSE_A:
         case Pyc::POP_JUMP_IF_TRUE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
