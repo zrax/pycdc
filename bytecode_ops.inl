@@ -118,7 +118,6 @@ OPCODE(RESERVED)                        // Python 3.12 ->
 OPCODE(BINARY_SLICE)                    // Python 3.12 ->
 OPCODE(STORE_SLICE)                     // Python 3.12 ->
 OPCODE(CLEANUP_THROW)                   // Python 3.12 ->
-OPCODE(BINARY_OP_INPLACE_ADD_UNICODE)   // Python 3.13 ->
 OPCODE(EXIT_INIT_CHECK)                 // Python 3.13 ->
 OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
@@ -270,81 +269,6 @@ OPCODE_A(LOAD_FAST_LOAD_FAST)           // Python 3.13 ->               A=locals
 OPCODE_A(SET_FUNCTION_ATTRIBUTE)        // Python 3.13 ->               A=attribute_type
 OPCODE_A(STORE_FAST_LOAD_FAST)          // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
 OPCODE_A(STORE_FAST_STORE_FAST)         // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
-
-/* Specialized opcode variants added in 3.13 */
-OPCODE(BINARY_OP_ADD_FLOAT)                     // Python 3.13 ->
-OPCODE(BINARY_OP_ADD_INT)                       // Python 3.13 ->
-OPCODE(BINARY_OP_ADD_UNICODE)                   // Python 3.13 ->
-OPCODE(BINARY_OP_MULTIPLY_FLOAT)                // Python 3.13 ->
-OPCODE(BINARY_OP_MULTIPLY_INT)                  // Python 3.13 ->
-OPCODE(BINARY_OP_SUBTRACT_FLOAT)                // Python 3.13 ->
-OPCODE(BINARY_OP_SUBTRACT_INT)                  // Python 3.13 ->
-OPCODE(BINARY_SUBSCR_DICT)                      // Python 3.13 ->
-OPCODE(BINARY_SUBSCR_GETITEM)                   // Python 3.13 ->
-OPCODE(BINARY_SUBSCR_LIST_INT)                  // Python 3.13 ->
-OPCODE(BINARY_SUBSCR_STR_INT)                   // Python 3.13 ->
-OPCODE(BINARY_SUBSCR_TUPLE_INT)                 // Python 3.13 ->
-OPCODE_A(CALL_ALLOC_AND_ENTER_INIT)             // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BOUND_METHOD_EXACT_ARGS)          // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BOUND_METHOD_GENERAL)             // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BUILTIN_CLASS)                    // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BUILTIN_FAST)                     // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BUILTIN_FAST_WITH_KEYWORDS)       // Python 3.13 ->               A=#args
-OPCODE_A(CALL_BUILTIN_O)                        // Python 3.13 ->               A=#args
-OPCODE_A(CALL_ISINSTANCE)                       // Python 3.13 ->               A=#args
-OPCODE_A(CALL_LEN)                              // Python 3.13 ->               A=#args
-OPCODE_A(CALL_LIST_APPEND)                      // Python 3.13 ->               A=#args
-OPCODE_A(CALL_METHOD_DESCRIPTOR_FAST)           // Python 3.13 ->               A=#args
-OPCODE_A(CALL_METHOD_DESCRIPTOR_FAST_WITH_KEYWORDS) // Python 3.13 ->           A=#args
-OPCODE_A(CALL_METHOD_DESCRIPTOR_NOARGS)         // Python 3.13 ->               A=#args
-OPCODE_A(CALL_METHOD_DESCRIPTOR_O)              // Python 3.13 ->               A=#args
-OPCODE_A(CALL_NON_PY_GENERAL)                   // Python 3.13 ->               A=#args
-OPCODE_A(CALL_PY_EXACT_ARGS)                    // Python 3.13 ->               A=#args
-OPCODE_A(CALL_PY_GENERAL)                       // Python 3.13 ->               A=#args
-OPCODE_A(CALL_STR_1)                            // Python 3.13 ->               A=#args
-OPCODE_A(CALL_TUPLE_1)                          // Python 3.13 ->               A=#args
-OPCODE_A(CALL_TYPE_1)                           // Python 3.13 ->               A=#args
-OPCODE_A(COMPARE_OP_FLOAT)                      // Python 3.13 ->               A=(cmp_ops[A<<5])+(flags)
-OPCODE_A(COMPARE_OP_INT)                        // Python 3.13 ->               A=(cmp_ops[A<<5])+(flags)
-OPCODE_A(COMPARE_OP_STR)                        // Python 3.13 ->               A=(cmp_ops[A<<5])+(flags)
-OPCODE_A(CONTAINS_OP_DICT)                      // Python 3.13 ->               A=inverted
-OPCODE_A(CONTAINS_OP_SET)                       // Python 3.13 ->               A=inverted
-OPCODE_A(FOR_ITER_GEN)                          // Python 3.13 ->               rel jmp +A
-OPCODE_A(FOR_ITER_LIST)                         // Python 3.13 ->               rel jmp +A
-OPCODE_A(FOR_ITER_RANGE)                        // Python 3.13 ->               rel jmp +A
-OPCODE_A(FOR_ITER_TUPLE)                        // Python 3.13 ->               rel jmp +A
-OPCODE_A(LOAD_ATTR_CLASS)                       // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_GETATTRIBUTE_OVERRIDDEN)     // Python 3.13 ->               A=(names[A<<1])+(flag)
-OPCODE_A(LOAD_ATTR_INSTANCE_VALUE)              // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_METHOD_LAZY_DICT)            // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_METHOD_NO_DICT)              // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_METHOD_WITH_VALUES)          // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_MODULE)                      // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_NONDESCRIPTOR_NO_DICT)       // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_NONDESCRIPTOR_WITH_VALUES)   // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_PROPERTY)                    // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_SLOT)                        // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_ATTR_WITH_HINT)                   // Python 3.13 ->               A=(names[A<<1])+(flag)
-OPCODE_A(LOAD_GLOBAL_BUILTIN)                   // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_GLOBAL_MODULE)                    // Python 3.13 ->               A=flag
-OPCODE_A(LOAD_SUPER_ATTR_ATTR)                  // Python 3.13 ->               A=(flags&0x3)+names[A<<2]
-OPCODE_A(LOAD_SUPER_ATTR_METHOD)                // Python 3.13 ->               A=(flags&0x3)+names[A<<2]
-OPCODE_A(RESUME_CHECK)                          // Python 3.13 ->               ???
-OPCODE_A(SEND_GEN)                              // Python 3.13 ->               rel jmp +A
-OPCODE_A(STORE_ATTR_INSTANCE_VALUE)             // Python 3.13 ->               A=(ignored)
-OPCODE_A(STORE_ATTR_SLOT)                       // Python 3.13 ->               A=(ignored)
-OPCODE_A(STORE_ATTR_WITH_HINT)                  // Python 3.13 ->               names[A]
-OPCODE(STORE_SUBSCR_DICT)                       // Python 3.13 ->
-OPCODE(STORE_SUBSCR_LIST_INT)                   // Python 3.13 ->
-OPCODE(TO_BOOL_ALWAYS_TRUE)                     // Python 3.13 ->
-OPCODE(TO_BOOL_BOOL)                            // Python 3.13 ->
-OPCODE(TO_BOOL_INT)                             // Python 3.13 ->
-OPCODE(TO_BOOL_LIST)                            // Python 3.13 ->
-OPCODE(TO_BOOL_NONE)                            // Python 3.13 ->
-OPCODE(TO_BOOL_STR)                             // Python 3.13 ->
-OPCODE_A(UNPACK_SEQUENCE_LIST)                  // Python 3.13 ->               A=count
-OPCODE_A(UNPACK_SEQUENCE_TUPLE)                 // Python 3.13 ->               A=count
-OPCODE_A(UNPACK_SEQUENCE_TWO_TUPLE)             // Python 3.13 ->               A=count
 
 /* Instrumented opcodes */
 OPCODE_A(INSTRUMENTED_LOAD_SUPER_ATTR)      // Python 3.12 ->           (see LOAD_SUPER_ATTR)

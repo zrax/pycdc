@@ -388,12 +388,9 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::IMPORT_FROM_A:
             case Pyc::IMPORT_NAME_A:
             case Pyc::LOAD_ATTR_A:
-            case Pyc::LOAD_ATTR_GETATTRIBUTE_OVERRIDDEN_A:
-            case Pyc::LOAD_ATTR_WITH_HINT_A:
             case Pyc::LOAD_LOCAL_A:
             case Pyc::LOAD_NAME_A:
             case Pyc::STORE_ATTR_A:
-            case Pyc::STORE_ATTR_WITH_HINT_A:
             case Pyc::STORE_GLOBAL_A:
             case Pyc::STORE_NAME_A:
             case Pyc::STORE_ANNOTATION_A:
@@ -409,8 +406,6 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 }
                 break;
             case Pyc::LOAD_SUPER_ATTR_A:
-            case Pyc::LOAD_SUPER_ATTR_ATTR_A:
-            case Pyc::LOAD_SUPER_ATTR_METHOD_A:
             case Pyc::INSTRUMENTED_LOAD_SUPER_ATTR_A:
                 try {
                     formatted_print(pyc_output, "%d: %s", operand, code->getName(operand >> 2)->value());
@@ -461,16 +456,11 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::SETUP_EXCEPT_A:
             case Pyc::FOR_LOOP_A:
             case Pyc::FOR_ITER_A:
-            case Pyc::FOR_ITER_GEN_A:
-            case Pyc::FOR_ITER_LIST_A:
-            case Pyc::FOR_ITER_RANGE_A:
-            case Pyc::FOR_ITER_TUPLE_A:
             case Pyc::SETUP_WITH_A:
             case Pyc::SETUP_ASYNC_WITH_A:
             case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
             case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
             case Pyc::SEND_A:
-            case Pyc::SEND_GEN_A:
             case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
             case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
             case Pyc::POP_JUMP_IF_NOT_NONE_A:
@@ -520,9 +510,6 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 }
                 break;
             case Pyc::COMPARE_OP_A:
-            case Pyc::COMPARE_OP_FLOAT_A:
-            case Pyc::COMPARE_OP_INT_A:
-            case Pyc::COMPARE_OP_STR_A:
                 {
                     auto arg = operand;
                     if (mod->verCompare(3, 12) == 0)
@@ -547,8 +534,6 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                                                       : "UNKNOWN");
                 break;
             case Pyc::CONTAINS_OP_A:
-            case Pyc::CONTAINS_OP_DICT_A:
-            case Pyc::CONTAINS_OP_SET_A:
                 formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "in"
                                                       : (operand == 1) ? "not in"
                                                       : "UNKNOWN");
