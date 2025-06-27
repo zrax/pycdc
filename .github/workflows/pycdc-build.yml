@@ -1,0 +1,110 @@
+name: Build and Release pycdc for Windows and Linux 64-bit
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'  # Trigger on version tags (e.g., v1.0.0)
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ python3
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build pycdc
+        run: |
+          cd build
+          make -j$(nproc)
+
+      - name: Package Linux artifacts
+        run: |
+          mkdir -p artifacts
+          cp build/pycdc artifacts/pycdc-linux
+          cp build/pycdas artifacts/pycdas-linux
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pycdc-linux
+          path: artifacts/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install python3
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build pycdc
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Package Windows artifacts
+        run: |
+          mkdir artifacts
+          copy build\Release\pycdc.exe artifacts\pycdc-windows.exe
+          copy build\Release\pycdas.exe artifacts\pycdas-windows.exe
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pycdc-windows
+          path: artifacts/
+
+  release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')  # Only run on version tags
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pycdc-linux
+          path: artifacts/
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pycdc-windows
+          path: artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/pycdc-linux
+            artifacts/pycdas-linux
+            artifacts/pycdc-windows.exe
+            artifacts/pycdas-windows.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
