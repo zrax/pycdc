@@ -53,5 +53,13 @@ Additional contributions from:
 * Olivier Iffrig
 * Zlodiy
 
+newpycdc is the work of Paul Sokolovsky.
+
+It is released under the terms of the GNU General Public License, version 3;
+See LICENSE file for details.
+
+pycdas is the work of Michael Hansen
+.
+
 It is released under the terms of the GNU General Public License, version 3;
 See LICENSE file for details.
