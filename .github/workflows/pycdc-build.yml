@@ -3,7 +3,7 @@ name: Build and Release pycdc for Windows and Linux 64-bit
 on:
   push:
     branches:
-      - main
+      - master
     tags:
       - 'v*.*.*'  # Trigger on version tags (e.g., v1.0.0)
 
