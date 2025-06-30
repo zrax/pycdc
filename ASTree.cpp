@@ -2540,6 +2540,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock->append(new ASTStore(values, new ASTSubscr(dest, slice)));
             }
             break;
+        case Pyc::COPY_A:
+            {
+                PycRef<ASTNode> value = stack.top(operand);
+                stack.push(value);
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
