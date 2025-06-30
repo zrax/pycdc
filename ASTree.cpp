@@ -1164,10 +1164,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_ABSOLUTE_A:
+        // bpo-47120: Replaced JUMP_ABSOLUTE by the relative jump JUMP_BACKWARD.
+        case Pyc::JUMP_BACKWARD_A:
+        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
-                    offs *= sizeof(uint16_t); // // BPO-27129
+                    offs *= sizeof(uint16_t); // // BPO-27129 
 
                 if (offs < pos) {
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
@@ -1689,8 +1692,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 // end for loop here
-                // TODO : Ensure that FOR loop ends here. 
-                // Due to CACHE instructions at play, this can change.
+                /* TODO : Ensure that FOR loop ends here. 
+                   Due to CACHE instructions at play, the end indicated in
+                   the for loop by pycdas is not correct, it is off by
+                   some small amount. */
                 if (curblock->blktype() == ASTBlock::BLK_FOR) {
                     PycRef<ASTBlock> prev = blocks.top();
                     blocks.pop();
