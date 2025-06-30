@@ -1,0 +1,46 @@
+def loop1 ( ) : <EOL>
+<INDENT>
+iterable = [ 1 , 2 , 3 ] <EOL>
+for item in iterable : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+<OUTDENT>
+loop1 ( ) <EOL>
+def loop2 ( ) : <EOL>
+<INDENT>
+for i in range ( 2 ) : <EOL>
+<INDENT>
+print ( i ) <EOL>
+<OUTDENT>
+<OUTDENT>
+loop2 ( ) <EOL>
+def loop3 ( ) : <EOL>
+<INDENT>
+def loop ( ) : <EOL>
+<INDENT>
+x = ( 1 , 2 , 3 ) <EOL>
+l = [ ] <EOL>
+for i in x : <EOL>
+<INDENT>
+l . append ( i ) <EOL>
+<OUTDENT>
+return l <EOL>
+<OUTDENT>
+return loop ( ) <EOL>
+<OUTDENT>
+loop3 ( ) <EOL>
+def loop4 ( ) : <EOL>
+<INDENT>
+for i in range ( 3 ) : <EOL>
+<INDENT>
+for j in range ( 2 ) : <EOL>
+<INDENT>
+print ( i * j ) <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+loop4 ( ) <EOL>
+for j in [ 1 , 2 , 3 ] [ : : - 1 ] : <EOL>
+<INDENT>
+print ( 'hi' , j ) <EOL>

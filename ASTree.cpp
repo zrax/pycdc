@@ -897,7 +897,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
-                stack.pop();
+                if (mod->verCompare(3,12) < 0)
+                    stack.pop();
                 /* Pop it? Don't pop it? */
 
                 int end;
@@ -1678,11 +1679,34 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_EXCEPT:
             /* Do nothing. */
             break;
-        case Pyc::POP_TOP:
         case Pyc::END_FOR:
+            {
+                stack.pop();
+
+                if ((opcode == Pyc::END_FOR) && (mod->majorVer() == 3) && (mod->minorVer() == 12)) {
+                    // one additional pop for python 3.12
+                    stack.pop();
+                }
+
+                // end for loop here
+                if (curblock->blktype() == ASTBlock::BLK_FOR) {
+                    PycRef<ASTBlock> prev = blocks.top();
+                    blocks.pop();
+
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Wrong block type %i for END_FOR\n", curblock->blktype());
+                    break;
+                }
+            }
+            break;
+        case Pyc::POP_TOP:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
+
                 if (!curblock->inited()) {
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
