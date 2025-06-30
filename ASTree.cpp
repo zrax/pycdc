@@ -1679,6 +1679,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             /* Do nothing. */
             break;
         case Pyc::POP_TOP:
+        case Pyc::END_FOR:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
@@ -2472,6 +2473,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(tup);
                 stack.push(next_tup);
             }
+            break;
+        case Pyc::COPY_A:
             break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
