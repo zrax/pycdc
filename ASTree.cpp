@@ -1689,6 +1689,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 // end for loop here
+                // TODO : Ensure that FOR loop ends here. 
+                // Due to CACHE instructions at play, this can change.
                 if (curblock->blktype() == ASTBlock::BLK_FOR) {
                     PycRef<ASTBlock> prev = blocks.top();
                     blocks.pop();
