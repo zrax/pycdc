@@ -48,6 +48,7 @@ public:
         else {
             fprintf(stderr, "incorrect operand %i\n", i);
             return nullptr;
+        }
     }
 
     bool empty() const
