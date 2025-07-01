@@ -426,10 +426,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::CALL_FUNCTION_A:
         case Pyc::INSTRUMENTED_CALL_A:
             {
-                int kwparams = (operand & 0xFF00) >> 8;
-                int pparams = (operand & 0xFF);
                 ASTCall::kwparam_t kwparamList;
                 ASTCall::pparam_t pparamList;
+                int kwparams, pparams;
+
+                // GH-107788 - Py 3.13 simplifies CALL instruction handling
+                // TODO : Test & validate CALL handling for classes & methods
+                if (mod->verCompare(3, 13) >= 0 && 
+                    ((opcode == Pyc::CALL_A) || (opcode == Pyc::INSTRUMENTED_CALL_A))) {
+                    pparams = operand;
+                    kwparams = 0;
+                }
+                else {
+                    kwparams = (operand & 0xFF00) >> 8;
+                    pparams = (operand & 0xFF);
+                }
 
                 /* Test for the load build class function */
                 stack_hist.push(stack);
@@ -447,6 +458,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     TOS = stack.top();
                     TOS_type = TOS.type();
                 }
+
                 // qualified name is PycString at TOS
                 PycRef<ASTNode> name = stack.top();
                 stack.pop();
@@ -473,6 +485,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     co_consts[consti] must be a tuple of strings.
                     New in version 3.11.
                 */
+                // Process keyword parameters
                 if (mod->verCompare(3, 11) >= 0) {
                     PycRef<ASTNode> object_or_map = stack.top();
                     if (object_or_map.type() == ASTNode::NODE_KW_NAMES_MAP) {
@@ -493,6 +506,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         kwparamList.push_front(std::make_pair(key, val));
                     }
                 }
+
+                // Process positional parameters
                 for (int i=0; i<pparams; i++) {
                     PycRef<ASTNode> param = stack.top();
                     stack.pop();
@@ -513,14 +528,27 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         pparamList.push_front(param);
                     }
                 }
-                PycRef<ASTNode> func = stack.top();
-                stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
+
+                PycRef<ASTNode> func;
+
+                if (mod->verCompare(3, 13) >= 0) {
+                    PycRef<ASTNode> self_or_null = stack.top();
+                    stack.pop();
+                
+                    func = stack.top();
                     stack.pop();
                 }
+                else {
+                    func = stack.top();
+                    stack.pop();
+                    if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
+                            stack.top() == nullptr) {
+                        stack.pop();
+                    }
+                }
 
-                stack.push(new ASTCall(func, pparamList, kwparamList));
+                PycRef<ASTNode> node = new ASTCall(func, pparamList, kwparamList);
+                stack.push(node);
             }
             break;
         case Pyc::CALL_FUNCTION_VAR_A:
@@ -2775,7 +2803,8 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     pyc_output << "}";
 }
 
-void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
+void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output, 
+    bool allow_unsupported)
 {
     if (node == NULL) {
         pyc_output << "None";
@@ -3436,9 +3465,14 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
         break;
     default:
         pyc_output << "<NODE:" << node->type() << ">";
-        fprintf(stderr, "Unsupported Node type: %d\n", node->type());
-        cleanBuild = false;
-        return;
+        if (allow_unsupported) {
+            break;
+        }
+        else {
+            fprintf(stderr, "Unsupported Node type: %d\n", node->type());
+            cleanBuild = false;
+            return;
+        }
     }
 
     cleanBuild = true;
