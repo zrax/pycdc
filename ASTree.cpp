@@ -897,8 +897,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
-                if (mod->verCompare(3,12) < 0)
+                if (mod->verCompare(3, 12) < 0) {
+                    // Do not pop the iterator for py 3.12+
                     stack.pop();
+                }
                 /* Pop it? Don't pop it? */
 
                 int end;
@@ -1705,7 +1707,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 else {
                     fprintf(stderr, "Wrong block type %i for END_FOR\n", curblock->blktype());
-                    break;
                 }
             }
             break;
