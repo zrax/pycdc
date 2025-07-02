@@ -30,6 +30,11 @@ public:
     {
         if (m_ptr > -1)
             m_stack[m_ptr--] = nullptr;
+        else {
+            #ifdef BLOCK_DEBUG
+                fprintf(stderr, "pop from empty stack\n");
+            #endif
+        }
     }
 
     PycRef<ASTNode> top(int i = 1) const
