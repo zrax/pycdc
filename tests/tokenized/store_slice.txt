@@ -1,0 +1,7 @@
+a = [ 0 ] * 16 <EOL>
+l = [ 1 , 2 , 3 ] <EOL>
+a [ 13 : ] = l <EOL>
+a [ 5 ] = 10 <EOL>
+a [ : 2 ] = [ 1 , 2 ] <EOL>
+a [ : ] = range ( 16 ) <EOL>
+print ( a ) <EOL>

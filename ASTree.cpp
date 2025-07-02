@@ -2506,6 +2506,79 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(next_tup);
             }
             break;
+        case Pyc::BINARY_SLICE:
+            {
+                PycRef<ASTNode> end = stack.top();
+                stack.pop();
+                PycRef<ASTNode> start = stack.top();
+                stack.pop();
+                PycRef<ASTNode> dest = stack.top();
+                stack.pop();
+
+                if (start.type() == ASTNode::NODE_OBJECT
+                        && start.cast<ASTObject>()->object() == Pyc_None) {
+                    start = NULL;
+                }
+
+                if (end.type() == ASTNode::NODE_OBJECT
+                        && end.cast<ASTObject>()->object() == Pyc_None) {
+                    end = NULL;
+                }
+
+                PycRef<ASTNode> slice;
+                if (start == NULL && end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE0);
+                } else if (start == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE2, start, end);
+                } else if (end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE1, start, end);
+                } else {
+                    slice = new ASTSlice(ASTSlice::SLICE3, start, end);
+                }
+                stack.push(new ASTSubscr(dest, slice));
+            }
+            break;
+        case Pyc::STORE_SLICE:
+            {
+                PycRef<ASTNode> end = stack.top();
+                stack.pop();
+                PycRef<ASTNode> start = stack.top();
+                stack.pop();
+                PycRef<ASTNode> dest = stack.top();
+                stack.pop();
+                PycRef<ASTNode> values = stack.top();
+                stack.pop();
+
+                if (start.type() == ASTNode::NODE_OBJECT
+                        && start.cast<ASTObject>()->object() == Pyc_None) {
+                    start = NULL;
+                }
+
+                if (end.type() == ASTNode::NODE_OBJECT
+                        && end.cast<ASTObject>()->object() == Pyc_None) {
+                    end = NULL;
+                }
+
+                PycRef<ASTNode> slice;
+                if (start == NULL && end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE0);
+                } else if (start == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE2, start, end);
+                } else if (end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE1, start, end);
+                } else {
+                    slice = new ASTSlice(ASTSlice::SLICE3, start, end);
+                }
+
+                curblock->append(new ASTStore(values, new ASTSubscr(dest, slice)));
+            }
+            break;
+        case Pyc::COPY_A:
+            {
+                PycRef<ASTNode> value = stack.top(operand);
+                stack.push(value);
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
