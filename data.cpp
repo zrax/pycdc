@@ -63,6 +63,17 @@ int PycFile::getBuffer(int bytes, void* buffer)
     return (int)fread(buffer, 1, bytes, m_stream);
 }
 
+int PycFile::setPos(int pos)
+{
+    int old_pos = ftell(m_stream);
+    if (fseek(m_stream, pos, SEEK_SET) != 0)
+    {
+        fseek(m_stream, old_pos, SEEK_SET);
+        return EOF;
+    }
+    return old_pos;
+}
+
 
 /* PycBuffer */
 int PycBuffer::getByte()
@@ -72,6 +83,13 @@ int PycBuffer::getByte()
     int ch = (int)(*(m_buffer + m_pos));
     ++m_pos;
     return ch & 0xFF;   // Make sure it's just a byte!
+}
+
+int PycBuffer::setPos(int pos)
+{
+    int old_pos = m_pos;
+    m_pos = pos;
+    return old_pos;
 }
 
 int PycBuffer::getBuffer(int bytes, void* buffer)

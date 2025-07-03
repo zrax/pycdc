@@ -16,6 +16,10 @@ if (ENABLE_STACK_DEBUG)
     add_definitions(-DSTACK_DEBUG)
 endif()
 
+#if (ENABLE_BLOCK_DEBUG OR ENABLE_STACK_DEBUG)
+    set(CMAKE_CXX_FLAGS "-g ${CMAKE_CXX_FLAGS}")
+#endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-error=shadow -Werror ${CMAKE_CXX_FLAGS}")
 elseif(MSVC)
