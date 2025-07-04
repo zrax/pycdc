@@ -1820,8 +1820,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     blocks.pop();
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
-
-                    bc_next(source, mod, opcode, operand, pos);
                 }
             }
             break;
