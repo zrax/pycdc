@@ -1,0 +1,9 @@
+import struct <EOL>
+def bytes_to_words ( b ) : <EOL>
+<INDENT>
+'Convert a byte string (little-endian) to a list of 32-bit words.' <EOL>
+if len ( b ) % 4 != 0 : <EOL>
+<INDENT>
+raise ValueError ( 'Input bytes length must be a multiple of 4 for word conversion.' ) <EOL>
+<OUTDENT>
+return struct . unpack ( '<' + 'I' * ( len ( b ) // 4 ) , b ) <EOL>
