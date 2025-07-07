@@ -1,0 +1,14 @@
+try : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+print ( 'try' ) <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( 'finally in' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+print ( 'finally out' ) <EOL>

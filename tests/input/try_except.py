@@ -6,5 +6,11 @@ try:
         print ('...failed')
 except ImportError:
     print ('Oh Noes!')
-finally:
-    print ('Exiting')
+
+try:
+    try:
+        print("try")
+    except:
+        print("except in")
+except:
+    print("except out")

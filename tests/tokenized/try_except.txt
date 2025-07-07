@@ -14,6 +14,17 @@ except ImportError : <EOL>
 <INDENT>
 print ( 'Oh Noes!' ) <EOL>
 <OUTDENT>
-finally : <EOL>
+try : <EOL>
 <INDENT>
-print ( 'Exiting' ) <EOL>
+try : <EOL>
+<INDENT>
+print ( 'try' ) <EOL>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+print ( 'except in' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+except : <EOL>
+<INDENT>
+print ( 'except out' ) <EOL>

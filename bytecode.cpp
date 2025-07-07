@@ -302,6 +302,25 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
+int bc_get_at(PycBuffer& source, PycModule *mod, int& opcode, int &operand, int pos)
+{
+    /* save current pos */
+    int old_pos = source.setPos(pos);
+    if (old_pos == EOF)
+    {
+        opcode = 0;
+        operand = 0;
+        return EOF;
+    }
+
+    /* read opcode at requested pos */
+    bc_next(source, mod, opcode, operand, pos);
+
+    /* restore saved pos */
+    source.setPos(old_pos);
+    return pos;
+}
+
 void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                int indent, unsigned flags)
 {
