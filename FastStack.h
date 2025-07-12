@@ -30,14 +30,30 @@ public:
     {
         if (m_ptr > -1)
             m_stack[m_ptr--] = nullptr;
+        else {
+            #ifdef BLOCK_DEBUG
+                fprintf(stderr, "pop from empty stack\n");
+            #endif
+        }
     }
 
-    PycRef<ASTNode> top() const
+    PycRef<ASTNode> top(int i = 1) const
     {
-        if (m_ptr > -1)
-            return m_stack[m_ptr];
-        else
+        if (i > 0) {
+            int idx = m_ptr + 1 - i;
+            if ((m_ptr > -1) && (idx >= 0))
+                return m_stack[idx];
+            else {
+                #ifdef BLOCK_DEBUG
+                    fprintf(stderr, "insufficient values on stack\n");
+                #endif
+                return nullptr;
+            }
+        }
+        else {
+            fprintf(stderr, "incorrect operand %i\n", i);
             return nullptr;
+        }
     }
 
     bool empty() const

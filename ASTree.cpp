@@ -897,7 +897,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_FOR_ITER_A:
             {
                 PycRef<ASTNode> iter = stack.top(); // Iterable
-                stack.pop();
+                if (mod->verCompare(3, 12) < 0) {
+                    // Do not pop the iterator for py 3.12+
+                    stack.pop();
+                }
                 /* Pop it? Don't pop it? */
 
                 int end;
@@ -1163,10 +1166,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::JUMP_ABSOLUTE_A:
+        // bpo-47120: Replaced JUMP_ABSOLUTE by the relative jump JUMP_BACKWARD.
+        case Pyc::JUMP_BACKWARD_A:
+        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
-                    offs *= sizeof(uint16_t); // // BPO-27129
+                    offs *= sizeof(uint16_t); // // BPO-27129 
 
                 if (offs < pos) {
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
@@ -1678,10 +1684,37 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_EXCEPT:
             /* Do nothing. */
             break;
+        case Pyc::END_FOR:
+            {
+                stack.pop();
+
+                if ((opcode == Pyc::END_FOR) && (mod->majorVer() == 3) && (mod->minorVer() == 12)) {
+                    // one additional pop for python 3.12
+                    stack.pop();
+                }
+
+                // end for loop here
+                /* TODO : Ensure that FOR loop ends here. 
+                   Due to CACHE instructions at play, the end indicated in
+                   the for loop by pycdas is not correct, it is off by
+                   some small amount. */
+                if (curblock->blktype() == ASTBlock::BLK_FOR) {
+                    PycRef<ASTBlock> prev = blocks.top();
+                    blocks.pop();
+
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+                }
+                else {
+                    fprintf(stderr, "Wrong block type %i for END_FOR\n", curblock->blktype());
+                }
+            }
+            break;
         case Pyc::POP_TOP:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
+
                 if (!curblock->inited()) {
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
@@ -1787,8 +1820,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     blocks.pop();
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
-
-                    bc_next(source, mod, opcode, operand, pos);
                 }
             }
             break;
@@ -2471,6 +2502,79 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 next_tup->setRequireParens(false);
                 stack.push(tup);
                 stack.push(next_tup);
+            }
+            break;
+        case Pyc::BINARY_SLICE:
+            {
+                PycRef<ASTNode> end = stack.top();
+                stack.pop();
+                PycRef<ASTNode> start = stack.top();
+                stack.pop();
+                PycRef<ASTNode> dest = stack.top();
+                stack.pop();
+
+                if (start.type() == ASTNode::NODE_OBJECT
+                        && start.cast<ASTObject>()->object() == Pyc_None) {
+                    start = NULL;
+                }
+
+                if (end.type() == ASTNode::NODE_OBJECT
+                        && end.cast<ASTObject>()->object() == Pyc_None) {
+                    end = NULL;
+                }
+
+                PycRef<ASTNode> slice;
+                if (start == NULL && end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE0);
+                } else if (start == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE2, start, end);
+                } else if (end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE1, start, end);
+                } else {
+                    slice = new ASTSlice(ASTSlice::SLICE3, start, end);
+                }
+                stack.push(new ASTSubscr(dest, slice));
+            }
+            break;
+        case Pyc::STORE_SLICE:
+            {
+                PycRef<ASTNode> end = stack.top();
+                stack.pop();
+                PycRef<ASTNode> start = stack.top();
+                stack.pop();
+                PycRef<ASTNode> dest = stack.top();
+                stack.pop();
+                PycRef<ASTNode> values = stack.top();
+                stack.pop();
+
+                if (start.type() == ASTNode::NODE_OBJECT
+                        && start.cast<ASTObject>()->object() == Pyc_None) {
+                    start = NULL;
+                }
+
+                if (end.type() == ASTNode::NODE_OBJECT
+                        && end.cast<ASTObject>()->object() == Pyc_None) {
+                    end = NULL;
+                }
+
+                PycRef<ASTNode> slice;
+                if (start == NULL && end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE0);
+                } else if (start == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE2, start, end);
+                } else if (end == NULL) {
+                    slice = new ASTSlice(ASTSlice::SLICE1, start, end);
+                } else {
+                    slice = new ASTSlice(ASTSlice::SLICE3, start, end);
+                }
+
+                curblock->append(new ASTStore(values, new ASTSubscr(dest, slice)));
+            }
+            break;
+        case Pyc::COPY_A:
+            {
+                PycRef<ASTNode> value = stack.top(operand);
+                stack.push(value);
             }
             break;
         default:
