@@ -18,13 +18,13 @@ public:
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
         NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
-        NODE_KW_NAMES_MAP,
+        NODE_KW_NAMES_MAP, NODE_CALL_INTRINSIC_1, NODE_CALL_INTRINSIC_2,
 
         // Empty node types
         NODE_LOCALS,
     };
 
-    ASTNode(int type = NODE_INVALID) : m_refs(), m_type(type), m_processed() { }
+    ASTNode(int type = NODE_INVALID, bool unpacked = false) : m_refs(), m_type(type), m_processed(), m_unpacked(unpacked) { }
     virtual ~ASTNode() { }
 
     int type() const { return internalGetType(this); }
@@ -32,10 +32,15 @@ public:
     bool processed() const { return m_processed; }
     void setProcessed() { m_processed = true; }
 
+    bool unpacked() const { return m_unpacked; }
+    void setUnpacked() { m_unpacked = true; }
+
 private:
     int m_refs;
     int m_type;
     bool m_processed;
+    // unpack this node into constituent values
+    bool m_unpacked;
 
     // Hack to make clang happy :(
     static int internalGetType(const ASTNode *node)
@@ -755,6 +760,28 @@ private:
     PycRef<ASTNode> m_if_block; // contains "condition" and "negative"
     PycRef<ASTNode> m_if_expr;
     PycRef<ASTNode> m_else_expr;
+};
+
+class ASTCallIntrinsic1: public ASTNode
+{
+public:
+    enum Function {
+        INTRINSIC_1_INVALID, INTRINSIC_PRINT, INTRINSIC_IMPORT_STAR,
+        INTRINSIC_STOPITERATION_ERROR, INTRINSIC_ASYNC_GEN_WRAP,
+        INTRINSIC_UNARY_POSITIVE, INTRINSIC_LIST_TO_TUPLE, INTRINSIC_TYPEVAR,
+        INTRINSIC_PARAMSPEC, INTRINSIC_TYPEVARTUPLE,
+        INTRINSIC_SUBSCRIPT_GENERIC, INTRINSIC_TYPEALIAS,
+    };
+};
+
+class ASTCallIntrinsic2: public ASTNode
+{
+public:
+    enum Function {
+        INTRINSIC_2_INVALID, INTRINSIC_PREP_RERAISE_STAR,
+        INTRINSIC_TYPEVAR_WITH_BOUND, INTRINSIC_TYPEVAR_WITH_CONSTRAINTS,
+        INTRINSIC_SET_FUNCTION_TYPE_PARAMS, INTRINSIC_SET_TYPEPARAM_DEFAULT,
+    };
 };
 
 #endif

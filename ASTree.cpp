@@ -5,6 +5,7 @@
 #include "FastStack.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
+#include <iostream>
 
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
@@ -1443,29 +1444,46 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::LIST_EXTEND_A:
             {
+                if (operand != 1) {
+                    fprintf(stderr, "LIST_EXTEND operand list is not at the top of the stack\n");
+                    break;
+                }
+
                 PycRef<ASTNode> rhs = stack.top();
                 stack.pop();
                 PycRef<ASTList> lhs = stack.top().cast<ASTList>();
                 stack.pop();
 
-                if (rhs.type() != ASTNode::NODE_OBJECT) {
-                    fprintf(stderr, "Unsupported argument found for LIST_EXTEND\n");
-                    break;
-                }
+                if (rhs.type() == ASTNode::NODE_OBJECT) {
 
-                // I've only ever seen this be a SMALL_TUPLE, but let's be careful...
-                PycRef<PycObject> obj = rhs.cast<ASTObject>()->object();
-                if (obj->type() != PycObject::TYPE_TUPLE && obj->type() != PycObject::TYPE_SMALL_TUPLE) {
-                    fprintf(stderr, "Unsupported argument type found for LIST_EXTEND\n");
-                    break;
-                }
+                    // I've only ever seen this be a SMALL_TUPLE, but let's be careful...
+                    PycRef<PycObject> obj = rhs.cast<ASTObject>()->object();
+                    if (obj->type() != PycObject::TYPE_TUPLE && obj->type() != PycObject::TYPE_SMALL_TUPLE) {
+                        fprintf(stderr, "Unsupported argument type found for LIST_EXTEND\n");
+                        break;
+                    }
 
-                ASTList::value_t result = lhs->values();
-                for (const auto& it : obj.cast<PycTuple>()->values()) {
-                    result.push_back(new ASTObject(it));
-                }
+                    ASTList::value_t result = lhs->values();
+                    for (const auto& it : obj.cast<PycTuple>()->values()) {
+                        result.push_back(new ASTObject(it));
+                    }
 
-                stack.push(new ASTList(result));
+                    stack.push(new ASTList(result));
+                }
+                else if (rhs.type() == ASTNode::NODE_NAME) {
+                    ASTList::value_t result = lhs->values();
+                    
+                    // rhs is a variable, so to extend the list
+                    // we need to unpack rhs
+                    PycRef<ASTNode> unpacked_ref = rhs;
+                    unpacked_ref.setUnpacked();
+
+                    result.push_back(unpacked_ref);
+                    stack.push(new ASTList(result));
+                }
+                else {
+                    fprintf(stderr, "Unsupported argument %i found for LIST_EXTEND\n", rhs.type());
+                }
             }
             break;
         case Pyc::LOAD_ATTR_A:
@@ -1515,6 +1533,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
+        case Pyc::LOAD_FAST_CHECK_A:
             if (mod->verCompare(1, 3) < 0)
                 stack.push(new ASTName(code->getName(operand)));
             else
@@ -2577,6 +2596,76 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(value);
             }
             break;
+        case Pyc::CALL_INTRINSIC_1_A:
+            {
+                PycRef<ASTNode> arg = stack.top();
+                stack.pop();
+
+                if (operand != ASTCallIntrinsic1::INTRINSIC_LIST_TO_TUPLE) {
+                    fprintf(stderr, "Unimplemented function %i", operand);
+                    break;
+                }
+
+                if (arg.type() != ASTNode::NODE_LIST) {
+                    fprintf(stderr, "Unexpected argument type %i\n", arg.type());
+                    break;
+                }
+
+                PycRef<ASTList> list = arg.cast<ASTList>();
+                ASTTuple::value_t values;
+                for (PycRef<ASTNode> val : list->values()) {
+                    values.push_back(val);
+                }
+                stack.push(new ASTTuple(values));
+            }
+            break;
+        case Pyc::CALL_FUNCTION_EX_A:
+            {
+                int has_kwmap = operand & 1;
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+
+                // callable, iterable object & kwmap object (if present)
+
+                if (has_kwmap) {
+                    PycRef<ASTNode> object_or_map = stack.top();
+                    if (object_or_map.type() == ASTNode::NODE_KW_NAMES_MAP) {
+                        stack.pop();
+                        PycRef<ASTKwNamesMap> kwparams_map = object_or_map.cast<ASTKwNamesMap>();
+                        for (ASTKwNamesMap::map_t::const_iterator it = kwparams_map->values().begin(); it != kwparams_map->values().end(); it++) {
+                            kwparamList.push_front(std::make_pair(it->first, it->second));
+                        }
+                    }
+                    else {
+                        fprintf(stderr, "Unexpected object type %i\n", object_or_map.type());
+                    }
+                }
+
+                PycRef<ASTNode> iterable = stack.top();
+                stack.pop();
+
+                if (iterable.type() == ASTNode::NODE_LIST) {
+                    PycRef<ASTList> list = iterable.cast<ASTList>();
+                    for (PycRef<ASTNode> n: list->values()) {
+                        pparamList.push_back(n);
+                    }
+                }
+                else if (iterable.type() == ASTNode::NODE_TUPLE) {
+                    PycRef<ASTTuple> tuple = iterable.cast<ASTTuple>();
+                    for (PycRef<ASTNode> n: tuple->values()) {
+                        pparamList.push_back(n);
+                    }
+                }
+                else {
+                    fprintf(stderr, "Unsupported iterable type %i\n", iterable.type());
+                }
+
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                
+                stack.push(new ASTCall(func, pparamList, kwparamList));
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
@@ -2773,6 +2862,7 @@ void print_formatted_value(PycRef<ASTFormattedValue> formatted_value, PycModule*
     pyc_output << "}";
 }
 
+// TODO: Handle m_unpack for node correctly here.
 void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
 {
     if (node == NULL) {
@@ -2891,6 +2981,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
         break;
     case ASTNode::NODE_LIST:
         {
+            if (node.isUnpacked()) {
+                pyc_output << "*";
+            }
+
             pyc_output << "[";
             bool first = true;
             cur_indent++;
@@ -2984,6 +3078,9 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
         }
         break;
     case ASTNode::NODE_NAME:
+        if (node.isUnpacked()) {
+            pyc_output << "*";
+        }
         pyc_output << node.cast<ASTName>()->name()->value();
         break;
     case ASTNode::NODE_NODELIST:

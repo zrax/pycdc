@@ -61,6 +61,25 @@ public:
         return m_ptr == -1;
     }
 
+    void debug_print(PycModule* mod, std::ostream& pyc_output)
+    {
+        pyc_output << "---- STACK CONTENTS ----\n";
+        if (empty()) {
+            pyc_output << "empty stack\n";
+        }
+        else {
+            for (int i = m_ptr; i >= 0; i--) {
+                print_src(m_stack[i], mod, pyc_output);
+                if (i == m_ptr) {
+                    pyc_output << " <- STACK TOP";
+                }
+                pyc_output << "\n";
+            }
+        }
+        pyc_output << "------------------------\n";
+    }
+
+
 private:
     std::vector<PycRef<ASTNode>> m_stack;
     int m_ptr;

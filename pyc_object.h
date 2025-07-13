@@ -6,21 +6,21 @@
 template <class _Obj>
 class PycRef {
 public:
-    PycRef() noexcept : m_obj() { }
+    PycRef() noexcept : m_obj(), m_unpack(false) { }
 
-    PycRef(_Obj* obj) noexcept : m_obj(obj)
+    PycRef(_Obj* obj) noexcept : m_obj(obj), m_unpack(false)
     {
         if (m_obj)
             m_obj->addRef();
     }
 
-    PycRef(const PycRef<_Obj>& obj) noexcept : m_obj(obj.m_obj)
+    PycRef(const PycRef<_Obj>& obj) noexcept : m_obj(obj.m_obj), m_unpack(obj.m_unpack)
     {
         if (m_obj)
             m_obj->addRef();
     }
 
-    PycRef(PycRef<_Obj>&& obj) noexcept : m_obj(obj.m_obj)
+    PycRef(PycRef<_Obj>&& obj) noexcept : m_obj(obj.m_obj), m_unpack(obj.m_unpack)
     {
         obj.m_obj = nullptr;
     }
@@ -30,6 +30,8 @@ public:
         if (m_obj)
             m_obj->delRef();
     }
+
+    // Most operators should deal with m_unpack but we leave it as is for now
 
     PycRef<_Obj>& operator=(_Obj* obj)
     {
@@ -75,16 +77,29 @@ public:
     template <class _Cast>
     PycRef<_Cast> cast() const
     {
-        _Cast* result = dynamic_cast<_Cast*>(m_obj);
-        if (!result)
+        _Cast* casted_obj = dynamic_cast<_Cast*>(m_obj);
+        if (!casted_obj)
             throw std::bad_cast();
+
+        PycRef<_Cast> result = casted_obj;
+        if (m_unpack) {
+            result.setUnpacked();
+        }
         return result;
     }
 
     bool isIdent(const _Obj* obj) const { return m_obj == obj; }
 
+    bool isUnpacked() const { return m_unpack; }
+    void setUnpacked() { m_unpack = true; }
+
 private:
     _Obj* m_obj;
+
+    // References to an object can be either packed or unpacked
+    // Usually unpacked references will be used with variables but
+    // they may arise in other places as well.
+    bool m_unpack;
 };
 
 
