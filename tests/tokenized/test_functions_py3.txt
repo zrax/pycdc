@@ -34,18 +34,50 @@ def x4c ( foo , bar = 1 , bla = 2 , * args , ** kwargs ) : <EOL>
 <INDENT>
 pass <EOL>
 <OUTDENT>
-def x5a ( * , bar = 1 ) : <EOL>
+def x5a ( * , bar ) : <EOL>
 <INDENT>
 pass <EOL>
 <OUTDENT>
-def x5b ( * , bar = 1 , ** kwargs ) : <EOL>
+def x5b ( * , bar = 1 ) : <EOL>
 <INDENT>
 pass <EOL>
 <OUTDENT>
-def x6a ( foo , * , bar = 1 ) : <EOL>
+def x5c ( * , bar = 1 , ** kwargs ) : <EOL>
 <INDENT>
 pass <EOL>
 <OUTDENT>
-def x7a ( foo , * , bar = 1 , ** kwargs ) : <EOL>
+def x6a ( foo , * , bar ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x6b ( foo , * , bar = 1 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x6c ( foo = 1 , * , bar ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x6d ( foo = 1 , * , bar = 2 ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7a ( foo , * , bar , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7b ( foo , * , bar = 1 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7c ( foo = 1 , * , bar , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7d ( foo = 1 , * , bar = 2 , ** kwargs ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def x7e ( foo = 1 , * , bar = 2 , baz = 3 , ** kwargs ) : <EOL>
 <INDENT>
 pass <EOL>
