@@ -24,7 +24,7 @@ public:
         NODE_LOCALS,
     };
 
-    ASTNode(int type = NODE_INVALID, bool unpacked = false) : m_refs(), m_type(type), m_processed(), m_unpacked(unpacked) { }
+    ASTNode(int type = NODE_INVALID) : m_refs(), m_type(type), m_processed() { }
     virtual ~ASTNode() { }
 
     int type() const { return internalGetType(this); }
@@ -32,15 +32,10 @@ public:
     bool processed() const { return m_processed; }
     void setProcessed() { m_processed = true; }
 
-    bool unpacked() const { return m_unpacked; }
-    void setUnpacked() { m_unpacked = true; }
-
 private:
     int m_refs;
     int m_type;
     bool m_processed;
-    // unpack this node into constituent values
-    bool m_unpacked;
 
     // Hack to make clang happy :(
     static int internalGetType(const ASTNode *node)

@@ -31,8 +31,6 @@ public:
             m_obj->delRef();
     }
 
-    // Most operators should deal with m_unpack but we leave it as is for now
-
     PycRef<_Obj>& operator=(_Obj* obj)
     {
         if (obj)
@@ -40,6 +38,7 @@ public:
         if (m_obj)
             m_obj->delRef();
         m_obj = obj;
+        m_unpack = false;
         return *this;
     }
 
@@ -50,16 +49,20 @@ public:
         if (m_obj)
             m_obj->delRef();
         m_obj = obj.m_obj;
+        m_unpack = obj.m_unpack;
         return *this;
     }
 
     PycRef<_Obj>& operator=(PycRef<_Obj>&& obj) noexcept
     {
         m_obj = obj.m_obj;
+        m_unpack = obj.m_unpack;
         obj.m_obj = nullptr;
+        obj.m_unpack = false;
         return *this;
     }
 
+    // TODO: Handle m_unpack for remaining operators
     bool operator==(_Obj* obj) const { return m_obj == obj; }
     bool operator==(const PycRef<_Obj>& obj) const { return m_obj == obj.m_obj; }
     bool operator!=(_Obj* obj) const { return m_obj != obj; }
@@ -82,23 +85,22 @@ public:
             throw std::bad_cast();
 
         PycRef<_Cast> result = casted_obj;
-        if (m_unpack) {
-            result.setUnpacked();
-        }
+        result.setUnpacked(m_unpack);
+
         return result;
     }
 
     bool isIdent(const _Obj* obj) const { return m_obj == obj; }
 
     bool isUnpacked() const { return m_unpack; }
-    void setUnpacked() { m_unpack = true; }
+    void setUnpacked(bool unpack) { m_unpack = unpack; }
 
 private:
     _Obj* m_obj;
 
-    // References to an object can be either packed or unpacked
-    // Usually unpacked references will be used with variables but
-    // they may arise in other places as well.
+    // References to an object can be either packed or unpacked.
+    // Usually unpacked references will be used with variables
+    // or lists but they may arise in other places as well.
     bool m_unpack;
 };
 

@@ -1476,7 +1476,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     // rhs is a variable, so to extend the list
                     // we need to unpack rhs
                     PycRef<ASTNode> unpacked_ref = rhs;
-                    unpacked_ref.setUnpacked();
+                    unpacked_ref.setUnpacked(true);
 
                     result.push_back(unpacked_ref);
                     stack.push(new ASTList(result));
@@ -2644,6 +2644,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> iterable = stack.top();
                 stack.pop();
 
+                // Not sure how to combine these two conditions
                 if (iterable.type() == ASTNode::NODE_LIST) {
                     PycRef<ASTList> list = iterable.cast<ASTList>();
                     for (PycRef<ASTNode> n: list->values()) {
