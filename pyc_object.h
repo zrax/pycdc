@@ -6,21 +6,21 @@
 template <class _Obj>
 class PycRef {
 public:
-    PycRef() noexcept : m_obj() { }
+    PycRef() noexcept : m_obj(), m_unpack(false) { }
 
-    PycRef(_Obj* obj) noexcept : m_obj(obj)
+    PycRef(_Obj* obj) noexcept : m_obj(obj), m_unpack(false)
     {
         if (m_obj)
             m_obj->addRef();
     }
 
-    PycRef(const PycRef<_Obj>& obj) noexcept : m_obj(obj.m_obj)
+    PycRef(const PycRef<_Obj>& obj) noexcept : m_obj(obj.m_obj), m_unpack(obj.m_unpack)
     {
         if (m_obj)
             m_obj->addRef();
     }
 
-    PycRef(PycRef<_Obj>&& obj) noexcept : m_obj(obj.m_obj)
+    PycRef(PycRef<_Obj>&& obj) noexcept : m_obj(obj.m_obj), m_unpack(obj.m_unpack)
     {
         obj.m_obj = nullptr;
     }
@@ -38,6 +38,7 @@ public:
         if (m_obj)
             m_obj->delRef();
         m_obj = obj;
+        m_unpack = false;
         return *this;
     }
 
@@ -48,16 +49,20 @@ public:
         if (m_obj)
             m_obj->delRef();
         m_obj = obj.m_obj;
+        m_unpack = obj.m_unpack;
         return *this;
     }
 
     PycRef<_Obj>& operator=(PycRef<_Obj>&& obj) noexcept
     {
         m_obj = obj.m_obj;
+        m_unpack = obj.m_unpack;
         obj.m_obj = nullptr;
+        obj.m_unpack = false;
         return *this;
     }
 
+    // TODO: Handle m_unpack for remaining operators
     bool operator==(_Obj* obj) const { return m_obj == obj; }
     bool operator==(const PycRef<_Obj>& obj) const { return m_obj == obj.m_obj; }
     bool operator!=(_Obj* obj) const { return m_obj != obj; }
@@ -75,16 +80,28 @@ public:
     template <class _Cast>
     PycRef<_Cast> cast() const
     {
-        _Cast* result = dynamic_cast<_Cast*>(m_obj);
-        if (!result)
+        _Cast* casted_obj = dynamic_cast<_Cast*>(m_obj);
+        if (!casted_obj)
             throw std::bad_cast();
+
+        PycRef<_Cast> result = casted_obj;
+        result.setUnpacked(m_unpack);
+
         return result;
     }
 
     bool isIdent(const _Obj* obj) const { return m_obj == obj; }
 
+    bool isUnpacked() const { return m_unpack; }
+    void setUnpacked(bool unpack) { m_unpack = unpack; }
+
 private:
     _Obj* m_obj;
+
+    // References to an object can be either packed or unpacked.
+    // Usually unpacked references will be used with variables
+    // or lists but they may arise in other places as well.
+    bool m_unpack;
 };
 
 
