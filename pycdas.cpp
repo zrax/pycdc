@@ -145,15 +145,15 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             iputs(pyc_output, indent + 1, "[Disassembly]\n");
             bc_disasm(pyc_output, codeObj, mod, indent + 2, flags);
 
+            if (mod->verCompare(3, 11) >= 0) {
+                iputs(pyc_output, indent + 1, "[Exception Table]\n");
+                bc_exceptiontable(pyc_output, codeObj, indent+2);
+            }
+
             if (mod->verCompare(1, 5) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
                 iprintf(pyc_output, indent + 1, "First Line: %d\n", codeObj->firstLine());
                 iputs(pyc_output, indent + 1, "[Line Number Table]\n");
                 output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
-            }
-
-            if (mod->verCompare(3, 11) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
-                iputs(pyc_output, indent + 1, "[Exception Table]\n");
-                output_object(codeObj->exceptTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
             }
         }
         break;

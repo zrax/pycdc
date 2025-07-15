@@ -87,6 +87,10 @@ public:
         m_globalsUsed.emplace_back(std::move(varname));
     }
 
+    typedef std::tuple<int, int, int, int, bool> exception_table_entry_t;
+
+    std::vector<exception_table_entry_t> exceptTableEntries() const;
+
 private:
     int m_argCount, m_posOnlyArgCount, m_kwOnlyArgCount, m_numLocals;
     int m_stackSize, m_flags;
