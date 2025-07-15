@@ -600,3 +600,18 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
         pyc_output << "\n";
     }
 }
+
+void bc_exceptiontable(std::ostream& pyc_output, PycRef<PycCode> code,
+               int indent)
+{
+    for (auto tuple: code->exceptTableEntries()) {
+
+        for (int i=0; i<indent; i++)
+            pyc_output << "    ";
+
+        pyc_output << std::get<0>(tuple) << " to " << std::get<1>(tuple);
+        pyc_output << " -> " << std::get<2>(tuple) << " ";
+        pyc_output << "[" << std::get<3>(tuple) << "] " << (std::get<4>(tuple) ? "lasti": "");
+        pyc_output << "\n";
+    }
+}
