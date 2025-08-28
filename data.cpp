@@ -53,8 +53,10 @@ bool PycFile::atEof() const
 int PycFile::getByte()
 {
     int ch = fgetc(m_stream);
-    if (ch == EOF)
-        ungetc(ch, m_stream);
+    if (ch == EOF) {
+        fputs("PycFile::getByte(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     return ch;
 }
 
@@ -67,8 +69,10 @@ int PycFile::getBuffer(int bytes, void* buffer)
 /* PycBuffer */
 int PycBuffer::getByte()
 {
-    if (atEof())
-        return EOF;
+    if (atEof()) {
+        fputs("PycBuffer::getByte(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     int ch = (int)(*(m_buffer + m_pos));
     ++m_pos;
     return ch & 0xFF;   // Make sure it's just a byte!
