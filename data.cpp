@@ -60,9 +60,12 @@ int PycFile::getByte()
     return ch;
 }
 
-int PycFile::getBuffer(int bytes, void* buffer)
+void PycFile::getBuffer(int bytes, void* buffer)
 {
-    return (int)fread(buffer, 1, bytes, m_stream);
+    if (fread(buffer, 1, bytes, m_stream) != (size_t)bytes) {
+        fputs("PycFile::getBuffer(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
 }
 
 
@@ -78,14 +81,15 @@ int PycBuffer::getByte()
     return ch & 0xFF;   // Make sure it's just a byte!
 }
 
-int PycBuffer::getBuffer(int bytes, void* buffer)
+void PycBuffer::getBuffer(int bytes, void* buffer)
 {
-    if (m_pos + bytes > m_size)
-        bytes = m_size - m_pos;
+    if (m_pos + bytes > m_size) {
+        fputs("PycBuffer::getBuffer(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     if (bytes != 0)
         memcpy(buffer, (m_buffer + m_pos), bytes);
     m_pos += bytes;
-    return bytes;
 }
 
 int formatted_print(std::ostream& stream, const char* format, ...)
