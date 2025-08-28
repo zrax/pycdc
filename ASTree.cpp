@@ -1231,8 +1231,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     break;
                 }
 
-                stack = stack_hist.top();
-                stack_hist.pop();
+                if (!stack_hist.empty()) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                } else {
+                    fprintf(stderr, "Warning: Stack history is empty, something wrong might have happened\n");
+                }
 
                 PycRef<ASTBlock> prev = curblock;
                 PycRef<ASTBlock> nil;
@@ -1389,10 +1393,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 } while (prev != nil);
 
-                curblock = blocks.top();
-
-                if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
-                    curblock->setEnd(pos+offs);
+                if (!blocks.empty()) {
+                    curblock = blocks.top();
+                    if (curblock->blktype() == ASTBlock::BLK_EXCEPT)
+                        curblock->setEnd(pos+offs);
                 }
             }
             break;
@@ -1769,7 +1773,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else
                     curblock->append(new ASTPrint(stack.top(), stream));
                 stack.pop();
-                stream->setProcessed();
+                if (stream)
+                    stream->setProcessed();
             }
             break;
         case Pyc::PRINT_NEWLINE:
@@ -1797,7 +1802,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 else
                     curblock->append(new ASTPrint(nullptr, stream));
                 stack.pop();
-                stream->setProcessed();
+                if (stream)
+                    stream->setProcessed();
             }
             break;
         case Pyc::RAISE_VARARGS_A:
