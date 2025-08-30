@@ -8,6 +8,18 @@
 class PycData;
 class PycModule;
 
+class PycExceptionTableEntry {
+public:
+    int start_offset; // inclusive
+    int end_offset; // exclusive
+    int target;
+    int stack_depth;
+    bool push_lasti;
+
+    PycExceptionTableEntry(int m_start_offset, int m_end_offset, int m_target, int m_stack_depth, bool m_push_lasti) :
+        start_offset(m_start_offset), end_offset(m_end_offset), target(m_target), stack_depth(m_stack_depth), push_lasti(m_push_lasti) {};
+};
+
 class PycCode : public PycObject {
 public:
     typedef std::vector<PycRef<PycString>> globals_t;
@@ -87,9 +99,7 @@ public:
         m_globalsUsed.emplace_back(std::move(varname));
     }
 
-    typedef std::tuple<int, int, int, int, bool> exception_table_entry_t;
-
-    std::vector<exception_table_entry_t> exceptTableEntries() const;
+    std::vector<PycExceptionTableEntry> exceptionTableEntries() const;
 
 private:
     int m_argCount, m_posOnlyArgCount, m_kwOnlyArgCount, m_numLocals;

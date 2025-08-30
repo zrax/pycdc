@@ -133,23 +133,23 @@ int _parse_varint(PycBuffer& data, int& pos) {
     int b = data.getByte();
     pos += 1;
 
-    int val = b & 63;
-    while (b & 64) {
+    int val = b & 0x3F;
+    while (b & 0x40) {
         val <<= 6;
 
         b = data.getByte();
         pos += 1;
 
-        val |= (b & 63);
+        val |= (b & 0x3F);
     }
     return val;
 }
 
-std::vector<PycCode::exception_table_entry_t> PycCode::exceptTableEntries() const
+std::vector<PycExceptionTableEntry> PycCode::exceptionTableEntries() const
 {
     PycBuffer data(m_exceptTable->value(), m_exceptTable->length());
 
-    std::vector<exception_table_entry_t> entries;
+    std::vector<PycExceptionTableEntry> entries;
 
     int pos = 0;
     while (!data.atEof()) {
@@ -164,7 +164,7 @@ std::vector<PycCode::exception_table_entry_t> PycCode::exceptTableEntries() cons
         int depth = dl >> 1;
         bool lasti = bool(dl & 1);
         
-        entries.emplace_back(start, end, target, depth, lasti);
+        entries.push_back(PycExceptionTableEntry(start, end, target, depth, lasti));
     }
     
     return entries;
