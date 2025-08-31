@@ -53,35 +53,43 @@ bool PycFile::atEof() const
 int PycFile::getByte()
 {
     int ch = fgetc(m_stream);
-    if (ch == EOF)
-        ungetc(ch, m_stream);
+    if (ch == EOF) {
+        fputs("PycFile::getByte(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     return ch;
 }
 
-int PycFile::getBuffer(int bytes, void* buffer)
+void PycFile::getBuffer(int bytes, void* buffer)
 {
-    return (int)fread(buffer, 1, bytes, m_stream);
+    if (fread(buffer, 1, bytes, m_stream) != (size_t)bytes) {
+        fputs("PycFile::getBuffer(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
 }
 
 
 /* PycBuffer */
 int PycBuffer::getByte()
 {
-    if (atEof())
-        return EOF;
+    if (atEof()) {
+        fputs("PycBuffer::getByte(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     int ch = (int)(*(m_buffer + m_pos));
     ++m_pos;
     return ch & 0xFF;   // Make sure it's just a byte!
 }
 
-int PycBuffer::getBuffer(int bytes, void* buffer)
+void PycBuffer::getBuffer(int bytes, void* buffer)
 {
-    if (m_pos + bytes > m_size)
-        bytes = m_size - m_pos;
+    if (m_pos + bytes > m_size) {
+        fputs("PycBuffer::getBuffer(): Unexpected end of stream\n", stderr);
+        std::exit(1);
+    }
     if (bytes != 0)
         memcpy(buffer, (m_buffer + m_pos), bytes);
     m_pos += bytes;
-    return bytes;
 }
 
 int formatted_print(std::ostream& stream, const char* format, ...)
