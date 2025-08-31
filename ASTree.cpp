@@ -1595,19 +1595,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::MAKE_CLOSURE_A:
+        case Pyc::MAKE_FUNCTION:
         case Pyc::MAKE_FUNCTION_A:
             {
                 PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
 
-                /* Test for the qualified name of the function (at TOS) */
+                /* Test for the qualified name of the function (at TOS), removed in 3.11 */
                 int tos_type = fun_code.cast<ASTObject>()->object().type();
                 if (tos_type != PycObject::TYPE_CODE &&
                     tos_type != PycObject::TYPE_CODE2) {
                     fun_code = stack.top();
                     stack.pop();
                 }
-
                 ASTFunction::defarg_t defArgs, kwDefArgs;
                 const int defCount = operand & 0xFF;
                 const int kwDefCount = (operand >> 8) & 0xFF;
@@ -1643,8 +1643,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         defArgs.push_front(stack.top());
                         stack.pop();
                     }
-                } else {
-                    /* From Py 3.6  the operand stopped being an argument count
+                } else  if (mod->verCompare(3, 12) <= 0) {
+                    /* From Py 3.6-12 the operand stopped being an argument count
                     and changed to a flag that indicates what is represented by
                     preceding tuples on the stack. Docs for 3.7 are clearer,
                     docs for 3.6 may have not been correctly updated */
@@ -1672,8 +1672,56 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             defArgs.push_back(new ASTObject(pos));
                         }
                     }
-                }
+                } /* From 3.13 the flag is not longer set on the MAKE_FUNCTION opcode,
+                    but instead on a SET_FUNCTION_ARGUMENT opcode that follows it */
+                
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
+            }
+            break;
+        case Pyc::SET_FUNCTION_ATTRIBUTE_A:
+            {
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                if(func.type() != ASTNode::NODE_FUNCTION) {
+                    fputs("Trying to process SET_FUNCTION_ATTRIBUTE when ToS isn't an ASTFunction. This is bad.\n", stderr);
+                    break;
+                }
+                PycRef<ASTFunction> function = func.cast<ASTFunction>();
+
+                /* dis Docs suggest the operand is a flag that would allow for multiple attributes
+                    but as mentioned in bytecode.cpp this opcode seems to be a single lookup
+                    for positional + kwargs, so take whatever was previously set and add to it*/
+                ASTFunction::defarg_t defArgs = function ->defargs();
+                ASTFunction::defarg_t kwDefArgs = function->kwdefargs();
+
+                /* Argument processing the same as 3.6-12, just incrementally adding
+                to whatever is already there */
+                if(operand & 0x08) { // Cells for free vars to create a closure
+                    stack.pop(); // Ignore these for syntax generation
+                }
+                if(operand & 0x04) { // Annotation dict (3.6-9) or string (3.10+)
+                    stack.pop(); // Ignore annotations
+                }
+                if(operand & 0x02) { // Kwarg Defaults
+                    PycRef<ASTNode> kw_tuple = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<ASTNode>> kw_values = kw_tuple.cast<ASTConstMap>()->values();
+                    
+                    for(const PycRef<ASTNode>& kw : kw_values) {
+                        kwDefArgs.push_front(kw);
+                    }
+                }
+                if(operand & 0x01) { // Positional Defaults (including positional-or-KW args)
+                    PycRef<ASTNode> pos_tuple = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<PycObject>> pos_values = pos_tuple.cast<ASTObject>()->object().cast<PycTuple>()->values();
+                    
+                    for(const PycRef<PycObject>& pos : pos_values) {
+                        defArgs.push_back(new ASTObject(pos));
+                    }
+                }
+
+                stack.push(new ASTFunction(function->code(), defArgs, kwDefArgs));
             }
             break;
         case Pyc::NOP:
