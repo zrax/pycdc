@@ -57,3 +57,6 @@ def x7c(foo = 1, *, bar, **kwargs):
 
 def x7d(foo = 1, *, bar = 2, **kwargs):
     pass
+
+def x7e(foo = 1, *, bar = 2, baz = 3, **kwargs):
+    pass
