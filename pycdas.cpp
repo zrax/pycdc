@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <unordered_set>
 #include "pyc_module.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
@@ -73,6 +74,8 @@ static void iprintf(std::ostream& pyc_output, int indent, const char* fmt, ...)
     va_end(varargs);
 }
 
+static std::unordered_set<PycObject *> out_seen;
+
 void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
                    unsigned flags, std::ostream& pyc_output)
 {
@@ -80,6 +83,12 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
         iputs(pyc_output, indent, "<NULL>");
         return;
     }
+
+    if (out_seen.find((PycObject *)obj) != out_seen.end()) {
+        fputs("WARNING: Circular reference detected\n", stderr);
+        return;
+    }
+    out_seen.insert((PycObject *)obj);
 
     switch (obj->type()) {
     case PycObject::TYPE_CODE:
@@ -145,15 +154,15 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             iputs(pyc_output, indent + 1, "[Disassembly]\n");
             bc_disasm(pyc_output, codeObj, mod, indent + 2, flags);
 
+            if (mod->verCompare(3, 11) >= 0) {
+                iputs(pyc_output, indent + 1, "[Exception Table]\n");
+                bc_exceptiontable(pyc_output, codeObj, indent+2);
+            }
+
             if (mod->verCompare(1, 5) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
                 iprintf(pyc_output, indent + 1, "First Line: %d\n", codeObj->firstLine());
                 iputs(pyc_output, indent + 1, "[Line Number Table]\n");
                 output_object(codeObj->lnTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
-            }
-
-            if (mod->verCompare(3, 11) >= 0 && (flags & Pyc::DISASM_PYCODE_VERBOSE) != 0) {
-                iputs(pyc_output, indent + 1, "[Exception Table]\n");
-                output_object(codeObj->exceptTable().cast<PycObject>(), mod, indent + 2, flags, pyc_output);
             }
         }
         break;
@@ -246,6 +255,8 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
     default:
         iprintf(pyc_output, indent, "<TYPE: %d>\n", obj->type());
     }
+
+    out_seen.erase((PycObject *)obj);
 }
 
 int main(int argc, char* argv[])
