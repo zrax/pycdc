@@ -600,3 +600,18 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
         pyc_output << "\n";
     }
 }
+
+void bc_exceptiontable(std::ostream& pyc_output, PycRef<PycCode> code,
+               int indent)
+{
+    for (const auto& entry : code->exceptionTableEntries()) {
+
+        for (int i=0; i<indent; i++)
+            pyc_output << "    ";
+
+        pyc_output << entry.start_offset << " to " << entry.end_offset
+                   << " -> " << entry.target << " [" << entry.stack_depth
+                   << "] " << (entry.push_lasti ? "lasti": "")
+                   << "\n";
+    }
+}
