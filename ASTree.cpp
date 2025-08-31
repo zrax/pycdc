@@ -3501,6 +3501,17 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     && src.cast<ASTBinary>()->is_inplace()) {
                 print_src(src, mod, pyc_output);
             } else {
+                if(dest.type() == ASTNode::NODE_NAME) {
+                    if (dest.cast<ASTName>()->name()->isEqual("__firstlineno__")) {
+                        // __firstlineno__ = "Records the first line number of a class definition" - Not sure if this is something to do with docstrings
+                        // Automatically added by Python 3.13 and later
+                        break;
+                    } else if (dest.cast<ASTName>()->name()->isEqual("__static_attributes__")) {
+                        // __static_attributes__ = "stores the names of attributes accessed through self.X in any function in a class body"
+                        // Automatically added by Python 3.13 and later
+                        break;
+                    }
+                }
                 print_src(dest, mod, pyc_output);
                 pyc_output << " = ";
                 print_src(src, mod, pyc_output);
