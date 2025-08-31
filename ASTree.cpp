@@ -453,8 +453,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> function = stack.top();
                 stack.pop();
+                if(mod->verCompare(3, 13) >= 0){
+                    /* As of Python 3.13 CALL now has self or NULL above the
+                        callable, but below the positional args in the stack*/
+                    PycRef<ASTNode> self = stack.top(); // Self or null
+                    stack.pop();
+                }
                 PycRef<ASTNode> loadbuild = stack.top();
                 stack.pop();
+
                 int loadbuild_type = loadbuild.type();
                 if (loadbuild_type == ASTNode::NODE_LOADBUILDCLASS) {
                     PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
@@ -514,11 +521,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         pparamList.push_front(param);
                     }
                 }
-                PycRef<ASTNode> func = stack.top();
-                stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
+                
+                PycRef<ASTNode> func;
+                PycRef<ASTNode> self;
+                if (mod->verCompare(3, 13) >= 0) {
+                    /* Changed in 3.13:
+                        self or NULL always appears in the same place, above the function, below pos args */
+                    self = stack.top(); // May be NULL
                     stack.pop();
+                    func = stack.top();
+                    stack.pop();
+                } else {
+                    func = stack.top();
+                    stack.pop();
+                    if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
+                            stack.top() == nullptr) {
+                        stack.pop();
+                    }
                 }
 
                 stack.push(new ASTCall(func, pparamList, kwparamList));
@@ -1479,7 +1498,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (name.type() != ASTNode::NODE_IMPORT) {
                     stack.pop();
 
-                    if (mod->verCompare(3, 12) >= 0) {
+                    if (mod->verCompare(3, 12) == 0) {
                         if (operand & 1) {
                             /* Changed in version 3.12:
                             If the low bit of name is set, then a NULL or self is pushed to the stack
@@ -1487,6 +1506,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             stack.push(nullptr);
                         }
                         operand >>= 1;
+                        stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                        break;
+                    }
+
+                    if (mod->verCompare(3, 13) >= 0) {
+                        if (operand & 0x01) {
+                            /* Changed AGAIN in 3.13:
+                            Not currently in the docs, but the source confirms
+                            this has changed to match the callable below Self/NULL
+                            rules for the CALL Opcode */
+                            stack.pop();
+                            operand >>= 1;
+                            stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                            stack.push(nullptr);
+                        }
+                        break;
                     }
 
                     stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
