@@ -1,0 +1,10 @@
+def outer ( ) : <EOL>
+<INDENT>
+x = 0 <EOL>
+def inner ( ) : <EOL>
+<INDENT>
+nonlocal x <EOL>
+x += 1 <EOL>
+print ( x ) <EOL>
+<OUTDENT>
+return inner <EOL>

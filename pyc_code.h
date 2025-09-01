@@ -22,7 +22,8 @@ public:
 
 class PycCode : public PycObject {
 public:
-    typedef std::vector<PycRef<PycString>> globals_t;
+    typedef std::vector<PycRef<PycString>> globals_t, nonlocals_t;
+
     enum CodeFlags {
         CO_OPTIMIZED = 0x1,                                 // 1.3 ->
         CO_NEWLOCALS = 0x2,                                 // 1.3 ->
@@ -99,6 +100,12 @@ public:
         m_globalsUsed.emplace_back(std::move(varname));
     }
 
+    const nonlocals_t& getNonLocals() const { return m_nonlocalsUsed; }
+
+    void markNonLocal(PycRef<PycString> varname) {
+        m_nonlocalsUsed.emplace_back(std::move(varname));
+    }
+
     std::vector<PycExceptionTableEntry> exceptionTableEntries() const;
 
 private:
@@ -118,6 +125,7 @@ private:
     PycRef<PycString> m_lnTable;
     PycRef<PycString> m_exceptTable;
     globals_t m_globalsUsed; /* Global vars used in this code */
+    nonlocals_t m_nonlocalsUsed; // Nonlocal vars used in this code
 };
 
 #endif

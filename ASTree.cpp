@@ -2584,6 +2584,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(value);
             }
             break;
+        case Pyc::MAKE_CELL_A:
+            // no op
+            break;
+        case Pyc::COPY_FREE_VARS_A:
+            // nonlocal should be inserted
+            // some nonlocals may be redundant but we're not optimizing currently
+            if (operand != code->freeVars()->size()) {
+                throw std::runtime_error("Different number of free variables copied");
+            }
+            for (int i = 0; i < code->freeVars()->size(); i++) {
+                code->markNonLocal(code->freeVars()->get(i).cast<PycString>());
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
@@ -3567,6 +3580,21 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
             }
             pyc_output << "\n";
         }
+
+        PycCode::nonlocals_t non_locals = code->getNonLocals();
+        if (non_locals.size()) {
+            start_line(cur_indent + 1, pyc_output);
+            pyc_output << "nonlocal ";
+            bool first = true;
+            for (const auto& non_local : non_locals) {
+                if (!first)
+                    pyc_output << ", ";
+                pyc_output << non_local->value();
+                first = false;
+            }
+            pyc_output << "\n";
+        }
+
         printDocstringAndGlobals = false;
     }
 
