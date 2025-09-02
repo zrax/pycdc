@@ -26,10 +26,6 @@ lntable                         Obj     Obj     Obj     Obj     Obj     Obj
 exceptiontable                                                          Obj
 */
 
-#define CO_FAST_LOCAL 0x20
-#define CO_FAST_CELL 0x40
-#define CO_FAST_FREE 0x80
-
 void PycCode::load(PycData* stream, PycModule* mod)
 {
     if (mod->verCompare(1, 3) >= 0 && mod->verCompare(2, 3) < 0)
@@ -100,10 +96,10 @@ void PycCode::load(PycData* stream, PycModule* mod)
             const char kind = m_localKinds->value()[i];
             auto name = m_localNames->get(i);
 
-            if (kind & CO_FAST_CELL) {
+            if (kind & Kinds::CO_FAST_CELL) {
                 cell_vars_extra.push_back(name);
             }
-            else if (kind & CO_FAST_FREE) {
+            else if (kind & Kinds::CO_FAST_FREE) {
                 free_vars_extra.push_back(name);
             }
         }
