@@ -38,6 +38,11 @@ public:
     typedef PycSimpleSequence::value_t value_t;
     PycTuple(int type = TYPE_TUPLE) : PycSimpleSequence(type) { }
 
+    PycTuple(value_t values, int type = TYPE_TUPLE): PycSimpleSequence(type) {
+        m_values = values;
+        m_size = values.size();
+    }
+
     void load(class PycData* stream, class PycModule* mod) override;
 };
 

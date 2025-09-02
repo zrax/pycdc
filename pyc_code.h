@@ -22,7 +22,8 @@ public:
 
 class PycCode : public PycObject {
 public:
-    typedef std::vector<PycRef<PycString>> globals_t;
+    typedef std::vector<PycRef<PycString>> globals_t, nonlocals_t;
+
     enum CodeFlags {
         CO_OPTIMIZED = 0x1,                                 // 1.3 ->
         CO_NEWLOCALS = 0x2,                                 // 1.3 ->
@@ -47,6 +48,17 @@ public:
         CO_FUTURE_GENERATOR_STOP = 0x800000,                // 3.5 ->
         CO_FUTURE_ANNOTATIONS = 0x1000000,                  // 3.7 ->
         CO_NO_MONITORING_EVENTS = 0x2000000,                // 3.13 ->
+    };
+
+    enum Kinds {                                            // 3.11 ->
+        CO_FAST_ARG_POS = 0x2,
+        CO_FAST_ARG_KW = 0x4,
+        CO_FAST_ARG_VAR = 0x8,
+        CO_FAST_ARG = CO_FAST_ARG_POS | CO_FAST_ARG_KW | CO_FAST_ARG_VAR ,
+        CO_FAST_HIDDEN = 0x10,
+        CO_FAST_LOCAL = 0x20,
+        CO_FAST_CELL = 0x40,
+        CO_FAST_FREE = 0x80,
     };
 
     PycCode(int type = TYPE_CODE)
@@ -99,6 +111,12 @@ public:
         m_globalsUsed.emplace_back(std::move(varname));
     }
 
+    const nonlocals_t& getNonLocals() const { return m_nonlocalsUsed; }
+
+    void markNonLocal(PycRef<PycString> varname) {
+        m_nonlocalsUsed.emplace_back(std::move(varname));
+    }
+
     std::vector<PycExceptionTableEntry> exceptionTableEntries() const;
 
 private:
@@ -118,6 +136,7 @@ private:
     PycRef<PycString> m_lnTable;
     PycRef<PycString> m_exceptTable;
     globals_t m_globalsUsed; /* Global vars used in this code */
+    nonlocals_t m_nonlocalsUsed; // Nonlocal vars used in this code
 };
 
 #endif
