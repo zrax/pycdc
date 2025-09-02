@@ -1513,9 +1513,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (mod->verCompare(3, 13) >= 0) {
                         if (operand & 0x01) {
                             /* Changed AGAIN in 3.13:
-                            Not currently in the docs, but the source confirms
-                            this has changed to match the callable below Self/NULL
-                            rules for the CALL Opcode */
+                            Not currently in the docs, but the source confirms this has changed to 
+                            match the new stacker order rules for the CALL Opcode, where the
+                            Method or Attr is pushed to the stack BEFORE Self or NULL */
                             stack.pop();
                             operand >>= 1;
                             stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
