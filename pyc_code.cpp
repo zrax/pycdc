@@ -26,6 +26,7 @@ lntable                         Obj     Obj     Obj     Obj     Obj     Obj
 exceptiontable                                                          Obj
 */
 
+// TODO : Simplify this function
 void PycCode::load(PycData* stream, PycModule* mod)
 {
     if (mod->verCompare(1, 3) >= 0 && mod->verCompare(2, 3) < 0)
