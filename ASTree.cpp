@@ -3501,17 +3501,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     && src.cast<ASTBinary>()->is_inplace()) {
                 print_src(src, mod, pyc_output);
             } else {
-                if(dest.type() == ASTNode::NODE_NAME) {
-                    if (dest.cast<ASTName>()->name()->isEqual("__firstlineno__")) {
-                        // __firstlineno__ = "Records the first line number of a class definition" - Not sure if this is something to do with docstrings
-                        // Automatically added by Python 3.13 and later
-                        break;
-                    } else if (dest.cast<ASTName>()->name()->isEqual("__static_attributes__")) {
-                        // __static_attributes__ = "stores the names of attributes accessed through self.X in any function in a class body"
-                        // Automatically added by Python 3.13 and later
-                        break;
-                    }
-                }
                 print_src(dest, mod, pyc_output);
                 pyc_output << " = ";
                 print_src(src, mod, pyc_output);
@@ -3667,6 +3656,18 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                 }
             }
         }
+        if (clean->nodes().front().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+            if (store->src().type() == ASTNode::NODE_OBJECT
+                    && store->dest().type() == ASTNode::NODE_NAME) {
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (dest->name()->isEqual("__firstlineno__")) {
+                    // __firstlineno__ = "Records the first line number of a class definition" - Not sure if this is something to do with docstrings
+                    // Automatically added by Python 3.13 and later
+                    clean->removeFirst();
+                }
+            }
+        }
 
         // Class and module docstrings may only appear at the beginning of their source
         if (printClassDocstring && clean->nodes().front().type() == ASTNode::NODE_STORE) {
@@ -3686,6 +3687,18 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
             if (ret->value() == NULL || ret->value().type() == ASTNode::NODE_LOCALS ||
                     (retObj && retObj->object().type() == PycObject::TYPE_NONE)) {
                 clean->removeLast();  // Always an extraneous return statement
+            }
+        }
+        if (clean->nodes().back().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().back().cast<ASTStore>();
+            if (store->src().type() == ASTNode::NODE_TUPLE
+                    && store->dest().type() == ASTNode::NODE_NAME) {
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (dest->name()->isEqual("__static_attributes__")) {
+                    // __static_attributes__ = "stores the names of attributes accessed through self.X in any function in a class body"
+                    // Automatically added by Python 3.13 and later
+                    clean->removeLast();
+                }
             }
         }
     }
