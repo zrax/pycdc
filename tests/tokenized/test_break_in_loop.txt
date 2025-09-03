@@ -1,0 +1,68 @@
+def test0 ( ) : <EOL>
+<INDENT>
+a = 0 <EOL>
+while a < 10 : <EOL>
+<INDENT>
+a += 1 <EOL>
+if a == 5 : <EOL>
+<INDENT>
+return 10 <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+a = 1 <EOL>
+<OUTDENT>
+def test1 ( ) : <EOL>
+<INDENT>
+a = 0 <EOL>
+while a < 10 : <EOL>
+<INDENT>
+a += 1 <EOL>
+if a == 5 : <EOL>
+<INDENT>
+return 10 <EOL>
+<OUTDENT>
+<OUTDENT>
+a = 1 <EOL>
+<OUTDENT>
+def test3 ( ) : <EOL>
+<INDENT>
+a = 0 <EOL>
+while a < 10 : <EOL>
+<INDENT>
+a += 1 <EOL>
+if a == 5 : <EOL>
+<INDENT>
+raise Exception ( '123' ) <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+a = 1 <EOL>
+<OUTDENT>
+def test5 ( ) : <EOL>
+<INDENT>
+a = 0 <EOL>
+while a < 10 : <EOL>
+<INDENT>
+a += 1 <EOL>
+if a == 5 : <EOL>
+<INDENT>
+break <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+a = 1 <EOL>
+<OUTDENT>
+def test7 ( ) : <EOL>
+<INDENT>
+a = 0 <EOL>
+while a < 10 : <EOL>
+<INDENT>
+a += 1 <EOL>
+if a == 5 : <EOL>
+<INDENT>
+continue <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+a = 1 <EOL>
