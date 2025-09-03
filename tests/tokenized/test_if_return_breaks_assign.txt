@@ -1,0 +1,9 @@
+def test ( ) : <EOL>
+<INDENT>
+a = 10 <EOL>
+if a : <EOL>
+<INDENT>
+return 0 <EOL>
+<OUTDENT>
+t = 114 <EOL>
+return t <EOL>
