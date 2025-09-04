@@ -453,8 +453,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> function = stack.top();
                 stack.pop();
+                if(mod->verCompare(3, 13) >= 0){
+                    /* As of Python 3.13 CALL now has self or NULL above the
+                        callable, but below the positional args in the stack*/
+                    PycRef<ASTNode> self = stack.top(); // Self or null
+                    stack.pop();
+                }
                 PycRef<ASTNode> loadbuild = stack.top();
                 stack.pop();
+
                 int loadbuild_type = loadbuild.type();
                 if (loadbuild_type == ASTNode::NODE_LOADBUILDCLASS) {
                     PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
@@ -514,11 +521,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         pparamList.push_front(param);
                     }
                 }
-                PycRef<ASTNode> func = stack.top();
-                stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
+                
+                PycRef<ASTNode> func;
+                PycRef<ASTNode> self;
+                if (mod->verCompare(3, 13) >= 0) {
+                    /* Changed in 3.13:
+                        self or NULL always appears in the same place, above the function, below pos args */
+                    self = stack.top(); // May be NULL
                     stack.pop();
+                    func = stack.top();
+                    stack.pop();
+                } else {
+                    func = stack.top();
+                    stack.pop();
+                    if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
+                            stack.top() == nullptr) {
+                        stack.pop();
+                    }
                 }
 
                 stack.push(new ASTCall(func, pparamList, kwparamList));
@@ -1476,20 +1495,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
-                if (name.type() != ASTNode::NODE_IMPORT) {
-                    stack.pop();
+                if (name.type() == ASTNode::NODE_IMPORT) {
+                    break;
+                }
 
-                    if (mod->verCompare(3, 12) >= 0) {
-                        if (operand & 1) {
-                            /* Changed in version 3.12:
-                            If the low bit of name is set, then a NULL or self is pushed to the stack
-                            before the attribute or unbound method respectively. */
-                            stack.push(nullptr);
-                        }
-                        operand >>= 1;
+                stack.pop();
+                int starting_operand = operand;
+
+                if (mod->verCompare(3, 12) == 0) {
+                    if (operand & 1) {
+                        /* Changed in version 3.12:
+                        If the low bit of name is set, then a NULL or self is pushed to the stack
+                        before the attribute or unbound method respectively. */
+                        stack.push(nullptr);
                     }
+                }
 
-                    stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+                if (mod->verCompare(3, 12) >= 0) {
+                    operand >>= 1;
+                }
+
+                stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+
+                if (mod->verCompare(3, 13) >= 0) {
+                    if (starting_operand & 0x01) {
+                        /* Changed AGAIN in 3.13:
+                        Not currently in the docs, but the source confirms this has changed to 
+                        match the new stacker order rules for the CALL Opcode, where the
+                        Method or Attr is pushed to the stack BEFORE Self or NULL */
+                        stack.push(nullptr);
+                    }
                 }
             }
             break;
@@ -1530,17 +1565,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getLocal(operand & 0xF)));
             break;
         case Pyc::LOAD_GLOBAL_A:
-            if (mod->verCompare(3, 11) >= 0) {
-                // Loads the global named co_names[namei>>1] onto the stack.
-                if (operand & 1) {
-                    /* Changed in version 3.11: 
-                    If the low bit of "NAMEI" (operand) is set, 
-                    then a NULL is pushed to the stack before the global variable. */
-                    stack.push(nullptr);
+            {
+                int starting_operand = operand;
+
+                if (mod->verCompare(3, 11) == 0 || mod->verCompare(3, 12) == 0 ) {
+                    // Loads the global named co_names[namei>>1] onto the stack.
+                    if (operand & 1) {
+                        /* Changed in version 3.11: 
+                        If the low bit of "NAMEI" (operand) is set, 
+                        then a NULL is pushed to the stack before the global variable. */
+                        stack.push(nullptr);
+                    }
                 }
-                operand >>= 1;
+
+                if (mod->verCompare(3, 11) >= 0) {
+                    operand >>= 1;
+                }
+                
+                stack.push(new ASTName(code->getName(operand)));
+
+                if (mod->verCompare(3, 13) >= 0) {
+                    // Loads the global named co_names[namei>>1] onto the stack.
+                    if (starting_operand & 0x01) {
+                        /* Changed AGAIN in 3.13:
+                        Not currently in the docs, but the source confirms this has changed to 
+                        match the new stacker order rules for the CALL Opcode, where the
+                        Method or Attr is pushed to the stack BEFORE Self or NULL */
+                        stack.push(nullptr);
+                    }
+                }
             }
-            stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::LOAD_LOCALS:
             stack.push(new ASTNode(ASTNode::NODE_LOCALS));
@@ -1560,31 +1614,133 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::MAKE_CLOSURE_A:
+        case Pyc::MAKE_FUNCTION:
         case Pyc::MAKE_FUNCTION_A:
             {
                 PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
 
-                /* Test for the qualified name of the function (at TOS) */
+                /* Test for the qualified name of the function (at TOS), removed in 3.11 */
                 int tos_type = fun_code.cast<ASTObject>()->object().type();
                 if (tos_type != PycObject::TYPE_CODE &&
                     tos_type != PycObject::TYPE_CODE2) {
                     fun_code = stack.top();
                     stack.pop();
                 }
-
                 ASTFunction::defarg_t defArgs, kwDefArgs;
                 const int defCount = operand & 0xFF;
                 const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop();
-                }
+                const int annotationCount = (operand >> 16) & 0x7FFF;
+                
+                /* Docs for 3.3 say KW Pairs come first, but reality disagrees */
+                if (mod->verCompare(3, 3) <= 0) {
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    /* KW Defaults not mentioned in docs, but they come after the positional args */
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop(); // KW Pair object
+                        stack.pop(); // KW Pair name
+                    }
+                } else if (mod->verCompare(3, 5) <= 0) {
+                    /* From Py 3.4 there can now be annotation params
+                    The order has also switched so Kwargs come before Pos Args */
+                    if(annotationCount) {
+                        stack.pop(); // Tuple of param names for annotations
+                        for (int i = 0; i < annotationCount; ++i) {
+                            stack.pop(); // Pop annotation objects and ignore
+                        }
+                    }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop(); // KW Pair object
+                        stack.pop(); // KW Pair name
+                    }
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                } else  if (mod->verCompare(3, 12) <= 0) {
+                    /* From Py 3.6-12 the operand stopped being an argument count
+                    and changed to a flag that indicates what is represented by
+                    preceding tuples on the stack. Docs for 3.7 are clearer,
+                    docs for 3.6 may have not been correctly updated */
+                    if(operand & 0x08) { // Cells for free vars to create a closure
+                        stack.pop(); // Ignore these for syntax generation
+                    }
+                    if(operand & 0x04) { // Annotation dict (3.6-9) or string (3.10+)
+                        stack.pop(); // Ignore annotations
+                    }
+                    if(operand & 0x02) { // Kwarg Defaults
+                        PycRef<ASTNode> kw_tuple = stack.top();
+                        stack.pop();
+                        std::vector<PycRef<ASTNode>> kw_values = kw_tuple.cast<ASTConstMap>()->values();
+                        
+                        for(const PycRef<ASTNode>& kw : kw_values) {
+                            kwDefArgs.push_front(kw);
+                        }
+                    }
+                    if(operand & 0x01) { // Positional Defaults (including positional-or-KW args)
+                        PycRef<ASTNode> pos_tuple = stack.top();
+                        stack.pop();
+                        std::vector<PycRef<PycObject>> pos_values = pos_tuple.cast<ASTObject>()->object().cast<PycTuple>()->values();
+                        
+                        for(const PycRef<PycObject>& pos : pos_values) {
+                            defArgs.push_back(new ASTObject(pos));
+                        }
+                    }
+                } /* From 3.13 the flag is not longer set on the MAKE_FUNCTION opcode,
+                    but instead on a SET_FUNCTION_ARGUMENT opcode that follows it */
+                
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
+            }
+            break;
+        case Pyc::SET_FUNCTION_ATTRIBUTE_A:
+            {
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                if(func.type() != ASTNode::NODE_FUNCTION) {
+                    fputs("Trying to process SET_FUNCTION_ATTRIBUTE when ToS isn't an ASTFunction. This is bad.\n", stderr);
+                    break;
+                }
+                PycRef<ASTFunction> function = func.cast<ASTFunction>();
+
+                /* dis Docs suggest the operand is a flag that would allow for multiple attributes
+                    but as mentioned in bytecode.cpp this opcode seems to be a single lookup
+                    for positional + kwargs, so take whatever was previously set and add to it*/
+                ASTFunction::defarg_t defArgs = function ->defargs();
+                ASTFunction::defarg_t kwDefArgs = function->kwdefargs();
+
+                /* Argument processing the same as 3.6-12, just incrementally adding
+                to whatever is already there */
+                if(operand & 0x08) { // Cells for free vars to create a closure
+                    stack.pop(); // Ignore these for syntax generation
+                }
+                if(operand & 0x04) { // Annotation dict (3.6-9) or string (3.10+)
+                    stack.pop(); // Ignore annotations
+                }
+                if(operand & 0x02) { // Kwarg Defaults
+                    PycRef<ASTNode> kw_tuple = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<ASTNode>> kw_values = kw_tuple.cast<ASTConstMap>()->values();
+                    
+                    for(const PycRef<ASTNode>& kw : kw_values) {
+                        kwDefArgs.push_front(kw);
+                    }
+                }
+                if(operand & 0x01) { // Positional Defaults (including positional-or-KW args)
+                    PycRef<ASTNode> pos_tuple = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<PycObject>> pos_values = pos_tuple.cast<ASTObject>()->object().cast<PycTuple>()->values();
+                    
+                    for(const PycRef<PycObject>& pos : pos_values) {
+                        defArgs.push_back(new ASTObject(pos));
+                    }
+                }
+
+                stack.push(new ASTFunction(function->code(), defArgs, kwDefArgs));
             }
             break;
         case Pyc::NOP:
@@ -3519,6 +3675,18 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                 }
             }
         }
+        if (clean->nodes().front().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().front().cast<ASTStore>();
+            if (store->src().type() == ASTNode::NODE_OBJECT
+                    && store->dest().type() == ASTNode::NODE_NAME) {
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (dest->name()->isEqual("__firstlineno__")) {
+                    // __firstlineno__ = "Records the first line number of a class definition" - Not sure if this is something to do with docstrings
+                    // Automatically added by Python 3.13 and later
+                    clean->removeFirst();
+                }
+            }
+        }
 
         // Class and module docstrings may only appear at the beginning of their source
         if (printClassDocstring && clean->nodes().front().type() == ASTNode::NODE_STORE) {
@@ -3538,6 +3706,18 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
             if (ret->value() == NULL || ret->value().type() == ASTNode::NODE_LOCALS ||
                     (retObj && retObj->object().type() == PycObject::TYPE_NONE)) {
                 clean->removeLast();  // Always an extraneous return statement
+            }
+        }
+        if (clean->nodes().back().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> store = clean->nodes().back().cast<ASTStore>();
+            if (store->src().type() == ASTNode::NODE_TUPLE
+                    && store->dest().type() == ASTNode::NODE_NAME) {
+                PycRef<ASTName> dest = store->dest().cast<ASTName>();
+                if (dest->name()->isEqual("__static_attributes__")) {
+                    // __static_attributes__ = "stores the names of attributes accessed through self.X in any function in a class body"
+                    // Automatically added by Python 3.13 and later
+                    clean->removeLast();
+                }
             }
         }
     }
