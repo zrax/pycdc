@@ -1495,36 +1495,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_ATTR_A:
             {
                 PycRef<ASTNode> name = stack.top();
-                if (name.type() != ASTNode::NODE_IMPORT) {
-                    stack.pop();
+                if (name.type() == ASTNode::NODE_IMPORT) {
+                    break;
+                }
 
-                    if (mod->verCompare(3, 12) == 0) {
-                        if (operand & 1) {
-                            /* Changed in version 3.12:
-                            If the low bit of name is set, then a NULL or self is pushed to the stack
-                            before the attribute or unbound method respectively. */
-                            stack.push(nullptr);
-                        }
-                        operand >>= 1;
-                        stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
-                        break;
+                stack.pop();
+                int starting_operand = operand;
+
+                if (mod->verCompare(3, 12) == 0) {
+                    if (operand & 1) {
+                        /* Changed in version 3.12:
+                        If the low bit of name is set, then a NULL or self is pushed to the stack
+                        before the attribute or unbound method respectively. */
+                        stack.push(nullptr);
                     }
+                }
 
-                    if (mod->verCompare(3, 13) >= 0) {
-                        if (operand & 0x01) {
-                            /* Changed AGAIN in 3.13:
-                            Not currently in the docs, but the source confirms this has changed to 
-                            match the new stacker order rules for the CALL Opcode, where the
-                            Method or Attr is pushed to the stack BEFORE Self or NULL */
-                            stack.pop();
-                            operand >>= 1;
-                            stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
-                            stack.push(nullptr);
-                        }
-                        break;
+                if (mod->verCompare(3, 12) >= 0) {
+                    operand >>= 1;
+                }
+
+                stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
+
+                if (mod->verCompare(3, 13) >= 0) {
+                    if (starting_operand & 0x01) {
+                        /* Changed AGAIN in 3.13:
+                        Not currently in the docs, but the source confirms this has changed to 
+                        match the new stacker order rules for the CALL Opcode, where the
+                        Method or Attr is pushed to the stack BEFORE Self or NULL */
+                        stack.push(nullptr);
                     }
-
-                    stack.push(new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR));
                 }
             }
             break;
@@ -1565,17 +1565,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getLocal(operand & 0xF)));
             break;
         case Pyc::LOAD_GLOBAL_A:
-            if (mod->verCompare(3, 11) >= 0) {
-                // Loads the global named co_names[namei>>1] onto the stack.
-                if (operand & 1) {
-                    /* Changed in version 3.11: 
-                    If the low bit of "NAMEI" (operand) is set, 
-                    then a NULL is pushed to the stack before the global variable. */
-                    stack.push(nullptr);
+            {
+                int starting_operand = operand;
+
+                if (mod->verCompare(3, 11) == 0 || mod->verCompare(3, 12) == 0 ) {
+                    // Loads the global named co_names[namei>>1] onto the stack.
+                    if (operand & 1) {
+                        /* Changed in version 3.11: 
+                        If the low bit of "NAMEI" (operand) is set, 
+                        then a NULL is pushed to the stack before the global variable. */
+                        stack.push(nullptr);
+                    }
                 }
-                operand >>= 1;
+
+                if (mod->verCompare(3, 11) >= 0) {
+                    operand >>= 1;
+                }
+                
+                stack.push(new ASTName(code->getName(operand)));
+
+                if (mod->verCompare(3, 13) >= 0) {
+                    // Loads the global named co_names[namei>>1] onto the stack.
+                    if (starting_operand & 0x01) {
+                        /* Changed AGAIN in 3.13:
+                        Not currently in the docs, but the source confirms this has changed to 
+                        match the new stacker order rules for the CALL Opcode, where the
+                        Method or Attr is pushed to the stack BEFORE Self or NULL */
+                        stack.push(nullptr);
+                    }
+                }
             }
-            stack.push(new ASTName(code->getName(operand)));
             break;
         case Pyc::LOAD_LOCALS:
             stack.push(new ASTNode(ASTNode::NODE_LOCALS));
