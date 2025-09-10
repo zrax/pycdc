@@ -278,24 +278,30 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
 
 void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& pos)
 {
+    if (source.atEof()) {
+        opcode = 0;
+        operand = 0;
+        return;
+    }
+    
     opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
     if (mod->verCompare(3, 6) >= 0) {
-        operand = source.getByte();
+        operand = source.atEof() ? 0 : source.getByte();
         pos += 2;
-        if (opcode == Pyc::EXTENDED_ARG_A) {
+        if (opcode == Pyc::EXTENDED_ARG_A && !source.atEof()) {
             opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
-            operand = (operand << 8) | source.getByte();
+            operand = (operand << 8) | (source.atEof() ? 0 : source.getByte());
             pos += 2;
         }
     } else {
         operand = 0;
         pos += 1;
-        if (opcode == Pyc::EXTENDED_ARG_A) {
+        if (opcode == Pyc::EXTENDED_ARG_A && !source.atEof()) {
             operand = source.get16() << 16;
             opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
             pos += 3;
         }
-        if (opcode >= Pyc::PYC_HAVE_ARG) {
+        if (opcode >= Pyc::PYC_HAVE_ARG && !source.atEof()) {
             operand |= source.get16();
             pos += 2;
         }
