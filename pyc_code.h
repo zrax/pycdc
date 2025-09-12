@@ -1,5 +1,5 @@
-#ifndef _PYC_CODE_H
-#define _PYC_CODE_H
+#ifndef PYC_CODE_H
+#define PYC_CODE_H
 
 #include "pyc_sequence.h"
 #include "pyc_string.h"
@@ -16,8 +16,11 @@ public:
     int stack_depth;
     bool push_lasti;
 
-    PycExceptionTableEntry(int m_start_offset, int m_end_offset, int m_target, int m_stack_depth, bool m_push_lasti) :
-        start_offset(m_start_offset), end_offset(m_end_offset), target(m_target), stack_depth(m_stack_depth), push_lasti(m_push_lasti) {};
+    PycExceptionTableEntry(int m_start_offset, int m_end_offset, int m_target,
+        int m_stack_depth, bool m_push_lasti) :
+        start_offset(m_start_offset), end_offset(m_end_offset),
+        target(m_target), stack_depth(m_stack_depth),
+        push_lasti(m_push_lasti) { };
 };
 
 class PycCode : public PycObject {
@@ -38,20 +41,22 @@ public:
 
         // The FUTURE flags are shifted left 4 bits starting from Python 3.8
         // Older versions are automatically mapped to the new values in load()
-        CO_FUTURE_DIVISION = 0x20000,                       // 2.3 - 2.7, 3.1 ->
-        CO_FUTURE_ABSOLUTE_IMPORT = 0x40000,                // 2.5 - 2.7, 3.1 ->
-        CO_FUTURE_WITH_STATEMENT = 0x80000,                 // 2.5 - 2.7, 3.1 ->
-        CO_FUTURE_PRINT_FUNCTION = 0x100000,                // 2.6 - 2.7, 3.1 ->
-        CO_FUTURE_UNICODE_LITERALS = 0x200000,              // 2.6 - 2.7, 3.1 ->
-        CO_FUTURE_BARRY_AS_BDFL = 0x400000,                 // 3.1 ->
-        CO_FUTURE_GENERATOR_STOP = 0x800000,                // 3.5 ->
-        CO_FUTURE_ANNOTATIONS = 0x1000000,                  // 3.7 ->
-        CO_NO_MONITORING_EVENTS = 0x2000000,                // 3.13 ->
+        CO_FUTURE_DIVISION = 0x20000,   // 2.3 - 2.7, 3.1 ->
+        CO_FUTURE_ABSOLUTE_IMPORT = 0x40000,   // 2.5 - 2.7, 3.1 ->
+        CO_FUTURE_WITH_STATEMENT = 0x80000,   // 2.5 - 2.7, 3.1 ->
+        CO_FUTURE_PRINT_FUNCTION = 0x100000,   // 2.6 - 2.7, 3.1 ->
+        CO_FUTURE_UNICODE_LITERALS = 0x200000,   // 2.6 - 2.7, 3.1 ->
+        CO_FUTURE_BARRY_AS_BDFL = 0x400000,   // 3.1 ->
+        CO_FUTURE_GENERATOR_STOP = 0x800000,   // 3.5 ->
+        CO_FUTURE_ANNOTATIONS = 0x1000000,   // 3.7 ->
+        CO_NO_MONITORING_EVENTS = 0x2000000,   // 3.13 ->
     };
 
-    PycCode(int type = TYPE_CODE)
-        : PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
-          m_numLocals(), m_stackSize(), m_flags(), m_firstLine() { }
+    PycCode(int type = TYPE_CODE) :
+        PycObject(type), m_argCount(), m_posOnlyArgCount(), m_kwOnlyArgCount(),
+        m_numLocals(), m_stackSize(), m_flags(), m_firstLine()
+    {
+    }
 
     void load(PycData* stream, PycModule* mod) override;
 
@@ -75,10 +80,7 @@ public:
     PycRef<PycString> lnTable() const { return m_lnTable; }
     PycRef<PycString> exceptTable() const { return m_exceptTable; }
 
-    PycRef<PycObject> getConst(int idx) const
-    {
-        return m_consts->get(idx);
-    }
+    PycRef<PycObject> getConst(int idx) const { return m_consts->get(idx); }
 
     PycRef<PycString> getName(int idx) const
     {

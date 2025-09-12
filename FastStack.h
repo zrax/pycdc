@@ -1,5 +1,5 @@
-#ifndef _PYC_FASTSTACK_H
-#define _PYC_FASTSTACK_H
+#ifndef PYC_FASTSTACK_H
+#define PYC_FASTSTACK_H
 
 #include "ASTNode.h"
 #include <stack>
@@ -8,8 +8,9 @@ class FastStack {
 public:
     FastStack(int size) : m_ptr(-1) { m_stack.resize(size); }
 
-    FastStack(const FastStack& copy)
-        : m_stack(copy.m_stack), m_ptr(copy.m_ptr) { }
+    FastStack(const FastStack& copy) : m_stack(copy.m_stack), m_ptr(copy.m_ptr)
+    {
+    }
 
     FastStack& operator=(const FastStack& copy)
     {
@@ -31,9 +32,9 @@ public:
         if (m_ptr > -1)
             m_stack[m_ptr--] = nullptr;
         else {
-            #ifdef BLOCK_DEBUG
-                fprintf(stderr, "pop from empty stack\n");
-            #endif
+#ifdef BLOCK_DEBUG
+            fprintf(stderr, "pop from empty stack\n");
+#endif
         }
     }
 
@@ -44,9 +45,9 @@ public:
             if ((m_ptr > -1) && (idx >= 0))
                 return m_stack[idx];
             else {
-                #ifdef BLOCK_DEBUG
-                    fprintf(stderr, "insufficient values on stack\n");
-                #endif
+#ifdef BLOCK_DEBUG
+                fprintf(stderr, "insufficient values on stack\n");
+#endif
                 return nullptr;
             }
         }
@@ -56,10 +57,7 @@ public:
         }
     }
 
-    bool empty() const
-    {
-        return m_ptr == -1;
-    }
+    bool empty() const { return m_ptr == -1; }
 
 private:
     std::vector<PycRef<ASTNode>> m_stack;

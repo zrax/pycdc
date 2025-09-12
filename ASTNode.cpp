@@ -14,24 +14,19 @@ void ASTNodeList::removeFirst()
     m_nodes.erase(m_nodes.begin());
 }
 
-
 /* ASTUnary */
 const char* ASTUnary::op_str() const
 {
-    static const char* s_op_strings[] = {
-        "+", "-", "~", "not "
-    };
+    static const char* s_op_strings[] = { "+", "-", "~", "not " };
     return s_op_strings[op()];
 }
-
 
 /* ASTBinary */
 const char* ASTBinary::op_str() const
 {
-    static const char* s_op_strings[] = {
-        ".", " ** ", " * ", " / ", " // ", " % ", " + ", " - ",
-        " << ", " >> ", " & ", " ^ ", " | ", " and ", " or ", " @ ",
-        " += ", " -= ", " *= ", " /= ", " %= ", " **= ", " <<= ",
+    static const char* s_op_strings[] = { ".", " ** ", " * ", " / ", " // ",
+        " % ", " + ", " - ", " << ", " >> ", " & ", " ^ ", " | ", " and ",
+        " or ", " @ ", " += ", " -= ", " *= ", " /= ", " %= ", " **= ", " <<= ",
         " >>= ", " &= ", " ^= ", " |= ", " //= ", " @= ", " <INVALID> "
 
     };
@@ -162,27 +157,21 @@ ASTBinary::BinOp ASTBinary::from_binary_op(int operand)
     }
 }
 
-
 /* ASTCompare */
 const char* ASTCompare::op_str() const
 {
-    static const char* s_cmp_strings[] = {
-        " < ", " <= ", " == ", " != ", " > ", " >= ", " in ", " not in ", " is ", " is not ",
-        "<EXCEPTION MATCH>", "<BAD>"
-    };
+    static const char* s_cmp_strings[] = { " < ", " <= ", " == ", " != ", " > ",
+        " >= ", " in ", " not in ", " is ", " is not ", "<EXCEPTION MATCH>",
+        "<BAD>" };
     return s_cmp_strings[op()];
 }
-
 
 /* ASTKeyword */
 const char* ASTKeyword::word_str() const
 {
-    static const char* s_word_strings[] = {
-        "pass", "break", "continue"
-    };
+    static const char* s_word_strings[] = { "pass", "break", "continue" };
     return s_word_strings[key()];
 }
-
 
 /* ASTBlock */
 void ASTBlock::removeLast()
@@ -199,9 +188,7 @@ void ASTBlock::removeFirst()
 
 const char* ASTBlock::type_str() const
 {
-    static const char* s_type_strings[] = {
-        "", "if", "else", "elif", "try", "CONTAINER", "except",
-        "finally", "while", "for", "with", "async for"
-    };
+    static const char* s_type_strings[] = { "", "if", "else", "elif", "try",
+        "CONTAINER", "except", "finally", "while", "for", "with", "async for" };
     return s_type_strings[blktype()];
 }

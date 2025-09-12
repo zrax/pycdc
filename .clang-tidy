@@ -1,0 +1,12 @@
+Checks: >
+  -*,
+  bugprone-*,
+  modernize-use-override,
+  clang-analyzer-*,
+  -bugprone-easily-swappable-parameters,
+  -clang-diagnostic-error,
+  -clang-analyzer-cplusplus.NewDelete,
+
+WarningsAsErrors: ''     # keep warnings first, promote to errors later
+HeaderFilterRegex: 'src/.*'
+FormatStyle: none

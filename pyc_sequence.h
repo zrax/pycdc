@@ -1,5 +1,5 @@
-#ifndef _PYC_SEQUENCE_H
-#define _PYC_SEQUENCE_H
+#ifndef PYC_SEQUENCE_H
+#define PYC_SEQUENCE_H
 
 #include "pyc_object.h"
 #include <tuple>

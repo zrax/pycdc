@@ -1,5 +1,5 @@
-#ifndef _PYC_MODULE_H
-#define _PYC_MODULE_H
+#ifndef PYC_MODULE_H
+#define PYC_MODULE_H
 
 #include "pyc_code.h"
 #include <vector>
@@ -45,7 +45,7 @@ public:
     PycModule() : m_maj(-1), m_min(-1), m_unicode(false) { }
 
     void loadFromFile(const char* filename);
-    void loadFromMarshalledFile(const char *filename, int major, int minor);
+    void loadFromMarshalledFile(const char* filename, int major, int minor);
     bool isValid() const { return (m_maj >= 0) && (m_min >= 0); }
 
     int majorVer() const { return m_maj; }
@@ -62,20 +62,28 @@ public:
 
     bool strIsUnicode() const
     {
-        return (m_maj >= 3) || (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+        return (m_maj >= 3) ||
+               (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
     }
 
     bool internIsBytes() const
     {
-        return (m_maj < 3) && (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
+        return (m_maj < 3) &&
+               (m_code->flags() & PycCode::CO_FUTURE_UNICODE_LITERALS) != 0;
     }
 
     PycRef<PycCode> code() const { return m_code; }
 
-    void intern(PycRef<PycString> str) { m_interns.emplace_back(std::move(str)); }
+    void intern(PycRef<PycString> str)
+    {
+        m_interns.emplace_back(std::move(str));
+    }
     PycRef<PycString> getIntern(int ref) const;
 
-    void refObject(PycRef<PycObject> obj) { m_refs.emplace_back(std::move(obj)); }
+    void refObject(PycRef<PycObject> obj)
+    {
+        m_refs.emplace_back(std::move(obj));
+    }
     PycRef<PycObject> getRef(int ref) const;
 
     static bool isSupportedVersion(int major, int minor);

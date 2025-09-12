@@ -1,6 +1,6 @@
 #include "pyc_sequence.h"
-#include "pyc_module.h"
 #include "data.h"
+#include "pyc_module.h"
 #include <stdexcept>
 
 /* PycSimpleSequence */
@@ -8,7 +8,7 @@ void PycSimpleSequence::load(PycData* stream, PycModule* mod)
 {
     m_size = stream->get32();
     m_values.reserve(m_size);
-    for (int i=0; i<m_size; i++)
+    for (int i = 0; i < m_size; i++)
         m_values.push_back(LoadObject(stream, mod));
 }
 
@@ -30,7 +30,6 @@ bool PycSimpleSequence::isEqual(PycRef<PycObject> obj) const
     return true;
 }
 
-
 /* PycTuple */
 void PycTuple::load(PycData* stream, PycModule* mod)
 {
@@ -40,10 +39,9 @@ void PycTuple::load(PycData* stream, PycModule* mod)
         m_size = stream->get32();
 
     m_values.resize(m_size);
-    for (int i=0; i<m_size; i++)
+    for (int i = 0; i < m_size; i++)
         m_values[i] = LoadObject(stream, mod);
 }
-
 
 /* PycDict */
 void PycDict::load(PycData* stream, PycModule* mod)

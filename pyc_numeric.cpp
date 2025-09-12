@@ -1,10 +1,10 @@
 #include "pyc_numeric.h"
-#include "pyc_module.h"
 #include "data.h"
+#include "pyc_module.h"
 #include <cstring>
 
 #ifdef _MSC_VER
-#define snprintf sprintf_s
+    #define snprintf sprintf_s
 #endif
 
 /* PycInt */
@@ -13,7 +13,6 @@ void PycInt::load(PycData* stream, PycModule*)
     m_value = stream->get32();
 }
 
-
 /* PycLong */
 void PycLong::load(PycData* stream, PycModule*)
 {
@@ -21,16 +20,17 @@ void PycLong::load(PycData* stream, PycModule*)
         m_value.reserve(4);
         int lo = stream->get32();
         int hi = stream->get32();
-        m_value.push_back((lo      ) & 0xFFFF);
+        m_value.push_back((lo) & 0xFFFF);
         m_value.push_back((lo >> 16) & 0xFFFF);
-        m_value.push_back((hi      ) & 0xFFFF);
+        m_value.push_back((hi) & 0xFFFF);
         m_value.push_back((hi >> 16) & 0xFFFF);
         m_size = (hi & 0x80000000) != 0 ? -4 : 4;
-    } else {
+    }
+    else {
         m_size = stream->get32();
         int actualSize = m_size >= 0 ? m_size : -m_size;
         m_value.reserve(actualSize);
-        for (int i=0; i<actualSize; i++)
+        for (int i = 0; i < actualSize; i++)
             m_value.push_back(stream->get16());
     }
 }
@@ -66,12 +66,12 @@ std::string PycLong::repr(PycModule* mod) const
     bits.reserve((m_value.size() + 1) / 2);
     int shift = 0, temp = 0;
     for (auto bit : m_value) {
-        temp |= unsigned(bit & 0xFFFF) << shift;
+        temp |= static_cast<int>(unsigned(bit & 0xFFFF) << shift);
         shift += 15;
         if (shift >= 32) {
             bits.push_back(temp);
             shift -= 32;
-            temp = unsigned(bit & 0xFFFF) >> (15 - shift);
+            temp = static_cast<int>(unsigned(bit & 0xFFFF) >> (15 - shift));
         }
     }
     if (temp)
@@ -96,7 +96,6 @@ std::string PycLong::repr(PycModule* mod) const
     return accum;
 }
 
-
 /* PycFloat */
 void PycFloat::load(PycData* stream, PycModule*)
 {
@@ -117,7 +116,6 @@ bool PycFloat::isEqual(PycRef<PycObject> obj) const
     PycRef<PycFloat> floatObj = obj.cast<PycFloat>();
     return m_value == floatObj->m_value;
 }
-
 
 /* PycComplex */
 void PycComplex::load(PycData* stream, PycModule* mod)
@@ -142,14 +140,12 @@ bool PycComplex::isEqual(PycRef<PycObject> obj) const
     return m_imag == floatObj->m_imag;
 }
 
-
 /* PycCFloat */
 void PycCFloat::load(PycData* stream, PycModule*)
 {
     Pyc_INT64 bits = stream->get64();
     memcpy(&m_value, &bits, sizeof(bits));
 }
-
 
 /* PycCComplex */
 void PycCComplex::load(PycData* stream, PycModule* mod)

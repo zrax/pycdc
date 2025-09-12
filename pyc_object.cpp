@@ -1,8 +1,8 @@
 #include "pyc_object.h"
+#include "data.h"
+#include "pyc_code.h"
 #include "pyc_module.h"
 #include "pyc_numeric.h"
-#include "pyc_code.h"
-#include "data.h"
 #include <cstdio>
 
 PycRef<PycObject> Pyc_None = new PycObject(PycObject::TYPE_NONE);
@@ -76,7 +76,8 @@ PycRef<PycObject> LoadObject(PycData* stream, PycModule* mod)
     if (type == PycObject::TYPE_OBREF) {
         int index = stream->get32();
         obj = mod->getRef(index);
-    } else {
+    }
+    else {
         obj = CreateObject(type & 0x7F);
         if (obj != NULL) {
             if (type & 0x80)

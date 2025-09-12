@@ -1,5 +1,5 @@
-#ifndef _PYC_FILE_H
-#define _PYC_FILE_H
+#ifndef PYC_FILE_H
+#define PYC_FILE_H
 
 #include <cstdio>
 #include <ostream>
@@ -28,7 +28,11 @@ public:
 class PycFile : public PycData {
 public:
     PycFile(const char* filename);
-    ~PycFile() { if (m_stream) fclose(m_stream); }
+    ~PycFile() override
+    {
+        if (m_stream)
+            fclose(m_stream);
+    }
 
     bool isOpen() const override { return (m_stream != 0); }
     bool atEof() const override;
@@ -42,9 +46,11 @@ private:
 
 class PycBuffer : public PycData {
 public:
-    PycBuffer(const void* buffer, int size)
-        : m_buffer((const unsigned char*)buffer), m_size(size), m_pos(0) { }
-    ~PycBuffer() { }
+    PycBuffer(const void* buffer, int size) :
+        m_buffer((const unsigned char*)buffer), m_size(size), m_pos(0)
+    {
+    }
+    ~PycBuffer() override { }
 
     bool isOpen() const override { return (m_buffer != 0); }
     bool atEof() const override { return (m_pos == m_size); }

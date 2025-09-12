@@ -30,63 +30,63 @@ void PycModule::setVersion(unsigned int magic)
         break;
 
     /* Starting with 1.6, Python adds +1 for unicode mode (-U) */
-    case MAGIC_1_6+1:
+    case MAGIC_1_6 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_1_6:
         m_maj = 1;
         m_min = 6;
         break;
-    case MAGIC_2_0+1:
+    case MAGIC_2_0 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_0:
         m_maj = 2;
         m_min = 0;
         break;
-    case MAGIC_2_1+1:
+    case MAGIC_2_1 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_1:
         m_maj = 2;
         m_min = 1;
         break;
-    case MAGIC_2_2+1:
+    case MAGIC_2_2 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_2:
         m_maj = 2;
         m_min = 2;
         break;
-    case MAGIC_2_3+1:
+    case MAGIC_2_3 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_3:
         m_maj = 2;
         m_min = 3;
         break;
-    case MAGIC_2_4+1:
+    case MAGIC_2_4 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_4:
         m_maj = 2;
         m_min = 4;
         break;
-    case MAGIC_2_5+1:
+    case MAGIC_2_5 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_5:
         m_maj = 2;
         m_min = 5;
         break;
-    case MAGIC_2_6+1:
+    case MAGIC_2_6 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_6:
         m_maj = 2;
         m_min = 6;
         break;
-    case MAGIC_2_7+1:
+    case MAGIC_2_7 + 1:
         m_unicode = true;
         /* Fall through */
     case MAGIC_2_7:
@@ -95,12 +95,12 @@ void PycModule::setVersion(unsigned int magic)
         break;
 
     /* 3.0 and above are always unicode */
-    case MAGIC_3_0+1:
+    case MAGIC_3_0 + 1:
         m_maj = 3;
         m_min = 0;
         m_unicode = true;
         break;
-    case MAGIC_3_1+1:
+    case MAGIC_3_1 + 1:
         m_maj = 3;
         m_min = 1;
         m_unicode = true;
@@ -224,7 +224,8 @@ void PycModule::loadFromFile(const char* filename)
         // Optional checksum added in Python 3.7
         in.get32();
         in.get32();
-    } else {
+    }
+    else {
         in.get32(); // Timestamp -- who cares?
 
         if (verCompare(3, 3) >= 0)
@@ -234,9 +235,10 @@ void PycModule::loadFromFile(const char* filename)
     m_code = LoadObject(&in, this).cast<PycCode>();
 }
 
-void PycModule::loadFromMarshalledFile(const char* filename, int major, int minor)
+void PycModule::loadFromMarshalledFile(
+    const char* filename, int major, int minor)
 {
-    PycFile in (filename);
+    PycFile in(filename);
     if (!in.isOpen()) {
         fprintf(stderr, "Error opening file %s\n", filename);
         return;

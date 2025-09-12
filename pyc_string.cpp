@@ -1,6 +1,6 @@
 #include "pyc_string.h"
-#include "pyc_module.h"
 #include "data.h"
+#include "pyc_module.h"
 #include <stdexcept>
 
 static bool check_ascii(const std::string& data)
@@ -21,7 +21,8 @@ void PycString::load(PycData* stream, PycModule* mod)
         PycRef<PycString> str = mod->getIntern(stream->get32());
         m_type = str->m_type;
         m_value = str->m_value;
-    } else {
+    }
+    else {
         int length;
         if (type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED)
             length = stream->getByte();
@@ -35,14 +36,15 @@ void PycString::load(PycData* stream, PycModule* mod)
         if (length) {
             stream->getBuffer(length, &m_value.front());
             if (type() == TYPE_ASCII || type() == TYPE_ASCII_INTERNED ||
-                    type() == TYPE_SHORT_ASCII || type() == TYPE_SHORT_ASCII_INTERNED) {
+                type() == TYPE_SHORT_ASCII ||
+                type() == TYPE_SHORT_ASCII_INTERNED) {
                 if (!check_ascii(m_value))
                     throw std::runtime_error("Invalid bytes in ASCII string");
             }
         }
 
         if (type() == TYPE_INTERNED || type() == TYPE_ASCII_INTERNED ||
-                type() == TYPE_SHORT_ASCII_INTERNED)
+            type() == TYPE_SHORT_ASCII_INTERNED)
             mod->intern(this);
     }
 }
@@ -56,8 +58,8 @@ bool PycString::isEqual(PycRef<PycObject> obj) const
     return isEqual(strObj->m_value);
 }
 
-void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
-                      const char* parent_f_string_quote)
+void PycString::print(std::ostream& pyc_output, PycModule* mod, bool triple,
+    const char* parent_f_string_quote)
 {
     char prefix = 0;
     switch (type()) {
@@ -95,12 +97,14 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
         for (char ch : m_value) {
             if (ch == '\'') {
                 useQuotes = true;
-            } else if (ch == '"') {
+            }
+            else if (ch == '"') {
                 useQuotes = false;
                 break;
             }
         }
-    } else {
+    }
+    else {
         useQuotes = parent_f_string_quote[0] == '"';
     }
 
@@ -115,24 +119,30 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
         if (static_cast<unsigned char>(ch) < 0x20 || ch == 0x7F) {
             if (ch == '\r') {
                 pyc_output << "\\r";
-            } else if (ch == '\n') {
+            }
+            else if (ch == '\n') {
                 if (triple)
                     pyc_output << '\n';
                 else
                     pyc_output << "\\n";
-            } else if (ch == '\t') {
+            }
+            else if (ch == '\t') {
                 pyc_output << "\\t";
-            } else {
+            }
+            else {
                 formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
-        } else if (static_cast<unsigned char>(ch) >= 0x80) {
+        }
+        else if (static_cast<unsigned char>(ch) >= 0x80) {
             if (type() == TYPE_UNICODE) {
                 // Unicode stored as UTF-8...  Let the stream interpret it
                 pyc_output << ch;
-            } else {
+            }
+            else {
                 formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
-        } else {
+        }
+        else {
             if (!useQuotes && ch == '\'')
                 pyc_output << R"(\')";
             else if (useQuotes && ch == '"')
