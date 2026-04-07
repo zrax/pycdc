@@ -1,0 +1,10 @@
+def test ( ) : <EOL>
+<INDENT>
+a = 10 <EOL>
+if a : <EOL>
+<INDENT>
+raise Exception ( 'test123' ) <EOL>
+<OUTDENT>
+if a : <EOL>
+<INDENT>
+raise Exception ( 'test456' ) <EOL>

@@ -1,0 +1,149 @@
+def test ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except ValueError : <EOL>
+<INDENT>
+return 0 <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+c = 1 <EOL>
+<OUTDENT>
+b = 3 <EOL>
+<OUTDENT>
+def test1 ( ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+if a : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except ValueError : <EOL>
+<INDENT>
+b = 2 <EOL>
+return 2 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+b = 3 <EOL>
+return 3 <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+b = 4 <EOL>
+return 4 <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+b = 5 <EOL>
+return 5 <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = 3 <EOL>
+<OUTDENT>
+def test2 ( ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+if a : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except ValueError : <EOL>
+<INDENT>
+b = 2 <EOL>
+return 2 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+b = 3 <EOL>
+return 3 <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+b = 4 <EOL>
+return 4 <EOL>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+b = 5 <EOL>
+return 5 <EOL>
+<OUTDENT>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = 3 <EOL>
+<OUTDENT>
+def test3 ( ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+if a : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except ValueError : <EOL>
+<INDENT>
+b = 2 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+b = 3 <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+b = 4 <EOL>
+<OUTDENT>
+c = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = 114 <EOL>
+<OUTDENT>
+def test5 ( ) : <EOL>
+<INDENT>
+a = 1 <EOL>
+if a : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except ValueError : <EOL>
+<INDENT>
+b = 2 <EOL>
+return 2 <EOL>
+<OUTDENT>
+except IndexError : <EOL>
+<INDENT>
+b = 3 <EOL>
+return 3 <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+b = 4 <EOL>
+return 4 <EOL>
+<OUTDENT>
+b = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+b = 3 <EOL>
