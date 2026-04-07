@@ -26,6 +26,7 @@ lntable                         Obj     Obj     Obj     Obj     Obj     Obj
 exceptiontable                                                          Obj
 */
 
+// TODO : Simplify this function
 void PycCode::load(PycData* stream, PycModule* mod)
 {
     if (mod->verCompare(1, 3) >= 0 && mod->verCompare(2, 3) < 0)
@@ -75,23 +76,49 @@ void PycCode::load(PycData* stream, PycModule* mod)
     m_consts = LoadObject(stream, mod).cast<PycSequence>();
     m_names = LoadObject(stream, mod).cast<PycSequence>();
 
+    // Represents localsplusnames for py 3.11+
     if (mod->verCompare(1, 3) >= 0)
         m_localNames = LoadObject(stream, mod).cast<PycSequence>();
     else
         m_localNames = new PycTuple;
 
-    if (mod->verCompare(3, 11) >= 0)
+    PycSimpleSequence::value_t free_vars_extra, cell_vars_extra;
+
+    if (mod->verCompare(3, 11) >= 0) {
         m_localKinds = LoadObject(stream, mod).cast<PycString>();
+
+        if (m_localKinds->length() != m_localNames->size()) {
+            throw std::runtime_error("All variables kinds are not available");
+        }
+
+        // Starting py3.11, all variables are now part of localsplusnames
+
+        for (int i = 0; i < m_localKinds->length(); i++) {
+            const char kind = m_localKinds->value()[i];
+            auto name = m_localNames->get(i);
+
+            if (kind & Kinds::CO_FAST_CELL) {
+                cell_vars_extra.push_back(name);
+            }
+            else if (kind & Kinds::CO_FAST_FREE) {
+                free_vars_extra.push_back(name);
+            }
+        }
+    }
     else
         m_localKinds = new PycString;
 
     if (mod->verCompare(2, 1) >= 0 && mod->verCompare(3, 11) < 0)
         m_freeVars = LoadObject(stream, mod).cast<PycSequence>();
+    else if (mod->verCompare(3, 11) >= 0)
+        m_freeVars = new PycTuple(free_vars_extra);
     else
         m_freeVars = new PycTuple;
 
     if (mod->verCompare(2, 1) >= 0 && mod->verCompare(3, 11) < 0)
         m_cellVars = LoadObject(stream, mod).cast<PycSequence>();
+    else if (mod->verCompare(3, 11) >= 0)
+        m_cellVars = new PycTuple(cell_vars_extra);
     else
         m_cellVars = new PycTuple;
 

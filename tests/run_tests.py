@@ -95,7 +95,7 @@ def run_test(test_file):
             if not compiled_files:
                 status_line += '\033[33mXFAIL ({})\033[0m\n'.format(xfails)
             else:
-                status_line += '\033[32mPASS ({})\033[33m + XFAIL ()\033[0m\n' \
+                status_line += '\033[32mPASS ({})\033[33m + XFAIL ({})\033[0m\n' \
                                .format(len(compiled_files), xfails)
         else:
             status_line += '\033[32mPASS ({})\033[0m\n'.format(len(compiled_files))
