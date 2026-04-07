@@ -70,4 +70,11 @@ private:
     value_t m_values;
 };
 
+class PycSlice : public PycSimpleSequence {
+public:
+    PycSlice() : PycSimpleSequence(TYPE_SLICE) {}
+
+    void load(class PycData* stream, class PycModule* mod) override;
+};
+
 #endif

@@ -127,6 +127,7 @@ public:
         TYPE_SMALL_TUPLE = ')',             // Python 3.4 ->
         TYPE_SHORT_ASCII = 'z',             // Python 3.4 ->
         TYPE_SHORT_ASCII_INTERNED = 'Z',    // Python 3.4 ->
+        TYPE_SLICE = ':',                   // Python 3.14 ->
     };
 
     PycObject(int type = TYPE_UNKNOWN) : m_refs(0), m_type(type) { }

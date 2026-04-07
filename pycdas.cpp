@@ -252,6 +252,18 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
         iprintf(pyc_output, indent, "(%g+%gj)\n", obj.cast<PycCComplex>()->value(),
                                       obj.cast<PycCComplex>()->imag());
         break;
+    case PycObject::TYPE_SLICE:
+        {
+            const auto slice = obj.cast<PycSlice>();
+            iputs(pyc_output, indent, "slice(");
+            output_object(slice->get(0), mod, 0, flags, pyc_output);
+            iprintf(pyc_output, 0, ":");
+            output_object(slice->get(1), mod, 0, flags, pyc_output);
+            iprintf(pyc_output, 0, ":");
+            output_object(slice->get(2), mod, 0, flags, pyc_output);
+            iputs(pyc_output, indent, ")\n");
+        }
+        break;
     default:
         iprintf(pyc_output, indent, "<TYPE: %d>\n", obj->type());
     }
