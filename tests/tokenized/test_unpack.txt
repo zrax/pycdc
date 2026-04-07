@@ -1,0 +1,6 @@
+import struct <EOL>
+def wtob ( w ) : <EOL>
+<INDENT>
+return struct . pack ( '<' + 'I' * len ( w ) , * w ) <EOL>
+<OUTDENT>
+wtob ( [ 12 , 3 ] ) <EOL>
