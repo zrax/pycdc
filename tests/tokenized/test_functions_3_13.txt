@@ -1,0 +1,7 @@
+def top ( ) : <EOL>
+<INDENT>
+def inner ( c ) : <EOL>
+<INDENT>
+return c * 2 <EOL>
+<OUTDENT>
+return inner <EOL>
