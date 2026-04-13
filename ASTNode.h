@@ -642,13 +642,15 @@ private:
 
 class ASTComprehension : public ASTNode {
 public:
+    enum ComprehensionType { LISTCOMP, GENEXPR };
     typedef std::list<PycRef<ASTIterBlock>> generator_t;
 
-    ASTComprehension(PycRef<ASTNode> result)
-        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)) { }
+    ASTComprehension(PycRef<ASTNode> result, ComprehensionType type = LISTCOMP)
+        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)), m_comptype(type) { }
 
     PycRef<ASTNode> result() const { return m_result; }
     generator_t generators() const { return m_generators; }
+    ComprehensionType comprehensionType() const { return m_comptype; }
 
     void addGenerator(PycRef<ASTIterBlock> gen) {
         m_generators.emplace_front(std::move(gen));
@@ -657,6 +659,7 @@ public:
 private:
     PycRef<ASTNode> m_result;
     generator_t m_generators;
+    ComprehensionType m_comptype;
 
 };
 
