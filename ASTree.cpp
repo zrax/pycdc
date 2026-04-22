@@ -600,11 +600,71 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
-                    stack.pop();
+                // Python 3.11+ calls push a NULL self-slot. When the
+                // callable comes from LOAD_GLOBAL+NULL the layout is
+                // [NULL, callable, args...]; when it comes from
+                // LOAD_ATTR followed by PUSH_NULL (common for
+                // non-method calls like ``mod.func()`` in 3.13) the
+                // layout is [callable, NULL, args...]. Handle both.
+                if (opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) {
+                    if (func == nullptr && !stack.empty()) {
+                        func = stack.top();
+                        stack.pop();
+                    } else if (!stack.empty() && stack.top() == nullptr) {
+                        stack.pop();
+                    }
                 }
 
+                stack.push(new ASTCall(func, pparamList, kwparamList));
+            }
+            break;
+        case Pyc::CALL_KW_A:
+            {
+                // Python 3.13+: TOS holds a tuple of keyword-argument
+                // names; the operand is the total argument count
+                // (positional + keyword). Below the names tuple are
+                // the argument values (last ``kwcount`` of them are
+                // the keyword values in the same order as the names),
+                // then the callable, then an optional NULL self slot
+                // (which may sit either above or below the callable
+                // depending on whether LOAD_GLOBAL+NULL or
+                // LOAD_ATTR+PUSH_NULL was used).
+                PycRef<ASTNode> kw_names_node = stack.top();
+                stack.pop();
+                int total = operand;
+                int kwcount = 0;
+                std::vector<PycRef<PycObject>> kw_keys;
+                if (kw_names_node.type() == ASTNode::NODE_OBJECT) {
+                    PycRef<PycObject> obj =
+                        kw_names_node.cast<ASTObject>()->object();
+                    if (obj.type() == PycObject::TYPE_TUPLE ||
+                        obj.type() == PycObject::TYPE_SMALL_TUPLE) {
+                        kw_keys = obj.cast<PycTuple>()->values();
+                        kwcount = (int)kw_keys.size();
+                    }
+                }
+                int pparams = total - kwcount;
+                ASTCall::kwparam_t kwparamList;
+                ASTCall::pparam_t pparamList;
+                for (int i = kwcount - 1; i >= 0; --i) {
+                    PycRef<ASTNode> val = stack.top();
+                    stack.pop();
+                    kwparamList.push_front(std::make_pair(
+                        new ASTObject(kw_keys[i]), val));
+                }
+                for (int i = 0; i < pparams; ++i) {
+                    PycRef<ASTNode> param = stack.top();
+                    stack.pop();
+                    pparamList.push_front(param);
+                }
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                if (func == nullptr && !stack.empty()) {
+                    func = stack.top();
+                    stack.pop();
+                } else if (!stack.empty() && stack.top() == nullptr) {
+                    stack.pop();
+                }
                 stack.push(new ASTCall(func, pparamList, kwparamList));
             }
             break;
@@ -1120,6 +1180,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCompare(left, right, operand ? ASTCompare::CMP_IS_NOT : ASTCompare::CMP_IS));
             }
             break;
+        case Pyc::POP_JUMP_IF_NONE_A:
+        case Pyc::POP_JUMP_IF_NOT_NONE_A:
         case Pyc::JUMP_IF_FALSE_A:
         case Pyc::JUMP_IF_TRUE_A:
         case Pyc::JUMP_IF_FALSE_OR_POP_A:
@@ -1647,6 +1709,39 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::LOAD_NAME_A:
             stack.push(new ASTName(code->getName(operand)));
             break;
+        case Pyc::MAKE_FUNCTION:
+            {
+                // Python 3.13+: MAKE_FUNCTION takes no operand. The
+                // code object is consumed from TOS; defaults,
+                // kw-defaults, annotations, and closure cells are
+                // attached by one or more SET_FUNCTION_ATTRIBUTE ops
+                // that follow.
+                PycRef<ASTNode> fun_code = stack.top();
+                stack.pop();
+                ASTFunction::defarg_t defArgs, kwDefArgs;
+                stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
+            }
+            break;
+        case Pyc::SET_FUNCTION_ATTRIBUTE_A:
+            {
+                // Python 3.13+: TOS is the function produced by
+                // MAKE_FUNCTION, and the value below it is the
+                // attribute value (defaults tuple, kw-defaults dict,
+                // annotations, or closure cells -- selected by
+                // operand). Keep the function on top; discard the
+                // attribute value for now since pycdc does not yet
+                // render these extras.
+                PycRef<ASTNode> fun = stack.top();
+                if (fun != nullptr) {
+                    stack.pop();
+                    if (!stack.empty())
+                        stack.pop();
+                    stack.push(fun);
+                } else if (!stack.empty()) {
+                    stack.pop();
+                }
+            }
+            break;
         case Pyc::MAKE_CLOSURE_A:
         case Pyc::MAKE_FUNCTION_A:
             {
@@ -1676,6 +1771,66 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::NOP:
+            break;
+        case Pyc::TO_BOOL:
+            // Python 3.12+: converts TOS to bool. From the decompiler's
+            // point of view the value it renders is unchanged; the
+            // opcode only tells the interpreter to keep a cached
+            // bool-conversion. Treat as a no-op.
+            break;
+        case Pyc::MAKE_CELL_A:
+            // Python 3.11+: allocates a cell for a fast-local. No stack
+            // effect; the cell plumbing is handled implicitly by the
+            // existing LOAD_DEREF / STORE_DEREF cases.
+            break;
+        case Pyc::COPY_FREE_VARS_A:
+            // Python 3.11+: prologue that copies free variables from
+            // the function object into the frame. pycdc resolves free
+            // variable names via PycCode::getCellVar(), so this is a
+            // no-op during decompilation.
+            break;
+        case Pyc::LOAD_FAST_CHECK_A:
+            // Python 3.12+: like LOAD_FAST but raises if unbound. For
+            // decompilation purposes they are interchangeable.
+            if (mod->verCompare(1, 3) < 0)
+                stack.push(new ASTName(code->getName(operand)));
+            else
+                stack.push(new ASTName(code->getLocal(operand)));
+            break;
+        case Pyc::LOAD_FAST_AND_CLEAR_A:
+            // Python 3.12+: loads a fast-local and then clears it.
+            // Clearing is a runtime concern; the value on the stack is
+            // still the local's value, so treat like LOAD_FAST.
+            stack.push(new ASTName(code->getLocal(operand)));
+            break;
+        case Pyc::STORE_FAST_STORE_FAST_A:
+            {
+                // Python 3.13: two consecutive STORE_FAST ops. The
+                // high nibble is the first store, the low nibble the
+                // second. The top of stack is the second value.
+                PycRef<ASTNode> value2 = stack.top();
+                stack.pop();
+                PycRef<ASTNode> value1 = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name1 = new ASTName(
+                    code->getLocal(operand >> 4));
+                PycRef<ASTNode> name2 = new ASTName(
+                    code->getLocal(operand & 0xF));
+                curblock->append(new ASTStore(value1, name1));
+                curblock->append(new ASTStore(value2, name2));
+            }
+            break;
+        case Pyc::STORE_FAST_LOAD_FAST_A:
+            {
+                // Python 3.13: STORE_FAST then LOAD_FAST fused. The
+                // high nibble is the store, the low nibble the load.
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> name = new ASTName(
+                    code->getLocal(operand >> 4));
+                curblock->append(new ASTStore(value, name));
+                stack.push(new ASTName(code->getLocal(operand & 0xF)));
+            }
             break;
         case Pyc::POP_BLOCK:
             {

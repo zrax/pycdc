@@ -1,0 +1,7 @@
+import json <EOL>
+def greet ( name , greeting ) : <EOL>
+<INDENT>
+return greeting + ', ' + name <EOL>
+<OUTDENT>
+print ( greet ( 'world' , greeting = 'hi' ) ) <EOL>
+print ( json . dumps ( { } , ensure_ascii = False ) ) <EOL>
