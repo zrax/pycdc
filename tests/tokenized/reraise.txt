@@ -1,0 +1,31 @@
+def intricate_try_except ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+except AssertionError as a : <EOL>
+<INDENT>
+print ( a ) <EOL>
+<OUTDENT>
+except TypeError : <EOL>
+<INDENT>
+raise <EOL>
+<OUTDENT>
+<OUTDENT>
+except Exception as e : <EOL>
+<INDENT>
+raise e <EOL>
+<OUTDENT>
+<OUTDENT>
+def reraise_example ( ) : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+1 / 0 <EOL>
+<OUTDENT>
+except ZeroDivisionError : <EOL>
+<INDENT>
+raise <EOL>

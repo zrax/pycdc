@@ -1,0 +1,4 @@
+assert a <EOL>
+assert 1 == 1 , 'toto' <EOL>
+assert a > 0 and bb > 0 or ccc == 1000000 , 'error msg' <EOL>
+assert False <EOL>

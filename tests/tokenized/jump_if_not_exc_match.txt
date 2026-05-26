@@ -1,0 +1,27 @@
+try : <EOL>
+<INDENT>
+a = 1 / 0 <EOL>
+<OUTDENT>
+except ZeroDivisionError : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+try : <EOL>
+<INDENT>
+try : <EOL>
+<INDENT>
+a = 2 / 0 <EOL>
+<OUTDENT>
+except ( ZeroDivisionError , AssertionError ) as v : <EOL>
+<INDENT>
+print ( v ) <EOL>
+<OUTDENT>
+except Exception : <EOL>
+<INDENT>
+print ( 'there was an exception' ) <EOL>
+<OUTDENT>
+<OUTDENT>
+finally : <EOL>
+<INDENT>
+b = 0 <EOL>
+a = 2 <EOL>

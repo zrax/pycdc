@@ -1,0 +1,17 @@
+def function_5 ( dummy , dummy2 , ** dummy3 ) : <EOL>
+<INDENT>
+return 8 <EOL>
+<OUTDENT>
+def start ( ) : <EOL>
+<INDENT>
+function_5 ( 1 , 2 , ** { 'test' : 42 } ) <EOL>
+<OUTDENT>
+start ( ) <EOL>
+a = { 'a' : 1 } <EOL>
+b = ( 1 , 2 ) <EOL>
+c = { 'c' : 0 } <EOL>
+def f ( arg1 , arg2 , arg3 , ** kwargs ) : <EOL>
+<INDENT>
+return 1 <EOL>
+<OUTDENT>
+f ( * a , * b , kwarg = 0 , ** c ) <EOL>

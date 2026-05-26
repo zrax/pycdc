@@ -1,0 +1,2 @@
+my_list = [ 1 , 2 , 3 ] <EOL>
+my_tuple = ( * my_list , ) <EOL>

@@ -18,7 +18,7 @@ public:
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
         NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
-        NODE_KW_NAMES_MAP,
+        NODE_KW_NAMES_MAP, NODE_CALL_INTRINSIC_1, NODE_CALL_INTRINSIC_2, NODE_UNPACKED_TUPLE, NODE_ASSERT,
 
         // Empty node types
         NODE_LOCALS,
@@ -286,13 +286,28 @@ public:
     typedef std::list<PycRef<ASTNode>> pparam_t;
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> kwparam_t;
 
+    
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
         : ASTNode(NODE_CALL), m_func(std::move(func)), m_pparams(std::move(pparams)),
           m_kwparams(std::move(kwparams)) { }
+    ASTCall(): ASTNode(NODE_CALL){}
+
+    bool isKwparamUnpacked(std::pair<PycRef<ASTNode>, PycRef<ASTNode>> value)
+    {
+        return value.first == NULL;
+    }
+
+    std::pair<PycRef<ASTNode>, PycRef<ASTNode>> genKwparamUnpacked(PycRef<ASTNode> value){
+        return std::make_pair(m_unpacked_marker, value);
+    }
 
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
     const kwparam_t& kwparams() const { return m_kwparams; }
+    void setFunc(PycRef<ASTNode> func) { m_func = std::move(func); }
+    void setPparams(pparam_t pparams) { m_pparams = std::move(pparams); }
+    void setKwparams(kwparam_t kwparams) { m_kwparams = std::move(kwparams); }
+
     PycRef<ASTNode> var() const { return m_var; }
     PycRef<ASTNode> kw() const { return m_kw; }
 
@@ -308,6 +323,7 @@ private:
     kwparam_t m_kwparams;
     PycRef<ASTNode> m_var;
     PycRef<ASTNode> m_kw;
+    const PycRef<ASTNode> m_unpacked_marker = NULL;
 };
 
 
@@ -339,6 +355,7 @@ public:
     ASTTuple(value_t values)
         : ASTNode(NODE_TUPLE), m_values(std::move(values)),
           m_requireParens(true) { }
+    ASTTuple(enum ASTNode::Type subtype, value_t values, bool requireParens) : ASTNode(subtype), m_values(std::move(values)), m_requireParens(requireParens) {}
 
     const value_t& values() const { return m_values; }
     void add(PycRef<ASTNode> name) { m_values.emplace_back(std::move(name)); }
@@ -346,11 +363,39 @@ public:
     void setRequireParens(bool require) { m_requireParens = require; }
     bool requireParens() const { return m_requireParens; }
 
-private:
+protected:
     value_t m_values;
     bool m_requireParens;
 };
 
+class ASTUnpackedTuple : public ASTTuple {
+public:
+    ASTUnpackedTuple(u_int8_t before, u_int8_t after) : ASTTuple(NODE_UNPACKED_TUPLE, value_t(), true), m_before(std::move(before)), m_after(std::move(after)){}
+
+    void add(PycRef<ASTNode> value){
+        if (m_before > 0){
+            m_before--;
+        } else if (!m_unpackedValueAdded){
+            m_unpackedValueAdded = true;
+            value.setUnpacked(true);
+        } else if (m_after > 0){
+            m_after--;
+        } else{
+            fputs("Cannot add new value to unpacked tuple!\n", stderr);
+            return;
+        }
+        setRequireParens(false);
+        m_values.emplace_back(std::move(value));
+    }
+    bool isFull() { return m_unpackedValueAdded and (m_values.size() > (m_before + m_after)); }
+    u_int8_t unpackedBefore() { return m_before; }
+    u_int8_t unpackedAfter() { return m_after; }
+
+private:
+    u_int8_t m_before; 
+    bool m_unpackedValueAdded = false;
+    u_int8_t m_after;
+};
 
 class ASTList : public ASTNode {
 public:
@@ -383,33 +428,31 @@ public:
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> map_t;
 
     ASTMap() : ASTNode(NODE_MAP) { }
+    ASTMap(enum ASTNode::Type subtype) : ASTNode(subtype) {}
 
     void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
     {
         m_values.emplace_back(std::move(key), std::move(value));
+    }
+    void add_unpacked_value(PycRef<ASTNode> variable)
+    {
+        m_values.emplace_back(m_unpacked_marker, std::move(variable));
+    }
+    bool is_unpacked(std::pair <PycRef<ASTNode>, PycRef<ASTNode>> value)
+    { 
+        return value.first == m_unpacked_marker;
     }
 
     const map_t& values() const { return m_values; }
 
 private:
     map_t m_values;
+    const PycRef<ASTNode> m_unpacked_marker = NULL;
 };
 
-class ASTKwNamesMap : public ASTNode {
+class ASTKwNamesMap : public ASTMap {
 public:
-    typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> map_t;
-
-    ASTKwNamesMap() : ASTNode(NODE_KW_NAMES_MAP) { }
-
-    void add(PycRef<ASTNode> key, PycRef<ASTNode> value)
-    {
-        m_values.emplace_back(std::move(key), std::move(value));
-    }
-
-    const map_t& values() const { return m_values; }
-
-private:
-    map_t m_values;
+    ASTKwNamesMap() : ASTMap(NODE_KW_NAMES_MAP) { }
 };
 
 class ASTConstMap : public ASTNode {
@@ -509,6 +552,19 @@ private:
     param_t m_params;
 };
 
+class ASTAssert : public ASTNode {
+public:
+    ASTAssert() : ASTNode(NODE_ASSERT) {}
+
+    const PycRef<ASTNode> cond() const { return m_cond; }
+    const PycRef<ASTNode> msg() const { return m_msg; }
+    void setCond(PycRef<ASTNode> cond) { m_cond = std::move(cond); }
+    void setMsg(PycRef<ASTNode> msg) { m_msg = std::move(msg); }
+
+private : 
+    PycRef<ASTNode> m_cond;
+    PycRef<ASTNode> m_msg;
+};
 
 class ASTExec : public ASTNode {
 public:
@@ -618,11 +674,36 @@ public:
     int except() const { return m_except; }
 
     void setExcept(int except) { m_except = except; }
+    void setFinally(int finally) { m_finally = finally; }
 
 private:
     int m_finally;
     int m_except;
 };
+
+class ASTExceptBlock : public ASTBlock
+{
+public:
+    ASTExceptBlock(int end)
+        : ASTBlock(ASTBlock::BLK_EXCEPT, end) {}
+    ASTExceptBlock(int end, PycRef<ASTNode> expr)
+        : ASTBlock(ASTBlock::BLK_EXCEPT, end), m_expr(std::move(expr)) {}
+
+    PycRef<ASTNode> expr() const { return m_expr; }
+    PycRef<ASTNode> var() const { return m_var; }
+
+    void setExpr(PycRef<ASTNode> expr)
+    {
+        m_expr = std::move(expr);
+        init();
+    }
+    void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
+
+private:
+    PycRef<ASTNode> m_expr;
+    PycRef<ASTNode> m_var; // optional value
+};
+
 
 class ASTWithBlock : public ASTBlock {
 public:
@@ -644,9 +725,15 @@ class ASTComprehension : public ASTNode {
 public:
     typedef std::list<PycRef<ASTIterBlock>> generator_t;
 
-    ASTComprehension(PycRef<ASTNode> result)
-        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)) { }
+    enum CompType
+    {
+        COMP_LIST, COMP_DICT
+    };
 
+    ASTComprehension(CompType comptype, PycRef<ASTNode> result)
+        : ASTNode(NODE_COMPREHENSION), m_comptype(comptype), m_result(std::move(result)) {}
+
+    CompType comptype() const { return m_comptype; }
     PycRef<ASTNode> result() const { return m_result; }
     generator_t generators() const { return m_generators; }
 
@@ -655,9 +742,29 @@ public:
     }
 
 private:
+    CompType m_comptype;
     PycRef<ASTNode> m_result;
     generator_t m_generators;
 
+};
+
+class ASTListComprehension : public ASTComprehension
+{
+public:
+    ASTListComprehension(PycRef<ASTNode> result)
+        : ASTComprehension(COMP_LIST, std::move(result)) {}
+};
+
+class ASTDictComprehension : public ASTComprehension
+{
+public:
+    ASTDictComprehension(PycRef<ASTNode> key, PycRef<ASTNode> value)
+        : ASTComprehension(COMP_DICT, std::move(value)), m_key(std::move(key)) {}
+
+    PycRef<ASTNode> key() const { return m_key; }
+
+private:
+    PycRef<ASTNode> m_key;
 };
 
 class ASTLoadBuildClass : public ASTNode {
@@ -755,6 +862,28 @@ private:
     PycRef<ASTNode> m_if_block; // contains "condition" and "negative"
     PycRef<ASTNode> m_if_expr;
     PycRef<ASTNode> m_else_expr;
+};
+
+class ASTCallIntrinsic1: public ASTNode
+{
+public:
+    enum Function {
+        INTRINSIC_1_INVALID, INTRINSIC_PRINT, INTRINSIC_IMPORT_STAR,
+        INTRINSIC_STOPITERATION_ERROR, INTRINSIC_ASYNC_GEN_WRAP,
+        INTRINSIC_UNARY_POSITIVE, INTRINSIC_LIST_TO_TUPLE, INTRINSIC_TYPEVAR,
+        INTRINSIC_PARAMSPEC, INTRINSIC_TYPEVARTUPLE,
+        INTRINSIC_SUBSCRIPT_GENERIC, INTRINSIC_TYPEALIAS,
+    };
+};
+
+class ASTCallIntrinsic2: public ASTNode
+{
+public:
+    enum Function {
+        INTRINSIC_2_INVALID, INTRINSIC_PREP_RERAISE_STAR,
+        INTRINSIC_TYPEVAR_WITH_BOUND, INTRINSIC_TYPEVAR_WITH_CONSTRAINTS,
+        INTRINSIC_SET_FUNCTION_TYPE_PARAMS, INTRINSIC_SET_TYPEPARAM_DEFAULT,
+    };
 };
 
 #endif

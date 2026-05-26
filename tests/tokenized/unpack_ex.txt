@@ -1,0 +1,19 @@
+t = ( 1 , 2 , 3 ) <EOL>
+a , * b , c = ( 1 , 2 , 3 ) <EOL>
+l = [ 4 , 5 , 6 ] <EOL>
+a , * b = l <EOL>
+a , * b , c = [ 4 , 5 , 6 ] <EOL>
+* a , = ( 7 , 8 , 9 ) <EOL>
+* ( * a , ) , b = [ [ 7 , 8 , 9 ] ] <EOL>
+* ( * a , ) , = [ [ 7 , 8 , 9 ] ] <EOL>
+a , * b = 'one' <EOL>
+a , b , c , * d , e , f , g = range ( 10 ) <EOL>
+a , * b , c = ( 1 , 2 ) <EOL>
+for a , * b , c in ( ( 1 , 2 , 3 ) , ( 4 , 5 , 6 , 7 ) ) : <EOL>
+<INDENT>
+print ( a , b , c ) <EOL>
+<OUTDENT>
+a , * b , c = range ( 5 ) <EOL>
+a , * b , c = * d , e = range ( 5 ) <EOL>
+a , b , * c = range ( 5 ) <EOL>
+* a , b , c = ( a , b , * c ) <EOL>
