@@ -302,12 +302,16 @@ public:
     void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
     void setKW(PycRef<ASTNode> kw) { m_kw = std::move(kw); }
 
+    bool isDecorator() const { return m_isDecorator; }
+    void setDecorator(bool d) { m_isDecorator = d; }
+
 private:
     PycRef<ASTNode> m_func;
     pparam_t m_pparams;
     kwparam_t m_kwparams;
     PycRef<ASTNode> m_var;
     PycRef<ASTNode> m_kw;
+    bool m_isDecorator = false;
 };
 
 
@@ -598,6 +602,7 @@ public:
     void setIndex(PycRef<ASTNode> idx) { m_idx = std::move(idx); init(); }
     void setCondition(PycRef<ASTNode> cond) { m_cond = std::move(cond); }
     void setComprehension(bool comp) { m_comp = comp; }
+    void setIter(PycRef<ASTNode> it) { m_iter = std::move(it); }
 
 private:
     PycRef<ASTNode> m_iter;

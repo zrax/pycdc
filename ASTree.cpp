@@ -73,6 +73,34 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
 
+PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod);
+
+/* Search a decompiled comprehension/generator code body for the
+   ASTComprehension node it produces (Python 3.x compiles comprehensions and
+   generator expressions into separate code objects). */
+static PycRef<ASTComprehension> FindComprehension(PycRef<ASTNode> node)
+{
+    if (node == NULL)
+        return NULL;
+    switch (node.type()) {
+    case ASTNode::NODE_COMPREHENSION:
+        return node.cast<ASTComprehension>();
+    case ASTNode::NODE_RETURN:
+        return FindComprehension(node.cast<ASTReturn>()->value());
+    case ASTNode::NODE_STORE:
+        return FindComprehension(node.cast<ASTStore>()->src());
+    case ASTNode::NODE_NODELIST:
+        for (const auto& n : node.cast<ASTNodeList>()->nodes()) {
+            PycRef<ASTComprehension> c = FindComprehension(n);
+            if (c != NULL)
+                return c;
+        }
+        return NULL;
+    default:
+        return NULL;
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -122,7 +150,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         if (next_exception_entry < exception_entries.size()) {
             const auto& entry = exception_entries[next_exception_entry];
             if (entry.start_offset == pos
-                    && entry.stack_depth == 0
                     && !entry.push_lasti) {
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
                     curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
@@ -541,6 +568,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 int loadbuild_type = loadbuild.type();
                 if (loadbuild_type == ASTNode::NODE_LOADBUILDCLASS) {
+                    /* Python 3.11 pushes a NULL before LOAD_BUILD_CLASS; drop it
+                       so a following decorator application sees the real callable
+                       beneath the class instead of the NULL. */
+                    if (mod->verCompare(3, 11) >= 0 && !stack.empty()
+                            && stack.top() == nullptr) {
+                        stack.pop();
+                    }
                     PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
                     stack.push(new ASTClass(call, new ASTTuple(bases), name));
                     stack_hist.pop();
@@ -600,12 +634,105 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
-                    stack.pop();
+
+                bool isDecoratorApply = false;
+                bool compInlined = false;
+                if (opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) {
+                    if (!stack.empty() && stack.top() == nullptr) {
+                        /* Normal call: discard the NULL self slot. */
+                        stack.pop();
+                    } else if (!stack.empty() && stack.top() != nullptr) {
+                        /* Python 3.11 leaves a non-NULL value in the self slot
+                           (no PUSH_NULL) in two cases we reconstruct here:
+                            - decorator application: TOS is the decorated
+                              function/class, the real callable is below it;
+                            - comprehension/genexpr call: the callable below is a
+                              comprehension code object and TOS is the iterable. */
+                        PycRef<ASTNode> below = stack.top();
+
+                        bool topIsDecoTarget = (func.type() == ASTNode::NODE_FUNCTION
+                                || func.type() == ASTNode::NODE_CLASS
+                                || (func.type() == ASTNode::NODE_CALL
+                                    && func.cast<ASTCall>()->isDecorator()));
+
+                        bool belowIsComp = false;
+                        if (below != NULL && below.type() == ASTNode::NODE_FUNCTION) {
+                            PycRef<PycCode> bcode = below.cast<ASTFunction>()->code()
+                                    .cast<ASTObject>()->object().cast<PycCode>();
+                            const char* bnm = bcode->name()->value();
+                            belowIsComp = bnm && (!strcmp(bnm, "<listcomp>")
+                                    || !strcmp(bnm, "<setcomp>")
+                                    || !strcmp(bnm, "<dictcomp>")
+                                    || !strcmp(bnm, "<genexpr>"));
+                        }
+
+                        if (belowIsComp) {
+                            /* Inline the comprehension. The callable is `below`
+                               and the iterable is `func` (TOS). Decompile the
+                               comprehension body and substitute its implicit
+                               ".0" iterator with the real iterable. */
+                            PycRef<PycCode> ccode = below.cast<ASTFunction>()->code()
+                                    .cast<ASTObject>()->object().cast<PycCode>();
+                            bool savedClean = cleanBuild;
+                            PycRef<ASTNode> compAst = BuildFromCode(ccode, mod);
+                            cleanBuild = savedClean;
+                            PycRef<ASTComprehension> comp = FindComprehension(compAst);
+                            if (comp != NULL && !comp->generators().empty()) {
+                                comp->generators().front()->setIter(func);
+                                stack.pop();   /* remove the comprehension callable */
+                                stack.push(comp.cast<ASTNode>());
+                                compInlined = true;
+                            }
+                            /* else: leave as-is and fall through to a plain call. */
+                        } else if (topIsDecoTarget) {
+                            /* Decorator application: `func` (TOS) is the decorated
+                               target, the real callable is below. */
+                            PycRef<ASTNode> target = func;
+                            func = stack.top();
+                            stack.pop();
+                            if (target.type() == ASTNode::NODE_FUNCTION) {
+                                PycRef<PycCode> tcode = target.cast<ASTFunction>()->code()
+                                        .cast<ASTObject>()->object().cast<PycCode>();
+                                PycRef<PycString> tname = tcode->name();
+                                if (!tname->isEqual("<lambda>")) {
+                                    /* Emit the def, then reference it by name. */
+                                    PycRef<ASTNode> decor_name = new ASTName(tname);
+                                    curblock->append(new ASTStore(target, decor_name));
+                                    target = decor_name;
+                                }
+                            } else if (target.type() == ASTNode::NODE_CLASS) {
+                                /* Decorated class: emit the class body, then
+                                   reference it by name as the decorator argument. */
+                                PycRef<ASTNode> cname = target.cast<ASTClass>()->name();
+                                PycRef<ASTNode> decor_name;
+                                if (cname != NULL && cname.type() == ASTNode::NODE_NAME) {
+                                    decor_name = cname;
+                                } else if (cname != NULL && cname.type() == ASTNode::NODE_OBJECT) {
+                                    PycRef<PycString> s =
+                                            cname.cast<ASTObject>()->object().try_cast<PycString>();
+                                    if (s != NULL)
+                                        decor_name = new ASTName(s);
+                                }
+                                if (decor_name != NULL) {
+                                    curblock->append(new ASTStore(target, decor_name));
+                                    target = decor_name;
+                                }
+                            }
+                            pparamList.push_front(target);
+                            isDecoratorApply = true;
+                        }
+                        /* else: a non-null self slot we don't special-case (e.g.
+                           method calls collapsed by LOAD_METHOD); behave as before
+                           with `func` as the callable. */
+                    }
                 }
 
-                stack.push(new ASTCall(func, pparamList, kwparamList));
+                if (!compInlined) {
+                    PycRef<ASTNode> callNode = new ASTCall(func, pparamList, kwparamList);
+                    if (isDecoratorApply)
+                        callNode.cast<ASTCall>()->setDecorator(true);
+                    stack.push(callNode);
+                }
             }
             break;
         case Pyc::CALL_FUNCTION_VAR_A:
@@ -689,6 +816,34 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> call = new ASTCall(func, pparamList, kwparamList);
                 call.cast<ASTCall>()->setKW(kw);
                 call.cast<ASTCall>()->setVar(var);
+                stack.push(call);
+            }
+            break;
+        case Pyc::CALL_FUNCTION_EX_A:
+        case Pyc::INSTRUMENTED_CALL_FUNCTION_EX_A:
+            {
+                /* Call with iterable args and (optionally) a mapping of kwargs.
+                   Low bit of the flag operand means a kwargs mapping is present. */
+                PycRef<ASTNode> kw;
+                if (operand & 0x01) {
+                    kw = stack.top();
+                    stack.pop();
+                }
+                PycRef<ASTNode> var = stack.top();
+                stack.pop();
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                /* Python 3.11+ pushes a NULL sentinel below the callable. */
+                if (mod->verCompare(3, 11) >= 0 && !stack.empty()
+                        && stack.top() == nullptr) {
+                    stack.pop();
+                }
+
+                PycRef<ASTNode> call = new ASTCall(func, ASTCall::pparam_t(),
+                                                   ASTCall::kwparam_t());
+                call.cast<ASTCall>()->setVar(var);
+                if (kw != NULL)
+                    call.cast<ASTCall>()->setKW(kw);
                 stack.push(call);
             }
             break;
@@ -1128,12 +1283,28 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_IF_TRUE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
+
+                if (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) {
+                    /* Python 3.11: compare TOS against None, then pop and jump.
+                       IF_NONE jumps past the body when TOS is None, so the body
+                       runs for "x is not None" (and vice-versa). */
+                    stack.pop();
+                    ASTCompare::CompareOp cmpop =
+                        (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A)
+                        ? ASTCompare::CMP_IS_NOT
+                        : ASTCompare::CMP_IS;
+                    cond = new ASTCompare(cond, new ASTObject(Pyc_None), cmpop);
+                    popped = ASTCondBlock::PRE_POPPED;
+                }
 
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
@@ -1170,7 +1341,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         || opcode == Pyc::JUMP_IF_FALSE_A
                         || opcode == Pyc::JUMP_IF_TRUE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
-                        || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A) {
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) {
                     /* Offset is relative in these cases */
                     offs += pos;
                 }
@@ -1248,6 +1421,40 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (popped)
                     ifblk->init(popped);
 
+                blocks.push(ifblk.cast<ASTBlock>());
+                curblock = blocks.top();
+            }
+            break;
+        case Pyc::POP_JUMP_BACKWARD_IF_TRUE_A:
+        case Pyc::POP_JUMP_BACKWARD_IF_FALSE_A:
+        case Pyc::POP_JUMP_BACKWARD_IF_NONE_A:
+        case Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A:
+            {
+                /* Python 3.11: conditional jump backwards. In compiled loops
+                   this implements an in-body guard ("if cond: <rest of body>")
+                   where a failed test jumps back to the loop header to start the
+                   next iteration. Model it as an if-block that spans to the end
+                   of the enclosing loop body. */
+                PycRef<ASTNode> cond = stack.top();
+                stack.pop();
+
+                bool neg = false;
+                if (opcode == Pyc::POP_JUMP_BACKWARD_IF_NONE_A) {
+                    /* jumps back when "x is None" -> body runs for "x is not None" */
+                    cond = new ASTCompare(cond, new ASTObject(Pyc_None), ASTCompare::CMP_IS_NOT);
+                } else if (opcode == Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A) {
+                    cond = new ASTCompare(cond, new ASTObject(Pyc_None), ASTCompare::CMP_IS);
+                } else if (opcode == Pyc::POP_JUMP_BACKWARD_IF_TRUE_A) {
+                    /* jumps back when cond is true -> body runs for "not cond" */
+                    neg = true;
+                }
+
+                int end = curblock->end();
+
+                stack_hist.push(stack);
+                PycRef<ASTCondBlock> ifblk =
+                        new ASTCondBlock(ASTBlock::BLK_IF, end, cond, neg);
+                ifblk->init(ASTCondBlock::PRE_POPPED);
                 blocks.push(ifblk.cast<ASTBlock>());
                 curblock = blocks.top();
             }
@@ -1489,6 +1696,47 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::LIST_TO_TUPLE:
+            {
+                /* Python 3.9+: convert the list at TOS into a tuple
+                   (used when building *args for calls). */
+                PycRef<ASTNode> list = stack.top();
+                stack.pop();
+                if (list.type() == ASTNode::NODE_LIST) {
+                    const auto& lv = list.cast<ASTList>()->values();
+                    ASTTuple::value_t tv(lv.begin(), lv.end());
+                    stack.push(new ASTTuple(tv));
+                } else {
+                    stack.push(list);
+                }
+            }
+            break;
+        case Pyc::RETURN_GENERATOR:
+            /* Python 3.11 generator/coroutine prologue; the pushed generator
+               object is immediately discarded by a following POP_TOP. */
+            stack.push(nullptr);
+            break;
+        case Pyc::MAP_ADD_A:
+            {
+                /* Python 3.8+: value at TOS, key at TOS1 (dict comprehensions). */
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> key = stack.top();
+                stack.pop();
+
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                    stack.pop();
+                    auto m = new ASTMap();
+                    m->add(key, value);
+                    stack.push(new ASTComprehension(m));
+                } else {
+                    PycRef<ASTNode> map = stack.top();
+                    if (map.type() == ASTNode::NODE_MAP)
+                        map.cast<ASTMap>()->add(key, value);
+                }
+            }
+            break;
         case Pyc::LIST_APPEND:
         case Pyc::LIST_APPEND_A:
             {
@@ -1532,6 +1780,28 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 stack.push(new ASTSet(result));
+            }
+            break;
+        case Pyc::DICT_UPDATE_A:
+        case Pyc::DICT_MERGE_A:
+            {
+                /* Python 3.9+: merge mapping at TOS into the dict below it
+                   (used for {**a, **b} literals and **kwargs construction). */
+                PycRef<ASTNode> rhs = stack.top();
+                stack.pop();
+                PycRef<ASTNode> lhsNode = stack.top();
+                if (lhsNode.type() == ASTNode::NODE_MAP) {
+                    PycRef<ASTMap> lhs = lhsNode.cast<ASTMap>();
+                    if (rhs.type() == ASTNode::NODE_MAP) {
+                        for (const auto& it : rhs.cast<ASTMap>()->values())
+                            lhs->add(it.first, it.second);
+                    } else {
+                        /* Spread of a non-literal mapping (**expr); represent
+                           with a NULL key so the source writer can emit "**expr". */
+                        lhs->add(nullptr, rhs);
+                    }
+                }
+                /* Leave the (updated) dict on the stack. */
             }
             break;
         case Pyc::LIST_EXTEND_A:
@@ -1581,11 +1851,28 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
             }
             break;
+        case Pyc::LOAD_ASSERTION_ERROR:
+            {
+                PycRef<PycString> assertName = new PycString();
+                assertName->setValue("AssertionError");
+                stack.push(new ASTName(assertName));
+            }
+            break;
         case Pyc::LOAD_BUILD_CLASS:
             stack.push(new ASTLoadBuildClass(new PycObject()));
             break;
         case Pyc::LOAD_CLOSURE_A:
-            /* Ignore this */
+            if (mod->verCompare(3, 6) >= 0) {
+                /* In 3.6+ the closure cells are collected into a tuple via
+                   BUILD_TUPLE and consumed by MAKE_FUNCTION; push a placeholder
+                   so that tuple stays balanced (the value is later discarded). */
+                stack.push(new ASTName(code->getCellVar(mod, operand)));
+            }
+            /* else: ignored (older bytecode) */
+            break;
+        case Pyc::MAKE_CELL_A:
+        case Pyc::COPY_FREE_VARS_A:
+            /* Python 3.11 function prologue; no stack effect for decompilation */
             break;
         case Pyc::LOAD_CONST_A:
             {
@@ -1662,15 +1949,60 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 ASTFunction::defarg_t defArgs, kwDefArgs;
-                const int defCount = operand & 0xFF;
-                const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop();
+
+                if (mod->verCompare(3, 6) >= 0) {
+                    /* Python 3.6+: the operand is a flag bitmask, and each set
+                       flag has a single object pushed on the stack (bottom to
+                       top): 0x01 defaults tuple, 0x02 kwonly-defaults dict,
+                       0x04 annotations, 0x08 closure tuple. The code object was
+                       already popped above. They must be consumed top-down. */
+                    if (operand & 0x08) {
+                        /* closure: tuple of cells - not needed for source */
+                        stack.pop();
+                    }
+                    if (operand & 0x04) {
+                        /* annotations - not reconstructed here */
+                        stack.pop();
+                    }
+                    if (operand & 0x02) {
+                        /* keyword-only defaults: a mapping on the stack */
+                        PycRef<ASTNode> kwd = stack.top();
+                        stack.pop();
+                        if (kwd != NULL && kwd.type() == ASTNode::NODE_MAP) {
+                            for (const auto& it : kwd.cast<ASTMap>()->values())
+                                kwDefArgs.push_back(it.second);
+                        } else if (kwd != NULL && kwd.type() == ASTNode::NODE_CONST_MAP) {
+                            for (const auto& v : kwd.cast<ASTConstMap>()->values())
+                                kwDefArgs.push_back(v);
+                        }
+                    }
+                    if (operand & 0x01) {
+                        /* positional defaults: a tuple on the stack */
+                        PycRef<ASTNode> defs = stack.top();
+                        stack.pop();
+                        if (defs != NULL && defs.type() == ASTNode::NODE_TUPLE) {
+                            for (const auto& v : defs.cast<ASTTuple>()->values())
+                                defArgs.push_back(v);
+                        } else if (defs != NULL && defs.type() == ASTNode::NODE_OBJECT) {
+                            PycRef<PycObject> o = defs.cast<ASTObject>()->object();
+                            if (o->type() == PycObject::TYPE_TUPLE
+                                    || o->type() == PycObject::TYPE_SMALL_TUPLE) {
+                                for (const auto& it : o.cast<PycTuple>()->values())
+                                    defArgs.push_back(new ASTObject(it));
+                            }
+                        }
+                    }
+                } else {
+                    const int defCount = operand & 0xFF;
+                    const int kwDefCount = (operand >> 8) & 0xFF;
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop();
+                    }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
@@ -1954,7 +2286,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    bc_next(source, mod, opcode, operand, pos);
+                    /* Skip the jump that normally follows a return inside an
+                       if/else, but never read past the end of the bytecode. */
+                    if (!source.atEof())
+                        bc_next(source, mod, opcode, operand, pos);
                 }
             }
             break;
@@ -3051,9 +3386,20 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
     case ASTNode::NODE_COMPREHENSION:
         {
             PycRef<ASTComprehension> comp = node.cast<ASTComprehension>();
+            bool is_dict = comp->result() != NULL
+                    && comp->result().type() == ASTNode::NODE_MAP;
 
-            pyc_output << "[ ";
-            print_src(comp->result(), mod, pyc_output);
+            pyc_output << (is_dict ? "{ " : "[ ");
+            if (is_dict) {
+                const auto& entries = comp->result().cast<ASTMap>()->values();
+                if (!entries.empty()) {
+                    print_src(entries.front().first, mod, pyc_output);
+                    pyc_output << ": ";
+                    print_src(entries.front().second, mod, pyc_output);
+                }
+            } else {
+                print_src(comp->result(), mod, pyc_output);
+            }
 
             for (const auto& gen : comp->generators()) {
                 pyc_output << " for ";
@@ -3065,7 +3411,7 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     print_src(gen->condition(), mod, pyc_output);
                 }
             }
-            pyc_output << " ]";
+            pyc_output << (is_dict ? " }" : " ]");
         }
         break;
     case ASTNode::NODE_MAP:
@@ -3079,9 +3425,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 else
                     pyc_output << ",\n";
                 start_line(cur_indent, pyc_output);
-                print_src(val.first, mod, pyc_output);
-                pyc_output << ": ";
-                print_src(val.second, mod, pyc_output);
+                if (val.first == NULL) {
+                    /* Dictionary unpacking: {**expr} */
+                    pyc_output << "**";
+                    print_src(val.second, mod, pyc_output);
+                } else {
+                    print_src(val.first, mod, pyc_output);
+                    pyc_output << ": ";
+                    print_src(val.second, mod, pyc_output);
+                }
                 first = false;
             }
             cur_indent--;
@@ -3583,6 +3935,37 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod,
 
 static std::unordered_set<PycCode *> code_seen;
 
+/* The implicit "return None" at the end of a module's code object can end up
+   nested inside the last top-level block (e.g. a trailing `if`). A `return` is
+   invalid at module scope, so strip a trailing bare return from the deepest
+   last block. */
+static void StripModuleTrailingReturn(PycRef<ASTNode> node)
+{
+    if (node == NULL)
+        return;
+    const ASTNodeList::list_t* nodes = NULL;
+    if (node.type() == ASTNode::NODE_NODELIST)
+        nodes = &node.cast<ASTNodeList>()->nodes();
+    else if (node.type() == ASTNode::NODE_BLOCK)
+        nodes = &node.cast<ASTBlock>()->nodes();
+    if (nodes == NULL || nodes->empty())
+        return;
+    PycRef<ASTNode> last = nodes->back();
+    if (last.type() == ASTNode::NODE_RETURN) {
+        PycRef<ASTReturn> ret = last.cast<ASTReturn>();
+        PycRef<ASTObject> o = ret->value().try_cast<ASTObject>();
+        if (ret->value() == NULL
+                || (o != NULL && o->object().type() == PycObject::TYPE_NONE)) {
+            if (node.type() == ASTNode::NODE_NODELIST)
+                node.cast<ASTNodeList>()->removeLast();
+            else
+                node.cast<ASTBlock>()->removeLast();
+        }
+    } else if (last.type() == ASTNode::NODE_BLOCK) {
+        StripModuleTrailingReturn(last);
+    }
+}
+
 void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
 {
     if (code_seen.find((PycCode *)code) != code_seen.end()) {
@@ -3648,6 +4031,30 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                 clean->removeLast();  // Always an extraneous return statement
             }
         }
+
+        // Python 3.11 class bodies end with compiler-generated
+        // "__classcell__ = __class__" and "return __class__"; strip them.
+        if (clean->nodes().size() &&
+                clean->nodes().back().type() == ASTNode::NODE_RETURN) {
+            PycRef<ASTReturn> ret = clean->nodes().back().cast<ASTReturn>();
+            if (ret->value() != NULL && ret->value().type() == ASTNode::NODE_NAME &&
+                    ret->value().cast<ASTName>()->name()->isEqual("__class__")) {
+                clean->removeLast();
+            }
+        }
+        if (clean->nodes().size() &&
+                clean->nodes().back().type() == ASTNode::NODE_STORE) {
+            PycRef<ASTStore> st = clean->nodes().back().cast<ASTStore>();
+            if (st->dest().type() == ASTNode::NODE_NAME &&
+                    st->dest().cast<ASTName>()->name()->isEqual("__classcell__")) {
+                clean->removeLast();
+            }
+        }
+
+        /* Strip the module's implicit trailing "return None" (invalid at
+           module scope), even when nested in a trailing block. */
+        if (code->name()->isEqual("<module>"))
+            StripModuleTrailingReturn(clean.cast<ASTNode>());
     }
     if (printClassDocstring)
         printClassDocstring = false;
