@@ -582,9 +582,14 @@ public:
     PycRef<ASTNode> cond() const { return m_cond; }
     bool negative() const { return m_negative; }
 
+    /* For BLK_EXCEPT: optional `as <var>` exception binding (Python 3.11+). */
+    PycRef<ASTNode> exceptVar() const { return m_exceptVar; }
+    void setExceptVar(PycRef<ASTNode> v) { m_exceptVar = std::move(v); }
+
 private:
     PycRef<ASTNode> m_cond;
     bool m_negative;
+    PycRef<ASTNode> m_exceptVar;
 };
 
 

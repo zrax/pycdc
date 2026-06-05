@@ -75,6 +75,55 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
 
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod);
 
+/* Sentinel name representing the live exception pushed by PUSH_EXC_INFO
+   (Python 3.11+). It is bound by `except ... as <var>` (a STORE) or discarded
+   (a POP_TOP); it must never reach the output. */
+static const char* const EXC_SENTINEL = "<exception value>";
+static bool isExcSentinel(const PycRef<ASTNode>& node)
+{
+    return node != NULL && node.type() == ASTNode::NODE_NAME
+            && node.cast<ASTName>()->name()->isEqual(EXC_SENTINEL);
+}
+
+static bool sameName(const PycRef<ASTNode>& a, const PycRef<ASTNode>& b)
+{
+    return a != NULL && b != NULL
+            && a.type() == ASTNode::NODE_NAME && b.type() == ASTNode::NODE_NAME
+            && a.cast<ASTName>()->name()->isEqual(b.cast<ASTName>()->name()->value());
+}
+
+/* Python 3.11 `except ... as <name>` binding plus its compiler cleanup. Returns
+   true if the store was consumed (and should be suppressed). */
+static bool handleExceptBinding(PycRef<ASTBlock>& curblock,
+                                const PycRef<ASTNode>& value,
+                                const PycRef<ASTNode>& name)
+{
+    if (curblock->blktype() != ASTBlock::BLK_EXCEPT)
+        return false;
+    PycRef<ASTCondBlock> exc = curblock.try_cast<ASTCondBlock>();
+    if (exc == NULL)
+        return false;
+    if (isExcSentinel(value)) {            /* except <type> as <name>: */
+        exc->setExceptVar(name);
+        return true;
+    }
+    if (value == NULL && exc->exceptVar() != NULL   /* cleanup: <name> = None */
+            && sameName(name, exc->exceptVar()))
+        return true;
+    return false;
+}
+
+/* True if `del <name>` targets the bound exception variable (cleanup). */
+static bool isExceptVarDelete(const PycRef<ASTBlock>& curblock,
+                              const PycRef<ASTNode>& name)
+{
+    if (curblock->blktype() != ASTBlock::BLK_EXCEPT)
+        return false;
+    PycRef<ASTCondBlock> exc = curblock.try_cast<ASTCondBlock>();
+    return exc != NULL && exc->exceptVar() != NULL
+            && sameName(name, exc->exceptVar());
+}
+
 /* Search a decompiled comprehension/generator code body for the
    ASTComprehension node it produces (Python 3.x compiles comprehensions and
    generator expressions into separate code objects). */
@@ -923,6 +972,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 PycRef<ASTNode> name = new ASTName(varname);
+                if (isExceptVarDelete(curblock, name))
+                    break;
                 curblock->append(new ASTDelete(name));
             }
             break;
@@ -940,6 +991,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     /* Don't show deletes that are a result of list comps. */
                     break;
                 }
+
+                if (isExceptVarDelete(curblock, name))
+                    break;
 
                 curblock->append(new ASTDelete(name));
             }
@@ -1154,7 +1208,12 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (mod->verCompare(3, 10) >= 0)
                         end *= sizeof(uint16_t); // // BPO-27129
                     end += pos;
-                    comprehension = strcmp(code->name()->value(), "<listcomp>") == 0;
+                    {
+                        const char* cn = code->name()->value();
+                        comprehension = cn && (!strcmp(cn, "<listcomp>")
+                                || !strcmp(cn, "<setcomp>")
+                                || !strcmp(cn, "<dictcomp>"));
+                    }
                 } else {
                     PycRef<ASTBlock> top = blocks.top();
                     end = top->end(); // block end position from SETUP_LOOP
@@ -2110,15 +2169,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             /* Do nothing. */
             break;
         case Pyc::PUSH_EXC_INFO:
-            /* Python 3.11+: pushes exception info tuple. We ignore here to keep decompilation going. */
+            /* Python 3.11+: pushes the live exception. Use a sentinel so the
+               `as <var>` binding and CHECK_EXC_MATCH stay balanced; it is
+               consumed by the following STORE (binding) or POP_TOP (discard). */
+            {
+                PycRef<PycString> s = new PycString();
+                s->setValue(EXC_SENTINEL);
+                stack.push(new ASTName(s));
+            }
             break;
         case Pyc::CHECK_EXC_MATCH:
             {
-                /* Python 3.11+: compares exception against handler type. */
+                /* Python 3.11+: compare the exception (left, kept on the stack
+                   for a possible `as` binding) against the handler type. */
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
                 PycRef<ASTNode> left = stack.top();
-                stack.pop();
                 stack.push(new ASTCompare(left, right, ASTCompare::CMP_EXCEPTION));
             }
             break;
@@ -2152,6 +2218,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
+
+                /* The live exception from PUSH_EXC_INFO is discarded here when
+                   the handler has no `as` binding; never emit the sentinel. */
+                if (isExcSentinel(value)) {
+                    if (!curblock->inited())
+                        curblock->init();
+                    break;
+                }
 
                 if (!curblock->inited()) {
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
@@ -2353,12 +2427,20 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             // Ignore
             break;
         case Pyc::SETUP_WITH_A:
-        case Pyc::WITH_EXCEPT_START:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
                 blocks.push(withblock);
                 curblock = blocks.top();
             }
+            break;
+        case Pyc::WITH_EXCEPT_START:
+            /* Python 3.11 with-statement exception cleanup: calls __exit__ with
+               the live exception. Discard the exception sentinel that
+               PUSH_EXC_INFO left on the stack and yield a None-like result so
+               the implicit cleanup test does not leak the sentinel. */
+            if (!stack.empty() && isExcSentinel(stack.top()))
+                stack.pop();
+            stack.push(nullptr);
             break;
         case Pyc::BEFORE_WITH:
             /* Python 3.11: setup for with block; ignore. */
@@ -2589,6 +2671,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         break;
                     }
 
+                    if (handleExceptBinding(curblock, value, name))
+                        break;
+
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
@@ -2691,6 +2776,9 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         varname->setValue(varname->strValue().substr(class_prefix.size()));
 
                     PycRef<ASTNode> name = new ASTName(varname);
+
+                    if (handleExceptBinding(curblock, value, name))
+                        break;
 
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
@@ -3494,6 +3582,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     blk.cast<ASTCondBlock>()->cond() != NULL) {
                 pyc_output << " ";
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod, pyc_output);
+                PycRef<ASTNode> excVar = blk.cast<ASTCondBlock>()->exceptVar();
+                if (excVar != NULL) {
+                    pyc_output << " as ";
+                    print_src(excVar, mod, pyc_output);
+                }
             } else if (blk->blktype() == ASTBlock::BLK_WITH) {
                 pyc_output << " ";
                 print_src(blk.cast<ASTWithBlock>()->expr(), mod, pyc_output);
