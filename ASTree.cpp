@@ -2937,22 +2937,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.pop();
             break;
         case Pyc::SWAP_A:
-            {
-                unpack = operand;
-                ASTTuple::value_t values;
-                ASTTuple::value_t next_tuple;
-                values.resize(operand);
-                for (int i = 0; i < operand; i++) {
-                    values[operand - i - 1] = stack.top();
-                    stack.pop();
-                }
-                auto tup = new ASTTuple(values);
-                tup->setRequireParens(false);
-                auto next_tup = new ASTTuple(next_tuple);
-                next_tup->setRequireParens(false);
-                stack.push(tup);
-                stack.push(next_tup);
-            }
+            /* Python 3.11+: swap TOS with the operand-th element from the top.
+               A plain stack operation (used by chained comparisons, starred
+               unpacking, etc.). */
+            stack.swap(operand);
             break;
         case Pyc::BINARY_SLICE:
             {
