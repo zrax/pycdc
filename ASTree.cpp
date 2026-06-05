@@ -217,6 +217,75 @@ static void ScanWithBlocks(PycRef<PycCode> code, PycModule* mod,
     }
 }
 
+/* Python 3.11 try/finally pre-pass. A finally compiles to: try body -> finally
+   body (normal copy) -> JUMP over an exception handler that duplicates the
+   finally body and re-raises. Recognize it from the exception table and record,
+   per try-body entry start: the try body end, the finally block end (the JUMP
+   over the duplicate), and the resume offset. The duplicate handler region is
+   skipped during decompilation. Distinguishes finally from except handlers:
+   after PUSH_EXC_INFO a finally has neither a POP_TOP (bare except) nor a
+   CHECK_EXC_MATCH (typed except). */
+static void ScanTryFinally(PycRef<PycCode> code, PycModule* mod,
+                           const std::vector<PycExceptionTableEntry>& entries,
+                           std::map<int, int>& tryEndByStart,
+                           std::map<int, int>& finallyEndByStart,
+                           std::map<int, int>& resumeByFinallyEnd)
+{
+    PycBuffer src(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    std::map<int, int> opcodeAt;
+    std::vector<std::pair<int, int>> fwdJumps;
+    while (!src.atEof()) {
+        int p = pos;
+        bc_next(src, mod, opcode, operand, pos);
+        opcodeAt[p] = opcode;
+        if (opcode == Pyc::JUMP_FORWARD_A)
+            fwdJumps.push_back(std::make_pair(p, pos + operand * 2));
+    }
+    for (const auto& e : entries) {
+        if (e.push_lasti)
+            continue;                       /* try-body entries are lasti=False */
+        int T = e.target;
+        auto h0 = opcodeAt.find(T);
+        if (h0 == opcodeAt.end() || h0->second != Pyc::PUSH_EXC_INFO)
+            continue;
+        /* handler region end: the exception entry that starts at the handler */
+        int handlerEnd = -1;
+        for (const auto& e2 : entries) {
+            if (e2.start_offset == T) { handlerEnd = e2.end_offset; break; }
+        }
+        if (handlerEnd < 0)
+            continue;
+        auto h1 = opcodeAt.find(T + 2);
+        if (h1 != opcodeAt.end() && h1->second == Pyc::POP_TOP)
+            continue;                       /* bare except, not finally */
+        bool hasCheck = false;
+        for (const auto& kv : opcodeAt) {
+            if (kv.first >= T && kv.first < handlerEnd
+                    && kv.second == Pyc::CHECK_EXC_MATCH) {
+                hasCheck = true;
+                break;
+            }
+        }
+        if (hasCheck)
+            continue;                       /* typed except, not finally */
+        /* The normal finally copy ends with a JUMP over the handler. */
+        int jumpPos = -1, resume = -1;
+        for (const auto& jp : fwdJumps) {
+            if (jp.first >= e.end_offset && jp.first < T && jp.second >= T) {
+                jumpPos = jp.first;
+                resume = jp.second;
+                break;
+            }
+        }
+        if (jumpPos < 0)
+            continue;
+        tryEndByStart[e.start_offset] = e.end_offset;
+        finallyEndByStart[e.start_offset] = jumpPos;
+        resumeByFinallyEnd[jumpPos] = resume;
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -245,10 +314,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     std::map<int, int> withResumeByBodyEnd;   /* body end -> resume offset */
     int with_skip_until = 0;                   /* skip cleanup region < this */
 
+    /* Python 3.11 try/finally reconstruction state. */
+    std::map<int, int> finallyTryEndByStart;   /* entry start -> try body end */
+    std::map<int, int> finallyEndByStart;      /* entry start -> finally end */
+    std::map<int, int> finallyResumeByEnd;     /* finally end -> resume offset */
+
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
         ScanWithBlocks(code, mod, exception_entries,
                        withBodyEndByBefore, withResumeByBodyEnd);
+        ScanTryFinally(code, mod, exception_entries,
+                       finallyTryEndByStart, finallyEndByStart, finallyResumeByEnd);
     }
 
     while (!source.atEof()) {
@@ -274,19 +350,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             const auto& entry = exception_entries[next_exception_entry];
             if (entry.start_offset == pos
                     && !entry.push_lasti) {
-                if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
-                    curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
-                } else {
-                    PycRef<ASTBlock> next = new ASTContainerBlock(0, entry.target);
-                    blocks.push(next.cast<ASTBlock>());
+                auto fit = finallyTryEndByStart.find(entry.start_offset);
+                if (fit != finallyTryEndByStart.end()) {
+                    /* Python 3.11 try/finally: container carries the finally end
+                       offset; the try body ends before the normal finally copy. */
+                    int finEnd = finallyEndByStart[entry.start_offset];
+                    PycRef<ASTBlock> cont = new ASTContainerBlock(finEnd, 0);
+                    blocks.push(cont.cast<ASTBlock>());
                     curblock = blocks.top();
-                }
 
-                stack_hist.push(stack);
-                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, entry.target, true);
-                blocks.push(tryblock.cast<ASTBlock>());
-                curblock = blocks.top();
-                next_exception_entry++;
+                    stack_hist.push(stack);
+                    PycRef<ASTBlock> tryblock =
+                            new ASTBlock(ASTBlock::BLK_TRY, fit->second, true);
+                    blocks.push(tryblock.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    next_exception_entry++;
+                } else {
+                    if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
+                        curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
+                    } else {
+                        PycRef<ASTBlock> next = new ASTContainerBlock(0, entry.target);
+                        blocks.push(next.cast<ASTBlock>());
+                        curblock = blocks.top();
+                    }
+
+                    stack_hist.push(stack);
+                    PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, entry.target, true);
+                    blocks.push(tryblock.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    next_exception_entry++;
+                }
             }
         }
 
@@ -310,6 +403,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, NULL, false);
                 except->init();
                 blocks.push(except);
+                curblock = blocks.top();
+            } else if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                    && curblock.cast<ASTContainerBlock>()->hasFinally()) {
+                /* Python 3.11 try/finally: the try body is followed by the
+                   finally body (normal copy). */
+                if (!stack_hist.empty()) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
+
+                curblock->append(prev.cast<ASTNode>());
+
+                int finEnd = curblock.cast<ASTContainerBlock>()->finally();
+                PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, finEnd, true);
+                final->init();
+                blocks.push(final);
                 curblock = blocks.top();
             } else {
                 blocks.push(prev);
@@ -354,6 +463,28 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             curblock->append(with.cast<ASTNode>());
             auto rit = withResumeByBodyEnd.find(with->end());
             if (rit != withResumeByBodyEnd.end())
+                with_skip_until = rit->second;
+        }
+
+        /* Python 3.11 try/finally: close the finally body at its end, close the
+           enclosing container, and skip the duplicate exception-path handler. */
+        if (curblock->blktype() == ASTBlock::BLK_FINALLY
+                && curblock->end() != 0
+                && curblock->end() <= pos
+                && blocks.size() > 1) {
+            int finEnd = curblock->end();
+            PycRef<ASTBlock> final = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(final.cast<ASTNode>());
+            if (curblock->blktype() == ASTBlock::BLK_CONTAINER && blocks.size() > 1) {
+                PycRef<ASTBlock> cont = curblock;
+                blocks.pop();
+                curblock = blocks.top();
+                curblock->append(cont.cast<ASTNode>());
+            }
+            auto rit = finallyResumeByEnd.find(finEnd);
+            if (rit != finallyResumeByEnd.end())
                 with_skip_until = rit->second;
         }
 
