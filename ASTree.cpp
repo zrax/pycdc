@@ -152,6 +152,55 @@ static PycRef<ASTComprehension> FindComprehension(PycRef<ASTNode> node)
     }
 }
 
+/* A generator expression compiles to a code object that yields rather than
+   building a NODE_COMPREHENSION, so reconstruct it from its for-loop: the FOR
+   block becomes the comprehension generator, the yielded value the result, and
+   a wrapping `if` its filter. The caller substitutes the implicit ".0" iterator
+   with the real iterable. */
+static PycRef<ASTComprehension> SynthGenexpr(PycRef<ASTNode> node)
+{
+    if (node == NULL)
+        return NULL;
+    if (node.type() == ASTNode::NODE_NODELIST) {
+        for (const auto& n : node.cast<ASTNodeList>()->nodes()) {
+            PycRef<ASTComprehension> c = SynthGenexpr(n);
+            if (c != NULL)
+                return c;
+        }
+        return NULL;
+    }
+    if (node.type() == ASTNode::NODE_BLOCK
+            && node.cast<ASTBlock>()->blktype() == ASTBlock::BLK_FOR) {
+        PycRef<ASTIterBlock> forblk = node.cast<ASTIterBlock>();
+        PycRef<ASTNode> result;
+        PycRef<ASTNode> cond;
+        for (const auto& n : forblk->nodes()) {
+            if (n.type() == ASTNode::NODE_RETURN
+                    && n.cast<ASTReturn>()->rettype() == ASTReturn::YIELD) {
+                result = n.cast<ASTReturn>()->value();
+            } else if (n.type() == ASTNode::NODE_BLOCK
+                    && n.cast<ASTBlock>()->blktype() == ASTBlock::BLK_IF) {
+                PycRef<ASTCondBlock> ifblk = n.cast<ASTCondBlock>();
+                for (const auto& m : ifblk->nodes()) {
+                    if (m.type() == ASTNode::NODE_RETURN
+                            && m.cast<ASTReturn>()->rettype() == ASTReturn::YIELD) {
+                        result = m.cast<ASTReturn>()->value();
+                        cond = ifblk->cond();
+                    }
+                }
+            }
+        }
+        if (result == NULL)
+            return NULL;
+        if (cond != NULL)
+            forblk->setCondition(cond);
+        PycRef<ASTComprehension> comp = new ASTComprehension(result);
+        comp->addGenerator(forblk);
+        return comp;
+    }
+    return NULL;
+}
+
 /* Python 3.11 with-statement pre-pass. For each BEFORE_WITH whose normal exit
    has the canonical shape (body -> implicit __exit__ -> JUMP over the cleanup
    handler -> resume), record the with body end and the resume offset. The
@@ -953,6 +1002,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             PycRef<ASTNode> compAst = BuildFromCode(ccode, mod);
                             cleanBuild = savedClean;
                             PycRef<ASTComprehension> comp = FindComprehension(compAst);
+                            if (comp == NULL)
+                                comp = SynthGenexpr(compAst);   /* generator expr */
                             if (comp != NULL && !comp->generators().empty()) {
                                 comp->generators().front()->setIter(func);
                                 stack.pop();   /* remove the comprehension callable */
