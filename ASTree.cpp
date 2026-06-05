@@ -3544,13 +3544,23 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
     case ASTNode::NODE_RAISE:
         {
             PycRef<ASTRaise> raise = node.cast<ASTRaise>();
-            pyc_output << "raise ";
-            bool first = true;
-            for (const auto& param : raise->params()) {
-                if (!first)
-                    pyc_output << ", ";
-                print_src(param, mod, pyc_output);
-                first = false;
+            pyc_output << "raise";
+            if (mod->verCompare(3, 0) >= 0) {
+                /* Python 3: `raise`, `raise X`, or `raise X from Y`. */
+                int i = 0;
+                for (const auto& param : raise->params()) {
+                    pyc_output << (i == 0 ? " " : " from ");
+                    print_src(param, mod, pyc_output);
+                    ++i;
+                }
+            } else {
+                /* Python 2: `raise [X [, Y [, Z]]]`. */
+                bool first = true;
+                for (const auto& param : raise->params()) {
+                    pyc_output << (first ? " " : ", ");
+                    print_src(param, mod, pyc_output);
+                    first = false;
+                }
             }
         }
         break;
