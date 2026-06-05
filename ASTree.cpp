@@ -4042,38 +4042,49 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
 
                 ASTFunction::defarg_t defargs = src.cast<ASTFunction>()->defargs();
                 ASTFunction::defarg_t kwdefargs = src.cast<ASTFunction>()->kwdefargs();
+                /* Python signature order is: positional-or-keyword, *args,
+                   keyword-only, **kwargs. Local variables, however, are ordered
+                   positional, keyword-only, *args, **kwargs, so index them
+                   explicitly rather than sequentially. */
+                const int argC = code_src->argCount();
+                const int kwC = code_src->kwOnlyArgCount();
+                const bool hasVarArgs = (code_src->flags() & PycCode::CO_VARARGS) != 0;
+                const bool hasVarKw = (code_src->flags() & PycCode::CO_VARKEYWORDS) != 0;
+                bool firstParam = true;
                 auto da = defargs.cbegin();
-                int narg = 0;
-                for (int i = 0; i < code_src->argCount(); ++i) {
-                    if (narg)
-                        pyc_output << ", ";
-                    pyc_output << code_src->getLocal(narg++)->value();
-                    if ((code_src->argCount() - i) <= (int)defargs.size()) {
+                for (int i = 0; i < argC; ++i) {
+                    if (!firstParam) pyc_output << ", ";
+                    firstParam = false;
+                    pyc_output << code_src->getLocal(i)->value();
+                    if ((argC - i) <= (int)defargs.size()) {
                         pyc_output << " = ";
                         print_src(*da++, mod, pyc_output);
                     }
                 }
-                da = kwdefargs.cbegin();
-                if (code_src->kwOnlyArgCount() != 0) {
-                    pyc_output << (narg == 0 ? "*" : ", *");
-                    for (int i = 0; i < code_src->kwOnlyArgCount(); ++i) {
-                        pyc_output << ", ";
-                        pyc_output << code_src->getLocal(narg++)->value();
-                        if ((code_src->kwOnlyArgCount() - i) <= (int)kwdefargs.size()) {
-                            pyc_output << " = ";
-                            print_src(*da++, mod, pyc_output);
-                        }
+                if (hasVarArgs) {
+                    if (!firstParam) pyc_output << ", ";
+                    firstParam = false;
+                    pyc_output << "*" << code_src->getLocal(argC + kwC)->value();
+                } else if (kwC != 0) {
+                    if (!firstParam) pyc_output << ", ";
+                    firstParam = false;
+                    pyc_output << "*";
+                }
+                auto kda = kwdefargs.cbegin();
+                for (int i = 0; i < kwC; ++i) {
+                    if (!firstParam) pyc_output << ", ";
+                    firstParam = false;
+                    pyc_output << code_src->getLocal(argC + i)->value();
+                    if ((kwC - i) <= (int)kwdefargs.size()) {
+                        pyc_output << " = ";
+                        print_src(*kda++, mod, pyc_output);
                     }
                 }
-                if (code_src->flags() & PycCode::CO_VARARGS) {
-                    if (narg)
-                        pyc_output << ", ";
-                    pyc_output << "*" << code_src->getLocal(narg++)->value();
-                }
-                if (code_src->flags() & PycCode::CO_VARKEYWORDS) {
-                    if (narg)
-                        pyc_output << ", ";
-                    pyc_output << "**" << code_src->getLocal(narg++)->value();
+                if (hasVarKw) {
+                    if (!firstParam) pyc_output << ", ";
+                    firstParam = false;
+                    pyc_output << "**"
+                               << code_src->getLocal(argC + kwC + (hasVarArgs ? 1 : 0))->value();
                 }
 
                 if (isLambda) {
