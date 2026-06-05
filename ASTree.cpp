@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_set>
+#include <map>
+#include <vector>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -150,6 +152,71 @@ static PycRef<ASTComprehension> FindComprehension(PycRef<ASTNode> node)
     }
 }
 
+/* Python 3.11 with-statement pre-pass. For each BEFORE_WITH whose normal exit
+   has the canonical shape (body -> implicit __exit__ -> JUMP over the cleanup
+   handler -> resume), record the with body end and the resume offset. The
+   region [bodyEnd, resume) (implicit __exit__ call + jump + exception cleanup
+   handler) is then skipped during decompilation. With-statements without this
+   clean shape are left unhandled (no regression). */
+static void ScanWithBlocks(PycRef<PycCode> code, PycModule* mod,
+                           const std::vector<PycExceptionTableEntry>& entries,
+                           std::map<int, int>& bodyEndByBefore,
+                           std::map<int, int>& resumeByBodyEnd)
+{
+    PycBuffer src(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    std::vector<int> befores;
+    std::vector<std::pair<int, int>> fwdJumps;   /* (pos, target) */
+    std::map<int, int> opcodeAt;                 /* pos -> opcode */
+    while (!src.atEof()) {
+        int p = pos;
+        bc_next(src, mod, opcode, operand, pos);
+        opcodeAt[p] = opcode;
+        if (opcode == Pyc::BEFORE_WITH)
+            befores.push_back(p);
+        else if (opcode == Pyc::JUMP_FORWARD_A)
+            fwdJumps.push_back(std::make_pair(p, pos + operand * 2));
+    }
+    for (int bp : befores) {
+        int bodyEnd = -1, handler = -1;
+        for (const auto& e : entries) {
+            if (e.start_offset > bp) {
+                bodyEnd = e.end_offset;
+                handler = e.target;
+                break;
+            }
+        }
+        if (bodyEnd < 0 || handler < 0)
+            continue;
+        /* Confirm the handler is a genuine with-cleanup: it must begin with
+           PUSH_EXC_INFO followed by WITH_EXCEPT_START. */
+        auto h0 = opcodeAt.find(handler);
+        if (h0 == opcodeAt.end() || h0->second != Pyc::PUSH_EXC_INFO)
+            continue;
+        bool hasWithExcept = false;
+        for (const auto& kv : opcodeAt) {
+            if (kv.first > handler && kv.first <= handler + 4) {
+                if (kv.second == Pyc::WITH_EXCEPT_START) { hasWithExcept = true; break; }
+            }
+        }
+        if (!hasWithExcept)
+            continue;
+        int resume = -1;
+        for (const auto& jp : fwdJumps) {
+            /* The normal-exit jump sits between the body end and the handler and
+               jumps over the handler (target at/after it). */
+            if (jp.first >= bodyEnd && jp.first < handler && jp.second >= handler) {
+                resume = jp.second;
+                break;
+            }
+        }
+        if (resume < 0)
+            continue;   /* only the clean jump-over-handler shape */
+        bodyEndByBefore[bp] = bodyEnd;
+        resumeByBodyEnd[bodyEnd] = resume;
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -173,8 +240,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     std::vector<PycExceptionTableEntry> exception_entries;
     size_t next_exception_entry = 0;
 
+    /* Python 3.11 with-statement reconstruction state. */
+    std::map<int, int> withBodyEndByBefore;   /* BEFORE_WITH pos -> body end */
+    std::map<int, int> withResumeByBodyEnd;   /* body end -> resume offset */
+    int with_skip_until = 0;                   /* skip cleanup region < this */
+
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
+        ScanWithBlocks(code, mod, exception_entries,
+                       withBodyEndByBefore, withResumeByBodyEnd);
     }
 
     while (!source.atEof()) {
@@ -268,8 +342,30 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
         }
 
+        /* Python 3.11 with-statement: close the body block at its end and skip
+           the implicit __exit__ call + exception-cleanup handler that follow. */
+        if (curblock->blktype() == ASTBlock::BLK_WITH
+                && curblock->end() != 0
+                && curblock->end() <= pos
+                && blocks.size() > 1) {
+            PycRef<ASTBlock> with = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(with.cast<ASTNode>());
+            auto rit = withResumeByBodyEnd.find(with->end());
+            if (rit != withResumeByBodyEnd.end())
+                with_skip_until = rit->second;
+        }
+
         curpos = pos;
         bc_next(source, mod, opcode, operand, pos);
+
+        /* Skip the with-statement cleanup region (implicit __exit__ + handler). */
+        if (with_skip_until > 0) {
+            if (curpos < with_skip_until)
+                continue;
+            with_skip_until = 0;
+        }
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -2443,7 +2539,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(nullptr);
             break;
         case Pyc::BEFORE_WITH:
-            /* Python 3.11: setup for with block; ignore. */
+            {
+                /* Python 3.11 with-statement. If the pre-pass recognized this
+                   one, open a with-block; the context manager stays on the
+                   stack and the following STORE/POP_TOP turns it into the
+                   with-expression (and optional `as <var>`). */
+                auto it = withBodyEndByBefore.find(curpos);
+                if (it != withBodyEndByBefore.end()) {
+                    PycRef<ASTBlock> withblock = new ASTWithBlock(it->second);
+                    blocks.push(withblock);
+                    curblock = blocks.top();
+                }
+            }
             break;
         case Pyc::WITH_CLEANUP:
         case Pyc::WITH_CLEANUP_START:
