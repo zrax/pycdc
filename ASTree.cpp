@@ -870,6 +870,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 /* Test for the load build class function */
                 stack_hist.push(stack);
+                /* Class keyword arguments (e.g. metaclass=) arrive via a 3.11
+                   KW_NAMES map at TOS; capture them before scanning the bases. */
+                ASTCall::kwparam_t classKwargs;
+                if (mod->verCompare(3, 11) >= 0 && stack.top() != NULL
+                        && stack.top().type() == ASTNode::NODE_KW_NAMES_MAP) {
+                    PycRef<ASTKwNamesMap> km = stack.top().cast<ASTKwNamesMap>();
+                    stack.pop();
+                    for (const auto& kv : km->values())
+                        classKwargs.push_back(kv);
+                }
                 int basecnt = 0;
                 ASTTuple::value_t bases;
                 bases.resize(basecnt);
@@ -900,7 +910,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             && stack.top() == nullptr) {
                         stack.pop();
                     }
-                    PycRef<ASTNode> call = new ASTCall(function, pparamList, kwparamList);
+                    PycRef<ASTNode> call = new ASTCall(function, pparamList, classKwargs);
                     stack.push(new ASTClass(call, new ASTTuple(bases), name));
                     stack_hist.pop();
                     break;
@@ -4157,13 +4167,31 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 pyc_output << "class ";
                 print_src(dest, mod, pyc_output);
                 PycRef<ASTTuple> bases = src.cast<ASTClass>()->bases().cast<ASTTuple>();
-                if (bases->values().size() > 0) {
+                ASTCall::kwparam_t classKw;
+                {
+                    PycRef<ASTNode> classCall = src.cast<ASTClass>()->code();
+                    if (classCall != NULL && classCall.type() == ASTNode::NODE_CALL)
+                        classKw = classCall.cast<ASTCall>()->kwparams();
+                }
+                if (bases->values().size() > 0 || !classKw.empty()) {
                     pyc_output << "(";
                     bool first = true;
                     for (const auto& val : bases->values()) {
                         if (!first)
                             pyc_output << ", ";
                         print_src(val, mod, pyc_output);
+                        first = false;
+                    }
+                    for (const auto& kv : classKw) {
+                        if (!first)
+                            pyc_output << ", ";
+                        if (kv.first.type() == ASTNode::NODE_NAME) {
+                            pyc_output << kv.first.cast<ASTName>()->name()->value() << " = ";
+                        } else {
+                            pyc_output << kv.first.cast<ASTObject>()->object()
+                                          .cast<PycString>()->value() << " = ";
+                        }
+                        print_src(kv.second, mod, pyc_output);
                         first = false;
                     }
                     pyc_output << "):\n";
