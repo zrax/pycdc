@@ -2098,7 +2098,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                     stack.push(new ASTComprehension(value));
                 } else {
-                    stack.push(new ASTSubscr(list, value)); /* Total hack */
+                    const char* cn = code->name() != NULL ? code->name()->value() : NULL;
+                    if (cn && !strcmp(cn, "<listcomp>")) {
+                        /* Filtered list comprehension: the append is inside the
+                           filter block, so record the value as a yield-style
+                           marker and let SynthGenexpr rebuild the comprehension
+                           (with its filter condition). */
+                        curblock->append(new ASTReturn(value, ASTReturn::YIELD));
+                    } else {
+                        stack.push(new ASTSubscr(list, value)); /* Total hack */
+                    }
                 }
             }
             break;
