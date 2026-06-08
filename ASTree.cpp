@@ -109,7 +109,14 @@ static bool handleExceptBinding(PycRef<ASTBlock>& curblock,
         exc->setExceptVar(name);
         return true;
     }
-    if (value == NULL && exc->exceptVar() != NULL   /* cleanup: <name> = None */
+    /* Compiler cleanup at the end of an `except ... as <name>` handler:
+       `<name> = None; del <name>`. The store value may arrive either as a
+       NULL placeholder or as an explicit None constant (LOAD_CONST None;
+       STORE). Suppress both when the target is the bound exception var. */
+    bool valueIsNone = (value == NULL)
+            || (value != NULL && value.type() == ASTNode::NODE_OBJECT
+                && value.cast<ASTObject>()->object() == Pyc_None);
+    if (valueIsNone && exc->exceptVar() != NULL
             && sameName(name, exc->exceptVar()))
         return true;
     return false;
@@ -2723,6 +2730,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                            || k->type() == PycObject::TYPE_CODE2))
                                 keepNext = true;
                         }
+                        /* Never consume the start of an exception handler: a
+                           return inside an `if` within a `try` is immediately
+                           followed by PUSH_EXC_INFO. Skipping it would drop the
+                           handler's sentinel and corrupt the `except ... as e`
+                           binding. */
+                        if (pkOp == Pyc::PUSH_EXC_INFO)
+                            keepNext = true;
                         if (keepNext) {
                             source.setPos(savedSrc);
                             pos = savedPos;
