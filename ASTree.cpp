@@ -403,6 +403,50 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         fprintf(stderr, "\n");
 #endif
 
+        /* Python 3.11 with-statement / try-finally: close the body at its end
+           and enter the cleanup skip region BEFORE processing exception-table
+           entries. An enclosing try re-protects the implicit __exit__/finally
+           cleanup region, which would otherwise reopen a spurious try over it. */
+        if (curblock->blktype() == ASTBlock::BLK_WITH
+                && curblock->end() != 0
+                && curblock->end() <= pos
+                && blocks.size() > 1) {
+            PycRef<ASTBlock> with = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(with.cast<ASTNode>());
+            auto rit = withResumeByBodyEnd.find(with->end());
+            if (rit != withResumeByBodyEnd.end())
+                with_skip_until = rit->second;
+        }
+        if (curblock->blktype() == ASTBlock::BLK_FINALLY
+                && curblock->end() != 0
+                && curblock->end() <= pos
+                && blocks.size() > 1) {
+            int finEnd = curblock->end();
+            PycRef<ASTBlock> final = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(final.cast<ASTNode>());
+            if (curblock->blktype() == ASTBlock::BLK_CONTAINER && blocks.size() > 1) {
+                PycRef<ASTBlock> cont = curblock;
+                blocks.pop();
+                curblock = blocks.top();
+                curblock->append(cont.cast<ASTNode>());
+            }
+            auto rit = finallyResumeByEnd.find(finEnd);
+            if (rit != finallyResumeByEnd.end())
+                with_skip_until = rit->second;
+        }
+        if (with_skip_until > 0) {
+            if (pos < with_skip_until) {
+                curpos = pos;
+                bc_next(source, mod, opcode, operand, pos);
+                continue;
+            }
+            with_skip_until = 0;
+        }
+
         while (next_exception_entry < exception_entries.size()
                 && exception_entries[next_exception_entry].start_offset < pos) {
             next_exception_entry++;
@@ -513,52 +557,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
         }
 
-        /* Python 3.11 with-statement: close the body block at its end and skip
-           the implicit __exit__ call + exception-cleanup handler that follow. */
-        if (curblock->blktype() == ASTBlock::BLK_WITH
-                && curblock->end() != 0
-                && curblock->end() <= pos
-                && blocks.size() > 1) {
-            PycRef<ASTBlock> with = curblock;
-            blocks.pop();
-            curblock = blocks.top();
-            curblock->append(with.cast<ASTNode>());
-            auto rit = withResumeByBodyEnd.find(with->end());
-            if (rit != withResumeByBodyEnd.end())
-                with_skip_until = rit->second;
-        }
-
-        /* Python 3.11 try/finally: close the finally body at its end, close the
-           enclosing container, and skip the duplicate exception-path handler. */
-        if (curblock->blktype() == ASTBlock::BLK_FINALLY
-                && curblock->end() != 0
-                && curblock->end() <= pos
-                && blocks.size() > 1) {
-            int finEnd = curblock->end();
-            PycRef<ASTBlock> final = curblock;
-            blocks.pop();
-            curblock = blocks.top();
-            curblock->append(final.cast<ASTNode>());
-            if (curblock->blktype() == ASTBlock::BLK_CONTAINER && blocks.size() > 1) {
-                PycRef<ASTBlock> cont = curblock;
-                blocks.pop();
-                curblock = blocks.top();
-                curblock->append(cont.cast<ASTNode>());
-            }
-            auto rit = finallyResumeByEnd.find(finEnd);
-            if (rit != finallyResumeByEnd.end())
-                with_skip_until = rit->second;
-        }
-
         curpos = pos;
         bc_next(source, mod, opcode, operand, pos);
-
-        /* Skip the with-statement cleanup region (implicit __exit__ + handler). */
-        if (with_skip_until > 0) {
-            if (curpos < with_skip_until)
-                continue;
-            with_skip_until = 0;
-        }
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
