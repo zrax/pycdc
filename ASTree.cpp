@@ -1713,7 +1713,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     int except_end = offs;
                     if (curblock->blktype() == ASTBlock::BLK_EXCEPT
                             && curblock.cast<ASTCondBlock>()->cond() == NULL) {
-                        except_end = curblock->end();
+                        /* Refining the initial (type-less) except handler. The
+                           clause ends at the dispatch jump target (the next
+                           clause / reraise), not at the whole handler region;
+                           using the region end would swallow following clauses
+                           when this clause does not fall through (e.g. raises). */
+                        if (offs <= pos)
+                            except_end = curblock->end();
                         blocks.pop();
                         curblock = blocks.top();
 
