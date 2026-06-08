@@ -550,19 +550,43 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     next_exception_entry++;
                 } else {
-                    if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
-                        curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
-                    } else {
-                        PycRef<ASTBlock> next = new ASTContainerBlock(0, entry.target);
-                        blocks.push(next.cast<ASTBlock>());
-                        curblock = blocks.top();
+                    /* Python 3.11 splits a single try into several exception
+                       table entries (all pointing at the same handler) when the
+                       try body contains a nested try/except: the protected range
+                       is broken around the inner handler. If a BLK_TRY with this
+                       same handler target is already open, these later entries
+                       are continuations of it, not new trys; skip them to avoid
+                       a cascade of spurious nested trys. */
+                    bool sameTryOpen = false;
+                    {
+                        std::stack<PycRef<ASTBlock> > tmp = blocks;
+                        while (!tmp.empty()) {
+                            PycRef<ASTBlock> b = tmp.top();
+                            if (b->blktype() == ASTBlock::BLK_TRY
+                                    && b->end() == entry.target) {
+                                sameTryOpen = true;
+                                break;
+                            }
+                            tmp.pop();
+                        }
                     }
+                    if (sameTryOpen) {
+                        next_exception_entry++;
+                    } else {
+                        if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
+                            curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
+                        } else {
+                            PycRef<ASTBlock> next = new ASTContainerBlock(0, entry.target);
+                            blocks.push(next.cast<ASTBlock>());
+                            curblock = blocks.top();
+                        }
 
-                    stack_hist.push(stack);
-                    PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, entry.target, true);
-                    blocks.push(tryblock.cast<ASTBlock>());
-                    curblock = blocks.top();
-                    next_exception_entry++;
+                        stack_hist.push(stack);
+                        PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, entry.target, true);
+                        blocks.push(tryblock.cast<ASTBlock>());
+                        curblock = blocks.top();
+                        next_exception_entry++;
+                    }
                 }
             }
         }
