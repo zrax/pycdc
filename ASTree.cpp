@@ -4382,10 +4382,13 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod,
 
 static std::unordered_set<PycCode *> code_seen;
 
-/* The implicit "return None" at the end of a module's code object can end up
-   nested inside the last top-level block (e.g. a trailing `if`). A `return` is
-   invalid at module scope, so strip a trailing bare return from the deepest
-   last block. */
+/* A `return` is invalid at module scope, yet the implicit "return None" (and,
+   with nested `if`s, copies of it) can end up inside module-level blocks. Strip
+   the trailing bare return from this block and, recursively, from every nested
+   block (descending into all children, not just the last). Only ever called on
+   the <module> code object, whose blocks are module-level control flow (nested
+   function/class bodies are separate code objects, so this never touches a real
+   `return`). */
 static void StripModuleTrailingReturn(PycRef<ASTNode> node)
 {
     if (node == NULL)
@@ -4397,9 +4400,14 @@ static void StripModuleTrailingReturn(PycRef<ASTNode> node)
         nodes = &node.cast<ASTBlock>()->nodes();
     if (nodes == NULL || nodes->empty())
         return;
-    PycRef<ASTNode> last = nodes->back();
-    if (last.type() == ASTNode::NODE_RETURN) {
-        PycRef<ASTReturn> ret = last.cast<ASTReturn>();
+    /* Recurse into every nested block first. */
+    for (const auto& child : *nodes) {
+        if (child.type() == ASTNode::NODE_BLOCK)
+            StripModuleTrailingReturn(child);
+    }
+    /* Then strip this block's own trailing bare return. */
+    if (!nodes->empty() && nodes->back().type() == ASTNode::NODE_RETURN) {
+        PycRef<ASTReturn> ret = nodes->back().cast<ASTReturn>();
         PycRef<ASTObject> o = ret->value().try_cast<ASTObject>();
         if (ret->value() == NULL
                 || (o != NULL && o->object().type() == PycObject::TYPE_NONE)) {
@@ -4408,8 +4416,6 @@ static void StripModuleTrailingReturn(PycRef<ASTNode> node)
             else
                 node.cast<ASTBlock>()->removeLast();
         }
-    } else if (last.type() == ASTNode::NODE_BLOCK) {
-        StripModuleTrailingReturn(last);
     }
 }
 
