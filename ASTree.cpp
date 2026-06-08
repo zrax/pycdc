@@ -2962,36 +2962,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    /* A return inside an if/else is normally followed by a
-                       redundant JUMP (or other filler) that the old code
-                       unconditionally consumed to skip the else branch. In
-                       3.11+ the return can instead fall straight into the
-                       sibling branch, and if that branch begins by loading a
-                       code object (a comprehension or nested function that
-                       feeds a following MAKE_FUNCTION), consuming it would drop
-                       the operand MAKE_FUNCTION needs and crash. Peek the next
-                       instruction: keep it only when it is a LOAD_CONST of a
-                       code object (always real code); otherwise preserve the
-                       original skip behavior to avoid regressions. */
+                    /* A return inside an if/else is, in pre-3.11 bytecode,
+                       followed by a redundant JUMP that skips the else branch;
+                       that jump must be consumed. In 3.11+ the return usually
+                       falls straight into real code (a sibling branch, the next
+                       statement such as another `return`, or an exception
+                       handler), and consuming it would silently drop that code.
+                       Peek the next instruction and only skip it when it is an
+                       actual unconditional jump; otherwise keep it. */
                     if (!source.atEof()) {
                         int savedSrc = source.pos();
                         int savedPos = pos;
                         int pkOp = 0, pkOperand = 0;
                         bc_next(source, mod, pkOp, pkOperand, pos);
-                        bool keepNext = false;
-                        if (pkOp == Pyc::LOAD_CONST_A) {
-                            PycRef<PycObject> k = code->getConst(pkOperand);
-                            if (k != NULL && (k->type() == PycObject::TYPE_CODE
-                                           || k->type() == PycObject::TYPE_CODE2))
-                                keepNext = true;
-                        }
-                        /* Never consume the start of an exception handler: a
-                           return inside an `if` within a `try` is immediately
-                           followed by PUSH_EXC_INFO. Skipping it would drop the
-                           handler's sentinel and corrupt the `except ... as e`
-                           binding. */
-                        if (pkOp == Pyc::PUSH_EXC_INFO)
-                            keepNext = true;
+                        bool keepNext = !(pkOp == Pyc::JUMP_FORWARD_A
+                                       || pkOp == Pyc::JUMP_ABSOLUTE_A
+                                       || pkOp == Pyc::JUMP_BACKWARD_A
+                                       || pkOp == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A);
                         if (keepNext) {
                             source.setPos(savedSrc);
                             pos = savedPos;
