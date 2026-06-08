@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wall -Wextra -Wno-error=shadow -Werror  -g -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/pycdc.dir/pycdc.cpp.o CMakeFiles/pycdc.dir/ASTree.cpp.o CMakeFiles/pycdc.dir/ASTNode.cpp.o -o pycdc  libpycxx.a

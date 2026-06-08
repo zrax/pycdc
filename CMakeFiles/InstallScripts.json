@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/tmp/pycdc/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

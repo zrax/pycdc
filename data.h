@@ -52,6 +52,10 @@ public:
     int getByte() override;
     void getBuffer(int bytes, void* buffer) override;
 
+    /* Save/restore read position so callers can peek the next instruction. */
+    int pos() const { return m_pos; }
+    void setPos(int p) { m_pos = p; }
+
 private:
     const unsigned char* m_buffer;
     int m_size, m_pos;
