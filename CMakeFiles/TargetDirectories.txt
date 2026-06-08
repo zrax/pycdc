@@ -1,0 +1,10 @@
+/tmp/pycdc/CMakeFiles/pycxx.dir
+/tmp/pycdc/CMakeFiles/pycdas.dir
+/tmp/pycdc/CMakeFiles/pycdc.dir
+/tmp/pycdc/CMakeFiles/check.dir
+/tmp/pycdc/CMakeFiles/edit_cache.dir
+/tmp/pycdc/CMakeFiles/rebuild_cache.dir
+/tmp/pycdc/CMakeFiles/list_install_components.dir
+/tmp/pycdc/CMakeFiles/install.dir
+/tmp/pycdc/CMakeFiles/install/local.dir
+/tmp/pycdc/CMakeFiles/install/strip.dir

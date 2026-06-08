@@ -2676,10 +2676,37 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    /* Skip the jump that normally follows a return inside an
-                       if/else, but never read past the end of the bytecode. */
-                    if (!source.atEof())
-                        bc_next(source, mod, opcode, operand, pos);
+                    /* A return inside an if/else is normally followed by a
+                       redundant JUMP (or other filler) that the old code
+                       unconditionally consumed to skip the else branch. In
+                       3.11+ the return can instead fall straight into the
+                       sibling branch, and if that branch begins by loading a
+                       code object (a comprehension or nested function that
+                       feeds a following MAKE_FUNCTION), consuming it would drop
+                       the operand MAKE_FUNCTION needs and crash. Peek the next
+                       instruction: keep it only when it is a LOAD_CONST of a
+                       code object (always real code); otherwise preserve the
+                       original skip behavior to avoid regressions. */
+                    if (!source.atEof()) {
+                        int savedSrc = source.pos();
+                        int savedPos = pos;
+                        int pkOp = 0, pkOperand = 0;
+                        bc_next(source, mod, pkOp, pkOperand, pos);
+                        bool keepNext = false;
+                        if (pkOp == Pyc::LOAD_CONST_A) {
+                            PycRef<PycObject> k = code->getConst(pkOperand);
+                            if (k != NULL && (k->type() == PycObject::TYPE_CODE
+                                           || k->type() == PycObject::TYPE_CODE2))
+                                keepNext = true;
+                        }
+                        if (keepNext) {
+                            source.setPos(savedSrc);
+                            pos = savedPos;
+                        } else {
+                            opcode = pkOp;
+                            operand = pkOperand;
+                        }
+                    }
                 }
             }
             break;
