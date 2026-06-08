@@ -2023,6 +2023,29 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             }
                         }
                     } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
+                        /* A backward jump out of an else block is a `continue`
+                           when it targets an enclosing loop and we are still
+                           before that loop's end (the natural loop-back that
+                           closes an else sits exactly at the loop end). Emit a
+                           continue inside the else rather than closing it. */
+                        if (mod->verCompare(3, 11) >= 0) {
+                            int loopEnd = -1;
+                            std::stack<PycRef<ASTBlock> > tmp = blocks;
+                            while (!tmp.empty()) {
+                                int bt = tmp.top()->blktype();
+                                if (bt == ASTBlock::BLK_FOR
+                                        || bt == ASTBlock::BLK_WHILE) {
+                                    loopEnd = tmp.top()->end();
+                                    break;
+                                }
+                                tmp.pop();
+                            }
+                            if (loopEnd > 0 && pos < loopEnd) {
+                                curblock->append(
+                                        new ASTKeyword(ASTKeyword::KW_CONTINUE));
+                                break;
+                            }
+                        }
                         if (!stack_hist.empty()) {
                             stack = stack_hist.top();
                             stack_hist.pop();
