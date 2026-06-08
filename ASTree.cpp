@@ -1836,10 +1836,32 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (offs < pos) {
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
-                        bool is_jump_to_start = offs == curblock.cast<ASTIterBlock>()->start();
+                        /* The jump operand is relative in 3.10+; the real target
+                           is (pos - offs) where pos already points past this
+                           instruction. Compare that against the loop start. A
+                           for loop has TWO kinds of backward jumps to its start:
+                           the implicit loop iteration at the very end of the
+                           body (pos == block end), and an explicit `continue`
+                           somewhere earlier (pos < block end). Only the former
+                           closes the loop; the latter emits a continue. */
+                        int target = (mod->verCompare(3, 10) >= 0)
+                                     ? (pos - offs)
+                                     : offs;
+                        bool is_jump_to_start =
+                                target == curblock.cast<ASTIterBlock>()->start();
+                        bool at_loop_end = (curblock->end() != 0)
+                                     && (pos == curblock->end());
                         bool should_pop_for_block = curblock.cast<ASTIterBlock>()->isComprehension();
                         // in v3.8, SETUP_LOOP is deprecated and for blocks aren't terminated by POP_BLOCK, so we add them here
-                        bool should_add_for_block = mod->majorVer() == 3 && mod->minorVer() >= 8 && is_jump_to_start && !curblock.cast<ASTIterBlock>()->isComprehension();
+                        bool should_add_for_block = mod->majorVer() == 3 && mod->minorVer() >= 8 && is_jump_to_start && at_loop_end && !curblock.cast<ASTIterBlock>()->isComprehension();
+
+                        if (!should_pop_for_block && !should_add_for_block
+                                && is_jump_to_start && !at_loop_end
+                                && !curblock.cast<ASTIterBlock>()->isComprehension()) {
+                            /* explicit continue directly in the for body */
+                            curblock->append(new ASTKeyword(ASTKeyword::KW_CONTINUE));
+                            break;
+                        }
 
                         if (should_pop_for_block || should_add_for_block) {
                             PycRef<ASTNode> top = stack.top();
@@ -1858,8 +1880,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                             }
                         }
                     } else if (curblock->blktype() == ASTBlock::BLK_ELSE) {
-                        stack = stack_hist.top();
-                        stack_hist.pop();
+                        if (!stack_hist.empty()) {
+                            stack = stack_hist.top();
+                            stack_hist.pop();
+                        }
 
                         blocks.pop();
                         blocks.top()->append(curblock.cast<ASTNode>());
