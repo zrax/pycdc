@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <map>
 #include <vector>
+#include <set>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -355,6 +356,71 @@ static void ScanTryFinally(PycRef<PycCode> code, PycModule* mod,
     }
 }
 
+/* Python 3.11 while-loop pre-pass. A while loop with the standard bottom-test
+   layout compiles to:
+        <eval cond>; POP_JUMP_FORWARD_IF_FALSE end     (entry guard)
+   loop_start:
+        <body>
+        <eval cond>; POP_JUMP_BACKWARD_IF_TRUE loop_start   (back-edge)
+   end:
+   Without recognition pycdc renders both halves as independent `if` blocks and
+   never forms the loop (the body's trailing back-edge becomes `if not cond:
+   pass`). Detect it from a conditional backward jump whose target is the
+   instruction immediately following a matching forward guard, and whose guard
+   skips to the instruction right after the back-edge. Record the guard position
+   (the BLK_WHILE opens there) and the back-edge position (the loop closes
+   there). */
+static void ScanWhileLoops(PycRef<PycCode> code, PycModule* mod,
+                           std::map<int,int>& whileGuardEnd,
+                           std::set<int>& whileBackedges)
+{
+    PycBuffer src(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    std::vector<int> order;
+    std::map<int,int> opAt, operAt, nextAt;
+    while (!src.atEof()) {
+        int p = pos;
+        bc_next(src, mod, opcode, operand, pos);
+        order.push_back(p);
+        opAt[p] = opcode; operAt[p] = operand; nextAt[p] = pos;
+    }
+    std::map<int,int> instrEndingAt;   /* nextpos -> pos */
+    for (int p : order)
+        instrEndingAt[nextAt[p]] = p;
+
+    auto isCondBack = [](int op){
+        return op == Pyc::POP_JUMP_BACKWARD_IF_TRUE_A
+            || op == Pyc::POP_JUMP_BACKWARD_IF_FALSE_A
+            || op == Pyc::POP_JUMP_BACKWARD_IF_NONE_A
+            || op == Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A;
+    };
+    auto isFwdGuard = [](int op){
+        return op == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+            || op == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+            || op == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+            || op == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A;
+    };
+    for (int b : order) {
+        if (!isCondBack(opAt[b]))
+            continue;
+        int end = nextAt[b];
+        int loop_start = end - operAt[b] * 2;   /* backward target */
+        if (loop_start < 0 || loop_start >= b)
+            continue;
+        auto git = instrEndingAt.find(loop_start);
+        if (git == instrEndingAt.end())
+            continue;
+        int guard = git->second;
+        if (!isFwdGuard(opAt[guard]))
+            continue;
+        int guard_target = nextAt[guard] + operAt[guard] * 2;
+        if (guard_target != end)            /* guard must skip to loop end */
+            continue;
+        whileGuardEnd[guard] = end;
+        whileBackedges.insert(b);
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -388,12 +454,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     std::map<int, int> finallyEndByStart;      /* entry start -> finally end */
     std::map<int, int> finallyResumeByEnd;     /* finally end -> resume offset */
 
+    /* Python 3.11 while-loop reconstruction state. */
+    std::map<int, int> whileGuardEnd;          /* guard pos -> loop end */
+    std::set<int> whileBackedges;              /* back-edge positions */
+
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
         ScanWithBlocks(code, mod, exception_entries,
                        withBodyEndByBefore, withResumeByBodyEnd);
         ScanTryFinally(code, mod, exception_entries,
                        finallyTryEndByStart, finallyEndByStart, finallyResumeByEnd);
+        ScanWhileLoops(code, mod, whileGuardEnd, whileBackedges);
     }
 
     while (!source.atEof()) {
@@ -1655,6 +1726,31 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
+                /* Python 3.11 while-loop entry guard: open a BLK_WHILE here
+                   instead of an if. The matching back-edge (POP_JUMP_BACKWARD)
+                   closes it. */
+                auto wit = whileGuardEnd.find(curpos);
+                if (wit != whileGuardEnd.end()) {
+                    PycRef<ASTNode> wcond = stack.top();
+                    stack.pop();
+                    bool wneg = false;
+                    if (opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A) {
+                        wcond = new ASTCompare(wcond, new ASTObject(Pyc_None),
+                                               ASTCompare::CMP_IS_NOT);
+                    } else if (opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A) {
+                        wcond = new ASTCompare(wcond, new ASTObject(Pyc_None),
+                                               ASTCompare::CMP_IS);
+                    } else if (opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A) {
+                        wneg = true;
+                    }
+                    PycRef<ASTCondBlock> wh = new ASTCondBlock(
+                            ASTBlock::BLK_WHILE, wit->second, wcond, wneg);
+                    wh->init(ASTCondBlock::PRE_POPPED);
+                    blocks.push(wh.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    break;
+                }
+
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
@@ -1803,6 +1899,46 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::POP_JUMP_BACKWARD_IF_NONE_A:
         case Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A:
             {
+                /* Python 3.11 while-loop back-edge: the duplicate condition has
+                   just been evaluated onto the stack; discard it and close the
+                   BLK_WHILE opened at the matching entry guard. Only act when a
+                   BLK_WHILE is actually open (guard against a misidentified
+                   back-edge collapsing the whole block stack). */
+                if (whileBackedges.count(curpos)) {
+                    bool hasWhile = false;
+                    {
+                        std::stack<PycRef<ASTBlock> > tmp = blocks;
+                        while (!tmp.empty()) {
+                            if (tmp.top()->blktype() == ASTBlock::BLK_WHILE) {
+                                hasWhile = true;
+                                break;
+                            }
+                            tmp.pop();
+                        }
+                    }
+                    if (hasWhile) {
+                        if (!stack.empty())
+                            stack.pop();
+                        /* Close any blocks still open inside the loop body, then
+                           the BLK_WHILE itself. */
+                        while (blocks.size() > 1
+                               && curblock->blktype() != ASTBlock::BLK_WHILE) {
+                            PycRef<ASTBlock> inner = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            curblock->append(inner.cast<ASTNode>());
+                        }
+                        if (curblock->blktype() == ASTBlock::BLK_WHILE
+                                && blocks.size() > 1) {
+                            PycRef<ASTBlock> wh = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            curblock->append(wh.cast<ASTNode>());
+                        }
+                        break;
+                    }
+                }
+
                 /* Python 3.11: conditional jump backwards. In compiled loops
                    this implements an in-body guard ("if cond: <rest of body>")
                    where a failed test jumps back to the loop header to start the
