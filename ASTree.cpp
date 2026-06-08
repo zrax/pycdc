@@ -157,6 +157,35 @@ static PycRef<ASTComprehension> FindComprehension(PycRef<ASTNode> node)
    block becomes the comprehension generator, the yielded value the result, and
    a wrapping `if` its filter. The caller substitutes the implicit ".0" iterator
    with the real iterable. */
+/* Walk a comprehension for-loop body for the yielded value, descending through
+   (possibly nested) `if` filters and combining their conditions with `and`.
+   Returns the yielded value and, via outCond, the combined filter (or NULL). */
+static PycRef<ASTNode> findCompYield(const ASTBlock::list_t& nodes,
+                                     PycRef<ASTNode> condSoFar,
+                                     PycRef<ASTNode>& outCond)
+{
+    for (const auto& n : nodes) {
+        if (n.type() == ASTNode::NODE_RETURN
+                && n.cast<ASTReturn>()->rettype() == ASTReturn::YIELD) {
+            outCond = condSoFar;
+            return n.cast<ASTReturn>()->value();
+        }
+        if (n.type() == ASTNode::NODE_BLOCK
+                && n.cast<ASTBlock>()->blktype() == ASTBlock::BLK_IF) {
+            PycRef<ASTCondBlock> ifblk = n.cast<ASTCondBlock>();
+            PycRef<ASTNode> c = ifblk->cond();
+            if (ifblk->negative())
+                c = new ASTUnary(c, ASTUnary::UN_NOT);
+            PycRef<ASTNode> combined = (condSoFar == NULL) ? c
+                    : new ASTBinary(condSoFar, c, ASTBinary::BIN_LOG_AND);
+            PycRef<ASTNode> r = findCompYield(ifblk->nodes(), combined, outCond);
+            if (r != NULL)
+                return r;
+        }
+    }
+    return NULL;
+}
+
 static PycRef<ASTComprehension> SynthGenexpr(PycRef<ASTNode> node)
 {
     if (node == NULL)
@@ -172,24 +201,8 @@ static PycRef<ASTComprehension> SynthGenexpr(PycRef<ASTNode> node)
     if (node.type() == ASTNode::NODE_BLOCK
             && node.cast<ASTBlock>()->blktype() == ASTBlock::BLK_FOR) {
         PycRef<ASTIterBlock> forblk = node.cast<ASTIterBlock>();
-        PycRef<ASTNode> result;
         PycRef<ASTNode> cond;
-        for (const auto& n : forblk->nodes()) {
-            if (n.type() == ASTNode::NODE_RETURN
-                    && n.cast<ASTReturn>()->rettype() == ASTReturn::YIELD) {
-                result = n.cast<ASTReturn>()->value();
-            } else if (n.type() == ASTNode::NODE_BLOCK
-                    && n.cast<ASTBlock>()->blktype() == ASTBlock::BLK_IF) {
-                PycRef<ASTCondBlock> ifblk = n.cast<ASTCondBlock>();
-                for (const auto& m : ifblk->nodes()) {
-                    if (m.type() == ASTNode::NODE_RETURN
-                            && m.cast<ASTReturn>()->rettype() == ASTReturn::YIELD) {
-                        result = m.cast<ASTReturn>()->value();
-                        cond = ifblk->cond();
-                    }
-                }
-            }
-        }
+        PycRef<ASTNode> result = findCompYield(forblk->nodes(), NULL, cond);
         if (result == NULL)
             return NULL;
         if (cond != NULL)
