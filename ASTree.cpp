@@ -421,6 +421,51 @@ static void ScanWhileLoops(PycRef<PycCode> code, PycModule* mod,
     }
 }
 
+/* Python 3.11 chained-comparison pre-pass. `a == b == c` compiles to two
+   COMPARE_OP/POP_JUMP_FORWARD_IF_FALSE halves sharing the middle operand
+   (duplicated via SWAP/COPY), followed by a trailer:
+        JUMP_FORWARD body      (both comparisons true -> run the body)
+   tramp:
+        POP_TOP                (false path: discard the leftover middle operand)
+        JUMP_FORWARD exit
+   body:
+   The first half's POP_JUMP targets `tramp`, the second's targets `exit`; the
+   default merge logic sees different targets and joins them with `or` instead of
+   `and`, leaving the body outside the if. Record: the trailer's leading
+   JUMP_FORWARD (to skip over the trampoline) and the trampoline POP_TOP position
+   mapped to its real exit, so a POP_JUMP landing on the trampoline can be
+   resolved to the exit and the two halves merge with `and`. */
+static void ScanChainedCompare(PycRef<PycCode> code, PycModule* mod,
+                               std::map<int,int>& chainSkipJumps,
+                               std::map<int,int>& trampolineExit)
+{
+    PycBuffer src(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    std::vector<int> order;
+    std::map<int,int> opAt, operAt, nextAt;
+    while (!src.atEof()) {
+        int p = pos;
+        bc_next(src, mod, opcode, operand, pos);
+        order.push_back(p);
+        opAt[p] = opcode; operAt[p] = operand; nextAt[p] = pos;
+    }
+    for (size_t i = 0; i + 2 < order.size(); i++) {
+        int j = order[i], p = order[i + 1], q = order[i + 2];
+        if (opAt[j] == Pyc::JUMP_FORWARD_A
+                && opAt[p] == Pyc::POP_TOP
+                && opAt[q] == Pyc::JUMP_FORWARD_A) {
+            int bodyTarget = nextAt[j] + operAt[j] * 2;
+            int exitTarget = nextAt[q] + operAt[q] * 2;
+            /* the trailer's leading JUMP_FORWARD must jump just past the
+               trampoline (to the body that begins after q) */
+            if (bodyTarget == nextAt[q]) {
+                chainSkipJumps[j] = bodyTarget;
+                trampolineExit[p] = exitTarget;
+            }
+        }
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -458,6 +503,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     std::map<int, int> whileGuardEnd;          /* guard pos -> loop end */
     std::set<int> whileBackedges;              /* back-edge positions */
 
+    /* Python 3.11 chained-comparison reconstruction state. */
+    std::map<int, int> chainSkipJumps;         /* trailer JUMP_FORWARD -> body */
+    std::map<int, int> trampolineExit;         /* trampoline POP_TOP -> exit */
+
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
         ScanWithBlocks(code, mod, exception_entries,
@@ -465,6 +514,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         ScanTryFinally(code, mod, exception_entries,
                        finallyTryEndByStart, finallyEndByStart, finallyResumeByEnd);
         ScanWhileLoops(code, mod, whileGuardEnd, whileBackedges);
+        ScanChainedCompare(code, mod, chainSkipJumps, trampolineExit);
     }
 
     while (!source.atEof()) {
@@ -1835,6 +1885,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     offs += pos;
                 }
 
+                /* Chained comparison: if this conditional jump lands on a
+                   trampoline (POP_TOP; JUMP_FORWARD exit), resolve it to the
+                   real exit so both halves of `a == b == c` share a target and
+                   merge with `and` rather than `or`. */
+                {
+                    auto tit = trampolineExit.find(offs);
+                    if (tit != trampolineExit.end())
+                        offs = tit->second;
+                }
+
                 if (cond.type() == ASTNode::NODE_COMPARE
                         && cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
                     int except_end = offs;
@@ -2162,6 +2222,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_FORWARD_A:
         case Pyc::INSTRUMENTED_JUMP_FORWARD_A:
             {
+                /* Chained-comparison trailer: the JUMP_FORWARD that jumps over
+                   the trampoline straight to the body. Skip it (and the
+                   trampoline) without treating it as an if/else boundary. */
+                if (chainSkipJumps.count(curpos)) {
+                    int tgt = chainSkipJumps[curpos];
+                    while (pos < tgt && !source.atEof()) {
+                        curpos = pos;
+                        bc_next(source, mod, opcode, operand, pos);
+                    }
+                    continue;
+                }
+
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129
