@@ -4405,17 +4405,15 @@ static void StripModuleTrailingReturn(PycRef<ASTNode> node)
         if (child.type() == ASTNode::NODE_BLOCK)
             StripModuleTrailingReturn(child);
     }
-    /* Then strip this block's own trailing bare return. */
-    if (!nodes->empty() && nodes->back().type() == ASTNode::NODE_RETURN) {
-        PycRef<ASTReturn> ret = nodes->back().cast<ASTReturn>();
-        PycRef<ASTObject> o = ret->value().try_cast<ASTObject>();
-        if (ret->value() == NULL
-                || (o != NULL && o->object().type() == PycObject::TYPE_NONE)) {
-            if (node.type() == ASTNode::NODE_NODELIST)
-                node.cast<ASTNodeList>()->removeLast();
-            else
-                node.cast<ASTBlock>()->removeLast();
-        }
+    /* Then strip this block's own trailing return. Any `return` is invalid at
+       module scope (the only ones that appear are reconstruction artifacts), so
+       drop it regardless of the returned value. */
+    if (!nodes->empty() && nodes->back().type() == ASTNode::NODE_RETURN
+            && nodes->back().cast<ASTReturn>()->rettype() == ASTReturn::RETURN) {
+        if (node.type() == ASTNode::NODE_NODELIST)
+            node.cast<ASTNodeList>()->removeLast();
+        else
+            node.cast<ASTBlock>()->removeLast();
     }
 }
 
