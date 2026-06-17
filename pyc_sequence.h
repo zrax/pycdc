@@ -70,4 +70,22 @@ private:
     value_t m_values;
 };
 
+class PycSlice : public PycObject {
+public:
+    PycSlice(int type = TYPE_SLICE) : PycObject(type) { }
+
+    bool isEqual(PycRef<PycObject> obj) const override;
+
+    void load(class PycData* stream, class PycModule* mod) override;
+
+    PycRef<PycObject> start() const { return m_start; }
+    PycRef<PycObject> stop() const { return m_stop; }
+    PycRef<PycObject> step() const { return m_step; }
+
+private:
+    PycRef<PycObject> m_start;
+    PycRef<PycObject> m_stop;
+    PycRef<PycObject> m_step;
+};
+
 #endif

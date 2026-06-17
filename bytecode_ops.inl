@@ -123,6 +123,9 @@ OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
 OPCODE(MAKE_FUNCTION)                   // Python 3.13 ->
 OPCODE(TO_BOOL)                         // Python 3.13 ->
+OPCODE(NOT_TAKEN)                       // Python 3.14 ->
+OPCODE(POP_ITER)                        // Python 3.14 ->
+OPCODE(BUILD_TEMPLATE)                  // Python 3.14 ->
 
 /* Has parameter word */
 OPCODE_A_FIRST(STORE_NAME)              // Python 1.0 ->                names[A]
@@ -269,6 +272,13 @@ OPCODE_A(LOAD_FAST_LOAD_FAST)           // Python 3.13 ->               A=locals
 OPCODE_A(SET_FUNCTION_ATTRIBUTE)        // Python 3.13 ->               A=attribute_type
 OPCODE_A(STORE_FAST_LOAD_FAST)          // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
 OPCODE_A(STORE_FAST_STORE_FAST)         // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
+OPCODE_A(BUILD_INTERPOLATION)           // Python 3.14 ->               A=conversion/format flags
+OPCODE_A(END_ASYNC_FOR)                 // Python 3.14 ->               A=(unused)
+OPCODE_A(LOAD_COMMON_CONSTANT)          // Python 3.14 ->               common_constants[A]
+OPCODE_A(LOAD_SMALL_INT)                // Python 3.14 ->               A=small integer
+OPCODE_A(LOAD_SPECIAL)                  // Python 3.14 ->               special_methods[A>>1]+flag
+OPCODE_A(LOAD_FAST_BORROW)              // Python 3.14 ->               locals[A]
+OPCODE_A(LOAD_FAST_BORROW_LOAD_FAST_BORROW) // Python 3.14 ->           locals[A<<4]+locals[A&0xf]
 
 /* Instrumented opcodes */
 OPCODE_A(INSTRUMENTED_LOAD_SUPER_ATTR)      // Python 3.12 ->           (see LOAD_SUPER_ATTR)
@@ -290,3 +300,6 @@ OPCODE_A(INSTRUMENTED_END_SEND)             // Python 3.12 ->           (see END
 OPCODE_A(INSTRUMENTED_INSTRUCTION)          // Python 3.12 ->           A=(unused)
 OPCODE_A(INSTRUMENTED_LINE)                 // Python 3.12 ->           ???
 OPCODE_A(INSTRUMENTED_CALL_KW)              // Python 3.13 ->           (see CALL_KW)
+OPCODE_A(INSTRUMENTED_POP_ITER)             // Python 3.14 ->           (see POP_ITER)
+OPCODE_A(INSTRUMENTED_NOT_TAKEN)            // Python 3.14 ->           (see NOT_TAKEN)
+OPCODE_A(INSTRUMENTED_END_ASYNC_FOR)        // Python 3.14 ->           (see END_ASYNC_FOR)

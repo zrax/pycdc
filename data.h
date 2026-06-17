@@ -47,7 +47,7 @@ public:
     ~PycBuffer() { }
 
     bool isOpen() const override { return (m_buffer != 0); }
-    bool atEof() const override { return (m_pos == m_size); }
+    bool atEof() const override { return (m_pos >= m_size); }
 
     int getByte() override;
     void getBuffer(int bytes, void* buffer) override;

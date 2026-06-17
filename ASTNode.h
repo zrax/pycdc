@@ -4,6 +4,7 @@
 #include "pyc_module.h"
 #include <list>
 #include <deque>
+#include <string>
 
 /* Similar interface to PycObject, so PycRef can work on it... *
  * However, this does *NOT* mean the two are interchangeable!  */
@@ -18,7 +19,7 @@ public:
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
         NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
-        NODE_KW_NAMES_MAP,
+        NODE_KW_NAMES_MAP, NODE_UNSUPPORTED,
 
         // Empty node types
         NODE_LOCALS,
@@ -103,6 +104,17 @@ public:
 
 private:
     PycRef<PycObject> m_obj;
+};
+
+class ASTUnsupported : public ASTNode {
+public:
+    ASTUnsupported(std::string text)
+        : ASTNode(NODE_UNSUPPORTED), m_text(std::move(text)) { }
+
+    const std::string& text() const { return m_text; }
+
+private:
+    std::string m_text;
 };
 
 
@@ -573,13 +585,17 @@ public:
 
     ASTCondBlock(ASTBlock::BlkType blktype, int end, PycRef<ASTNode> cond,
                  bool negative = false)
-        : ASTBlock(blktype, end), m_cond(std::move(cond)), m_negative(negative) { }
+        : ASTBlock(blktype, end), m_cond(std::move(cond)), m_except_var(),
+          m_negative(negative) { }
 
     PycRef<ASTNode> cond() const { return m_cond; }
+    PycRef<ASTNode> exceptVar() const { return m_except_var; }
     bool negative() const { return m_negative; }
+    void setExceptVar(PycRef<ASTNode> except_var) { m_except_var = std::move(except_var); }
 
 private:
     PycRef<ASTNode> m_cond;
+    PycRef<ASTNode> m_except_var;
     bool m_negative;
 };
 
@@ -617,6 +633,7 @@ public:
     int finally() const { return m_finally; }
     int except() const { return m_except; }
 
+    void setFinally(int finally) { m_finally = finally; }
     void setExcept(int except) { m_except = except; }
 
 private:

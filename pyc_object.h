@@ -122,6 +122,7 @@ public:
         TYPE_UNKNOWN = '?',                 // Python 1.0 ->
         TYPE_SET = '<',                     // Python 2.5 ->
         TYPE_FROZENSET = '>',               // Python 2.5 ->
+        TYPE_SLICE = ':',                   // Python 3.14 ->
         TYPE_ASCII = 'a',                   // Python 3.4 ->
         TYPE_ASCII_INTERNED = 'A',          // Python 3.4 ->
         TYPE_SMALL_TUPLE = ')',             // Python 3.4 ->

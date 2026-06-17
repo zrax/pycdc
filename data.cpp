@@ -73,8 +73,10 @@ void PycFile::getBuffer(int bytes, void* buffer)
 int PycBuffer::getByte()
 {
     if (atEof()) {
-        fputs("PycBuffer::getByte(): Unexpected end of stream\n", stderr);
-        std::exit(1);
+        /* Code buffers can occasionally be walked onto a trailing partial
+           wordcode while recovering malformed/newer bytecode.  Treat the
+           missing byte as padding so callers can finish best-effort output. */
+        return 0;
     }
     int ch = (int)(*(m_buffer + m_pos));
     ++m_pos;

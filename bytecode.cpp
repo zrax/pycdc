@@ -39,6 +39,7 @@ DECLARE_PYTHON(3, 10)
 DECLARE_PYTHON(3, 11)
 DECLARE_PYTHON(3, 12)
 DECLARE_PYTHON(3, 13)
+DECLARE_PYTHON(3, 14)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -109,6 +110,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 11: return python_3_11_map(opcode);
         case 12: return python_3_12_map(opcode);
         case 13: return python_3_13_map(opcode);
+        case 14: return python_3_14_map(opcode);
         }
         break;
     }
@@ -216,6 +218,18 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
             pyc_output << "})";
         }
         break;
+    case PycObject::TYPE_SLICE:
+        {
+            PycRef<PycSlice> slice = obj.cast<PycSlice>();
+            pyc_output << "slice(";
+            print_const(pyc_output, slice->start(), mod);
+            pyc_output << ", ";
+            print_const(pyc_output, slice->stop(), mod);
+            pyc_output << ", ";
+            print_const(pyc_output, slice->step(), mod);
+            pyc_output << ")";
+        }
+        break;
     case PycObject::TYPE_NONE:
         pyc_output << "None";
         break;
@@ -282,7 +296,7 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     if (mod->verCompare(3, 6) >= 0) {
         operand = source.getByte();
         pos += 2;
-        if (opcode == Pyc::EXTENDED_ARG_A) {
+        while (opcode == Pyc::EXTENDED_ARG_A && !source.atEof()) {
             opcode = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), source.getByte());
             operand = (operand << 8) | source.getByte();
             pos += 2;
@@ -302,6 +316,52 @@ void bc_next(PycBuffer& source, PycModule* mod, int& opcode, int& operand, int& 
     }
 }
 
+static int bc_inline_cache_entries(PycModule* mod, int opcode)
+{
+    if (mod->verCompare(3, 11) < 0)
+        return 0;
+
+    switch (opcode) {
+    case Pyc::BINARY_OP_A:
+        return mod->verCompare(3, 14) >= 0 ? 5 : 1;
+    case Pyc::CALL_A:
+    case Pyc::CALL_KW_A:
+    case Pyc::LOAD_GLOBAL_A:
+        return mod->verCompare(3, 14) >= 0 ? 4 : 0;
+    case Pyc::LOAD_ATTR_A:
+        return mod->verCompare(3, 14) >= 0 ? 9 : 0;
+    case Pyc::STORE_ATTR_A:
+        return mod->verCompare(3, 14) >= 0 ? 4 : 0;
+    case Pyc::TO_BOOL:
+        return mod->verCompare(3, 14) >= 0 ? 3 : 0;
+    case Pyc::COMPARE_OP_A:
+    case Pyc::CONTAINS_OP_A:
+    case Pyc::FOR_ITER_A:
+    case Pyc::INSTRUMENTED_FOR_ITER_A:
+    case Pyc::SEND_A:
+    case Pyc::STORE_SUBSCR:
+        return 1;
+    case Pyc::JUMP_BACKWARD_A:
+    case Pyc::INSTRUMENTED_JUMP_BACKWARD_A:
+    case Pyc::POP_JUMP_IF_FALSE_A:
+    case Pyc::POP_JUMP_IF_TRUE_A:
+    case Pyc::POP_JUMP_IF_NONE_A:
+    case Pyc::POP_JUMP_IF_NOT_NONE_A:
+    case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+    case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+    case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+    case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A:
+        return mod->verCompare(3, 14) >= 0 ? 1 : 0;
+    default:
+        return 0;
+    }
+}
+
+int bc_next_instr_offset_after_caches(PycModule* mod, int opcode, int pos)
+{
+    return pos + bc_inline_cache_entries(mod, opcode) * (int)sizeof(uint16_t);
+}
+
 void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                int indent, unsigned flags)
 {
@@ -314,8 +374,14 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
     static const char *binop_strings[] = {
         "+", "&", "//", "<<", "@", "*", "%", "|", "**", ">>", "-", "/", "^",
         "+=", "&=", "//=", "<<=", "@=", "*=", "%=", "|=", "**=", ">>=", "-=", "/=", "^=",
+        "[]",
     };
     static const size_t binop_strings_len = sizeof(binop_strings) / sizeof(binop_strings[0]);
+
+    static const char *common_constants[] = {
+        "AssertionError", "NotImplementedError", "tuple", "all", "any",
+    };
+    static const size_t common_constants_len = sizeof(common_constants) / sizeof(common_constants[0]);
 
     static const char *intrinsic1_names[] = {
         "INTRINSIC_1_INVALID", "INTRINSIC_PRINT", "INTRINSIC_IMPORT_STAR",
@@ -415,6 +481,7 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 break;
             case Pyc::DELETE_FAST_A:
             case Pyc::LOAD_FAST_A:
+            case Pyc::LOAD_FAST_BORROW_A:
             case Pyc::STORE_FAST_A:
             case Pyc::LOAD_FAST_CHECK_A:
             case Pyc::LOAD_FAST_AND_CLEAR_A:
@@ -425,6 +492,7 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 }
                 break;
             case Pyc::LOAD_FAST_LOAD_FAST_A:
+            case Pyc::LOAD_FAST_BORROW_LOAD_FAST_BORROW_A:
             case Pyc::STORE_FAST_LOAD_FAST_A:
             case Pyc::STORE_FAST_STORE_FAST_A:
                 try {
@@ -472,14 +540,11 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
             case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
                 {
-                    /* TODO: Fix offset based on CACHE instructions.
-                       Offset is relative to next non-CACHE instruction
-                       and thus will be printed lower than actual value.
-                       See TODO @ END_FOR ASTree.cpp */
                     int offs = operand;
                     if (mod->verCompare(3, 10) >= 0)
                         offs *= sizeof(uint16_t); // BPO-27129
-                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
+                    formatted_print(pyc_output, "%d (to %d)", operand,
+                                    bc_next_instr_offset_after_caches(mod, opcode, pos) + offs);
                 }
                 break;
             case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
@@ -492,7 +557,8 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 {
                     // BACKWARD jumps were only introduced in Python 3.11
                     int offs = operand * sizeof(uint16_t); // BPO-27129
-                    formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
+                    formatted_print(pyc_output, "%d (to %d)", operand,
+                                    bc_next_instr_offset_after_caches(mod, opcode, pos) - offs);
                 }
                 break;
             case Pyc::POP_JUMP_IF_FALSE_A:
@@ -504,7 +570,8 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 if (mod->verCompare(3, 12) >= 0) {
                     // These are now relative as well
                     int offs = operand * sizeof(uint16_t);
-                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
+                    formatted_print(pyc_output, "%d (to %d)", operand,
+                                    bc_next_instr_offset_after_caches(mod, opcode, pos) + offs);
                 } else if (mod->verCompare(3, 10) >= 0) {
                     // BPO-27129
                     formatted_print(pyc_output, "%d (to %d)", operand,
@@ -531,6 +598,23 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                     formatted_print(pyc_output, "%d (%s)", operand, binop_strings[operand]);
                 else
                     formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+                break;
+            case Pyc::LOAD_COMMON_CONSTANT_A:
+                if (static_cast<size_t>(operand) < common_constants_len)
+                    formatted_print(pyc_output, "%d (%s)", operand, common_constants[operand]);
+                else
+                    formatted_print(pyc_output, "%d (UNKNOWN)", operand);
+                break;
+            case Pyc::LOAD_SMALL_INT_A:
+                formatted_print(pyc_output, "%d (%d)", operand, operand);
+                break;
+            case Pyc::LOAD_SPECIAL_A:
+                formatted_print(pyc_output, "%d (special[%d]%s)", operand, operand >> 1,
+                                (operand & 1) ? " + NULL" : "");
+                break;
+            case Pyc::BUILD_INTERPOLATION_A:
+                formatted_print(pyc_output, "%d (conversion=%d format=%d)", operand,
+                                operand & 0x03, (operand >> 2) & 0x01);
                 break;
             case Pyc::IS_OP_A:
                 formatted_print(pyc_output, "%d (%s)", operand, (operand == 0) ? "is"

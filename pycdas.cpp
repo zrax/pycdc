@@ -220,6 +220,16 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             iputs(pyc_output, indent, "})\n");
         }
         break;
+    case PycObject::TYPE_SLICE:
+        {
+            PycRef<PycSlice> slice = obj.cast<PycSlice>();
+            iputs(pyc_output, indent, "slice(\n");
+            output_object(slice->start(), mod, indent + 1, flags, pyc_output);
+            output_object(slice->stop(), mod, indent + 1, flags, pyc_output);
+            output_object(slice->step(), mod, indent + 1, flags, pyc_output);
+            iputs(pyc_output, indent, ")\n");
+        }
+        break;
     case PycObject::TYPE_NONE:
         iputs(pyc_output, indent, "None\n");
         break;
