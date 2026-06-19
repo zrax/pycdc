@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_set>
+#include <unordered_map>
+#include <set>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -100,6 +102,417 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         exception_entries = code->exceptionTableEntries();
     }
 
+    /* Pre-scan for 3.11 `match`/`case` (class patterns only — the only kind in
+       the corpus). Each case compiles to
+         [COPY 1]                 # preserve a subject copy for the next case
+         <load class>; LOAD_CONST <kwnames-tuple>; MATCH_CLASS <nPos>
+         COPY 1; POP_JUMP_FORWARD_IF_NONE <failTarget>   # pattern-fail -> next case
+         UNPACK_SEQUENCE <n>; STORE...   (or POP_TOP when n==0)   # captures
+         <body>; [JUMP_FORWARD <matchEnd>]
+         <failTarget:> POP_TOP    # discard the None result, then the next case
+       We register only the SIMPLE handleable shape: positional captures only
+       (empty kwnames), no guard (no jump to failTarget inside the body). Anything
+       else is left unregistered -> MATCH_CLASS bails -> honest `.dis`.
+       matchCase[MATCH_CLASS off] = {isFirst, matchEnd, failTarget, bodyStart, caps};
+       matchCaseEnd = failTarget offsets (close BLK_CASE + skip the machinery POP_TOP);
+       matchBlockEnd = matchEnd offsets (close BLK_MATCH). */
+    struct MCase { bool isFirst; int matchEnd; int failTarget; int bodyStart;
+                   int popExtra; std::vector<PycRef<ASTNode>> caps; };
+    std::unordered_map<int, MCase> matchCase;
+    std::unordered_map<int, int> matchCaseEnd;   // failTarget -> offset after the machinery POP_TOP
+    std::unordered_set<int> matchBlockEnd;
+    /* SHIP-149: VALUE-pattern `match`/`case` (literal patterns — `match x: case 'a':
+       …`). Unlike class patterns (MATCH_CLASS) these compile to a COMPARE_OP chain:
+       per case `[COPY 1] LOAD <const>; COMPARE_OP ==; POP_JUMP_FORWARD_IF_FALSE ft`,
+       the subject threaded on the stack via the COPY (the LAST case omits the COPY,
+       its COMPARE consuming the subject); the matched path POP_TOPs the leftover
+       subject then runs the body. matchValue[COMPARE off] = the case. */
+    struct VCase { bool isFirst; bool isLast; int matchEnd; int failTarget; int bodyStart; };
+    std::unordered_map<int, VCase> matchValue;
+    /* A wildcard `case _:` carries NO MATCH_CLASS (it always matches; the bytecode
+       just POP_TOPs the leftover subject then runs the body), so the MATCH_CLASS
+       pre-scan can't see it and would end the match at the last TYPED case — leaving
+       the wildcard body to render as spurious post-match code (dropping any
+       fall-through/return after the match: RETDROP, e.g. ripple `factory.__call__`).
+       Map the wildcard body start -> the real match merge so the loop opens a
+       `case _:` block there and the match closes at the true merge instead. */
+    std::unordered_map<int, int> matchWildcardOpen;   // wildcardBodyStart -> matchEnd(merge)
+    if (mod->verCompare(3, 11) >= 0) {
+        struct Ins { int op; int arg; int off; int next; };
+        std::vector<Ins> v;
+        std::unordered_map<int,int> idxOf;   // offset -> index in v
+        {
+            PycBuffer scan(code->code()->value(), code->code()->length());
+            int so, sa, sp = 0;
+            while (!scan.atEof()) {
+                int io = sp;
+                bc_next(scan, mod, so, sa, sp);
+                if (so == Pyc::CACHE) continue;
+                idxOf[io] = (int)v.size();
+                v.push_back({ so, sa, io, sp });
+            }
+        }
+        auto capName = [&](const Ins& s) -> PycRef<ASTNode> {
+            if (s.op == Pyc::STORE_FAST_A)
+                return new ASTName(code->getLocal(s.arg));
+            if (s.op == Pyc::STORE_NAME_A || s.op == Pyc::STORE_GLOBAL_A)
+                return new ASTName(code->getName(s.arg));
+            if (s.op == Pyc::STORE_DEREF_A)
+                return new ASTName(code->getCellVar(mod, s.arg));
+            return nullptr;
+        };
+        /* Parse one case starting at the MATCH_CLASS at v[mi]; fill failTarget,
+           bodyStart, caps. Returns true iff the simple shape holds. */
+        auto parseCase = [&](size_t mi, int& failTarget, int& bodyStart,
+                             int& popExtra,
+                             std::vector<PycRef<ASTNode>>& caps) -> bool {
+            int nPos = v[mi].arg;
+            /* require an empty kwnames tuple just before (positional-only) */
+            if (mi == 0) return false;
+            const Ins& kw = v[mi-1];
+            if (kw.op != Pyc::LOAD_CONST_A) return false;
+            PycRef<PycObject> kwo = code->getConst(kw.arg);
+            if (kwo == nullptr || (kwo->type() != PycObject::TYPE_TUPLE
+                    && kwo->type() != PycObject::TYPE_SMALL_TUPLE)) return false;
+            if (kwo.cast<PycTuple>()->values().size() != 0) return false;   // kw patterns -> bail
+            /* next: COPY 1 ; POP_JUMP_FORWARD_IF_NONE failTarget */
+            if (mi+2 >= v.size()) return false;
+            if (!(v[mi+1].op == Pyc::COPY_A && v[mi+1].arg == 1)) return false;
+            if (v[mi+2].op != Pyc::POP_JUMP_FORWARD_IF_NONE_A) return false;
+            failTarget = v[mi+2].next + v[mi+2].arg * (int)sizeof(uint16_t);
+            size_t j = mi+3;
+            caps.clear();
+            /* matched-path captures: UNPACK_SEQUENCE <nPos> then nPos STOREs (the
+               class pattern always emits UNPACK_SEQUENCE, even nPos==0). */
+            if (j >= v.size() || v[j].op != Pyc::UNPACK_SEQUENCE_A
+                    || v[j].arg != nPos) return false;
+            j++;
+            for (int k = 0; k < nPos; ++k, ++j) {
+                if (j >= v.size()) return false;
+                /* a `_` wildcard sub-pattern (`case Ok(_):`) discards its captured
+                   value with POP_TOP instead of a STORE — render it as `_`. */
+                if (v[j].op == Pyc::POP_TOP) {
+                    PycRef<PycString> us = new PycString(); us->setValue("_");
+                    caps.push_back(new ASTName(us));
+                    continue;
+                }
+                PycRef<ASTNode> nm = capName(v[j]);
+                if (nm == nullptr) return false;   // non-simple capture target
+                caps.push_back(nm);
+            }
+            /* optional leftover-subject POP_TOP(s): a COPY preserved the subject
+               for a later case; on THIS (matched) path the copy is discarded here.
+               (A case body never starts with POP_TOP, so this is unambiguous.) */
+            popExtra = 0;
+            while (j < v.size() && v[j].op == Pyc::POP_TOP) { popExtra++; j++; }
+            if (j >= v.size()) return false;
+            bodyStart = v[j].off;   // next REAL instruction (v is CACHE-filtered)
+            /* guard detection: a jump to failTarget inside [bodyStart, failTarget)
+               means a `case P if g:` guard (or other case-internal branch we don't
+               model) -> bail. */
+            for (size_t k = j; k < v.size() && v[k].off < failTarget; ++k) {
+                int op = v[k].op;
+                bool isJump = op == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                        || op == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+                        || op == Pyc::POP_JUMP_FORWARD_IF_NONE_A
+                        || op == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                        || op == Pyc::JUMP_FORWARD_A;
+                if (isJump) {
+                    int tgt = v[k].next + v[k].arg * (int)sizeof(uint16_t);
+                    if (tgt == failTarget) return false;   // guard
+                }
+            }
+            return true;
+        };
+        /* collect MATCH_CLASS anchors, parse each */
+        struct CaseRec { size_t mi; int failTarget; int bodyStart;
+                         int popExtra; std::vector<PycRef<ASTNode>> caps; };
+        std::vector<CaseRec> recs;
+        for (size_t i = 0; i < v.size(); ++i) {
+            if (v[i].op != Pyc::MATCH_CLASS_A) continue;
+            int ft, bs, pe; std::vector<PycRef<ASTNode>> caps;
+            if (parseCase(i, ft, bs, pe, caps))
+                recs.push_back({ i, ft, bs, pe, caps });
+        }
+        /* chain cases into matches: case i's successor is the case whose
+           MATCH_CLASS region begins at the POP_TOP at failTarget (the failTarget
+           op is a POP_TOP; the next case follows it). */
+        std::unordered_map<int,int> caseByPopTop;   // failTarget(=POP_TOP off) -> rec idx of the case there
+        /* a rec's case begins with an optional COPY then the class load; the
+           POP_TOP that precedes it is at failTarget of the previous case. The
+           POP_TOP sits at some offset; the NEXT case's MATCH_CLASS is the first
+           MATCH_CLASS anchor at a higher offset. Map each rec's "entry POP_TOP". */
+        /* Determine, for each rec, whether some OTHER rec's failTarget POP_TOP is
+           immediately followed (skipping POP_TOP/COPY/loads) by this rec's MATCH_CLASS. */
+        auto firstMatchClassAtOrAfter = [&](int off) -> int {
+            for (size_t k = 0; k < v.size(); ++k)
+                if (v[k].off >= off && v[k].op == Pyc::MATCH_CLASS_A)
+                    return (int)k;
+            return -1;
+        };
+        std::unordered_set<size_t> isSuccessor;
+        std::unordered_map<size_t,size_t> succOf;   // rec idx -> rec idx
+        std::unordered_map<size_t,size_t> recByMi;
+        for (size_t r = 0; r < recs.size(); ++r) recByMi[recs[r].mi] = r;
+        for (size_t r = 0; r < recs.size(); ++r) {
+            int ft = recs[r].failTarget;
+            if (idxOf.count(ft) && v[idxOf[ft]].op == Pyc::POP_TOP) {
+                int nm = firstMatchClassAtOrAfter(v[idxOf[ft]].next);
+                if (nm >= 0 && recByMi.count((size_t)nm)) {
+                    /* ensure nothing but case-setup (COPY/loads) lies between */
+                    size_t s = recByMi[(size_t)nm];
+                    succOf[r] = s; isSuccessor.insert(s);
+                }
+            }
+        }
+        for (size_t r = 0; r < recs.size(); ++r) {
+            if (isSuccessor.count(r)) continue;     // not a first case
+            /* walk the chain to find the last case + matchEnd */
+            size_t last = r;
+            while (succOf.count(last)) last = succOf[last];
+            int lastFt = recs[last].failTarget;     // POP_TOP of the final no-match
+            int matchEnd = (idxOf.count(lastFt) && v[idxOf[lastFt]].op == Pyc::POP_TOP)
+                           ? v[idxOf[lastFt]].next : lastFt;
+            /* Wildcard `case _:` detection. The TYPED cases' matched bodies all
+               JUMP_FORWARD to the post-match merge M. If M lies PAST `matchEnd`
+               (the last typed case's no-match POP_TOP+1), the region [matchEnd, M)
+               is the wildcard case body (the final no-match falls through to it).
+               Require a single consistent merge target and NO MATCH_CLASS in the
+               gap (an unparsed typed case would also have a MATCH_CLASS there ->
+               leave the match honest rather than mis-label it a wildcard). */
+            {
+                int firstOff = v[recs[r].mi].off;
+                int merge = -1; bool consistent = true;
+                for (size_t k = 0; k < v.size(); ++k) {
+                    if (v[k].off < firstOff || v[k].off > lastFt) continue;
+                    if (v[k].op != Pyc::JUMP_FORWARD_A) continue;
+                    int t = v[k].next + v[k].arg * (int)sizeof(uint16_t);
+                    if (t > matchEnd) {
+                        if (merge < 0) merge = t;
+                        else if (merge != t) { consistent = false; break; }
+                    }
+                }
+                /* The gap must be a TRUE wildcard 'case _:' (subject already
+                   discarded by the final no-match POP_TOP), not a capture pattern
+                   ('case other:' -> STORE_x binds the subject) nor any further
+                   pattern test (MATCH_x or POP_JUMP_FORWARD_IF_NONE). Either would
+                   make the gap mis-render as 'case _:' with a wrong/garbage binding,
+                   and the STORE divergence is CF-gate-blind. Bail to honest .dis
+                   on anything but a plain unconditional body. */
+                bool gapUnsafe = false;
+                if (consistent && merge > matchEnd) {
+                    for (size_t k = 0; k < v.size(); ++k) {
+                        if (v[k].off < matchEnd || v[k].off >= merge) continue;
+                        int op = v[k].op;
+                        if (op == Pyc::MATCH_CLASS_A || op == Pyc::MATCH_SEQUENCE
+                                || op == Pyc::MATCH_MAPPING || op == Pyc::MATCH_KEYS
+                                || op == Pyc::POP_JUMP_FORWARD_IF_NONE_A) { gapUnsafe = true; break; }
+                    }
+                    /* first real op of the gap (skip NOP): a leading STORE_* binds
+                       the subject => capture pattern, not `_`. */
+                    for (size_t k = 0; k < v.size(); ++k) {
+                        if (v[k].off < matchEnd) continue;
+                        if (v[k].op == Pyc::NOP) continue;
+                        if (v[k].op == Pyc::STORE_FAST_A || v[k].op == Pyc::STORE_NAME_A
+                                || v[k].op == Pyc::STORE_GLOBAL_A || v[k].op == Pyc::STORE_DEREF_A)
+                            gapUnsafe = true;
+                        break;
+                    }
+                    /* The wildcard body must be TERMINAL (ends in raise/return). A
+                       FALL-THROUGH wildcard reaches `merge` by falling off its end,
+                       so `merge` is shared with the typed cases AND any enclosing
+                       if/else whose branches converge there — extending the match to
+                       it then mis-places the post-merge code (e.g. a method-level
+                       `return` rendered inside the `else`: node_connect_protocol
+                       `get_connect_stages`, a gate-blind mis-render). A terminal
+                       wildcard exits before `merge`, so the merge is unambiguously
+                       the match's own. */
+                    int lastOp = -1;
+                    for (size_t k = 0; k < v.size(); ++k)
+                        if (v[k].off >= matchEnd && v[k].off < merge) lastOp = v[k].op;
+                    if (!(lastOp == Pyc::RAISE_VARARGS_A || lastOp == Pyc::RETURN_VALUE
+                            || lastOp == Pyc::RETURN_CONST_A || lastOp == Pyc::RERAISE
+                            || lastOp == Pyc::RERAISE_A))
+                        gapUnsafe = true;
+                }
+                if (consistent && merge > matchEnd && !gapUnsafe) {
+                    matchWildcardOpen[matchEnd] = merge;   // open `case _:` at the gap start
+                    matchCaseEnd[merge] = merge;           // close the wildcard case at the merge
+                    matchEnd = merge;                      // the match itself ends at the merge
+                }
+            }
+            /* register every case in the chain */
+            for (size_t c = r; ; c = succOf[c]) {
+                MCase mc;
+                mc.isFirst = (c == r);
+                mc.matchEnd = matchEnd;
+                mc.failTarget = recs[c].failTarget;
+                mc.bodyStart = recs[c].bodyStart;
+                mc.popExtra = recs[c].popExtra;
+                mc.caps = recs[c].caps;
+                matchCase[v[recs[c].mi].off] = mc;
+                int ft = recs[c].failTarget;
+                matchCaseEnd[ft] = (idxOf.count(ft) && v[idxOf[ft]].op == Pyc::POP_TOP)
+                                   ? v[idxOf[ft]].next : ft;
+                if (!succOf.count(c)) break;
+            }
+            matchBlockEnd.insert(matchEnd);
+        }
+    }
+
+    /* SHIP-149 value-pattern match pre-scan (see VCase above). */
+    if (mod->verCompare(3, 11) >= 0 && mod->verCompare(3, 12) < 0) {
+        struct Ins { int op; int arg; int off; int next; };
+        std::vector<Ins> v; std::unordered_map<int,int> idxOf;
+        {
+            PycBuffer scan(code->code()->value(), code->code()->length());
+            int so, sa, sp = 0;
+            while (!scan.atEof()) {
+                int io = sp;
+                bc_next(scan, mod, so, sa, sp);
+                if (so == Pyc::CACHE) continue;
+                idxOf[io] = (int)v.size();
+                v.push_back({ so, sa, io, sp });
+            }
+        }
+        /* a case TEST: `[COPY 1] <pattern>; COMPARE_OP ==(arg 2); PJF ft`, where the
+           pattern (the COMPARE's right operand) is EITHER a single LOAD_CONST (literal
+           `case 'a':`) OR a dotted name — LOAD_{GLOBAL,NAME,DEREF,FAST} base + >=1
+           LOAD_ATTR (Enum/attribute `case State.A:`). The COPY-1-before / POP_TOP-after
+           subject threading is identical for both, so anchor on the COMPARE==/PJF and
+           walk backward for the pattern. The pattern NODE is already built on the stack
+           by the load ops, so the runtime COMPARE handler is unchanged. */
+        struct Test { int startOff; bool hasCopy; int compareOff; int ft; int matchedNext; };
+        std::vector<Test> tests;
+        std::unordered_map<int,int> testByStart;
+        for (size_t c = 1; c + 1 < v.size(); ++c) {
+            if (!(v[c].op == Pyc::COMPARE_OP_A && v[c].arg == 2
+                    && v[c+1].op == Pyc::POP_JUMP_FORWARD_IF_FALSE_A))
+                continue;
+            int j = (int)c - 1, attrs = 0;
+            while (j >= 0 && v[j].op == Pyc::LOAD_ATTR_A) { attrs++; --j; }
+            int patStart = -1;
+            if (attrs == 0 && j >= 0 && v[j].op == Pyc::LOAD_CONST_A)
+                patStart = j;                       /* literal pattern */
+            else if (attrs >= 1 && j >= 0
+                    && (v[j].op == Pyc::LOAD_GLOBAL_A || v[j].op == Pyc::LOAD_NAME_A
+                        || v[j].op == Pyc::LOAD_DEREF_A || v[j].op == Pyc::LOAD_FAST_A))
+                patStart = j;                       /* dotted Enum/attribute pattern */
+            if (patStart < 0)
+                continue;
+            bool hasCopy = (patStart >= 1 && v[patStart-1].op == Pyc::COPY_A
+                    && v[patStart-1].arg == 1);
+            int startOff = hasCopy ? v[patStart-1].off : v[patStart].off;
+            int ft = v[c+1].next + v[c+1].arg * (int)sizeof(uint16_t);
+            testByStart[startOff] = (int)tests.size();
+            tests.push_back({ startOff, hasCopy, v[c].off, ft, v[c+1].next });
+        }
+        std::unordered_set<int> targeted;
+        for (const auto& t : tests)
+            if (testByStart.count(t.ft)) targeted.insert(t.ft);
+        for (size_t t = 0; t < tests.size(); ++t) {
+            if (!tests[t].hasCopy || targeted.count(tests[t].startOff))
+                continue;                       /* not a chain start */
+            std::vector<int> chain;
+            std::unordered_set<int> seen;
+            int cur = (int)t; bool ok = true;
+            while (true) {
+                if (seen.count(cur)) { ok = false; break; }
+                seen.insert(cur); chain.push_back(cur);
+                int ft = tests[cur].ft;
+                if (!testByStart.count(ft)) break;          /* ft = matchEnd, cur was last? */
+                int nx = testByStart[ft];
+                if (tests[nx].hasCopy) { cur = nx; continue; }
+                chain.push_back(nx); break;                 /* no-copy = LAST case */
+            }
+            if (!ok || chain.size() < 2) continue;
+            int lastT = chain.back();
+            if (tests[lastT].hasCopy) continue;             /* must end on a no-copy last case */
+            int lastFt = tests[lastT].ft;
+            auto caseBodyStart = [&](const Test& tc) -> int {
+                if (tc.hasCopy) {
+                    int mn = tc.matchedNext;     /* POP_TOP discarding subject */
+                    return (idxOf.count(mn) && v[idxOf[mn]].op == Pyc::POP_TOP)
+                           ? v[idxOf[mn]].next : mn;
+                }
+                return tc.matchedNext;
+            };
+            /* A non-returning case body JUMP_FORWARDs to the TRUE match end, which
+               lies PAST the last typed case's ft when a wildcard `case _:` body sits
+               between (emote_svc: `case 'destroy':` ft -> the `case _:` body, the
+               'move' case jumps to the post-wildcard merge). Find a single consistent
+               forward-jump target > lastFt among the case bodies => the wildcard span
+               [lastFt, conv) + matchEnd=conv. */
+            int conv = -1; bool convOk = true;
+            for (size_t k = 0; k < chain.size(); ++k) {
+                const Test& tc = tests[chain[k]];
+                int bs = caseBodyStart(tc);
+                if (!idxOf.count(bs)) continue;
+                for (int ii = idxOf[bs]; ii < (int)v.size() && v[ii].off < tc.ft; ++ii) {
+                    if (v[ii].op == Pyc::JUMP_FORWARD_A) {
+                        int t = v[ii].next + v[ii].arg * (int)sizeof(uint16_t);
+                        if (t > lastFt) {
+                            if (conv < 0) conv = t;
+                            else if (conv != t) convOk = false;
+                        }
+                    }
+                }
+            }
+            int matchEnd = lastFt;
+            int wildcardStart = -1;
+            if (convOk && conv > lastFt) {
+                bool clean = true;          /* [lastFt, conv) must be a plain wildcard body */
+                for (const auto& tt : tests)
+                    if (tt.startOff >= lastFt && tt.startOff < conv) { clean = false; break; }
+                /* The convergence must NOT cross an enclosing exception handler: when
+                   the match sits inside a `try/except`, a non-returning case jumps to
+                   the enclosing try's exit PAST the except handler, so `conv` overruns
+                   the real match end and a wildcard span [lastFt, conv) would absorb
+                   the enclosing `except` (http_deprecated). Bail the whole value-match
+                   there — it renders faithfully as if/elif instead. */
+                bool crossesExc = false;
+                for (int ii = 0; ii < (int)v.size(); ++ii)
+                    if (v[ii].off >= lastFt && v[ii].off < conv
+                            && v[ii].op == Pyc::PUSH_EXC_INFO) { crossesExc = true; break; }
+                if (crossesExc) continue;   /* skip registering this chain */
+                if (clean) { matchEnd = conv; wildcardStart = lastFt; }
+            }
+            /* Bail when the match is the LAST statement of a loop with PER-CASE
+               back-edges: each case body's fall-through `continue`s directly to the
+               loop top (a JUMP_BACKWARD inside the match span). CPython collapsed the
+               match-merge into the loop-continue → one back-edge PER CASE; a structured
+               `match` recompiles with a shared merge (one back-edge + per-case
+               JUMP_FORWARDs) → loop-opcode count diverges. The faithful render is
+               gate-dirty by construction, so leave it to the if/elif fallback (which
+               recompiles to the per-case back-edge layout). JUMP_BACKWARD_NO_INTERRUPT
+               (await SEND loops) is NOT a loop continue. */
+            {
+                int spanStart = tests[chain[0]].startOff;
+                bool loopBack = false;
+                for (const auto& iv : v)
+                    if (iv.off >= spanStart && iv.off < matchEnd
+                            && iv.op == Pyc::JUMP_BACKWARD_A) { loopBack = true; break; }
+                if (loopBack) continue;
+            }
+            for (size_t k = 0; k < chain.size(); ++k) {
+                const Test& tc = tests[chain[k]];
+                VCase vc;
+                vc.isFirst = (k == 0);
+                vc.isLast  = (k + 1 == chain.size());
+                vc.matchEnd = matchEnd;
+                vc.failTarget = tc.ft;
+                vc.bodyStart = caseBodyStart(tc);
+                matchValue[tc.compareOff] = vc;
+                matchCaseEnd[tc.ft] = tc.ft;     /* close case at ft; no machinery to skip */
+            }
+            if (wildcardStart >= 0) {
+                matchWildcardOpen[wildcardStart] = matchEnd;   /* open `case _:` here */
+                matchCaseEnd[matchEnd] = matchEnd;             /* close the wildcard at the merge */
+            }
+            matchBlockEnd.insert(matchEnd);
+        }
+    }
+
     while (!source.atEof()) {
 #if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
         fprintf(stderr, "%-7d", pos);
@@ -190,6 +603,76 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock = blocks.top();
                 curblock->append(cont.cast<ASTNode>());
             }
+        }
+
+        /* Close the whole `match` at its end (post-match code starts here). */
+        if (curblock->blktype() == ASTBlock::BLK_MATCH && matchBlockEnd.count(pos)) {
+            PycRef<ASTBlock> ms = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(ms.cast<ASTNode>());
+        }
+
+        /* A `match` case body whose LAST statement is an else-less `if X: Y` exits to
+           the match merge via a JUMP_FORWARD that pycdc misreads as an `else:` (a
+           BLK_ELSE spanning to matchEnd, PAST the case's fail-target). At the case's
+           fail-target (a matchCaseEnd point) curblock is that spurious BLK_ELSE/BLK_IF,
+           not the BLK_CASE, so the close below never fires and the NEXT case opens
+           nested inside the else (events_excavating2: `case RIGHT: if…: … else: case
+           UP:…` — invalid). Drain the run of inner BLK_IF/BLK_ELSE/BLK_ELIF sitting on
+           the BLK_CASE into it here so the case can close as a sibling. Non-mutating
+           peek confirms the shape first. */
+        if (matchCaseEnd.count(pos) && blocks.size() > 1
+                && (curblock->blktype() == ASTBlock::BLK_IF
+                    || curblock->blktype() == ASTBlock::BLK_ELSE
+                    || curblock->blktype() == ASTBlock::BLK_ELIF)) {
+            std::stack<PycRef<ASTBlock> > peek = blocks;
+            int nif = 0; bool shape = false;
+            while (peek.size() > 1
+                    && (peek.top()->blktype() == ASTBlock::BLK_IF
+                        || peek.top()->blktype() == ASTBlock::BLK_ELSE
+                        || peek.top()->blktype() == ASTBlock::BLK_ELIF)) {
+                peek.pop(); nif++;
+                if (peek.top()->blktype() == ASTBlock::BLK_CASE) { shape = true; break; }
+            }
+            if (shape) {
+                for (int k = 0; k < nif; ++k) {
+                    PycRef<ASTBlock> inner = curblock;
+                    blocks.pop();
+                    if (!stack_hist.empty())
+                        stack_hist.pop();
+                    curblock = blocks.top();
+                    curblock->append(inner.cast<ASTNode>());
+                }
+            }
+        }
+
+        /* Close a `match` case at its pattern-fail target (the next-case POP_TOP).
+           The body just ran; close the BLK_CASE into the BLK_MATCH and skip the
+           machinery POP_TOP that discards the None match-result. */
+        if (curblock->blktype() == ASTBlock::BLK_CASE && matchCaseEnd.count(pos)) {
+            PycRef<ASTBlock> cs = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+            curblock->append(cs.cast<ASTNode>());
+            int after = matchCaseEnd[pos];
+            source.setPos(after);
+            pos = after;
+            while (next_exception_entry < exception_entries.size()
+                    && exception_entries[next_exception_entry].start_offset < pos)
+                next_exception_entry++;
+            continue;
+        }
+        /* Open a wildcard `case _:` block (the last typed case just closed and set
+           pos to the wildcard body start). The body reconstructs normally; the
+           BLK_CASE closes at the merge (matchCaseEnd[merge]) and the BLK_MATCH right
+           after it. */
+        if (curblock->blktype() == ASTBlock::BLK_MATCH && matchWildcardOpen.count(pos)) {
+            PycRef<PycString> us = new PycString();
+            us->setValue("_");
+            blocks.push(new ASTCaseBlock(matchWildcardOpen[pos], new ASTName(us)));
+            curblock = blocks.top();
+            curblock->init();
         }
 
         curpos = pos;
@@ -725,6 +1208,36 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::COMPARE_OP_A:
             {
+                /* SHIP-149: a registered value-pattern match case test. Open the
+                   `match`/`case` instead of an `if x == pat`. The subject threads on
+                   the stack via the per-case COPY; pop the pattern + the subject COPY
+                   (non-last) or the subject itself (last case), open BLK_MATCH (first)
+                   + BLK_CASE(pattern), and jump to the body — reuses matchCaseEnd /
+                   matchBlockEnd to close. */
+                auto vmi = matchValue.find(curpos);
+                if (vmi != matchValue.end()) {
+                    const VCase& vc = vmi->second;
+                    PycRef<ASTNode> pattern = stack.top(); stack.pop();
+                    if (vc.isLast) {
+                        stack.pop();                 /* last case consumes the subject */
+                    } else {
+                        PycRef<ASTNode> copy = stack.top(); stack.pop();  /* drop the COPY */
+                        if (vc.isFirst) {
+                            PycRef<ASTNode> subject = stack.top();        /* threads; don't pop */
+                            blocks.push(new ASTMatchBlock(vc.matchEnd, subject));
+                            curblock = blocks.top();
+                        }
+                    }
+                    blocks.push(new ASTCaseBlock(vc.failTarget, pattern));
+                    curblock = blocks.top();
+                    curblock->init();
+                    source.setPos(vc.bodyStart);
+                    pos = vc.bodyStart;
+                    while (next_exception_entry < exception_entries.size()
+                            && exception_entries[next_exception_entry].start_offset < pos)
+                        next_exception_entry++;
+                    break;
+                }
                 PycRef<ASTNode> right = stack.top();
                 stack.pop();
                 PycRef<ASTNode> left = stack.top();
@@ -1821,6 +2334,27 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
 
+                /* Value-pattern match subject cleanup: the subject is computed once
+                   and THREADS on the stack (COPY'd per case for the COMPARE). When a
+                   case body exits via a loop continue / a return inside a loop, the
+                   compiler emits a POP_TOP to discard the still-live subject before the
+                   back-edge — pycdc would render it as a stray expression statement
+                   (`args['k']`). Inside a match, if the popped value IS the enclosing
+                   BLK_MATCH's subject node (same PycRef threaded through), drop it. */
+                if (value != nullptr) {
+                    std::stack<PycRef<ASTBlock> > ms = blocks;
+                    while (!ms.empty()) {
+                        if (ms.top()->blktype() == ASTBlock::BLK_MATCH) {
+                            if (ms.top().cast<ASTMatchBlock>()->subject() == value)
+                                value = nullptr;   // match subject cleanup -> drop
+                            break;
+                        }
+                        ms.pop();
+                    }
+                    if (value == nullptr)
+                        break;
+                }
+
                 if (!curblock->inited()) {
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
@@ -2692,6 +3226,44 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(value);
             }
             break;
+        case Pyc::MATCH_CLASS_A:
+            {
+                /* 3.11 `match`/`case` class pattern. The match pre-scan registered
+                   this as a SIMPLE handleable case (positional captures only, no
+                   guard, no kw patterns); anything else is unregistered -> bail. */
+                auto mci = matchCase.find(curpos);
+                if (mci == matchCase.end()) {
+                    fprintf(stderr, "Unsupported opcode: %s (%d)\n",
+                            Pyc::OpcodeName(opcode), opcode);
+                    cleanBuild = false;
+                    return new ASTNodeList(defblock->nodes());
+                }
+                const MCase& mc = mci->second;
+                /* stack: [..., (leftover subject copies), subject, class, kwnames] */
+                stack.pop();                              // kwnames (empty tuple)
+                PycRef<ASTNode> classnode = stack.top(); stack.pop();
+                PycRef<ASTNode> subject = stack.top(); stack.pop();
+                for (int k = 0; k < mc.popExtra; ++k)     // matched-path leftover-subject pops
+                    if (!stack.empty()) stack.pop();
+                /* pattern renders like a call: ClassName(cap0, cap1, …) */
+                ASTCall::pparam_t pparams;
+                for (const auto& c : mc.caps)
+                    pparams.push_back(c);
+                PycRef<ASTNode> pattern = new ASTCall(classnode, pparams,
+                                                      ASTCall::kwparam_t());
+                if (mc.isFirst) {
+                    blocks.push(new ASTMatchBlock(mc.matchEnd, subject));
+                    curblock = blocks.top();
+                }
+                blocks.push(new ASTCaseBlock(mc.failTarget, pattern));
+                curblock = blocks.top();
+                curblock->init();
+                /* skip the whole case-test machinery; the body reconstructs
+                   normally and the BLK_CASE/BLK_MATCH close at their ends. */
+                source.setPos(mc.bodyStart);
+                pos = mc.bodyStart;
+            }
+            break;
         default:
             fprintf(stderr, "Unsupported opcode: %s (%d)\n", Pyc::OpcodeName(opcode), opcode);
             cleanBuild = false;
@@ -3150,6 +3722,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 print_src(blk.cast<ASTIterBlock>()->index(), mod, pyc_output);
                 pyc_output << " in ";
                 print_src(blk.cast<ASTIterBlock>()->iter(), mod, pyc_output);
+            } else if (blk->blktype() == ASTBlock::BLK_MATCH) {
+                pyc_output << " ";
+                print_src(blk.cast<ASTMatchBlock>()->subject(), mod, pyc_output);
+            } else if (blk->blktype() == ASTBlock::BLK_CASE) {
+                pyc_output << " ";
+                print_src(blk.cast<ASTCaseBlock>()->pattern(), mod, pyc_output);
             } else if (blk->blktype() == ASTBlock::BLK_EXCEPT &&
                     blk.cast<ASTCondBlock>()->cond() != NULL) {
                 pyc_output << " ";

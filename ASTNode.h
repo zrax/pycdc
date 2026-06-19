@@ -534,7 +534,8 @@ public:
     enum BlkType {
         BLK_MAIN, BLK_IF, BLK_ELSE, BLK_ELIF, BLK_TRY,
         BLK_CONTAINER, BLK_EXCEPT, BLK_FINALLY,
-        BLK_WHILE, BLK_FOR, BLK_WITH, BLK_ASYNCFOR
+        BLK_WHILE, BLK_FOR, BLK_WITH, BLK_ASYNCFOR,
+        BLK_MATCH, BLK_CASE
     };
 
     ASTBlock(BlkType blktype, int end = 0, int inited = 0)
@@ -638,6 +639,32 @@ public:
 private:
     PycRef<ASTNode> m_expr;
     PycRef<ASTNode> m_var;      // optional value
+};
+
+/* 3.10+ `match subject:` — children are BLK_CASE blocks. */
+class ASTMatchBlock : public ASTBlock {
+public:
+    ASTMatchBlock(int end, PycRef<ASTNode> subject)
+        : ASTBlock(ASTBlock::BLK_MATCH, end), m_subject(std::move(subject)) { init(); }
+
+    PycRef<ASTNode> subject() const { return m_subject; }
+
+private:
+    PycRef<ASTNode> m_subject;
+};
+
+/* A single `case <pattern>:` inside a match. The pattern node renders verbatim
+   (class/value pattern as an expression; a bare name `_` for the wildcard). */
+class ASTCaseBlock : public ASTBlock {
+public:
+    ASTCaseBlock(int end, PycRef<ASTNode> pattern)
+        : ASTBlock(ASTBlock::BLK_CASE, end), m_pattern(std::move(pattern)) { }
+
+    PycRef<ASTNode> pattern() const { return m_pattern; }
+    void setPattern(PycRef<ASTNode> p) { m_pattern = std::move(p); init(); }
+
+private:
+    PycRef<ASTNode> m_pattern;
 };
 
 class ASTComprehension : public ASTNode {

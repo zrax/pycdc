@@ -52,6 +52,10 @@ public:
     int getByte() override;
     void getBuffer(int bytes, void* buffer) override;
 
+    // Reposition the read cursor (used by 3.11 match/case reconstruction to
+    // skip past pattern-test machinery to a case body).
+    void setPos(int pos) { m_pos = pos; }
+
 private:
     const unsigned char* m_buffer;
     int m_size, m_pos;

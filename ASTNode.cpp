@@ -201,7 +201,7 @@ const char* ASTBlock::type_str() const
 {
     static const char* s_type_strings[] = {
         "", "if", "else", "elif", "try", "CONTAINER", "except",
-        "finally", "while", "for", "with", "async for"
+        "finally", "while", "for", "with", "async for", "match", "case"
     };
     return s_type_strings[blktype()];
 }

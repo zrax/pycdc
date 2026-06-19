@@ -1,0 +1,41 @@
+def describe_point ( command ) : <EOL>
+<INDENT>
+match command : <EOL>
+<INDENT>
+case Point ( x , y ) : <EOL>
+<INDENT>
+return f'point {x},{y}' <EOL>
+<OUTDENT>
+case Rect ( w , h ) : <EOL>
+<INDENT>
+return f'rect {w}x{h}' <EOL>
+<OUTDENT>
+case Wrapper ( _ ) : <EOL>
+<INDENT>
+return 'wrapped' <EOL>
+<OUTDENT>
+<OUTDENT>
+return 'unknown' <EOL>
+<OUTDENT>
+def classify ( value ) : <EOL>
+<INDENT>
+match value : <EOL>
+<INDENT>
+case 0 : <EOL>
+<INDENT>
+result = 'zero' <EOL>
+<OUTDENT>
+case 1 : <EOL>
+<INDENT>
+result = 'one' <EOL>
+<OUTDENT>
+case 'hello' : <EOL>
+<INDENT>
+result = 'greeting' <EOL>
+<OUTDENT>
+case _ : <EOL>
+<INDENT>
+result = 'other' <EOL>
+<OUTDENT>
+<OUTDENT>
+return result <EOL>
