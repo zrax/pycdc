@@ -1,0 +1,5 @@
+from . import foo <EOL>
+from . . import bar <EOL>
+from . mod import baz <EOL>
+from . . pkg . submod import qux , quux <EOL>
+from ... deep import thing as renamed <EOL>

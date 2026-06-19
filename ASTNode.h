@@ -315,20 +315,23 @@ class ASTImport : public ASTNode {
 public:
     typedef std::list<PycRef<ASTStore>> list_t;
 
-    ASTImport(PycRef<ASTNode> name, PycRef<ASTNode> fromlist)
-        : ASTNode(NODE_IMPORT), m_name(std::move(name)), m_fromlist(std::move(fromlist)) { }
+    ASTImport(PycRef<ASTNode> name, PycRef<ASTNode> fromlist, int level = 0)
+        : ASTNode(NODE_IMPORT), m_name(std::move(name)),
+          m_fromlist(std::move(fromlist)), m_level(level) { }
 
     PycRef<ASTNode> name() const { return m_name; }
     list_t stores() const { return m_stores; }
     void add_store(PycRef<ASTStore> store) { m_stores.emplace_back(std::move(store)); }
 
     PycRef<ASTNode> fromlist() const { return m_fromlist; }
+    int level() const { return m_level; }
 
 private:
     PycRef<ASTNode> m_name;
     list_t m_stores;
 
     PycRef<ASTNode> m_fromlist;
+    int m_level;
 };
 
 
