@@ -73,6 +73,60 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
 
+static bool nameStrEq(const PycRef<ASTNode>& a, const PycRef<ASTNode>& b)
+{
+    if (a == nullptr || b == nullptr) return false;
+    if (a.type() != ASTNode::NODE_NAME || b.type() != ASTNode::NODE_NAME) return false;
+    PycRef<PycString> sa = a.cast<ASTName>()->name();
+    PycRef<PycString> sb = b.cast<ASTName>()->name();
+    if (sa == nullptr || sb == nullptr) return false;
+    return strcmp(sa->value(), sb->value()) == 0;
+}
+
+static bool tryAttachDecorators(PycRef<ASTBlock> curblock,
+                                PycRef<ASTNode> value, PycRef<ASTNode> name)
+{
+    if (value == nullptr || value.type() != ASTNode::NODE_CALL)
+        return false;
+    if (name == nullptr || name.type() != ASTNode::NODE_NAME)
+        return false;
+    if (curblock == nullptr || curblock->nodes().empty())
+        return false;
+    PycRef<ASTNode> prev = curblock->nodes().back();
+    if (prev.type() != ASTNode::NODE_STORE)
+        return false;
+    PycRef<ASTNode> defSrc = prev.cast<ASTStore>()->src();
+    PycRef<ASTNode> defDest = prev.cast<ASTStore>()->dest();
+    bool isFunc = defSrc.type() == ASTNode::NODE_FUNCTION;
+    bool isClass = defSrc.type() == ASTNode::NODE_CLASS;
+    if (!isFunc && !isClass)
+        return false;
+    if (!nameStrEq(defDest, name))
+        return false;
+    if (isFunc) {
+        PycRef<PycCode> fc = defSrc.cast<ASTFunction>()->code()
+                .cast<ASTObject>()->object().cast<PycCode>();
+        if (fc->name()->isEqual("<lambda>"))
+            return false;
+    }
+    std::vector<PycRef<ASTNode> > decos;
+    PycRef<ASTNode> cur = value;
+    while (cur.type() == ASTNode::NODE_CALL) {
+        PycRef<ASTCall> call = cur.cast<ASTCall>();
+        if (call->pparams().size() != 1 || !call->kwparams().empty())
+            return false;
+        decos.push_back(call->func());
+        cur = call->pparams().front();
+    }
+    if (!nameStrEq(cur, name))
+        return false;
+    for (auto& d : decos) {
+        if (isFunc) defSrc.cast<ASTFunction>()->addDecorator(d);
+        else        defSrc.cast<ASTClass>()->addDecorator(d);
+    }
+    return true;
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -600,6 +654,47 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
+
+                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A)
+                        && pparams == 0 && kwparams == 0
+                        && !stack.empty() && stack.top() != nullptr) {
+                    PycRef<ASTNode> decorated = func;
+                    bool is_decorator = false;
+                    if (decorated.type() == ASTNode::NODE_FUNCTION) {
+                        PycRef<PycCode> code_src = decorated.cast<ASTFunction>()
+                                ->code().cast<ASTObject>()->object().cast<PycCode>();
+                        if (!code_src->name()->isEqual("<lambda>")) {
+                            PycRef<ASTNode> decor_name = new ASTName(code_src->name());
+                            curblock->append(new ASTStore(decorated, decor_name));
+                            decorated = decor_name;
+                            is_decorator = true;
+                        }
+                    } else if (decorated.type() == ASTNode::NODE_CLASS) {
+                        PycRef<ASTNode> nm = decorated.cast<ASTClass>()->name();
+                        PycRef<PycString> cn = (nm != nullptr
+                                && nm.type() == ASTNode::NODE_OBJECT)
+                            ? nm.cast<ASTObject>()->object().try_cast<PycString>()
+                            : nullptr;
+                        if (cn != nullptr) {
+                            PycRef<ASTNode> decor_name = new ASTName(cn);
+                            curblock->append(new ASTStore(decorated, decor_name));
+                            decorated = decor_name;
+                            is_decorator = true;
+                        }
+                    } else if (decorated.type() == ASTNode::NODE_CALL) {
+                        is_decorator = true;
+                    }
+                    if (is_decorator) {
+                        PycRef<ASTNode> decorator = stack.top();
+                        stack.pop();
+                        ASTCall::pparam_t decParams;
+                        decParams.push_front(decorated);
+                        stack.push(new ASTCall(decorator, decParams,
+                                               ASTCall::kwparam_t()));
+                        break;
+                    }
+                }
+
                 if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
                         stack.top() == nullptr) {
                     stack.pop();
@@ -2199,7 +2294,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                     if (value.type() == ASTNode::NODE_CHAINSTORE) {
                         append_to_chain_store(value, name, stack, curblock);
-                    } else {
+                    } else if (!tryAttachDecorators(curblock, value, name)) {
                         curblock->append(new ASTStore(value, name));
                     }
                 }
@@ -2263,7 +2358,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock.cast<ASTWithBlock>()->setVar(name);
                     } else if (value.type() == ASTNode::NODE_CHAINSTORE) {
                         append_to_chain_store(value, name, stack, curblock);
-                    } else {
+                    } else if (!tryAttachDecorators(curblock, value, name)) {
                         curblock->append(new ASTStore(value, name));
                     }
                 }
@@ -2302,7 +2397,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                     if (value.type() == ASTNode::NODE_CHAINSTORE) {
                         append_to_chain_store(value, name, stack, curblock);
-                    } else {
+                    } else if (!tryAttachDecorators(curblock, value, name)) {
                         curblock->append(new ASTStore(value, name));
                     }
                 }
@@ -2370,7 +2465,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         curblock.cast<ASTWithBlock>()->setVar(name);
                     } else if (value.type() == ASTNode::NODE_CHAINSTORE) {
                         append_to_chain_store(value, name, stack, curblock);
-                    } else {
+                    } else if (!tryAttachDecorators(curblock, value, name)) {
                         curblock->append(new ASTStore(value, name));
 
                         if (value.type() == ASTNode::NODE_INVALID)
@@ -3351,6 +3446,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     isLambda = true;
                 } else {
                     pyc_output << "\n";
+                    for (const auto& d : src.cast<ASTFunction>()->decorators()) {
+                        start_line(cur_indent, pyc_output);
+                        pyc_output << "@";
+                        print_src(d, mod, pyc_output);
+                        pyc_output << "\n";
+                    }
                     start_line(cur_indent, pyc_output);
                     if (code_src->flags() & PycCode::CO_COROUTINE)
                         pyc_output << "async ";
@@ -3410,6 +3511,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 inLambda = preLambda;
             } else if (src.type() == ASTNode::NODE_CLASS) {
                 pyc_output << "\n";
+                for (const auto& d : src.cast<ASTClass>()->decorators()) {
+                    start_line(cur_indent, pyc_output);
+                    pyc_output << "@";
+                    print_src(d, mod, pyc_output);
+                    pyc_output << "\n";
+                }
                 start_line(cur_indent, pyc_output);
                 pyc_output << "class ";
                 print_src(dest, mod, pyc_output);

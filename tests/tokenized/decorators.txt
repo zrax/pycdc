@@ -1,0 +1,15 @@
+@ staticmethod <EOL>
+def f ( ) : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+@ app . route <EOL>
+@ cache <EOL>
+def g ( ) : <EOL>
+<INDENT>
+return 1 <EOL>
+<OUTDENT>
+@ functools . lru_cache <EOL>
+def h ( n ) : <EOL>
+<INDENT>
+return n <EOL>

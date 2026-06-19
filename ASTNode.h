@@ -257,10 +257,15 @@ public:
     const defarg_t& defargs() const { return m_defargs; }
     const defarg_t& kwdefargs() const { return m_kwdefargs; }
 
+    typedef std::list<PycRef<ASTNode>> decorator_t;
+    const decorator_t& decorators() const { return m_decorators; }
+    void addDecorator(PycRef<ASTNode> d) { m_decorators.push_back(std::move(d)); }
+
 private:
     PycRef<ASTNode> m_code;
     defarg_t m_defargs;
     defarg_t m_kwdefargs;
+    decorator_t m_decorators;
 };
 
 
@@ -274,10 +279,15 @@ public:
     PycRef<ASTNode> bases() const { return m_bases; }
     PycRef<ASTNode> name() const { return m_name; }
 
+    typedef std::list<PycRef<ASTNode>> decorator_t;
+    const decorator_t& decorators() const { return m_decorators; }
+    void addDecorator(PycRef<ASTNode> d) { m_decorators.push_back(std::move(d)); }
+
 private:
     PycRef<ASTNode> m_code;
     PycRef<ASTNode> m_bases;
     PycRef<ASTNode> m_name;
+    decorator_t m_decorators;
 };
 
 
