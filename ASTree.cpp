@@ -1660,7 +1660,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> fun_code = stack.top();
                 stack.pop();
 
-                /* Test for the qualified name of the function (at TOS) */
+                /* Test for the qualified name of the function (Python 3.3-3.10) */
                 int tos_type = fun_code.cast<ASTObject>()->object().type();
                 if (tos_type != PycObject::TYPE_CODE &&
                     tos_type != PycObject::TYPE_CODE2) {
@@ -1669,15 +1669,47 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
 
                 ASTFunction::defarg_t defArgs, kwDefArgs;
-                const int defCount = operand & 0xFF;
-                const int kwDefCount = (operand >> 8) & 0xFF;
-                for (int i = 0; i < defCount; ++i) {
-                    defArgs.push_front(stack.top());
-                    stack.pop();
-                }
-                for (int i = 0; i < kwDefCount; ++i) {
-                    kwDefArgs.push_front(stack.top());
-                    stack.pop();
+                if (mod->verCompare(3, 6) >= 0) {
+                    /* Python 3.6+: operand is a bitmask.
+                       Peel items in reverse push order (closure last pushed). */
+                    if (operand & 0x08) /* closure tuple — discard */
+                        stack.pop();
+                    if (operand & 0x04) /* annotations dict — discard */
+                        stack.pop();
+                    if (operand & 0x02) /* kw-only defaults dict — discard */
+                        stack.pop();
+                    if (operand & 0x01) {
+                        /* positional defaults are a tuple constant */
+                        PycRef<ASTNode> defs = stack.top();
+                        stack.pop();
+                        if (defs.type() == ASTNode::NODE_OBJECT) {
+                            PycRef<PycObject> pobj = defs.cast<ASTObject>()->object();
+                            if (pobj.type() == PycObject::TYPE_TUPLE ||
+                                    pobj.type() == PycObject::TYPE_SMALL_TUPLE) {
+                                for (const auto& val : pobj.cast<PycTuple>()->values()) {
+                                    if (val.type() == PycObject::TYPE_NONE)
+                                        defArgs.push_back(nullptr);
+                                    else
+                                        defArgs.push_back(new ASTObject(val));
+                                }
+                            }
+                        } else if (defs.type() == ASTNode::NODE_TUPLE) {
+                            for (const auto& val : defs.cast<ASTTuple>()->values())
+                                defArgs.push_back(val);
+                        }
+                    }
+                } else {
+                    /* Python < 3.6: operand encodes counts */
+                    const int defCount = operand & 0xFF;
+                    const int kwDefCount = (operand >> 8) & 0xFF;
+                    for (int i = 0; i < defCount; ++i) {
+                        defArgs.push_front(stack.top());
+                        stack.pop();
+                    }
+                    for (int i = 0; i < kwDefCount; ++i) {
+                        kwDefArgs.push_front(stack.top());
+                        stack.pop();
+                    }
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
             }
@@ -2179,6 +2211,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::STORE_DEREF_A:
             {
+                /* If this slot is a free variable (comes from an enclosing
+                   scope), the function needs a nonlocal declaration. */
+                if (code->isFreeVar(mod, operand))
+                    code->markNonLocal(code->getCellVar(mod, operand));
+
                 if (unpack) {
                     PycRef<ASTNode> name = new ASTName(code->getCellVar(mod, operand));
 
@@ -2612,6 +2649,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                certain opcodes in Python 3.11+.  Since we have no need for
                that during disassembly/decompilation, we can just treat these
                as no-ops. */
+            break;
+        case Pyc::MAKE_CELL_A:
+            /* Python 3.11+: converts a local variable slot into a cell object
+               for use by an inner function's closure.  This is an internal
+               CPython implementation detail; decompiled source shows no trace
+               of it (the variable just appears as a normal name). */
+            break;
+        case Pyc::COPY_FREE_VARS_A:
+            /* Python 3.11+: copies free variables from the enclosing scope
+               into the frame's cell slots.  No-op for decompilation. */
             break;
         case Pyc::PUSH_NULL:
             stack.push(nullptr);
@@ -3693,6 +3740,21 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
             }
             pyc_output << "\n";
         }
+
+        const PycCode::globals_t& nonlocs = code->getNonLocals();
+        if (nonlocs.size()) {
+            start_line(cur_indent + 1, pyc_output);
+            pyc_output << "nonlocal ";
+            bool first = true;
+            for (const auto& var : nonlocs) {
+                if (!first)
+                    pyc_output << ", ";
+                pyc_output << var->value();
+                first = false;
+            }
+            pyc_output << "\n";
+        }
+
         printDocstringAndGlobals = false;
     }
 

@@ -129,6 +129,22 @@ PycRef<PycString> PycCode::getCellVar(PycModule* mod, int idx) const
         : m_cellVars->get(idx).cast<PycString>();
 }
 
+bool PycCode::isFreeVar(PycModule* mod, int idx) const
+{
+    if (mod->verCompare(3, 11) >= 0) {
+        /* In Python 3.11+, variable kinds are encoded in m_localKinds.
+           Each byte corresponds to a local/cell/free slot; CO_FAST_FREE marks
+           a free variable (from an enclosing scope). */
+        const char* kinds = m_localKinds->value();
+        int len = m_localKinds->length();
+        if (idx >= 0 && idx < len)
+            return (static_cast<unsigned char>(kinds[idx]) & CO_FAST_FREE) != 0;
+        return false;
+    }
+    /* Pre-3.11: indices >= cellVars.size() are free variables */
+    return idx >= m_cellVars->size();
+}
+
 int _parse_varint(PycBuffer& data, int& pos) {
     int b = data.getByte();
     pos += 1;

@@ -1,0 +1,35 @@
+def outer ( ) : <EOL>
+<INDENT>
+x = 10 <EOL>
+def inner ( ) : <EOL>
+<INDENT>
+return x <EOL>
+<OUTDENT>
+return inner <EOL>
+<OUTDENT>
+def make_adder ( n ) : <EOL>
+<INDENT>
+def adder ( x ) : <EOL>
+<INDENT>
+return x + n <EOL>
+<OUTDENT>
+return adder <EOL>
+<OUTDENT>
+def counter ( ) : <EOL>
+<INDENT>
+count = 0 <EOL>
+def increment ( ) : <EOL>
+<INDENT>
+nonlocal count <EOL>
+count += 1 <EOL>
+return count <EOL>
+<OUTDENT>
+return increment <EOL>
+<OUTDENT>
+def make_multiplier ( factor ) : <EOL>
+<INDENT>
+def multiply ( x ) : <EOL>
+<INDENT>
+return x * factor <EOL>
+<OUTDENT>
+return multiply <EOL>

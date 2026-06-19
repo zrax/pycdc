@@ -99,6 +99,22 @@ public:
         m_globalsUsed.emplace_back(std::move(varname));
     }
 
+    /* CO_FAST_FREE flag (Python 3.11+) indicates a free variable */
+    static constexpr unsigned char CO_FAST_FREE = 0x80;
+
+    bool isFreeVar(PycModule* mod, int idx) const;
+
+    const globals_t& getNonLocals() const { return m_nonLocalsUsed; }
+
+    void markNonLocal(PycRef<PycString> varname)
+    {
+        /* deduplicate */
+        for (const auto& v : m_nonLocalsUsed)
+            if (v->isEqual(varname.cast<PycObject>()))
+                return;
+        m_nonLocalsUsed.emplace_back(std::move(varname));
+    }
+
     std::vector<PycExceptionTableEntry> exceptionTableEntries() const;
 
 private:
@@ -117,7 +133,8 @@ private:
     int m_firstLine;
     PycRef<PycString> m_lnTable;
     PycRef<PycString> m_exceptTable;
-    globals_t m_globalsUsed; /* Global vars used in this code */
+    globals_t m_globalsUsed;    /* Global vars used in this code */
+    globals_t m_nonLocalsUsed; /* Free vars assigned in this code (nonlocal) */
 };
 
 #endif
