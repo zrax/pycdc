@@ -1259,7 +1259,13 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
-                    offs *= sizeof(uint16_t); // // BPO-27129 
+                    offs *= sizeof(uint16_t); // BPO-27129
+                // In Python 3.11, JUMP_BACKWARD operand is a backward distance from the
+                // next instruction; convert to absolute target address so that
+                // comparisons against block start offsets work correctly.
+                // (3.12+ uses END_FOR for for-loop back-edges so the semantics differ.)
+                if (mod->verCompare(3, 11) >= 0 && mod->verCompare(3, 12) < 0)
+                    offs = pos - offs;
 
                 if (offs < pos) {
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
@@ -1608,10 +1614,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getCellVar(mod, operand)));
             break;
         case Pyc::LOAD_FAST_A:
-            if (mod->verCompare(1, 3) < 0)
+            if (mod->verCompare(1, 3) < 0) {
                 stack.push(new ASTName(code->getName(operand)));
-            else
+            } else {
                 stack.push(new ASTName(code->getLocal(operand)));
+            }
             break;
         case Pyc::LOAD_FAST_LOAD_FAST_A:
             stack.push(new ASTName(code->getLocal(operand >> 4)));
@@ -1621,8 +1628,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             if (mod->verCompare(3, 11) >= 0) {
                 // Loads the global named co_names[namei>>1] onto the stack.
                 if (operand & 1) {
-                    /* Changed in version 3.11: 
-                    If the low bit of "NAMEI" (operand) is set, 
+                    /* Changed in version 3.11:
+                    If the low bit of "NAMEI" (operand) is set,
                     then a NULL is pushed to the stack before the global variable. */
                     stack.push(nullptr);
                 }
@@ -2584,10 +2591,21 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::SETUP_ANNOTATIONS:
             variable_annotations = true;
             break;
+        case Pyc::RETURN_GENERATOR:
+            /* Python 3.11+: marks this code object as a generator; the actual
+               generator object is the return value, consumed by the following
+               POP_TOP.  Both are no-ops for decompilation purposes. */
+            stack.push(nullptr);
+            break;
         case Pyc::PRECALL_A:
+            break;
         case Pyc::RESUME_A:
         case Pyc::INSTRUMENTED_RESUME_A:
-            /* We just entirely ignore this / no-op */
+            /* operand 0 = entry point; operand >0 = resume after yield/send,
+               where CPython pushes the sent value onto the stack.  Push a
+               nullptr so the following POP_TOP can silently consume it. */
+            if (operand > 0)
+                stack.push(nullptr);
             break;
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing

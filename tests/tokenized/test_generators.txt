@@ -1,0 +1,37 @@
+def simple_gen ( ) : <EOL>
+<INDENT>
+yield 1 <EOL>
+yield 2 <EOL>
+yield 3 <EOL>
+<OUTDENT>
+def gen_with_for ( n ) : <EOL>
+<INDENT>
+for i in range ( n ) : <EOL>
+<INDENT>
+yield i <EOL>
+<OUTDENT>
+<OUTDENT>
+def gen_square ( n ) : <EOL>
+<INDENT>
+for i in range ( n ) : <EOL>
+<INDENT>
+yield i * i <EOL>
+<OUTDENT>
+<OUTDENT>
+def gen_filter ( items , pred ) : <EOL>
+<INDENT>
+for x in items : <EOL>
+<INDENT>
+if pred ( x ) : <EOL>
+<INDENT>
+yield x <EOL>
+<OUTDENT>
+<OUTDENT>
+<OUTDENT>
+def gen_nested ( ) : <EOL>
+<INDENT>
+for i in range ( 3 ) : <EOL>
+<INDENT>
+for j in range ( 3 ) : <EOL>
+<INDENT>
+yield ( i , j ) <EOL>
