@@ -109,7 +109,7 @@ private:
 class ASTUnary : public ASTNode {
 public:
     enum UnOp {
-        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT
+        UN_POSITIVE, UN_NEGATIVE, UN_INVERT, UN_NOT, UN_STAR
     };
 
     ASTUnary(PycRef<ASTNode> operand, int op)

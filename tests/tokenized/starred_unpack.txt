@@ -1,0 +1,6 @@
+( a , * b ) = seq <EOL>
+( * head , tail ) = seq <EOL>
+( first , * middle , last ) = seq <EOL>
+( x , * rest , y , z ) = seq <EOL>
+( obj . a , * ( obj . rest ) ) = seq <EOL>
+( container [ 0 ] , * container [ 1 : ] ) = seq <EOL>

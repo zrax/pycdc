@@ -19,7 +19,7 @@ void ASTNodeList::removeFirst()
 const char* ASTUnary::op_str() const
 {
     static const char* s_op_strings[] = {
-        "+", "-", "~", "not "
+        "+", "-", "~", "not ", "*"
     };
     return s_op_strings[op()];
 }
