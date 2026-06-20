@@ -1,0 +1,3 @@
+s = '\ud800' <EOL>
+t = 'café' <EOL>
+u = '😀' <EOL>
