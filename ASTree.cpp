@@ -1095,9 +1095,17 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             } else {
                 PycRef<ASTNode> fromlist = stack.top();
                 stack.pop();
-                if (mod->verCompare(2, 5) >= 0)
-                    stack.pop();    // Level -- we don't care
-                stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist));
+                int level = 0;
+                if (mod->verCompare(2, 5) >= 0) {
+                    PycRef<ASTNode> levelnode = stack.top();
+                    stack.pop();
+                    if (levelnode.type() == ASTNode::NODE_OBJECT) {
+                        PycRef<PycObject> obj = levelnode.cast<ASTObject>()->object();
+                        if (obj->type() == PycObject::TYPE_INT)
+                            level = obj.cast<PycInt>()->value();
+                    }
+                }
+                stack.push(new ASTImport(new ASTName(code->getName(operand)), fromlist, level));
             }
             break;
         case Pyc::IMPORT_FROM_A:
@@ -3259,6 +3267,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 ASTImport::list_t stores = import->stores();
 
                 pyc_output << "from ";
+                for (int i = 0; i < import->level(); i++)
+                    pyc_output << ".";
                 if (import->name().type() == ASTNode::NODE_IMPORT)
                     print_src(import->name().cast<ASTImport>()->name(), mod, pyc_output);
                 else
@@ -3438,6 +3448,8 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     PycRef<PycObject> fromlist = import->fromlist().cast<ASTObject>()->object();
                     if (fromlist != Pyc_None) {
                         pyc_output << "from ";
+                        for (int i = 0; i < import->level(); i++)
+                            pyc_output << ".";
                         if (import->name().type() == ASTNode::NODE_IMPORT)
                             print_src(import->name().cast<ASTImport>()->name(), mod, pyc_output);
                         else
