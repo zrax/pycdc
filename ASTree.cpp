@@ -90,6 +90,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     int curpos = 0;
     int pos = 0;
     int unpack = 0;
+    int unpackStar = -1;
     bool else_pop = false;
     bool need_try = false;
     bool variable_annotations = false;
@@ -2139,6 +2140,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTNode> name = stack.top();
                     stack.pop();
                     PycRef<ASTNode> attr = new ASTBinary(name, new ASTName(code->getName(operand)), ASTBinary::BIN_ATTR);
+                    if (unpack == unpackStar)
+                        attr = new ASTUnary(attr, ASTUnary::UN_STAR);
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2174,6 +2177,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 if (unpack) {
                     PycRef<ASTNode> name = new ASTName(code->getCellVar(mod, operand));
+                    if (unpack == unpackStar)
+                        name = new ASTUnary(name, ASTUnary::UN_STAR);
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2214,6 +2219,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         name = new ASTName(code->getName(operand));
                     else
                         name = new ASTName(code->getLocal(operand));
+                    if (unpack == unpackStar)
+                        name = new ASTUnary(name, ASTUnary::UN_STAR);
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2274,6 +2281,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> name = new ASTName(code->getName(operand));
 
                 if (unpack) {
+                    if (unpack == unpackStar)
+                        name = new ASTUnary(name, ASTUnary::UN_STAR);
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
                         tup.cast<ASTTuple>()->add(name);
@@ -2315,6 +2324,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             {
                 if (unpack) {
                     PycRef<ASTNode> name = new ASTName(code->getName(operand));
+                    if (unpack == unpackStar)
+                        name = new ASTUnary(name, ASTUnary::UN_STAR);
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2436,6 +2447,8 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
 
                     PycRef<ASTNode> save = new ASTSubscr(dest, subscr);
+                    if (unpack == unpackStar)
+                        save = new ASTUnary(save, ASTUnary::UN_STAR);
 
                     PycRef<ASTNode> tup = stack.top();
                     if (tup.type() == ASTNode::NODE_TUPLE)
@@ -2538,6 +2551,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::UNPACK_SEQUENCE_A:
             {
                 unpack = operand;
+                unpackStar = -1;
                 if (unpack > 0) {
                     ASTTuple::value_t vals;
                     stack.push(new ASTTuple(vals));
@@ -2559,6 +2573,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack.pop();
                     }
                 }
+            }
+            break;
+        case Pyc::UNPACK_EX_A:
+            {
+                int countBefore = operand & 0xFF;
+                int countAfter = (operand >> 8) & 0xFF;
+                unpack = countBefore + 1 + countAfter;
+                unpackStar = countAfter + 1;
+                ASTTuple::value_t vals;
+                stack.push(new ASTTuple(vals));
             }
             break;
         case Pyc::YIELD_FROM:
