@@ -111,7 +111,8 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
         else
             pyc_output << (useQuotes ? '"' : '\'');
     }
-    for (char ch : m_value) {
+    for (size_t i = 0; i < m_value.size(); ++i) {
+        char ch = m_value[i];
         if (static_cast<unsigned char>(ch) < 0x20 || ch == 0x7F) {
             if (ch == '\r') {
                 pyc_output << "\\r";
@@ -127,8 +128,19 @@ void PycString::print(std::ostream &pyc_output, PycModule* mod, bool triple,
             }
         } else if (static_cast<unsigned char>(ch) >= 0x80) {
             if (type() == TYPE_UNICODE) {
-                // Unicode stored as UTF-8...  Let the stream interpret it
-                pyc_output << ch;
+                unsigned char b0 = ch;
+                if (b0 == 0xED && i + 2 < m_value.size()
+                        && (unsigned char)m_value[i + 1] >= 0xA0
+                        && (unsigned char)m_value[i + 1] <= 0xBF
+                        && ((unsigned char)m_value[i + 2] & 0xC0) == 0x80) {
+                    unsigned cp = ((b0 & 0x0F) << 12)
+                                | (((unsigned char)m_value[i + 1] & 0x3F) << 6)
+                                | ((unsigned char)m_value[i + 2] & 0x3F);
+                    formatted_print(pyc_output, "\\u%04x", cp);
+                    i += 2;
+                } else {
+                    pyc_output << ch;
+                }
             } else {
                 formatted_print(pyc_output, "\\x%02x", (ch & 0xFF));
             }
