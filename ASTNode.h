@@ -72,6 +72,8 @@ public:
     void removeFirst();
     void removeLast();
     void append(PycRef<ASTNode> node) { m_nodes.emplace_back(std::move(node)); }
+    template<class Pred>
+    void removeIf(Pred pred) { m_nodes.remove_if(pred); }
 
 protected:
     ASTNodeList(list_t nodes, ASTNode::Type type)
@@ -197,9 +199,13 @@ public:
     PycRef<ASTNode> src() const { return m_src; }
     PycRef<ASTNode> dest() const { return m_dest; }
 
+    void setWalrus(bool walrus) { m_walrus = walrus; }
+    bool isWalrus() const { return m_walrus; }
+
 private:
     PycRef<ASTNode> m_src;
     PycRef<ASTNode> m_dest;
+    bool m_walrus = false;
 };
 
 
@@ -256,6 +262,11 @@ public:
     PycRef<ASTNode> code() const { return m_code; }
     const defarg_t& defargs() const { return m_defargs; }
     const defarg_t& kwdefargs() const { return m_kwdefargs; }
+
+    /* Python 3.13+: defaults are attached after MAKE_FUNCTION via
+       SET_FUNCTION_ATTRIBUTE rather than as MAKE_FUNCTION operands. */
+    void addDefault(PycRef<ASTNode> def) { m_defargs.push_back(std::move(def)); }
+    void addKWDefault(PycRef<ASTNode> def) { m_kwdefargs.push_back(std::move(def)); }
 
 private:
     PycRef<ASTNode> m_code;
@@ -578,9 +589,24 @@ public:
     PycRef<ASTNode> cond() const { return m_cond; }
     bool negative() const { return m_negative; }
 
+    /* Python 3.8+ while loops are closed by the backward jump at the end
+       of the body, which must target the loop head.  Loops whose false
+       edge exits by falling through to an *enclosing* back edge (3.14
+       tail optimization) also see that exit edge inside the body; the
+       recorded head tells the two apart. */
+    void setHead(int head) { m_head = head; }
+    int head() const { return m_head; }
+
+    /* Python 3.11+: `except <type> as <var>:` binds the caught exception
+       to a local that CPython unbinds again at the end of the handler. */
+    void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
+    PycRef<ASTNode> var() const { return m_var; }
+
 private:
     PycRef<ASTNode> m_cond;
     bool m_negative;
+    PycRef<ASTNode> m_var;
+    int m_head = -1;
 };
 
 
@@ -599,12 +625,24 @@ public:
     void setCondition(PycRef<ASTNode> cond) { m_cond = std::move(cond); }
     void setComprehension(bool comp) { m_comp = comp; }
 
+    /* Python 3.11+: `break` compiles to a plain JUMP_FORWARD past the
+       END_FOR/POP_ITER epilogue.  The offset just beyond the for-else
+       arm (if any) is recorded so END_FOR can mount the arm as a real
+       else block.  -1 when no break was seen. */
+    int elseEnd() const { return m_else_end; }
+    void setElseEnd(int end)
+    {
+        if (m_else_end < 0 || end < m_else_end)
+            m_else_end = end;
+    }
+
 private:
     PycRef<ASTNode> m_iter;
     PycRef<ASTNode> m_idx;
     PycRef<ASTNode> m_cond;
     bool m_comp;
     int m_start;
+    int m_else_end = -1;
 };
 
 class ASTContainerBlock : public ASTBlock {
@@ -618,10 +656,19 @@ public:
     int except() const { return m_except; }
 
     void setExcept(int except) { m_except = except; }
+    void setFinally(int finally) { m_finally = finally; }
+
+    /* True once the container has been appended into its parent block.
+       When an in-loop handler is decoded after the rest of the loop body
+       (deferred re-activation), closing the container again must not
+       append it a second time. */
+    bool mounted() const { return m_mounted; }
+    void setMounted(bool mounted = true) { m_mounted = mounted; }
 
 private:
     int m_finally;
     int m_except;
+    bool m_mounted = false;
 };
 
 class ASTWithBlock : public ASTBlock {
@@ -644,19 +691,33 @@ class ASTComprehension : public ASTNode {
 public:
     typedef std::list<PycRef<ASTIterBlock>> generator_t;
 
-    ASTComprehension(PycRef<ASTNode> result)
-        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)) { }
+    /* Python 3.12+ inlines list, set and dict comprehensions directly
+       into the enclosing code object (PEP 709), so the kind is tracked
+       to print the correct delimiters. */
+    enum CompKind { COMP_LIST, COMP_SET, COMP_MAP };
+
+    ASTComprehension(PycRef<ASTNode> result, CompKind kind = COMP_LIST,
+                     PycRef<ASTNode> key = nullptr)
+        : ASTNode(NODE_COMPREHENSION), m_result(std::move(result)),
+          m_key(std::move(key)), m_kind(kind) { }
 
     PycRef<ASTNode> result() const { return m_result; }
+    PycRef<ASTNode> key() const { return m_key; }
+    CompKind compKind() const { return m_kind; }
     generator_t generators() const { return m_generators; }
 
+    void setResult(PycRef<ASTNode> result) { m_result = std::move(result); }
+    void setKey(PycRef<ASTNode> key) { m_key = std::move(key); }
+    void setCompKind(CompKind kind) { m_kind = kind; }
     void addGenerator(PycRef<ASTIterBlock> gen) {
         m_generators.emplace_front(std::move(gen));
     }
 
 private:
     PycRef<ASTNode> m_result;
+    PycRef<ASTNode> m_key;      /* dict comprehensions only */
     generator_t m_generators;
+    CompKind m_kind;
 
 };
 

@@ -39,6 +39,7 @@ DECLARE_PYTHON(3, 10)
 DECLARE_PYTHON(3, 11)
 DECLARE_PYTHON(3, 12)
 DECLARE_PYTHON(3, 13)
+DECLARE_PYTHON(3, 14)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -109,6 +110,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 11: return python_3_11_map(opcode);
         case 12: return python_3_12_map(opcode);
         case 13: return python_3_13_map(opcode);
+        case 14: return python_3_14_map(opcode);
         }
         break;
     }
@@ -267,6 +269,17 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
         formatted_print(pyc_output, "(%g+%gj)", obj.cast<PycCComplex>()->value(),
                                         obj.cast<PycCComplex>()->imag());
         break;
+    case PycObject::TYPE_SLICE:
+        {
+            pyc_output << "slice(";
+            print_const(pyc_output, obj.cast<PycSlice>()->start(), mod);
+            pyc_output << ", ";
+            print_const(pyc_output, obj.cast<PycSlice>()->stop(), mod);
+            pyc_output << ", ";
+            print_const(pyc_output, obj.cast<PycSlice>()->step(), mod);
+            pyc_output << ")";
+        }
+        break;
     case PycObject::TYPE_CODE:
     case PycObject::TYPE_CODE2:
         pyc_output << "<CODE> " << obj.cast<PycCode>()->name()->value();
@@ -413,8 +426,28 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                     formatted_print(pyc_output, "%d <INVALID>", operand);
                 }
                 break;
+            case Pyc::LOAD_SPECIAL_A:
+                {
+                    static const char *special_names[] = {
+                        "__enter__", "__exit__", "__aenter__", "__aexit__",
+                    };
+                    if (operand >= 0 && operand < 4)
+                        formatted_print(pyc_output, "%d (%s)", operand, special_names[operand]);
+                    else
+                        formatted_print(pyc_output, "%d <INVALID>", operand);
+                }
+                break;
+            case Pyc::LOAD_COMMON_CONSTANT_A:
+                if (operand == 0)
+                    formatted_print(pyc_output, "%d (AssertionError)", operand);
+                else if (operand == 1)
+                    formatted_print(pyc_output, "%d (NotImplementedError)", operand);
+                else
+                    formatted_print(pyc_output, "%d <INVALID>", operand);
+                break;
             case Pyc::DELETE_FAST_A:
             case Pyc::LOAD_FAST_A:
+            case Pyc::LOAD_FAST_BORROW_A:
             case Pyc::STORE_FAST_A:
             case Pyc::LOAD_FAST_CHECK_A:
             case Pyc::LOAD_FAST_AND_CLEAR_A:
@@ -425,6 +458,7 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 }
                 break;
             case Pyc::LOAD_FAST_LOAD_FAST_A:
+            case Pyc::LOAD_FAST_BORROW_LOAD_FAST_BORROW_A:
             case Pyc::STORE_FAST_LOAD_FAST_A:
             case Pyc::STORE_FAST_STORE_FAST_A:
                 try {
@@ -461,6 +495,7 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
             case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
             case Pyc::SEND_A:
+            case Pyc::END_ASYNC_FOR_A:
             case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
             case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
             case Pyc::POP_JUMP_IF_NOT_NONE_A:
@@ -472,17 +507,37 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
             case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
             case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
                 {
-                    /* TODO: Fix offset based on CACHE instructions.
-                       Offset is relative to next non-CACHE instruction
-                       and thus will be printed lower than actual value.
-                       See TODO @ END_FOR ASTree.cpp */
+                    /* Jump offsets are relative to the end of the full
+                       instruction (opcode + operand + inline caches).
+                       At this point `pos` is already two bytes past the
+                       instruction start, so only the cache slots need to
+                       be added: FOR_ITER carries one cache from 3.12 on,
+                       and the POP_JUMP_FORWARD_* family from 3.13 on. */
                     int offs = operand;
+                    int cache = 0;
                     if (mod->verCompare(3, 10) >= 0)
                         offs *= sizeof(uint16_t); // BPO-27129
-                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
+                    if ((opcode == Pyc::FOR_ITER_A
+                                || opcode == Pyc::INSTRUMENTED_FOR_ITER_A)
+                            && mod->verCompare(3, 12) >= 0)
+                        cache = sizeof(uint16_t);
+                    else if ((opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+                                || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
+                                || opcode == Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A
+                                || opcode == Pyc::POP_JUMP_FORWARD_IF_NONE_A)
+                            && mod->verCompare(3, 13) >= 0)
+                        cache = sizeof(uint16_t);
+                    formatted_print(pyc_output, "%d (to %d)", operand, pos+offs+cache);
                 }
                 break;
             case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+                {
+                    // SEND-resume edge of await machinery: no inline
+                    // cache slot in any version, target = pos-oparg*2.
+                    int offs = operand * sizeof(uint16_t); // BPO-27129
+                    formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
+                }
+                break;
             case Pyc::JUMP_BACKWARD_A:
             case Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A:
             case Pyc::POP_JUMP_BACKWARD_IF_NONE_A:
@@ -492,6 +547,8 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 {
                     // BACKWARD jumps were only introduced in Python 3.11
                     int offs = operand * sizeof(uint16_t); // BPO-27129
+                    if (mod->verCompare(3, 13) >= 0)
+                        offs -= sizeof(uint16_t); // 3.13/3.14 land one cache slot further (verified against CPython dis)
                     formatted_print(pyc_output, "%d (to %d)", operand, pos-offs);
                 }
                 break;
@@ -504,6 +561,8 @@ void bc_disasm(std::ostream& pyc_output, PycRef<PycCode> code, PycModule* mod,
                 if (mod->verCompare(3, 12) >= 0) {
                     // These are now relative as well
                     int offs = operand * sizeof(uint16_t);
+                    if (mod->verCompare(3, 13) >= 0)
+                        offs += sizeof(uint16_t); // 3.13+ jump cache slot
                     formatted_print(pyc_output, "%d (to %d)", operand, pos+offs);
                 } else if (mod->verCompare(3, 10) >= 0) {
                     // BPO-27129

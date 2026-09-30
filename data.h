@@ -51,6 +51,8 @@ public:
 
     int getByte() override;
     void getBuffer(int bytes, void* buffer) override;
+    /* Reposition for structural look-behind probes (AST construction). */
+    void setPos(int pos) { m_pos = pos; }
 
 private:
     const unsigned char* m_buffer;
