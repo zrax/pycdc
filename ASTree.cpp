@@ -2,10 +2,21 @@
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_set>
+#include <set>
+#include <map>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
 #include "bytecode.h"
+
+/* Construct a name node for compiler-synthesized identifiers (e.g.
+   AssertionError, __exit__) that never appear in the constant table. */
+static PycRef<ASTNode> make_name(const char* name)
+{
+    PycString* str = new PycString();
+    str->setValue(name);
+    return new ASTName(str);
+}
 
 // This must be a triple quote (''' or """), to handle interpolated string literals containing the opposite quote style.
 // E.g. f'''{"interpolated "123' literal"}'''    -> valid.
@@ -73,6 +84,70 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
 
+/* Python 3.12+ inlines list/set/dict comprehensions into the enclosing
+   code object (PEP 709).  When such a comprehension needs exception
+   cleanup, the compiler emits a dead handler region that restores the
+   comprehension's saved locals and re-raises.  Such regions only ever
+   contain this restricted opcode set. */
+static bool isCompRestoreOp(int opcode)
+{
+    switch (opcode) {
+        case Pyc::SWAP_A:
+        case Pyc::POP_TOP:
+        case Pyc::POP_ITER:
+        case Pyc::END_FOR:
+        case Pyc::RERAISE_A:
+        case Pyc::STORE_FAST_A:
+        case Pyc::STORE_FAST_STORE_FAST_A:
+        case Pyc::STORE_FAST_LOAD_FAST_A:
+        case Pyc::CACHE:
+        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/* Python 3.12-3.14: a try/except/finally compiles the finally into a
+   propagation region guarded by a self-chained exception-table entry
+   (target == end) whose region starts with PUSH_EXC_INFO.  Locate the one
+   belonging to the try whose handler begins at `handler` so its container
+   can be flagged as having a finally (the container is created long before
+   the region is reached, and EXCEPT-arm closing must know not to pop it).
+   `source` is passed by value: its cursor sits at `pos`, and candidate
+   regions start at or beyond the handler, i.e. ahead of the cursor. */
+static int find_finally_start(const std::vector<PycExceptionTableEntry>& entries,
+                              PycBuffer source, PycModule* mod,
+                              int handler, int pos)
+{
+    int opcode = 0, oper = 0, apos = pos;
+    for (const auto& e : entries) {
+        if (e.target != e.end_offset || e.start_offset < handler)
+            continue;
+        while (apos < e.start_offset && !source.atEof())
+            bc_next(source, mod, opcode, oper, apos);
+        if (apos != e.start_offset)
+            continue;   /* not an instruction boundary */
+        bc_next(source, mod, opcode, oper, apos);
+        if (opcode != Pyc::PUSH_EXC_INFO)
+            continue;
+        /* A genuine finally body follows the PUSH_EXC_INFO; a compiler
+           artifact epilogue (dead except-var cleanup tail) is
+           PUSH_EXC_INFO immediately followed by RERAISE 0. */
+        int nstart = apos;
+        int nop = 0, noper = 0;
+        while (nstart < e.end_offset && !source.atEof()) {
+            bc_next(source, mod, nop, noper, nstart);
+            if (nop == Pyc::CACHE)
+                continue;
+            if (nop == Pyc::RERAISE_A)
+                break;   /* artifact: no finally body */
+            return e.start_offset;
+        }
+    }
+    return 0;
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -86,19 +161,441 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     PycRef<ASTBlock> curblock = defblock;
     blocks.push(defblock);
 
-    int opcode, operand;
+    int opcode = Pyc::NOP, operand = 0;
+    /* Opcode immediately preceding the one being processed; used to
+       recognize the `COPY 1; STORE` idiom of named expressions. */
+    int last_op = Pyc::NOP, last_operand = 0;
     int curpos = 0;
     int pos = 0;
     int unpack = 0;
+    /* Inline-comprehension state (PEP 709, Python 3.12+):
+     * comp_saved    - number of LOAD_FAST_AND_CLEAR locals whose old values
+     *                 still sit below the active comprehension accumulator
+     *                 awaiting the epilogue restores
+     * comp_restoring- set once the epilogue is reached (END_FOR/POP_ITER);
+     *                 the following STORE_FASTs silently restore the saved
+     *                 locals instead of emitting assignments
+     * comp_kind     - accumulator kind of the most recent prologue */
+    int comp_saved = 0;
+    bool comp_restoring = false;
+    ASTComprehension::CompKind comp_kind = ASTComprehension::COMP_LIST;
     bool else_pop = false;
     bool need_try = false;
     bool variable_annotations = false;
     std::vector<PycExceptionTableEntry> exception_entries;
     size_t next_exception_entry = 0;
+    /* In-loop try/except: when the handler region lives past the rest of
+       the loop body, the container is appended into its parent (mounted)
+       when the protected region ends, and is re-activated on the block
+       stack once the handler offset is reached, so the except clauses are
+       decoded into it.  Nested in-loop tries keep a stack of pending
+       containers: the inner handler offset is always reached first. */
+    std::vector<PycRef<ASTContainerBlock>> pending_conts;
 
+    /* Python 3.8+ dropped SETUP_LOOP, and `while True:` loops carry no
+       conditional jump at their head, so the structural while-recognition
+       (hooked on POP_JUMP) cannot see them.  Pre-scan the bytecode: every
+       JUMP_BACKWARD target that is neither a FOR_ITER head nor the target
+       of any conditional jump marks the head of an unconditional loop. */
+    std::set<int> uncond_loop_heads;
+    /* exit offset -> head of a `while True:` closed via a conditional
+       exit instead of a trailing JUMP_BACKWARD (continue-style loop). */
+    std::map<int, int> uncond_loop_ends;
+    std::vector<std::pair<int, int>> back_edges;
+    /* Set when a `while True:` loop's structural exit is being decoded as
+       the else arm of its trailing if (Python 3.14 tail-optimized
+       if/else); the loop block then closes after that arm finishes. */
+    bool while_else_exit = false;
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
     }
+    if (mod->verCompare(3, 8) >= 0) {
+        PycBuffer probe = source;
+        int ppos = 0, pop_ = 0, poper_ = 0;
+        std::set<int> cond_heads, iter_heads, back_heads, jump_positions, back_srcs;
+        while (!probe.atEof()) {
+            int start = ppos;
+            bc_next(probe, mod, pop_, poper_, ppos);
+            switch (pop_) {
+            case Pyc::FOR_ITER_A:
+                /* The loop head is the FOR_ITER instruction itself. */
+                iter_heads.insert(start);
+                break;
+            case Pyc::POP_JUMP_IF_FALSE_A:
+            case Pyc::POP_JUMP_IF_TRUE_A:
+            case Pyc::POP_JUMP_IF_NONE_A:
+            case Pyc::POP_JUMP_IF_NOT_NONE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+            case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+            case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A: {
+                int target = poper_ * 2 + ppos;
+                if (mod->verCompare(3, 13) >= 0)
+                    target += 2;   /* inline cache slot */
+                cond_heads.insert(target);
+                jump_positions.insert(start);
+                break;
+            }
+            case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+                /* The SEND-resume edge of await/async-for machinery
+                   (SEND..YIELD..RESUME..JUMP_BACKWARD_NO_INTERRUPT) is
+                   not a structural loop: the main decode treats it as a
+                   no-op, so it must not seed a back edge either. */
+                break;
+            case Pyc::JUMP_BACKWARD_A: {
+                int target = ppos - poper_ * 2;
+                /* Verified against CPython's dis output: 3.12 and older
+                   land on start+2-oparg*2 (`ppos` already sits two bytes
+                   past the opcode body, bc_next does not skip caches).
+                   In 3.13/3.14 JUMP_BACKWARD carries one inline cache
+                   slot, shifting its landing 2 bytes further
+                   (start+4-oparg*2), while JUMP_BACKWARD_NO_INTERRUPT
+                   (the SEND-resume edge of await machinery) has none. */
+                if (mod->verCompare(3, 13) >= 0)
+                    target += 2;
+                if (target >= 0) {
+                    back_heads.insert(target);
+                    back_edges.emplace_back(target, start);
+                    back_srcs.insert(start);
+                }
+                jump_positions.insert(start);
+                break;
+            }
+            default:
+                break;
+            }
+        }
+for (int t : back_heads) {
+            if (cond_heads.find(t) != cond_heads.end()
+                    || iter_heads.find(t) != iter_heads.end()
+                    || jump_positions.find(t) != jump_positions.end())
+                continue;
+            /* A `while True:` head is the first statement of its body; a
+               backward edge that lands on another jump instruction (e.g.
+               the re-evaluated condition of a 3.13 while loop) is not an
+               unconditional head.  Likewise, an edge from an exception
+               epilogue that jumps back into the *middle* of another
+               loop's body (a shared loop tail) must not open a phantom
+               loop: a genuinely nested `while True:` head lies strictly
+               inside the enclosing loop together with all of its back
+               edges, while a mid-body target has a back-edge source that
+               lies past the enclosing loop's end. */
+            bool mid_body = false;
+            for (const auto& e : back_edges) {
+                if (e.first >= t || t >= e.second)
+                    continue;   /* not an enclosing span */
+                for (const auto& e2 : back_edges) {
+                    if (e2.first == t && e2.second > e.second) {
+                        mid_body = true;
+                        break;
+                    }
+                }
+                if (mid_body)
+                    break;
+            }
+            /* A conditional `while cond:` head starts with the condition
+               evaluation, and one of the conditional jumps inside the
+               loop span exits past the back edge (e.g. Python 3.14 jumps
+               straight back to the condition evaluation).  A break-guard
+               inside a `while True:` jumps to the break sequence, which
+               still lies before the back edge, so genuine unconditional
+               heads survive this test. */
+            if (!mid_body) {
+                int jbsrc = -1;
+                for (const auto& e : back_edges) {
+                    if (e.first == t && e.second > jbsrc)
+                        jbsrc = e.second;
+                }
+                if (jbsrc > t) {
+                    /* Rotated `while cond:` head: when a loop is re-
+                       entered from exception-handler land (a `continue`
+                       inside except/finally), Python 3.13 emits the
+                       handler's back edge to the condition evaluation
+                       itself.  The head's own conditional exit then lies
+                       INSIDE the span - past the loop body's complete
+                       back edge, but before the handler's.  A genuine
+                       `while True:` never exits before its last back
+                       edge (a break always lands past every continue),
+                       and an internal if/else target never skips a
+                       complete nested cycle, so this shape uniquely
+                       marks a conditional head.  Only a condition
+                       evaluation directly at the head counts: past a
+                       nested back edge, any conditional jump belongs to
+                       an inner structure. */
+                    PycBuffer probe3 = source;
+                    int p3 = 0;
+                    while (p3 < t && !probe3.atEof()) {
+                        int d1 = 0, d2 = 0;
+                        bc_next(probe3, mod, d1, d2, p3);
+                    }
+                    int tt = -1, fs = -1;
+                    for (const auto& e : back_edges) {
+                        if (e.second > t && (fs < 0 || e.second < fs))
+                            fs = e.second;
+                    }
+                    while (p3 < jbsrc && !probe3.atEof()) {
+                        int st3 = p3, o3 = 0, o3p = 0;
+                        bc_next(probe3, mod, o3, o3p, p3);
+                        if ((st3 != t && back_heads.count(st3))
+                                || back_srcs.count(st3))
+                            break;
+                        switch (o3) {
+                        case Pyc::POP_JUMP_IF_FALSE_A:
+                        case Pyc::POP_JUMP_IF_TRUE_A:
+                        case Pyc::POP_JUMP_IF_NONE_A:
+                        case Pyc::POP_JUMP_IF_NOT_NONE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A:
+                        case Pyc::JUMP_IF_FALSE_OR_POP_A:
+                        case Pyc::JUMP_IF_TRUE_OR_POP_A:
+                            tt = o3p * 2 + p3;
+                            if (mod->verCompare(3, 13) >= 0)
+                                tt += 2;   /* inline cache slot */
+                            break;
+                        default:
+                            break;
+                        }
+                        if (tt >= 0)
+                            break;
+                    }
+                    if (tt >= 0 && tt <= jbsrc && fs > t && tt > fs) {
+                        /* ... but only when the enclosing cycle is a
+                           protected region whose handler re-enters the
+                           loop (a `continue` inside except/finally): a
+                           rotated INNER while loop inside a genuine
+                           `while True:` produces the same local shape
+                           without any exception entry. */
+                        bool protected_cycle = false;
+                        for (const auto& ee : exception_entries) {
+                            if (ee.start_offset < fs
+                                    && ee.end_offset > t
+                                    && ee.target > fs) {
+                                protected_cycle = true;
+                                break;
+                            }
+                        }
+                        if (protected_cycle) {
+                            for (const auto& e : back_edges) {
+                                if (e.first != t && e.first > t && e.first < tt) {
+                                    mid_body = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!mid_body) {
+                    /* bc_next reads from the buffer cursor, so walk it
+                       forward from 0 in lockstep with the offset first. */
+                    PycBuffer probe2 = source;
+                    int p2 = 0;
+                    while (p2 < t && !probe2.atEof()) {
+                        int d1 = 0, d2 = 0;
+                        bc_next(probe2, mod, d1, d2, p2);
+                    }
+                    while (p2 < jbsrc && !probe2.atEof()) {
+                        int st = p2, o2 = 0, o2p = 0;
+                        bc_next(probe2, mod, o2, o2p, p2);
+                        switch (o2) {
+                        case Pyc::POP_JUMP_IF_FALSE_A:
+                        case Pyc::POP_JUMP_IF_TRUE_A:
+                        case Pyc::POP_JUMP_IF_NONE_A:
+                        case Pyc::POP_JUMP_IF_NOT_NONE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+                        case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+                        case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A:
+                        case Pyc::JUMP_IF_FALSE_OR_POP_A:
+                        case Pyc::JUMP_IF_TRUE_OR_POP_A: {
+                            int tgt = o2p * 2 + p2;
+                            if (mod->verCompare(3, 13) >= 0)
+                                tgt += 2;   /* inline cache slot */
+                            if (tgt > jbsrc) {
+                                /* Conditional exit found.  A genuine
+                                   `while True:` whose body contains an
+                                   inner loop (e.g. ...; if c: continue;
+                                   return) also exits past the back edge,
+                                   but then another back edge targets the
+                                   middle of the span.  Only a pure
+                                   condition evaluation (no nested back
+                                   edges before the exit jump) marks a
+                                   conditional while head. */
+                                bool nested_edge = false;
+                                for (int bt : back_heads) {
+                                    if (bt > t && bt < st) {
+                                        nested_edge = true;
+                                        break;
+                                    }
+                                }
+                                if (!nested_edge) {
+                                    mid_body = true;
+                                } else {
+                                    /* Genuine `while True:` exiting via
+                                       the conditional: record the exit
+                                       so the block can be closed there. */
+                                    uncond_loop_ends[tgt] = t;
+                                }
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                        if (mid_body)
+                            break;
+                    }
+                }
+            }
+            if (!mid_body)
+                uncond_loop_heads.insert(t);
+        }
+    }
+
+
+        /* Python 3.11+: after a `with` statement body, the compiler emits an
+       inline epilogue (the __exit__ call) followed by dead exception-handler
+       tail code (PUSH_EXC_INFO, WITH_EXCEPT_START, RERAISE, ...).  Handlers
+       that restore a non-empty stack (or push the lasti) never correspond
+       to source-level `try:` blocks; their regions are skipped as dead
+       code so they do not pollute the decompiled output. */
+    auto isWithCleanupOp = [](int op) -> bool {
+        switch (op) {
+        case Pyc::POP_EXCEPT:
+        case Pyc::POP_TOP:
+        case Pyc::COPY_A:
+        case Pyc::RERAISE_A:
+        case Pyc::LOAD_CONST_A:
+        case Pyc::RETURN_VALUE:
+        case Pyc::RETURN_CONST_A:
+        case Pyc::JUMP_FORWARD_A:
+        case Pyc::JUMP_BACKWARD_A:
+        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+        case Pyc::NOT_TAKEN:
+        case Pyc::PUSH_EXC_INFO:
+        case Pyc::WITH_EXCEPT_START:
+        case Pyc::TO_BOOL:
+        case Pyc::LOAD_FAST_CHECK_A:
+        case Pyc::LOAD_FAST_BORROW_A:
+        case Pyc::LOAD_SPECIAL_A:
+        case Pyc::SWAP_A:
+        case Pyc::POP_ITER:
+        case Pyc::CACHE:
+            return true;
+        default:
+            return false;
+        }
+    };
+    auto isPathTerminator = [](int op) -> bool {
+        return op == Pyc::RERAISE_A || op == Pyc::RETURN_VALUE
+                || op == Pyc::RETURN_CONST_A || op == Pyc::JUMP_FORWARD_A;
+    };
+    /* Skip the exception-handler region that starts at entry_start, plus
+       any chained handler regions (regions targeted by another region's
+       target), plus the trailing cleanup instructions. */
+    auto skipExceptionRegion = [&](int entry_start) {
+        int stop = entry_start;
+        int target = -1;
+        bool extended = true;
+        while (extended) {
+            extended = false;
+            for (const auto& ent : exception_entries) {
+                if (ent.start_offset < entry_start)
+                    continue;
+                /* Grow the window over every region it already touches,
+                   and over regions chained through a target link. */
+                if (((ent.start_offset <= stop && ent.end_offset > stop)
+                            || (target >= 0 && ent.start_offset == target))
+                        && ent.end_offset > stop) {
+                    stop = ent.end_offset;
+                    target = ent.target;
+                    extended = true;
+                }
+            }
+        }
+
+        /* Skip instructions up to the end of the handler region. */
+        while (pos < stop && !source.atEof()) {
+            bc_next(source, mod, opcode, operand, pos);
+            while (next_exception_entry < exception_entries.size()
+                    && exception_entries[next_exception_entry].start_offset < pos) {
+                next_exception_entry++;
+            }
+        }
+
+        /* Consume the remaining exception-cleanup instructions (handler
+           success paths and final RERAISE tails).  Boundaries are detected
+           by peeking at the raw opcode byte so no real instruction is ever
+           consumed past the dead tail.  Consumption stops at the first
+           path terminator so following real code is preserved. */
+        bool terminated = false;
+        while (!source.atEof() && !terminated) {
+            PycBuffer peek = source;
+            int nextop = Pyc::ByteToOpcode(mod->majorVer(), mod->minorVer(), peek.getByte());
+            if (!isWithCleanupOp(nextop)) {
+                /* When __exit__ suppresses an exception, control resumes
+                   after the `with`, so the compiler may duplicate the tail
+                   of the surrounding function (e.g. a second `return`)
+                   after the handler cleanup.  That duplicate is dead at
+                   the source level (recompiling the `with` regenerates
+                   it).  Consume the rest of the code object only when it
+                   matches the shape "expression run, one RETURN, cleanup
+                   run": a value-producing sequence with no jumps, a
+                   single return terminator, then nothing but with-cleanup
+                   opcodes.  Anything else is treated as live code. */
+                PycBuffer scan = source;
+                int scanpos = pos;
+                int stage = 0; /* 0: expression, 1: seen return, 2: cleanup */
+                bool matches = true;
+                while (!scan.atEof()) {
+                    int sop, sopc;
+                    bc_next(scan, mod, sop, sopc, scanpos);
+                    if (stage == 0) {
+                        if (sop == Pyc::RETURN_VALUE || sop == Pyc::RETURN_CONST_A)
+                            stage = 1;
+                        else if (sop == Pyc::JUMP_FORWARD_A || sop == Pyc::JUMP_BACKWARD_A
+                                || sop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A
+                                || sop == Pyc::RERAISE_A) {
+                            matches = false;
+                            break;
+                        }
+                    } else if (stage == 1) {
+                        if (!isWithCleanupOp(sop)) {
+                            matches = false;
+                            break;
+                        }
+                        if (sop != Pyc::RERAISE_A)
+                            stage = 2;
+                    } else {
+                        if (!isWithCleanupOp(sop) && sop != Pyc::RERAISE_A) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                }
+                if (matches && stage >= 1) {
+                    while (pos < scanpos)
+                        bc_next(source, mod, opcode, operand, pos);
+                }
+                break;
+            }
+            terminated = isPathTerminator(nextop);
+            bc_next(source, mod, opcode, operand, pos);
+        }
+    };
 
     while (!source.atEof()) {
 #if defined(BLOCK_DEBUG) || defined(STACK_DEBUG)
@@ -124,20 +621,298 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             if (entry.start_offset == pos
                     && entry.stack_depth == 0
                     && !entry.push_lasti) {
+                /* Python 3.11+ re-raise propagation regions (e.g.
+                   `PUSH_EXC_INFO; RERAISE` in a finally chain, or
+                   `COPY n; POP_EXCEPT; RERAISE`) are synthesized tails of
+                   an except/finally construct, not source-level `try`
+                   blocks.  Detect them by scanning for a RERAISE that is
+                   reached before any real handler code. */
+                bool is_reraise_region = false;
+                {
+                    PycBuffer scan = source;
+                    int scanpos = pos;
+                    int sop, sopc;
+                    while (!scan.atEof() && scanpos < entry.end_offset) {
+                        bc_next(scan, mod, sop, sopc, scanpos);
+                        if (sop == Pyc::RERAISE || sop == Pyc::RERAISE_A) {
+                            is_reraise_region = true;
+                            break;
+                        }
+                        if (!(sop == Pyc::PUSH_EXC_INFO || sop == Pyc::NOP
+                                || sop == Pyc::CACHE || sop == Pyc::COPY_A
+                                || sop == Pyc::POP_EXCEPT
+                                || sop == Pyc::LOAD_CONST_A))
+                            break;
+                    }
+                }
+                if (is_reraise_region) {
+                    next_exception_entry++;
+                    while (pos < entry.end_offset && !source.atEof()) {
+                        bc_next(source, mod, opcode, operand, pos);
+                        while (next_exception_entry < exception_entries.size()
+                                && exception_entries[next_exception_entry].start_offset <= pos) {
+                            next_exception_entry++;
+                        }
+                    }
+                    continue;
+                }
+                /* A `continue` (or `break`) out of an except arm inside
+                   a loop emits a tiny exception-table region covering
+                   just the arm-closing POP_EXCEPT, targeting the finally
+                   propagation handler.  It is compiler cleanup, not a
+                   source-level try; skip it so the arm stays open and
+                   the finally body decoded after it stays reachable. */
+                if (curblock->blktype() == ASTBlock::BLK_EXCEPT
+                        && entry.end_offset == entry.start_offset + 2) {
+                    int aop = 0, ac = 0, apos = pos;
+                    PycBuffer asc = source;
+                    while (apos < entry.start_offset && !asc.atEof())
+                        bc_next(asc, mod, aop, ac, apos);
+                    if (apos == entry.start_offset) {
+                        bc_next(asc, mod, aop, ac, apos);
+                        if (aop != Pyc::POP_EXCEPT)
+                            apos = entry.start_offset - 1;
+                    }
+                    if (aop == Pyc::POP_EXCEPT && apos == entry.end_offset) {
+                        next_exception_entry++;
+                        continue;
+                    }
+                }
+
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
-                    curblock.cast<ASTContainerBlock>()->setExcept(entry.target);
+                    auto cont_ = curblock.cast<ASTContainerBlock>();
+                    cont_->setExcept(entry.target);
+                    if (!cont_->hasFinally()) {
+                        int fin = find_finally_start(exception_entries, source, mod,
+                                                     entry.target, pos);
+                        if (fin)
+                            cont_->setFinally(fin);
+                    }
                 } else {
-                    PycRef<ASTBlock> next = new ASTContainerBlock(0, entry.target);
+                    int fin = find_finally_start(exception_entries, source, mod,
+                                                 entry.target, pos);
+                    PycRef<ASTBlock> next = new ASTContainerBlock(fin, entry.target);
                     blocks.push(next.cast<ASTBlock>());
                     curblock = blocks.top();
                 }
 
+                /* A try inside a while loop: the handler region is
+                   emitted after the loop tail, so a back edge jumping to
+                   a target at or before the protected region start (the
+                   loop head) lies in the gap between region end and
+                   handler.  End the try at the region end so the tail
+                   decodes into the loop; the deferred-container logic
+                   re-activates the handler when decoding reaches it. */
+                int try_end = entry.target;
+                if (entry.target > entry.end_offset) {
+                    bool defer = false;
+                    for (const auto& e : back_edges) {
+                        if (e.second >= entry.end_offset && e.second < entry.target
+                                && e.first <= entry.start_offset) {
+                            defer = true;
+                            break;
+                        }
+                    }
+                    if (defer) {
+                        /* Only defer when the handler region is a real
+                           except arm (PUSH_EXC_INFO then CHECK_EXC_MATCH);
+                           synthesized finally/reraise targets keep the
+                           full extent to the handler. */
+                        bool real_handler = false;
+                        PycBuffer scan = source;
+                        int scanpos = pos;
+                        while (scanpos < entry.target && !scan.atEof()) {
+                            int so, sc;
+                            bc_next(scan, mod, so, sc, scanpos);
+                        }
+                        int sop, sopc, steps = 0;
+                        while (!scan.atEof() && steps < 24) {
+                            bc_next(scan, mod, sop, sopc, scanpos);
+                            steps++;
+                            if (sop == Pyc::CHECK_EXC_MATCH
+                                    || sop == Pyc::CHECK_EG_MATCH) {
+                                real_handler = true;
+                                break;
+                            }
+                            if (sop == Pyc::RERAISE || sop == Pyc::RERAISE_A
+                                    || sop == Pyc::WITH_EXCEPT_START)
+                                break;
+                        }
+                        if (real_handler)
+                            try_end = entry.end_offset;
+                    }
+                }
+
                 stack_hist.push(stack);
-                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, entry.target, true);
+                PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY, try_end, true);
                 blocks.push(tryblock.cast<ASTBlock>());
                 curblock = blocks.top();
                 next_exception_entry++;
+            } else if (entry.start_offset == pos
+                    && (entry.stack_depth != 0 || entry.push_lasti)) {
+                /* Python 3.11+: exception entries that restore a non-empty
+                   stack or push the lasti never begin a source-level `try`
+                   block.  With-statement epilogues (regions containing
+                   WITH_EXCEPT_START) are unreachable inline cleanup and are
+                   skipped, together with any chained handler regions.
+                   Real `except` handler regions (CHECK_EXC_MATCH ...) are
+                   reachable through the try block's handler logic and are
+                   left to the normal flow. */
+                bool is_with_epilogue = false;
+                {
+                    PycBuffer scan = source;
+                    int scanpos = pos;
+                    while (!scan.atEof() && scanpos < entry.end_offset) {
+                        int sop, sopc;
+                        bc_next(scan, mod, sop, sopc, scanpos);
+                        if (sop == Pyc::WITH_EXCEPT_START) {
+                            is_with_epilogue = true;
+                            break;
+                        }
+                    }
+                }
+                if (is_with_epilogue) {
+                    int entry_start = entry.start_offset;
+                    next_exception_entry++;
+                    skipExceptionRegion(entry_start);
+                    continue;
+                }
+
+                /* A self-chained entry (target == region end) that is
+                   reached while its container is the current block is
+                   the finally-propagation handler: the finally body
+                   re-run with the exception alive, ending in RERAISE.
+                   Decode it as the container's FINALLY arm. */
+                if (entry.target == entry.end_offset
+                        && curblock->blktype() == ASTBlock::BLK_CONTAINER
+                        && curblock.cast<ASTContainerBlock>()->hasFinally()
+                        && curblock.cast<ASTContainerBlock>()->except() < entry.start_offset) {
+                    stack_hist.push(stack);
+                    PycRef<ASTBlock> final = new ASTBlock(ASTBlock::BLK_FINALLY, 0, true);
+                    blocks.push(final.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    next_exception_entry++;
+                } else if (!entry.push_lasti && entry.stack_depth > 0) {
+                    bool real_handler = false;
+                    {
+                        /* Scan the handler at the entry target: a real
+                           except handler starts with PUSH_EXC_INFO and
+                           reaches CHECK_EXC_MATCH before any synthesized
+                           RERAISE / WITH_EXCEPT_START. */
+                        PycBuffer scan = source;
+                        int scanpos = pos;
+                        while (scanpos < entry.target && !scan.atEof()) {
+                            int so, sc;
+                            bc_next(scan, mod, so, sc, scanpos);
+                        }
+                        int sop, sopc, steps = 0;
+                        while (!scan.atEof() && steps < 24) {
+                            bc_next(scan, mod, sop, sopc, scanpos);
+                            steps++;
+                            if (sop == Pyc::CHECK_EXC_MATCH
+                                    || sop == Pyc::CHECK_EG_MATCH) {
+                                real_handler = true;
+                                break;
+                            }
+                            if (sop == Pyc::RERAISE || sop == Pyc::RERAISE_A
+                                    || sop == Pyc::WITH_EXCEPT_START) {
+                                break;
+                            }
+                        }
+                    }
+                    /* An entry whose target is a handler already pending
+                       as a deferred in-loop container is a propagation
+                       path into that outer try (e.g. an except-body tail
+                       falling through to the outer handler), not the start
+                       of a new source-level try. */
+                    bool propagate_to_pending = false;
+                    for (const auto& pc : pending_conts) {
+                        if (pc->except() == entry.target) {
+                            propagate_to_pending = true;
+                            break;
+                        }
+                    }
+                    if (real_handler && !propagate_to_pending) {
+                        if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                                && !curblock.cast<ASTContainerBlock>()->hasExcept()) {
+                            auto cont_ = curblock.cast<ASTContainerBlock>();
+                            cont_->setExcept(entry.target);
+                            if (!cont_->hasFinally()) {
+                                int fin = find_finally_start(exception_entries, source, mod,
+                                                             entry.target, pos);
+                                if (fin)
+                                    cont_->setFinally(fin);
+                            }
+                        } else if (curblock->blktype() != ASTBlock::BLK_CONTAINER) {
+                            int fin = find_finally_start(exception_entries, source, mod,
+                                                         entry.target, pos);
+                            PycRef<ASTBlock> next = new ASTContainerBlock(fin, entry.target);
+                            blocks.push(next.cast<ASTBlock>());
+                            curblock = blocks.top();
+                        }
+
+                        stack_hist.push(stack);
+                        /* Inside a loop the handler lives past the rest of
+                           the loop body, so the try block ends at the end
+                           of the protected region, not at the handler. */
+                        PycRef<ASTBlock> tryblock = new ASTBlock(ASTBlock::BLK_TRY,
+                                entry.end_offset, true);
+                        blocks.push(tryblock.cast<ASTBlock>());
+                        curblock = blocks.top();
+                        next_exception_entry++;
+                    } else if (propagate_to_pending) {
+                        next_exception_entry++;
+                    }
+                }
             }
+        }
+
+        /* Python 3.12+: PEP 709 inline comprehensions emit dead exception
+           handlers that restore the saved locals and re-raise.  Their
+           target precedes the entry start, so they are unreachable in the
+           linear flow; skip them instead of processing their stores. */
+        if (mod->verCompare(3, 12) >= 0) {
+            bool skipped_handler = false;
+            for (const auto& ent : exception_entries) {
+                if (ent.target != pos || ent.start_offset >= pos)
+                    continue;
+                PycBuffer scan = source;
+                int scanpos = pos;
+                int sop, sopc;
+                int steps = 0;
+                bool has_store = false, terminated = false, matches = true;
+                while (!scan.atEof() && steps < 12) {
+                    bc_next(scan, mod, sop, sopc, scanpos);
+                    steps++;
+                    if (sop == Pyc::RERAISE_A) {
+                        terminated = true;
+                        break;
+                    }
+                    if (sop == Pyc::STORE_FAST_A
+                            || sop == Pyc::STORE_FAST_STORE_FAST_A
+                            || sop == Pyc::STORE_FAST_LOAD_FAST_A) {
+                        has_store = true;
+                    }
+                    if (!isCompRestoreOp(sop)) {
+                        matches = false;
+                        break;
+                    }
+                }
+                if (matches && terminated && has_store) {
+                    /* Consume the handler up to and including the RERAISE. */
+                    while (pos < scanpos && !source.atEof())
+                        bc_next(source, mod, opcode, operand, pos);
+                    while (next_exception_entry < exception_entries.size()
+                            && exception_entries[next_exception_entry].start_offset < pos) {
+                        next_exception_entry++;
+                    }
+                    comp_restoring = false;
+                    skipped_handler = true;
+                    break;
+                }
+            }
+            if (skipped_handler)
+                continue;
         }
 
         if (curblock->blktype() == ASTBlock::BLK_TRY
@@ -149,21 +924,76 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
             if (curblock->blktype() == ASTBlock::BLK_CONTAINER
                     && curblock.cast<ASTContainerBlock>()->hasExcept()) {
-                if (!stack_hist.empty()) {
-                    stack = stack_hist.top();
-                    stack_hist.pop();
+                if (curblock.cast<ASTContainerBlock>()->except() == pos) {
+                    /* The handler region starts right here: pre-open an
+                       except block so the handler's statements land in it. */
+                    if (!stack_hist.empty()) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    }
+
+                    curblock->append(prev.cast<ASTNode>());
+                    stack_hist.push(stack);
+
+                    PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, NULL, false);
+                    except->init();
+                    blocks.push(except);
+                    curblock = blocks.top();
+                } else {
+                    /* In-loop try (3.11+ EH table): the handler lives past
+                       the rest of the loop body.  Finish the container now
+                       (mounting it into its parent so the loop's remaining
+                       statements decode after it) and remember it; the
+                       handler region re-activates it at its target offset. */
+                    if (!stack_hist.empty()) {
+                        stack = stack_hist.top();
+                        stack_hist.pop();
+                    }
+
+                    curblock->append(prev.cast<ASTNode>());
+                    PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
+                    blocks.pop();
+                    curblock = blocks.top();
+                    /* A mounted container (deferred in-loop handler) is
+                       already present in its parent; do not append twice.
+                       When this container was created nested inside an
+                       already-pending outer container, its parent is that
+                       container (inside its last try block), not the
+                       block-stack top. */
+                    if (!cont->mounted()) {
+                        if (!pending_conts.empty()
+                                && cont->except() > 0
+                                && cont->except() < pending_conts.back()->except()) {
+                            PycRef<ASTContainerBlock> outer = pending_conts.back();
+                            if (outer->size() > 0
+                                    && outer->nodes().back()->type() == ASTNode::NODE_BLOCK
+                                    && outer->nodes().back().cast<ASTBlock>()->blktype() == ASTBlock::BLK_TRY) {
+                                outer->nodes().back().cast<ASTBlock>()->append(cont.cast<ASTNode>());
+                            } else {
+                                outer->append(cont.cast<ASTNode>());
+                            }
+                        } else {
+                            curblock->append(cont.cast<ASTNode>());
+                        }
+                    }
+                    cont->setMounted();
+                    pending_conts.push_back(cont);
                 }
-
-                curblock->append(prev.cast<ASTNode>());
-                stack_hist.push(stack);
-
-                PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, 0, NULL, false);
-                except->init();
-                blocks.push(except);
-                curblock = blocks.top();
             } else {
                 blocks.push(prev);
                 curblock = prev;
+            }
+        }
+
+        /* Re-activate a deferred in-loop handler container once decoding
+           reaches its handler offset.  Nested tries: the innermost
+           handler offset comes first. */
+        for (auto it = pending_conts.begin(); it != pending_conts.end(); ++it) {
+            if (pos == (*it)->except()) {
+                blocks.push((*it).cast<ASTBlock>());
+                curblock = (*it).cast<ASTBlock>();
+                pending_conts.erase(it);
+                break;
             }
         }
 
@@ -185,15 +1015,92 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
             if (curblock->blktype() == ASTBlock::BLK_CONTAINER
                     && !curblock.cast<ASTContainerBlock>()->hasFinally()) {
-                PycRef<ASTBlock> cont = curblock;
+                PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
                 blocks.pop();
                 curblock = blocks.top();
-                curblock->append(cont.cast<ASTNode>());
+                /* A mounted container (deferred in-loop handler) is
+                   already present in its parent; do not append twice. */
+                if (!cont->mounted())
+                    curblock->append(cont.cast<ASTNode>());
             }
         }
 
+        if ((curblock->blktype() == ASTBlock::BLK_IF
+                || curblock->blktype() == ASTBlock::BLK_ELIF
+                || curblock->blktype() == ASTBlock::BLK_ELSE)
+                && curblock->end() == pos
+                && mod->verCompare(3, 12) >= 0
+                && blocks.size() > 1) {
+            /* With exact jump targets (3.12+), the false exit of a
+               conditional can land exactly on the instruction that
+               follows the if-body (e.g. the RETURN_CONST of a
+               fallthrough return).  Close the block here rather than
+               waiting for a later instruction to pass its end, which
+               never happens when this is the last statement.  Older
+               versions pad the target past the end of the block, and
+               the target instruction may still contribute to the
+               block, so they must not take this path. */
+            PycRef<ASTBlock> prev = curblock;
+            blocks.pop();
+            curblock = blocks.top();
+
+            if (!stack_hist.empty()) {
+                stack = stack_hist.top();
+                stack_hist.pop();
+            }
+
+            if (prev->size() != 0) {
+                curblock->append(prev.cast<ASTNode>());
+            }
+        }
+
+        /* A pre-scanned `while True:` whose structural exit is a
+           conditional jump (continue-style loop: ...; if c: continue;
+           return) has no trailing JUMP_BACKWARD after its last body
+           statement; close it once the decode reaches the recorded
+           exit offset. */
+        {
+            auto ue = uncond_loop_ends.find(pos);
+            if (ue != uncond_loop_ends.end()
+                    && curblock->blktype() == ASTBlock::BLK_WHILE
+                    && blocks.size() > 1
+                    && curblock.cast<ASTCondBlock>()->head() == ue->second) {
+                if (!stack_hist.empty()) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+                }
+                PycRef<ASTBlock> tmp = curblock;
+                blocks.pop();
+                curblock = blocks.top();
+                curblock->append(tmp.cast<ASTNode>());
+            }
+        }
+
+        /* `while True:` head (pre-scanned): open the loop block right
+           before its first body statement is decoded.  The trailing
+           JUMP_BACKWARD whose target equals the recorded head closes it. */
+        if (uncond_loop_heads.find(pos) != uncond_loop_heads.end()
+                && curblock->blktype() != ASTBlock::BLK_WHILE
+                && curblock->blktype() != ASTBlock::BLK_FOR
+                && curblock->blktype() != ASTBlock::BLK_ASYNCFOR
+                && curblock->blktype() != ASTBlock::BLK_TRY
+                && curblock->blktype() != ASTBlock::BLK_EXCEPT
+                && curblock->blktype() != ASTBlock::BLK_CONTAINER
+                && curblock->blktype() != ASTBlock::BLK_FINALLY) {
+            stack_hist.push(stack);
+            PycRef<ASTCondBlock> wh = new ASTCondBlock(ASTBlock::BLK_WHILE, 0,
+                    PycRef<ASTNode>(nullptr), false);
+            wh->init();
+            wh->setHead(pos);
+            blocks.push(wh.cast<ASTBlock>());
+            curblock = blocks.top();
+        }
+
         curpos = pos;
+        last_op = opcode;
+        last_operand = operand;
         bc_next(source, mod, opcode, operand, pos);
+
 
         if (need_try && opcode != Pyc::SETUP_EXCEPT_A) {
             need_try = false;
@@ -247,6 +1154,49 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         switch (opcode) {
         case Pyc::BINARY_OP_A:
             {
+                /* Python 3.11+: NB_SUBSCR with a slice operand (a TYPE_SLICE
+                   const in 3.14, or a BUILD_SLICE result in 3.11 - 3.13)
+                   must produce a slice expression, not a binary op.  The
+                   NB_SUBSCR operand number is 25 up to 3.12 and 26 from
+                   3.13 onwards. */
+                bool is_subscr_op = (operand == 26 && mod->verCompare(3, 13) >= 0)
+                        || (operand == 25 && mod->verCompare(3, 11) >= 0 && mod->verCompare(3, 13) < 0);
+                if (is_subscr_op) {
+                    PycRef<ASTNode> right = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> left = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> slice = nullptr;
+                    if (right.type() == ASTNode::NODE_OBJECT
+                            && right.cast<ASTObject>()->object().type() == PycObject::TYPE_SLICE) {
+                        PycRef<PycSlice> sl = right.cast<ASTObject>()->object().cast<PycSlice>();
+                        auto part = [](PycRef<PycObject> o) -> PycRef<ASTNode> {
+                            if (o == nullptr || o == Pyc_None)
+                                return nullptr;
+                            return new ASTObject(o);
+                        };
+                        PycRef<ASTNode> start = part(sl->start());
+                        PycRef<ASTNode> stop = part(sl->stop());
+                        PycRef<ASTNode> step = part(sl->step());
+                        if (start == nullptr && stop == nullptr) {
+                            slice = new ASTSlice(ASTSlice::SLICE0);
+                        } else if (start == nullptr) {
+                            slice = new ASTSlice(ASTSlice::SLICE2, start, stop);
+                        } else if (stop == nullptr) {
+                            slice = new ASTSlice(ASTSlice::SLICE1, start, stop);
+                        } else {
+                            slice = new ASTSlice(ASTSlice::SLICE3, start, stop);
+                        }
+                        if (step != nullptr)
+                            slice = new ASTSlice(ASTSlice::SLICE3, slice, step);
+                    }
+                    if (slice != nullptr)
+                        stack.push(new ASTSubscr(left, slice));
+                    else
+                        stack.push(new ASTSubscr(left, right));
+                    break;
+                }
+
                 ASTBinary::BinOp op = ASTBinary::from_binary_op(operand);
                 if (op == ASTBinary::BIN_INVALID)
                     fprintf(stderr, "Unsupported `BINARY_OP` operand value: %d\n", operand);
@@ -349,19 +1299,45 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::BUILD_MAP_A:
             if (mod->verCompare(3, 5) >= 0) {
                 auto map = new ASTMap;
-                for (int i=0; i<operand; ++i) {
+                /* The stack holds key1, value1, ..., keyN, valueN; popping
+                   from the top yields the pairs in reverse order, so collect
+                   them first and add them front-to-back (Python 3.14 builds
+                   dict literals with BUILD_MAP). */
+                std::vector<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> pairs;
+                for (int i = 0; i < operand; ++i) {
                     PycRef<ASTNode> value = stack.top();
                     stack.pop();
                     PycRef<ASTNode> key = stack.top();
                     stack.pop();
-                    map->add(key, value);
+                    pairs.push_back({ key, value });
                 }
+                for (auto it = pairs.rbegin(); it != pairs.rend(); ++it)
+                    map->add(it->first, it->second);
                 stack.push(map);
             } else {
                 if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
                     stack.pop();
                 }
                 stack.push(new ASTMap());
+            }
+            break;
+        case Pyc::DICT_MERGE_A:
+        case Pyc::DICT_UPDATE_A:
+            {
+                /* Python 3.9+: merge/update the map below TOS with TOS.
+                   A non-map update is a `**expr` unpacking; it is recorded
+                   as a pair with a null key (printed as `**expr`). */
+                PycRef<ASTNode> update = stack.top();
+                stack.pop();
+                PycRef<ASTNode> base = stack.top();
+                if (base.type() == ASTNode::NODE_MAP) {
+                    if (update.type() == ASTNode::NODE_MAP) {
+                        for (const auto& kv : update.cast<ASTMap>()->values())
+                            base.cast<ASTMap>()->add(kv.first, kv.second);
+                    } else {
+                        base.cast<ASTMap>()->add(nullptr, update);
+                    }
+                }
             }
             break;
         case Pyc::BUILD_CONST_KEY_MAP_A:
@@ -507,6 +1483,34 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTKwNamesMap(kwparamList));
             }
             break;
+        case Pyc::CALL_KW_A:
+        case Pyc::INSTRUMENTED_CALL_KW_A:
+            {
+                /* Python 3.13+: CALL_KW carries the keyword-names tuple on
+                   the stack (replacing the separate KW_NAMES opcode).  Pop
+                   it, fold the keyword values into an ASTKwNamesMap and
+                   reuse the shared CALL path below. */
+                PycRef<ASTNode> kwnames_node = stack.top();
+                stack.pop();
+                int kwcount = 0;
+                ASTKwNamesMap kw_names_map;
+                PycRef<PycObject> kwnames_obj;
+                if (kwnames_node.type() == ASTNode::NODE_OBJECT)
+                    kwnames_obj = kwnames_node.cast<ASTObject>()->object();
+                if (kwnames_obj != nullptr
+                        && (kwnames_obj.type() == PycObject::TYPE_TUPLE
+                            || kwnames_obj.type() == PycObject::TYPE_SMALL_TUPLE)) {
+                    std::vector<PycRef<PycObject>> keys = kwnames_obj.cast<PycSimpleSequence>()->values();
+                    kwcount = (int)keys.size();
+                    for (int i = 0; i < kwcount; i++) {
+                        kw_names_map.add(new ASTObject(keys[kwcount - i - 1]), stack.top());
+                        stack.pop();
+                    }
+                }
+                stack.push(new ASTKwNamesMap(kw_names_map));
+                opcode = Pyc::CALL_A;
+            }
+            /* fall through */
         case Pyc::CALL_A:
         case Pyc::CALL_FUNCTION_A:
         case Pyc::INSTRUMENTED_CALL_A:
@@ -537,6 +1541,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.pop();
                 PycRef<ASTNode> function = stack.top();
                 stack.pop();
+                /* Python 3.13+ pushes the NULL between __build_class__ and
+                   its arguments (LOAD_BUILD_CLASS; PUSH_NULL; ...); skip it
+                   before testing for the load-build-class marker. */
+                if (mod->verCompare(3, 13) >= 0 && stack.top() == nullptr)
+                    stack.pop();
                 PycRef<ASTNode> loadbuild = stack.top();
                 stack.pop();
                 int loadbuild_type = loadbuild.type();
@@ -550,6 +1559,97 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 {
                     stack = stack_hist.top();
                     stack_hist.pop();
+                }
+
+                /* Python 3.11+: implicit `with` epilogue call to
+                   __exit__/__aexit__.  The exit callable was left on the
+                   stack by BEFORE_WITH / LOAD_SPECIAL; the Nones above it
+                   are the arguments of the epilogue call. */
+                {
+                    PycRef<ASTNode> exitFn;
+                    int exitDepth = 0;
+                    for (int i = 1; i <= 6; ++i) {
+                        PycRef<ASTNode> n = stack.top(i);
+                        if (n.type() == ASTNode::NODE_BINARY
+                                && n.cast<ASTBinary>()->op() == ASTBinary::BIN_ATTR
+                                && n.cast<ASTBinary>()->right().type() == ASTNode::NODE_NAME) {
+                            PycRef<PycString> nm = n.cast<ASTBinary>()->right().cast<ASTName>()->name();
+                            if (nm->isEqual("__exit__") || nm->isEqual("__aexit__")) {
+                                exitFn = n;
+                                exitDepth = i;
+                                break;
+                            }
+                        }
+                    }
+                    if (exitFn != nullptr && exitDepth >= 3) {
+                        /* Everything above the marker must be the None
+                           arguments of the epilogue call. */
+                        bool onlyNones = true;
+                        for (int i = 1; i < exitDepth; ++i) {
+                            if (stack.top(i) != nullptr) {
+                                onlyNones = false;
+                                break;
+                            }
+                        }
+                        if (onlyNones) {
+                            bool asyncExit = exitFn.cast<ASTBinary>()->right()
+                                    .cast<ASTName>()->name()->isEqual("__aexit__");
+                            /* Undo the speculative stack snapshot taken for
+                               the load-build-class test above. */
+                            if (!stack_hist.empty()) {
+                                stack = stack_hist.top();
+                                stack_hist.pop();
+                            }
+                            /* Pop only the None arguments; keep the (NULL,
+                               exit-mark) pair below so that duplicate exit
+                               sites (break, return, continue and fall-through
+                               paths each emit their own epilogue call) are
+                               still recognized. */
+                            for (int i = 1; i < exitDepth; ++i)
+                                stack.pop();
+                            if (asyncExit) {
+                                /* Skip the await loop of the async epilogue:
+                                   GET_AWAITABLE; LOAD_CONST None; SEND;
+                                   YIELD; RESUME; JUMP_BACKWARD_NO_INTERRUPT;
+                                   END_SEND (plus CACHE entries). */
+                                do {
+                                    bc_next(source, mod, opcode, operand, pos);
+                                } while (opcode != Pyc::END_SEND && !source.atEof());
+                            }
+                            stack.push(new ASTCall(exitFn, {}, {}));
+                            break;
+                        }
+                    }
+                }
+
+                /* Python 3.11 - 3.13: duplicate `with` epilogue site.  One
+                   epilogue call is emitted per exit path (break, return,
+                   continue, fall-through); on later paths the exit marker
+                   may already have been consumed, so recognize the shape
+                   structurally: a CALL whose argument and self-or-NULL
+                   slots are all NULLs (three LOAD_CONST None pushes). */
+                if (opcode == Pyc::CALL_A && operand >= 2 && operand <= 3) {
+                    bool allNull = true;
+                    for (int i = 1; i <= operand + 1; ++i) {
+                        if (stack.top(i) != nullptr) {
+                            allNull = false;
+                            break;
+                        }
+                    }
+                    if (allNull) {
+                        if (!stack_hist.empty()) {
+                            stack = stack_hist.top();
+                            stack_hist.pop();
+                        }
+                        /* Pop the None arguments plus the NULL self slot
+                           (at most); the empty-stack top() is a no-op. */
+                        for (int i = 0; i < operand + 1 && stack.top(1) == nullptr; ++i)
+                            stack.pop();
+                        stack.push(new ASTCall(new ASTBinary(nullptr,
+                                make_name("__exit__"), ASTBinary::BIN_ATTR),
+                                {}, {}));
+                        break;
+                    }
                 }
 
                 /*
@@ -600,9 +1700,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
-                    stack.pop();
+                if (opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) {
+                    if (func == nullptr && stack.top() != nullptr) {
+                        /* Python 3.13+: the NULL sits between the callable
+                           and its arguments (LOAD f; PUSH_NULL; args...). */
+                        func = stack.top();
+                        stack.pop();
+                    } else if (stack.top() == nullptr) {
+                        /* Python 3.11 - 3.12: PUSH_NULL; LOAD f; args... */
+                        stack.pop();
+                    }
                 }
 
                 stack.push(new ASTCall(func, pparamList, kwparamList));
@@ -632,6 +1739,48 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 PycRef<ASTNode> call = new ASTCall(func, pparamList, kwparamList);
                 call.cast<ASTCall>()->setVar(var);
+                stack.push(call);
+            }
+            break;
+        case Pyc::CALL_FUNCTION_EX:
+        case Pyc::CALL_FUNCTION_EX_A:
+        case Pyc::INSTRUMENTED_CALL_FUNCTION_EX_A:
+            {
+                /* Python 3.14 dropped the flags operand: the calling
+                   convention is always [func, args_tuple, kwargs_map].
+                   Python 3.6 - 3.13 use a flags operand where bit 0 marks
+                   the presence of a kwargs map. */
+                PycRef<ASTNode> kw = nullptr;
+                if (opcode == Pyc::CALL_FUNCTION_EX) {
+                    /* Python 3.14 has no flags operand: when keyword
+                       arguments are present, TOS is the merged kwargs map
+                       (built by DICT_MERGE). */
+                    if (stack.top().type() == ASTNode::NODE_MAP) {
+                        kw = stack.top();
+                        stack.pop();
+                    }
+                } else if (operand & 1) {
+                    kw = stack.top();
+                    stack.pop();
+                }
+                PycRef<ASTNode> var = stack.top();
+                stack.pop();
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+                if (mod->verCompare(3, 11) >= 0 && stack.top() == nullptr)
+                    stack.pop();
+
+                PycRef<ASTNode> call = new ASTCall(func, {}, {});
+                /* A map holding a single **expr unpack is displayed bare. */
+                if (kw != nullptr && kw.type() == ASTNode::NODE_MAP) {
+                    const auto& vals = kw.cast<ASTMap>()->values();
+                    if (vals.size() == 1 && vals.front().first == nullptr)
+                        kw = vals.front().second;
+                }
+                if (var != nullptr)
+                    call.cast<ASTCall>()->setVar(var);
+                if (kw != nullptr)
+                    call.cast<ASTCall>()->setKW(kw);
                 stack.push(call);
             }
             break;
@@ -999,7 +2148,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     if (mod->verCompare(3, 10) >= 0)
                         end *= sizeof(uint16_t); // // BPO-27129
                     end += pos;
-                    comprehension = strcmp(code->name()->value(), "<listcomp>") == 0;
+                    if (mod->verCompare(3, 12) >= 0) {
+                        /* FOR_ITER has had one inline cache entry since
+                         * 3.12: the jump base is the end of the four-byte
+                         * instruction (opcode + operand + cache slot). */
+                        end += 2 * sizeof(uint16_t);
+                    }
+                    comprehension = strcmp(code->name()->value(), "<listcomp>") == 0
+                            || comp_saved > 0;
                 } else {
                     PycRef<ASTBlock> top = blocks.top();
                     end = top->end(); // block end position from SETUP_LOOP
@@ -1014,6 +2170,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 forblk->setComprehension(comprehension);
                 blocks.push(forblk.cast<ASTBlock>());
                 curblock = blocks.top();
+
+                /* Entering a loop body: any pending epilogue restores from
+                   an inner (nested) comprehension are done with. */
+                comp_restoring = false;
 
                 stack.push(NULL);
             }
@@ -1078,7 +2238,39 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTFormattedValue(val, conversion_flag, format_spec));
             }
             break;
+        case Pyc::CONVERT_VALUE_A:
+            {
+                /* Python 3.13+: apply str/repr/ascii conversion before
+                   formatting.  Modeled as a (possibly no-op) formatted
+                   value; FORMAT_SIMPLE / FORMAT_WITH_SPEC finalize it. */
+                auto conv = static_cast<ASTFormattedValue::ConversionFlag>(operand & ASTFormattedValue::CONVERSION_MASK);
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                stack.push(new ASTFormattedValue(value, conv, nullptr));
+            }
+            break;
+        case Pyc::FORMAT_SIMPLE:
+            /* Python 3.13+: formatting without an explicit format spec;
+               the converted value is already on the stack. */
+            break;
+        case Pyc::FORMAT_WITH_SPEC:
+            {
+                /* Python 3.13+: attach the format spec to the converted
+                   value left by CONVERT_VALUE. */
+                PycRef<ASTNode> spec = stack.top();
+                stack.pop();
+                PycRef<ASTNode> fv = stack.top();
+                stack.pop();
+                if (fv.type() == ASTNode::NODE_FORMATTEDVALUE) {
+                    PycRef<ASTFormattedValue> fmt = fv.cast<ASTFormattedValue>();
+                    stack.push(new ASTFormattedValue(fmt->val(), fmt->conversion(), spec));
+                } else {
+                    stack.push(new ASTFormattedValue(fv, ASTFormattedValue::NONE, spec));
+                }
+            }
+            break;
         case Pyc::GET_AWAITABLE:
+        case Pyc::GET_AWAITABLE_A:
             {
                 PycRef<ASTNode> object = stack.top();
                 stack.pop();
@@ -1126,21 +2318,115 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::JUMP_IF_TRUE_OR_POP_A:
         case Pyc::POP_JUMP_IF_FALSE_A:
         case Pyc::POP_JUMP_IF_TRUE_A:
+        case Pyc::POP_JUMP_IF_NONE_A:
+        case Pyc::POP_JUMP_IF_NOT_NONE_A:
         case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
         case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
+        case Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A:
+        case Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A:
             {
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
 
+                /* Python 3.12+ can invert the branch sense inside loops:
+                   when the "then" part ends in an unconditional exit (e.g.
+                   a return) and the "else" path simply loops back, the
+                   compiler emits
+                       POP_JUMP_IF_NOT_NONE  then
+                       JUMP_BACKWARD          loop_start
+                    then: <then part>
+                   The fall-through region is dead code for the if.  Detect
+                   that layout and open a forward-conditioned if block at
+                   the jump target instead. */
+                if (opcode == Pyc::POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_IF_NOT_NONE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A) {
+                    int toffs = operand;
+                    if (mod->verCompare(3, 10) >= 0)
+                        toffs *= sizeof(uint16_t); // BPO-27129
+                    if (mod->verCompare(3, 12) >= 0)
+                        toffs += pos;
+                    if (mod->verCompare(3, 13) >= 0)
+                        toffs += sizeof(uint16_t);
+
+                    if (toffs > pos && curblock->blktype() == ASTBlock::BLK_FOR) {
+                        bool pure = true;
+                        PycBuffer probe = source;
+                        int ppos = pos, pop_, poper_;
+                        while (ppos < toffs && pure && !probe.atEof()) {
+                            bc_next(probe, mod, pop_, poper_, ppos);
+                            if (pop_ != Pyc::JUMP_BACKWARD_A
+                                    && pop_ != Pyc::JUMP_BACKWARD_NO_INTERRUPT_A
+                                    && pop_ != Pyc::NOT_TAKEN
+                                    && pop_ != Pyc::POP_TOP
+                                    && pop_ != Pyc::POP_ITER
+                                    && pop_ != Pyc::CACHE) {
+                                pure = false;
+                            }
+                        }
+
+                        if (pure && ppos >= toffs) {
+                            stack.pop(); /* the tested value */
+                            bool jump_if_none = opcode == Pyc::POP_JUMP_IF_NONE_A
+                                    || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A;
+                            PycRef<ASTNode> newcond = new ASTCompare(cond,
+                                    PycRef<ASTNode>(nullptr),
+                                    jump_if_none ? ASTCompare::CMP_IS
+                                                 : ASTCompare::CMP_IS_NOT);
+
+                            /* Snap-shot the stack so the terminating
+                               statement closes this block. */
+                            stack_hist.push(stack);
+
+                            /* The then part extends to the end of the
+                               enclosing loop; a terminating statement
+                               (return/raise) inside closes the block. */
+                            int for_end = curblock->end();
+                            ifblk = new ASTCondBlock(ASTBlock::BLK_IF, for_end,
+                                    newcond, false);
+                            blocks.push(ifblk.cast<ASTBlock>());
+                            curblock = ifblk;
+
+                            /* Skip the dead loop-back region; the then part
+                               at the jump target is decoded inside the new
+                               if block. */
+                            while (pos < toffs && !source.atEof())
+                                bc_next(source, mod, opcode, operand, pos);
+                            break;
+                        }
+                    }
+                }
+
+                /* Python 3.12+: POP_JUMP_IF_NONE / NOT_NONE are
+                   specializations that hide the comparison; rebuild it as
+                   the equivalent (NOT-)FALSE jump on an `is [not] None`
+                   condition. */
+                if (opcode == Pyc::POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_IF_NOT_NONE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A) {
+                    stack.pop();
+                    bool jump_if_none = opcode == Pyc::POP_JUMP_IF_NONE_A
+                            || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A;
+                    cond = new ASTCompare(cond, PycRef<ASTNode>(nullptr),
+                            jump_if_none ? ASTCompare::CMP_IS_NOT : ASTCompare::CMP_IS);
+                    stack.push(cond);
+                }
+
                 if (opcode == Pyc::POP_JUMP_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_IF_TRUE_A
+                        || opcode == Pyc::POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::POP_JUMP_IF_NOT_NONE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
                         || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A
                         || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A
-                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A) {
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NONE_A
+                        || opcode == Pyc::INSTRUMENTED_POP_JUMP_IF_NOT_NONE_A) {
                     /* Pop condition before the jump */
                     stack.pop();
                     popped = ASTCondBlock::PRE_POPPED;
@@ -1174,17 +2460,353 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     /* Offset is relative in these cases */
                     offs += pos;
                 }
+                if (mod->verCompare(3, 13) >= 0) {
+                    /* Python 3.13+ conditional jumps carry one inline cache
+                     * entry (the branch counter).  `pos` already skips the
+                     * two-byte instruction body, so exactly one extra
+                     * cache slot (two bytes) must be added: the target is
+                     * curpos + 4 + 2*operand == pos + 2 + 2*operand. */
+                    offs += sizeof(uint16_t);
+                }
+
+                /* Python 3.8+ dropped SETUP_LOOP, so while loops must be
+                   recognized structurally: the body ends with a backward
+                   jump to the condition start, and the conditional jump
+                   leaves the loop.  Scan the region between here and the
+                   jump target; when its final instruction jumps back to
+                   before this condition, this is a while loop.  The loop
+                   head may sit inside any non-exception block: nested
+                   layouts like for->while or for->if->while must be
+                   recognized too, not only MAIN/WHILE. */
+                if (offs > pos
+                        && (curblock->blktype() == ASTBlock::BLK_MAIN
+                            || curblock->blktype() == ASTBlock::BLK_WHILE
+                            || curblock->blktype() == ASTBlock::BLK_FOR
+                            || curblock->blktype() == ASTBlock::BLK_ASYNCFOR
+                            || curblock->blktype() == ASTBlock::BLK_IF
+                            || curblock->blktype() == ASTBlock::BLK_ELSE
+                            || curblock->blktype() == ASTBlock::BLK_ELIF
+                            /* A while may equally live inside a try,
+                               except, finally or with body; the back-edge
+                               and purity checks below still guard against
+                               false positives. */
+                            || curblock->blktype() == ASTBlock::BLK_TRY
+                            || curblock->blktype() == ASTBlock::BLK_EXCEPT
+                            || curblock->blktype() == ASTBlock::BLK_FINALLY
+                            || curblock->blktype() == ASTBlock::BLK_WITH)) {
+                    PycBuffer probe = source;
+                    int ppos = pos, pop_ = 0, poper_ = 0;
+                    int back = -1, exit_edge = -1;
+                    while (ppos < offs && !probe.atEof()) {
+                        bc_next(probe, mod, pop_, poper_, ppos);
+                        if (pop_ == Pyc::JUMP_BACKWARD_A
+                                || pop_ == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) {
+                            int t = poper_;
+                            if (mod->verCompare(3, 10) >= 0)
+                                t *= sizeof(uint16_t); // BPO-27129
+                            /* Same version-dependent landing rule as in
+                               the pre-scan above (ppos excludes caches):
+                               3.13+ targets one cache slot further back. */
+                            if (mod->verCompare(3, 13) >= 0)
+                                t -= sizeof(uint16_t);
+                            back = ppos - t;
+                            exit_edge = back;
+                        }
+                    }
+
+                    /* Guard against false positives: ... */
+                    if (back >= 0 && back <= curpos && back < pos) {
+                        PycBuffer vprobe = source;
+                        vprobe.setPos(back);
+                        int vpos = back, vop = 0, voper = 0;
+                        bool pure = true;
+                        /* The window stops at this conditional jump: a
+                           top-condition `while` legitimately contains its
+                           own POP_JUMP right before curpos. */
+                        int head_start = (mod->verCompare(3, 6) >= 0)
+                                ? curpos - 2 : curpos;
+                        while (vpos < head_start && pure && !vprobe.atEof()) {
+                            bc_next(vprobe, mod, vop, voper, vpos);
+                            switch (vop) {
+                            case Pyc::NOT_TAKEN:
+                            case Pyc::CACHE:
+                                break;
+                            case Pyc::JUMP_FORWARD_A:
+                            case Pyc::JUMP_IF_FALSE_A:
+                            case Pyc::JUMP_IF_TRUE_A:
+                            case Pyc::JUMP_IF_FALSE_OR_POP_A:
+                            case Pyc::JUMP_IF_TRUE_OR_POP_A:
+                            case Pyc::JUMP_ABSOLUTE_A:
+                            case Pyc::POP_JUMP_IF_FALSE_A:
+                            case Pyc::POP_JUMP_IF_TRUE_A:
+                            case Pyc::POP_JUMP_IF_NONE_A:
+                            case Pyc::POP_JUMP_IF_NOT_NONE_A:
+                            case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+                            case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+                            case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+                            case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A:
+                            case Pyc::POP_JUMP_BACKWARD_IF_FALSE_A:
+                            case Pyc::POP_JUMP_BACKWARD_IF_TRUE_A:
+                            case Pyc::POP_JUMP_BACKWARD_IF_NONE_A:
+                            case Pyc::POP_JUMP_BACKWARD_IF_NOT_NONE_A:
+                            case Pyc::JUMP_BACKWARD_A:
+                            case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+                            case Pyc::FOR_ITER_A:
+                            case Pyc::RETURN_VALUE:
+                            case Pyc::RETURN_GENERATOR:
+                            case Pyc::RETURN_CONST_A:
+                            case Pyc::RAISE_VARARGS_A:
+                            case Pyc::RERAISE_A:
+                            case Pyc::END_FOR:
+                                pure = false;
+                                break;
+                            default:
+                                break;
+                            }
+                        }
+                        if (!pure) {
+                            back = -1;
+                        }
+                    }
+
+                    /* Python 3.14 tail-optimized while loop: the true edge
+                       of the condition enters the body and the false path
+                       falls through NOT_TAKEN to a backward jump out of the
+                       loop (continuing the enclosing iteration), so the
+                       scan above only finds that exit edge and purity
+                       correctly rejects it.  A genuine loop still owns a
+                       back edge to the condition start at the end of its
+                       body; a plain if with the same shape never does,
+                       because every back edge inside its region targets an
+                       enclosing loop head, which is strictly before this
+                       condition. */
+                    if (back < 0
+                            && mod->verCompare(3, 14) >= 0
+                            && (opcode == Pyc::POP_JUMP_IF_TRUE_A
+                                || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A)
+                            && exit_edge >= 0 && exit_edge < curpos) {
+                        PycBuffer bprobe = source;
+                        bprobe.setPos(offs);
+                        int bpos = offs, bop = 0, boper = 0, hit = -1, hit_target = -1;
+                        while (bpos < pos + 0x10000 && hit < 0 && !bprobe.atEof()) {
+                            bc_next(bprobe, mod, bop, boper, bpos);
+                            if (bop == Pyc::JUMP_BACKWARD_A
+                                    || bop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) {
+                                int t = boper;
+                                if (mod->verCompare(3, 10) >= 0)
+                                    t *= sizeof(uint16_t); // BPO-27129
+                                if (mod->verCompare(3, 13) >= 0)
+                                    t -= sizeof(uint16_t); // 3.13+ jump cache slot
+                                t = bpos - t;
+                                /* The loop head sits between the enclosing
+                                   loop head (exit_edge) and the body start
+                                   (offs); a `continue` of the enclosing
+                                   loop targets exit_edge itself and inner
+                                   loop heads lie at or after offs. */
+                                if (t < offs && t > exit_edge) {
+                                    hit = bpos;
+                                    hit_target = t;
+                                }
+                            } else if (bop == Pyc::RETURN_VALUE
+                                    || bop == Pyc::RETURN_CONST_A) {
+                                break;
+                            }
+                        }
+                        if (hit >= 0) {
+                            /* The body's trailing back edge closes the
+                               block (JUMP_BACKWARD handler), so the block
+                               end just marks the end of the body. */
+                            ifblk = new ASTCondBlock(ASTBlock::BLK_WHILE,
+                                    hit + 2 * (int)sizeof(uint16_t), cond, !neg);
+                            ifblk->setHead(hit_target);
+                            ifblk->init();
+                            blocks.push(ifblk.cast<ASTBlock>());
+                            curblock = ifblk;
+                            break;
+                        }
+                    }
+
+                    /* Python 3.13 continue-shaped while loop: `while cond:`
+                       whose false path continues an enclosing loop.  The
+                       true edge enters the body (offs) and the false path
+                       falls through to a backward jump to the enclosing
+                       head (exit_edge), so the body owns the back edge to
+                       offs itself.  A mid-body `continue` also targets
+                       offs, but its guard conditional's false path stays
+                       inside the body.  The closing edge is recognized by
+                       the re-evaluated condition before it, whose false
+                       path (prev_target) leaves the loop through a
+                       backward jump to the same enclosing head the
+                       entry's false path used. */
+                    if (back < 0
+                            && mod->verCompare(3, 13) >= 0
+                            && (opcode == Pyc::POP_JUMP_IF_TRUE_A
+                                || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A)
+                            && exit_edge >= 0 && exit_edge < curpos) {
+                        PycBuffer bprobe = source;
+                        bprobe.setPos(offs);
+                        int bpos = offs, bop = 0, boper = 0;
+                        int prev_target = -1;
+                        int hit = -1, hit_end = -1;
+                        while (bpos < pos + 0x10000 && hit < 0 && !bprobe.atEof()) {
+                            int istart = bpos;
+                            bc_next(bprobe, mod, bop, boper, bpos);
+                            if (bop == Pyc::JUMP_BACKWARD_A
+                                    || bop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) {
+                                int t = boper;
+                                if (mod->verCompare(3, 10) >= 0)
+                                    t *= sizeof(uint16_t); // BPO-27129
+                                if (mod->verCompare(3, 13) >= 0)
+                                    t -= sizeof(uint16_t); // 3.13+ jump cache slot
+                                t = bpos - t;
+                                /* Candidate closing edge: returns to the
+                                   body start (offs) right after a bottom
+                                   re-evaluation whose false path
+                                   (prev_target) leaves the loop. */
+                                if (t == offs && prev_target > istart) {
+                                    PycBuffer eprobe = source;
+                                    eprobe.setPos(prev_target);
+                                    int epos = prev_target, eop = 0, eoper = 0;
+                                    bc_next(eprobe, mod, eop, eoper, epos);
+                                    if (eop == Pyc::JUMP_BACKWARD_A
+                                            || eop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) {
+                                        int et = eoper;
+                                        if (mod->verCompare(3, 10) >= 0)
+                                            et *= sizeof(uint16_t); // BPO-27129
+                                        if (mod->verCompare(3, 13) >= 0)
+                                            et -= sizeof(uint16_t); // 3.13+ jump cache slot
+                                        et = epos - et;
+                                        if (et == exit_edge) {
+                                            hit = istart;
+                                            hit_end = prev_target;
+                                        }
+                                    }
+                                }
+                                prev_target = -1;
+                            } else if (bop == Pyc::RETURN_VALUE
+                                    || bop == Pyc::RETURN_CONST_A) {
+                                break;
+                            } else if (bop != Pyc::CACHE) {
+                                /* CACHE filler slots (inline cache entries)
+                                   must not disturb prev_target: a conditional
+                                   jump is immediately followed by its cache
+                                   slot, and treating it as a statement would
+                                   erase the jump's recorded target. */
+                                prev_target = -1;
+                                switch (bop) {
+                                case Pyc::POP_JUMP_IF_FALSE_A:
+                                case Pyc::POP_JUMP_IF_TRUE_A:
+                                case Pyc::POP_JUMP_IF_NONE_A:
+                                case Pyc::POP_JUMP_IF_NOT_NONE_A:
+                                case Pyc::POP_JUMP_FORWARD_IF_FALSE_A:
+                                case Pyc::POP_JUMP_FORWARD_IF_TRUE_A:
+                                case Pyc::POP_JUMP_FORWARD_IF_NONE_A:
+                                case Pyc::POP_JUMP_FORWARD_IF_NOT_NONE_A: {
+                                    int t2 = boper;
+                                    if (mod->verCompare(3, 10) >= 0)
+                                        t2 *= sizeof(uint16_t); // BPO-27129
+                                    if (mod->verCompare(3, 13) >= 0)
+                                        t2 += sizeof(uint16_t); // inline cache slot
+                                    prev_target = istart + (int)sizeof(uint16_t) + t2;
+                                    break;
+                                }
+                                default:
+                                    break;
+                                }
+                            }
+                        }
+                        if (hit >= 0) {
+                            /* The re-evaluated condition at the bottom is
+                               swallowed by the re-emit special case (block
+                               end == its false target), and the trailing
+                               back edge to offs closes the block. */
+                            ifblk = new ASTCondBlock(ASTBlock::BLK_WHILE,
+                                    hit_end, cond, !neg);
+                            ifblk->setHead(offs);
+                            ifblk->init();
+                            blocks.push(ifblk.cast<ASTBlock>());
+                            curblock = ifblk;
+                            break;
+                        }
+                    }
+
+                    if (back >= 0 && (back <= curpos
+                                || back == pos + (int)sizeof(uint16_t))) {
+                        /* back <= curpos: the jump returns to the condition
+                           (3.14 lays the loop out that way); back just past
+                           this instruction: Python 3.13 re-emits the
+                           condition at the back edge and jumps back to the
+                           body instead. */
+                        if (curblock->blktype() == ASTBlock::BLK_WHILE
+                                && curblock->end() == offs) {
+                            /* Python 3.13 re-emits the loop condition at
+                               the back edge (the backward jump targets the
+                               body, not the head).  The loop block was
+                               already created at the entry condition; the
+                               repeated condition leaves no statements, and
+                               the trailing backward jump closes the loop. */
+                            stack_hist.pop();
+                            break;
+                        }
+                        if (curblock->blktype() == ASTBlock::BLK_WHILE
+                                && offs + 4 * (int)sizeof(uint16_t) >= curblock->end()
+                                && offs <= curblock->end() + 4 * (int)sizeof(uint16_t)) {
+                            /* Variant of the above used when the loop body
+                               yields: the exit target is split into a
+                               fallthrough copy right after the repeated
+                               condition, so the jump target can differ from
+                               the loop block end by a RETURN_CONST.  Detect
+                               the shape by the backward jump that must
+                               follow the repeated condition. */
+                            PycBuffer probe = source;
+                            int npos = pos, nop, noper;
+                            bc_next(probe, mod, nop, noper, npos);
+                            while (nop == Pyc::CACHE && !probe.atEof()) {
+                                bc_next(probe, mod, nop, noper, npos);
+                            }
+                            if (nop == Pyc::JUMP_BACKWARD_A
+                                    || nop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A) {
+                                stack_hist.pop();
+                                break;
+                            }
+                        }
+
+                        /* It's a while loop: the block already snap-shotted
+                           above is restored when the backward jump closes
+                           the loop. */
+                        ifblk = new ASTCondBlock(ASTBlock::BLK_WHILE, offs, cond, neg);
+                        /* The condition is already set, so statements in the
+                           body must not be swallowed by the block-init path
+                           of the POP_TOP handler (expression statements such
+                           as method calls end in POP_TOP). */
+                        ifblk->init();
+                        blocks.push(ifblk.cast<ASTBlock>());
+                        curblock = ifblk;
+                        break;
+                    }
+                }
 
                 if (cond.type() == ASTNode::NODE_COMPARE
                         && cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
                     int except_end = offs;
-                    if (curblock->blktype() == ASTBlock::BLK_EXCEPT
-                            && curblock.cast<ASTCondBlock>()->cond() == NULL) {
-                        except_end = curblock->end();
-                        blocks.pop();
-                        curblock = blocks.top();
+                    if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                        if (curblock.cast<ASTCondBlock>()->cond() == NULL) {
+                            except_end = curblock->end();
+                            blocks.pop();
+                            curblock = blocks.top();
 
-                        stack_hist.pop();
+                            stack_hist.pop();
+                        } else {
+                            /* Chained `except` handlers: close the current
+                               handler and start the next one as a sibling. */
+                            PycRef<ASTBlock> prev = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            if (!stack_hist.empty())
+                                stack_hist.pop();
+                            if (prev->size() != 0)
+                                curblock->append(prev.cast<ASTNode>());
+                        }
                     }
 
                     ifblk = new ASTCondBlock(ASTBlock::BLK_EXCEPT, except_end, cond.cast<ASTCompare>()->right(), false);
@@ -1222,7 +2844,68 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         stack_hist.push(s_top);
                     }
 
-                    if (curblock->end() == offs
+                    /* Chained comparison (3.12+): the first segment's false
+                       target lands on a POP_TOP that discards the chained
+                       midpoint.  The segments must combine with AND.  When
+                       the cleanup is followed by a jump to the same target
+                       as this jump, or when this jump has the opposite
+                       polarity of the first segment, the statement body is
+                       entered when the chain is false, i.e. the combined
+                       condition is negated. */
+                    bool chain_mid = false;
+                    bool chain_neg = false;
+                    if (mod->verCompare(3, 12) >= 0
+                            && (curblock->blktype() == ASTBlock::BLK_IF
+                                || curblock->blktype() == ASTBlock::BLK_ELIF)
+                            && curblock->end() > curpos) {
+                        PycBuffer probe = source;
+                        int ppos = pos, pop_ = 0, poper_ = 0;
+                        /* advance to the block end (the false target) */
+                        while (ppos < curblock->end() && !probe.atEof())
+                            bc_next(probe, mod, pop_, poper_, ppos);
+                        if (ppos == curblock->end()) {
+                            bc_next(probe, mod, pop_, poper_, ppos);
+                            while (pop_ == Pyc::CACHE && !probe.atEof())
+                                bc_next(probe, mod, pop_, poper_, ppos);
+                        }
+                        if (pop_ == Pyc::POP_TOP) {
+                            bc_next(probe, mod, pop_, poper_, ppos);
+                            while (pop_ == Pyc::CACHE && !probe.atEof())
+                                bc_next(probe, mod, pop_, poper_, ppos);
+                            if (pop_ == Pyc::JUMP_FORWARD_A) {
+                                /* bc_next already advanced past the operand,
+                                   so the target is ppos + 2*arg */
+                                int t = ppos + 2 * poper_;
+                                if (t == offs)
+                                    chain_mid = chain_neg = true;
+                            } else if (neg != top->negative()) {
+                                /* mixed polarity: the body runs when the
+                                   chain is false (e.g. `if not a < b < c`) */
+                                chain_mid = chain_neg = true;
+                            } else if (pop_ == Pyc::LOAD_CONST_A
+                                    || pop_ == Pyc::RETURN_CONST_A
+                                    || pop_ == Pyc::RETURN_VALUE) {
+                                int pop2 = 0, poper2 = 0;
+                                if (pop_ == Pyc::LOAD_CONST_A)
+                                    bc_next(probe, mod, pop2, poper2, ppos);
+                                else
+                                    pop2 = pop_;
+                                if (pop2 == Pyc::RETURN_CONST_A
+                                        || pop2 == Pyc::RETURN_VALUE) {
+                                    /* dead exit epilogue (POP_TOP; LOAD_CONST;
+                                       RETURN...): the body runs when the
+                                       chain is true */
+                                    chain_mid = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (chain_mid) {
+                        newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
+                        if (chain_neg)
+                            newcond = new ASTUnary(newcond, ASTUnary::UN_NOT);
+                    } else if (curblock->end() == offs
                             || (curblock->end() == curpos && !top->negative())) {
                         /* if blah and blah */
                         newcond = new ASTBinary(cond1, cond, ASTBinary::BIN_LOG_AND);
@@ -1252,16 +2935,123 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 curblock = blocks.top();
             }
             break;
+        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
+            /* Python 3.11+: backward jump used only to resume a SEND loop
+               inside await/async-with/async-for machinery.  Treating it as
+               a loop jump would wrap the await internals in a bogus loop
+               block, so treat it as a no-op. */
+            break;
+        case Pyc::SEND_A:
+            /* Python 3.11+: send TOS to the coroutine/iterator below it.
+               The sent value is consumed by END_SEND; the awaited result is
+               represented by the awaitable node already on the stack. */
+            break;
+        case Pyc::END_SEND:
+            /* Python 3.12+: finish a SEND; drop the value that was sent. */
+            stack.pop();
+            break;
         case Pyc::JUMP_ABSOLUTE_A:
         // bpo-47120: Replaced JUMP_ABSOLUTE by the relative jump JUMP_BACKWARD.
         case Pyc::JUMP_BACKWARD_A:
-        case Pyc::JUMP_BACKWARD_NO_INTERRUPT_A:
             {
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129 
 
                 if (offs < pos) {
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && comp_saved > 0) {
+                        /* PEP 709 inline comprehension loop-back (either the
+                           append edge or an `if` filter's false edge): the
+                           block stays open and is closed by END_FOR, which
+                           also folds the generator into the comprehension
+                           node still on the stack.  The stack is already in
+                           its loop-entry shape here. */
+                        break;
+                    }
+
+                    if (curblock->blktype() == ASTBlock::BLK_WHILE
+                            && mod->verCompare(3, 8) >= 0) {
+                        /* Python 3.8+ while loop (no SETUP_LOOP/POP_BLOCK
+                           pair): the backward jump at the end of the body
+                           closes the loop block created at the conditional
+                           jump.  On 3.7 and older the loop block is closed
+                           by POP_BLOCK instead. */
+                        int head = curblock.cast<ASTCondBlock>()->head();
+                        /* offs is the backward *distance* (2*operand); the
+                           absolute target is derived from the instruction
+                           position, using the same version-dependent cache
+                           rule as the pre-scan (3.13 and 3.14 both land
+                           one cache slot further than older versions). */
+                        int target = pos - offs;
+                        if (mod->verCompare(3, 13) >= 0)
+                            target += sizeof(uint16_t);
+                        if (head < 0 || target == head) {
+                            if (!stack_hist.empty()) {
+                                stack = stack_hist.top();
+                                stack_hist.pop();
+                            }
+                            PycRef<ASTBlock> tmp = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            curblock->append(tmp.cast<ASTNode>());
+                            break;
+                        }
+                        /* A head was recorded (3.14 tail-optimized loop):
+                           any other backward edge is the false path's exit
+                           to the enclosing loop and leaves no statement. */
+                        break;
+                    }
+
+                    if (curblock->blktype() == ASTBlock::BLK_IF
+                            || curblock->blktype() == ASTBlock::BLK_ELIF) {
+                        /* Python 3.14 tail-optimized if/else at the end of
+                           a `while True:` body: the if arm ends with the
+                           loop's back edge (no JUMP_FORWARD hop like older
+                           versions) and the if's false target is the loop's
+                           structural exit.  Close the if and decode the
+                           exit region as its else arm, kept as a child of
+                           the loop so the else renders inside the loop. */
+                        int target = pos - offs;
+                        if (mod->verCompare(3, 13) >= 0)
+                            target += sizeof(uint16_t);
+                        bool as_else = false;
+                        {
+                            std::stack<PycRef<ASTBlock>> blocksCopy = blocks;
+                            while (blocksCopy.size() > 1) {
+                                PycRef<ASTBlock> blk = blocksCopy.top();
+                                blocksCopy.pop();
+                                if (blk->blktype() != ASTBlock::BLK_WHILE)
+                                    continue;
+                                int head = blk.cast<ASTCondBlock>()->head();
+                                int ifend = curblock->end();
+                                auto ue = uncond_loop_ends.find(ifend);
+                                if (head >= 0 && target == head
+                                        && ue != uncond_loop_ends.end()
+                                        && ue->second == head) {
+                                    as_else = true;
+                                }
+                                break;
+                            }
+                        }
+                        if (as_else) {
+                            if (!stack_hist.empty()) {
+                                stack = stack_hist.top();
+                                stack_hist.pop();
+                            }
+                            PycRef<ASTBlock> tmp = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            curblock->append(tmp.cast<ASTNode>());
+                            PycRef<ASTBlock> elseblk =
+                                    new ASTBlock(ASTBlock::BLK_ELSE, 0);
+                            blocks.push(elseblk);
+                            curblock = blocks.top();
+                            while_else_exit = true;
+                            break;
+                        }
+                    }
+
                     if (curblock->blktype() == ASTBlock::BLK_FOR) {
                         bool is_jump_to_start = offs == curblock.cast<ASTIterBlock>()->start();
                         bool should_pop_for_block = curblock.cast<ASTIterBlock>()->isComprehension();
@@ -1269,7 +3059,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         bool should_add_for_block = mod->majorVer() == 3 && mod->minorVer() >= 8 && is_jump_to_start && !curblock.cast<ASTIterBlock>()->isComprehension();
 
                         if (should_pop_for_block || should_add_for_block) {
-                            PycRef<ASTNode> top = stack.top();
+                            /* For inline comprehensions the node directly on
+                               top is the deepest active iterator, not the
+                               result; scan a few slots down for the
+                               comprehension node. */
+                            PycRef<ASTNode> top;
+                            for (int depth = 1; depth <= 5; depth++) {
+                                PycRef<ASTNode> probe = stack.top(depth);
+                                if (probe.type() == ASTNode::NODE_COMPREHENSION) {
+                                    top = probe;
+                                    break;
+                                }
+                            }
 
                             if (top.type() == ASTNode::NODE_COMPREHENSION) {
                                 PycRef<ASTComprehension> comp = top.cast<ASTComprehension>();
@@ -1376,16 +3177,92 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_JUMP_FORWARD_A:
             {
                 int offs = operand;
-                if (mod->verCompare(3, 10) >= 0)
+                if (mod->verCompare(3, 10) >= 0) {
                     offs *= sizeof(uint16_t); // // BPO-27129
+                    /* Relative jump: the base is the end of this two-byte
+                     * instruction (JUMP_FORWARD carries no inline cache
+                     * entry in any version), i.e. curpos + 2 + 2*operand,
+                     * which equals pos + 2*operand. */
+                    offs += pos;
+                }
+
+                /* Dead-code skip inside a conditional block (3.12+): a
+                   forward jump whose target lies within the current
+                   block — e.g. past the dead exit epilogue of a chained
+                   comparison — only moves the instruction pointer. */
+                if (mod->verCompare(3, 12) >= 0 && blocks.size() > 1
+                        && (curblock->blktype() == ASTBlock::BLK_IF
+                            || curblock->blktype() == ASTBlock::BLK_ELIF)
+                        && offs > pos && offs < curblock->end()) {
+                    while (pos < offs && !source.atEof())
+                        bc_next(source, mod, opcode, operand, pos);
+                    break;
+                }
+
+                /* With BPO-27129 (3.10+) the base is already folded into
+                   offs above, so it is the absolute target; older builds
+                   keep the raw relative operand and need pos added. */
+                int endpos = (mod->verCompare(3, 10) >= 0) ? offs : pos + offs;
+
+                /* Python 3.11+: `break` out of a for loop compiles to a
+                   plain JUMP_FORWARD whose target lies beyond the loop's
+                   extent (past the END_FOR/POP_ITER epilogue and any
+                   for-else arm).  Recognize it and emit the keyword
+                   instead of letting the exit region be decoded inside
+                   the current block. */
+                if (mod->verCompare(3, 11) >= 0 && blocks.size() > 1) {
+                    PycRef<ASTBlock> loopblk;
+                    {
+                        std::stack<PycRef<ASTBlock>> scan = blocks;
+                        while (!scan.empty()) {
+                            PycRef<ASTBlock> b = scan.top();
+                            scan.pop();
+                            if (b->blktype() == ASTBlock::BLK_FOR
+                                    || b->blktype() == ASTBlock::BLK_ASYNCFOR) {
+                                loopblk = b;
+                                break;
+                            }
+                        }
+                    }
+                    bool unwind_ok = loopblk != nullptr
+                            && loopblk->end() > 0
+                            && endpos > loopblk->end()
+                            && !loopblk.cast<ASTIterBlock>()->isComprehension();
+                    if (unwind_ok) {
+                        /* Only unwind plain conditional blocks; a break
+                           crossing a try boundary has extra epilogue
+                           handling that this fast path must not disturb. */
+                        std::stack<PycRef<ASTBlock>> scan = blocks;
+                        while (scan.top() != loopblk) {
+                            ASTBlock::BlkType t = scan.top()->blktype();
+                            if (t != ASTBlock::BLK_IF && t != ASTBlock::BLK_ELIF
+                                    && t != ASTBlock::BLK_ELSE) {
+                                unwind_ok = false;
+                                break;
+                            }
+                            scan.pop();
+                        }
+                    }
+                    if (unwind_ok) {
+                        curblock->append(new ASTKeyword(ASTKeyword::KW_BREAK));
+                        while (blocks.top() != loopblk) {
+                            PycRef<ASTBlock> inner = blocks.top();
+                            blocks.pop();
+                            blocks.top()->append(inner.cast<ASTNode>());
+                        }
+                        curblock = blocks.top();
+                        curblock.cast<ASTIterBlock>()->setElseEnd(endpos);
+                        break;
+                    }
+                }
 
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
                     PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
                     if (cont->hasExcept()) {
                         stack_hist.push(stack);
 
-                        curblock->setEnd(pos+offs);
-                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+offs, NULL, false);
+                        curblock->setEnd(endpos);
+                        PycRef<ASTBlock> except = new ASTCondBlock(ASTBlock::BLK_EXCEPT, endpos, NULL, false);
                         except->init();
                         blocks.push(except);
                         curblock = blocks.top();
@@ -1419,7 +3296,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         if (push) {
                             stack_hist.push(stack);
                         }
-                        PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, pos+offs);
+                        PycRef<ASTBlock> next = new ASTBlock(ASTBlock::BLK_ELSE, endpos);
                         if (prev->inited() == ASTCondBlock::PRE_POPPED) {
                             next->init(ASTCondBlock::PRE_POPPED);
                         }
@@ -1435,7 +3312,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         if (push) {
                             stack_hist.push(stack);
                         }
-                        PycRef<ASTBlock> next = new ASTCondBlock(ASTBlock::BLK_EXCEPT, pos+offs, NULL, false);
+                        PycRef<ASTBlock> next = new ASTCondBlock(ASTBlock::BLK_EXCEPT, endpos, NULL, false);
                         next->init();
 
                         blocks.push(next.cast<ASTBlock>());
@@ -1485,7 +3362,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 if (!blocks.empty()) {
                     curblock = blocks.top();
                     if (curblock->blktype() == ASTBlock::BLK_EXCEPT)
-                        curblock->setEnd(pos+offs);
+                        curblock->setEnd(endpos);
                 }
             }
             break;
@@ -1500,10 +3377,77 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 
                 if (curblock->blktype() == ASTBlock::BLK_FOR
                         && curblock.cast<ASTIterBlock>()->isComprehension()) {
-                    stack.pop();
-                    stack.push(new ASTComprehension(value));
+                    if (comp_saved > 0) {
+                        /* PEP 709 inline comprehension: the operand counts
+                           the value plus one iterator slot per `for` clause.
+                           The loop state is [.., accumulator, iter] with the
+                           iterator on top; replace the accumulator with the
+                           result node and put the iterators back on top. */
+                        std::vector<PycRef<ASTNode>> iters;
+                        for (int i = 0; i < operand - 1; i++) {
+                            iters.push_back(stack.top());
+                            stack.pop();
+                        }
+                        stack.pop();
+                        stack.push(new ASTComprehension(value, comp_kind));
+                        for (int i = (int)iters.size() - 1; i >= 0; i--)
+                            stack.push(iters[i]);
+                        comp_restoring = false;
+                    } else {
+                        stack.pop();
+                        stack.push(new ASTComprehension(value));
+                    }
                 } else {
                     stack.push(new ASTSubscr(list, value)); /* Total hack */
+                }
+            }
+            break;
+        case Pyc::SET_ADD_A:
+            {
+                /* Python 3.12+: inline set comprehension (PEP 709). */
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock.cast<ASTIterBlock>()->isComprehension()
+                        && comp_saved > 0) {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<ASTNode>> iters;
+                    for (int i = 0; i < operand - 1; i++) {
+                        iters.push_back(stack.top());
+                        stack.pop();
+                    }
+                    stack.pop();
+                    stack.push(new ASTComprehension(value, ASTComprehension::COMP_SET));
+                    for (int i = (int)iters.size() - 1; i >= 0; i--)
+                        stack.push(iters[i]);
+                    comp_restoring = false;
+                } else {
+                    fprintf(stderr, "Unsupported SET_ADD outside of a comprehension\n");
+                }
+            }
+            break;
+        case Pyc::MAP_ADD_A:
+            {
+                /* Python 3.12+: inline dict comprehension (PEP 709).
+                   MAP_ADD pops value (TOS) and key (TOS1). */
+                if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && curblock.cast<ASTIterBlock>()->isComprehension()
+                        && comp_saved > 0) {
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> key = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<ASTNode>> iters;
+                    for (int i = 0; i < operand - 1; i++) {
+                        iters.push_back(stack.top());
+                        stack.pop();
+                    }
+                    stack.pop();
+                    stack.push(new ASTComprehension(value, ASTComprehension::COMP_MAP, key));
+                    for (int i = (int)iters.size() - 1; i >= 0; i--)
+                        stack.push(iters[i]);
+                    comp_restoring = false;
+                } else {
+                    fprintf(stderr, "Unsupported MAP_ADD outside of a comprehension\n");
                 }
             }
             break;
@@ -1617,6 +3561,193 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             stack.push(new ASTName(code->getLocal(operand >> 4)));
             stack.push(new ASTName(code->getLocal(operand & 0xF)));
             break;
+        case Pyc::LOAD_FAST_BORROW_A:
+            /* Python 3.14: like LOAD_FAST (a borrow is an optimization
+               hint only). */
+            stack.push(new ASTName(code->getLocal(operand)));
+            break;
+        case Pyc::LOAD_FAST_CHECK_A:
+            /* Python 3.12+: like LOAD_FAST but checks the local is bound
+               (used for the __exit__ lookup in with statements). */
+            stack.push(new ASTName(code->getLocal(operand)));
+            break;
+        case Pyc::LOAD_FAST_BORROW_LOAD_FAST_BORROW_A:
+            /* Python 3.14: like LOAD_FAST_LOAD_FAST. */
+            stack.push(new ASTName(code->getLocal(operand >> 4)));
+            stack.push(new ASTName(code->getLocal(operand & 0xF)));
+            break;
+        case Pyc::LOAD_FAST_AND_CLEAR_A:
+            /* Python 3.12+: comprehension helper - pushes the (possibly
+               unset) local; the old value is restored after the loop.  The
+               pushed placeholder is NULL; the epilogue's SWAP/STORE_FAST
+               pair consumes it again. */
+            stack.push(nullptr);
+            /* PEP 709: detect the inline-comprehension prologue that
+               follows (LOAD_FAST_AND_CLEAR*; SWAP; BUILD_LIST/BUILD_SET/
+               BUILD_MAP 0; SWAP; [GET_ITER]; FOR_ITER) so the loop is
+               treated as a comprehension rather than a for statement, and
+               count the local as awaiting its epilogue restore. */
+            {
+                PycBuffer scan = source;
+                int scanpos = pos;
+                int sop, sopc;
+                int stage = 0; /* 0: LFACs, 1: SWAP, 2: BUILD_* 0, 3: SWAP */
+                bool found = false;
+                while (!scan.atEof()) {
+                    bc_next(scan, mod, sop, sopc, scanpos);
+                    if (stage == 0) {
+                        if (sop == Pyc::LOAD_FAST_AND_CLEAR_A)
+                            continue;
+                        if (sop == Pyc::SWAP_A) {
+                            stage = 1;
+                            continue;
+                        }
+                        break;
+                    } else if (stage == 1) {
+                        if (sopc == 0 && (sop == Pyc::BUILD_LIST_A
+                                    || sop == Pyc::BUILD_SET_A
+                                    || sop == Pyc::BUILD_MAP_A)) {
+                            comp_kind = (sop == Pyc::BUILD_SET_A)
+                                    ? ASTComprehension::COMP_SET
+                                    : (sop == Pyc::BUILD_MAP_A)
+                                    ? ASTComprehension::COMP_MAP
+                                    : ASTComprehension::COMP_LIST;
+                            stage = 2;
+                            continue;
+                        }
+                        break;
+                    } else if (stage == 2) {
+                        if (sop == Pyc::SWAP_A) {
+                            stage = 3;
+                            continue;
+                        }
+                        break;
+                    } else {
+                        /* stage 3: an optional duplicate GET_ITER (3.13)
+                           may precede the loop's FOR_ITER. */
+                        if (sop == Pyc::GET_ITER)
+                            continue;
+                        found = (sop == Pyc::FOR_ITER_A);
+                        break;
+                    }
+                }
+                if (found) {
+                    comp_saved++;
+                    comp_restoring = false;
+                }
+            }
+            break;
+        case Pyc::STORE_FAST_LOAD_FAST_A:
+            {
+                /* Python 3.13+: store TOS into locals[A>>4], then load
+                   locals[A&0xF]. */
+                PycRef<ASTNode> value = stack.top();
+                stack.pop();
+                PycRef<ASTNode> dest = new ASTName(code->getLocal(operand >> 4));
+                if (comp_restoring && comp_saved > 0) {
+                    /* PEP 709 epilogue: silent restore of a saved local. */
+                    if (--comp_saved <= 0) {
+                        comp_saved = 0;
+                        comp_restoring = false;
+                    }
+                } else if (curblock->blktype() == ASTBlock::BLK_FOR
+                        && !curblock->inited()) {
+                    /* First store of an inline-comprehension loop target. */
+                    curblock.cast<ASTIterBlock>()->setIndex(dest);
+                } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                        && !curblock->inited()) {
+                    curblock.cast<ASTWithBlock>()->setExpr(value);
+                } else if (value != nullptr && !value->processed()) {
+                    curblock->append(new ASTStore(value, dest));
+                }
+                stack.push(new ASTName(code->getLocal(operand & 0xF)));
+            }
+            break;
+        case Pyc::STORE_FAST_STORE_FAST_A:
+            {
+                /* Python 3.13+: store TOS into locals[A>>4] and TOS1 into
+                   locals[A&0xF].  In inline dict/set comprehensions this
+                   unpacks the loop's (key, value) pairs. */
+                for (int half = 0; half < 2; half++) {
+                    int local = (half == 0) ? (operand >> 4) : (operand & 0xF);
+
+                    if (unpack) {
+                        /* Same tuple-unpack protocol as STORE_FAST: the
+                           UNPACK_SEQUENCE left a tuple placeholder on the
+                           stack; collect both names into it. */
+                        PycRef<ASTNode> name = new ASTName(code->getLocal(local));
+                        PycRef<ASTNode> tup = stack.top();
+                        if (tup.type() == ASTNode::NODE_TUPLE)
+                            tup.cast<ASTTuple>()->add(name);
+                        else
+                            fputs("Something TERRIBLE happened!\n", stderr);
+
+                        if (--unpack <= 0) {
+                            stack.pop();
+                            PycRef<ASTNode> seq = stack.top();
+                            stack.pop(); /* NULL pushed by FOR_ITER */
+
+                            if (curblock->blktype() == ASTBlock::BLK_FOR
+                                    && !curblock->inited()) {
+                                PycRef<ASTTuple> tuple = tup.try_cast<ASTTuple>();
+                                if (tuple != NULL)
+                                    tuple->setRequireParens(false);
+                                curblock.cast<ASTIterBlock>()->setIndex(tup);
+                            } else if (seq && seq.type() == ASTNode::NODE_CHAINSTORE) {
+                                append_to_chain_store(seq, tup, stack, curblock);
+                            } else {
+                                curblock->append(new ASTStore(seq, tup));
+                            }
+                        }
+                        continue;
+                    }
+
+                    PycRef<ASTNode> value = stack.top();
+                    stack.pop();
+                    PycRef<ASTNode> name = new ASTName(code->getLocal(local));
+
+                    if (comp_restoring && comp_saved > 0 && value == nullptr) {
+                        /* PEP 709 epilogue: silent restore of a saved local. */
+                        if (--comp_saved <= 0) {
+                            comp_saved = 0;
+                            comp_restoring = false;
+                        }
+                        continue;
+                    }
+
+                    if (name.cast<ASTName>()->name()->value()[0] == '_'
+                            && name.cast<ASTName>()->name()->value()[1] == '[') {
+                        /* Don't show stores of list comp append objects. */
+                        continue;
+                    }
+
+                    if (curblock->blktype() == ASTBlock::BLK_FOR
+                            && !curblock->inited()) {
+                        curblock.cast<ASTIterBlock>()->setIndex(name);
+                    } else if (curblock->blktype() == ASTBlock::BLK_WITH
+                            && !curblock->inited()) {
+                        curblock.cast<ASTWithBlock>()->setExpr(value);
+                    } else if (value != nullptr && !value->processed()) {
+                        curblock->append(new ASTStore(value, name));
+                    }
+                }
+            }
+            break;
+        case Pyc::LOAD_SMALL_INT_A:
+            /* Python 3.14: loads a small integer constant (0..255). */
+            stack.push(new ASTObject(new PycInt(operand)));
+            break;
+        case Pyc::LOAD_COMMON_CONSTANT_A:
+            /* Python 3.14: 0 = AssertionError, 1 = NotImplementedError. */
+            if (operand == 1)
+                stack.push(make_name("NotImplementedError"));
+            else
+                stack.push(make_name("AssertionError"));
+            break;
+        case Pyc::LOAD_ASSERTION_ERROR:
+            /* Python 3.9+: push AssertionError for bare assert/raise. */
+            stack.push(make_name("AssertionError"));
+            break;
         case Pyc::LOAD_GLOBAL_A:
             if (mod->verCompare(3, 11) >= 0) {
                 // Loads the global named co_names[namei>>1] onto the stack.
@@ -1673,6 +3804,91 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     stack.pop();
                 }
                 stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
+            }
+            break;
+        case Pyc::MAKE_FUNCTION:
+            {
+                /* Python 3.13+: MAKE_FUNCTION takes no operand; defaults
+                   and kwdefaults are attached afterwards through
+                   SET_FUNCTION_ATTRIBUTE.  The qualified name sits on
+                   top of the code object. */
+                PycRef<ASTNode> fun_code = stack.top();
+                stack.pop();
+
+                int tos_type = fun_code.type() == ASTNode::NODE_OBJECT
+                        ? fun_code.cast<ASTObject>()->object().type() : 0;
+                if (tos_type != PycObject::TYPE_CODE &&
+                    tos_type != PycObject::TYPE_CODE2) {
+                    /* Drop the qualified name string. */
+                    fun_code = stack.top();
+                    stack.pop();
+                    tos_type = fun_code.type() == ASTNode::NODE_OBJECT
+                            ? fun_code.cast<ASTObject>()->object().type() : 0;
+                }
+
+                ASTFunction::defarg_t defArgs, kwDefArgs;
+                stack.push(new ASTFunction(fun_code, defArgs, kwDefArgs));
+            }
+            break;
+        case Pyc::SET_FUNCTION_ATTRIBUTE_A:
+            {
+                /* Python 3.13+: attach an attribute to the function object
+                   created by the preceding MAKE_FUNCTION.  Stack shape is
+                   [.., attr, func] - the attribute sits UNDER the function.
+                     1 = defaults tuple, 2 = kwdefaults map,
+                     4 = annotations, 8 = closure. */
+                /* NOTE: FastStack::top(1) is TOS itself; top(2) is the
+                   element under it. */
+                PycRef<ASTNode> func = stack.top();
+                PycRef<ASTNode> attr = stack.top(2);
+                stack.pop();
+                stack.pop();
+                stack.push(func);
+                if (func.type() == ASTNode::NODE_FUNCTION) {
+                    PycRef<ASTFunction> fn = func.cast<ASTFunction>();
+                    if (operand == 1) {
+                        /* defaults: a tuple constant (LOAD_CONST of tuple)
+                           or an ASTTuple built on the stack. */
+                        if (attr.type() == ASTNode::NODE_TUPLE) {
+                            for (const auto& v : attr.cast<ASTTuple>()->values())
+                                fn->addDefault(v);
+                        } else if (attr.type() == ASTNode::NODE_OBJECT
+                                && (attr.cast<ASTObject>()->object().type() == PycObject::TYPE_TUPLE
+                                 || attr.cast<ASTObject>()->object().type() == PycObject::TYPE_SMALL_TUPLE)) {
+                            for (const auto& v : attr.cast<ASTObject>()
+                                        ->object().cast<PycTuple>()->values())
+                                fn->addDefault(new ASTObject(v));
+                        } else if (attr != nullptr) {
+                            fn->addDefault(attr);
+                        }
+                    } else if (operand == 2) {
+                        /* kwdefaults: BUILD_CONST_KEY_MAP yields an
+                           ASTConstMap; a dict constant yields an ASTObject
+                           (PycDict) or an ASTMap.  Values align positionally
+                           with the keyword-only parameters. */
+                        if (attr.type() == ASTNode::NODE_CONST_MAP) {
+                            /* BUILD_CONST_KEY_MAP pops values top-down, so
+                               they are stored in reverse parameter order. */
+                            const auto& vals = attr.cast<ASTConstMap>()->values();
+                            for (auto it = vals.rbegin(); it != vals.rend(); ++it)
+                                fn->addKWDefault(*it);
+                        } else if (attr.type() == ASTNode::NODE_MAP) {
+                            /* BUILD_MAP stores pairs in source order,
+                               matching the parameter order. */
+                            const auto& vals = attr.cast<ASTMap>()->values();
+                            for (const auto& kv : vals)
+                                fn->addKWDefault(kv.second);
+                        } else if (attr.type() == ASTNode::NODE_OBJECT
+                                && attr.cast<ASTObject>()->object().type() == PycObject::TYPE_DICT) {
+                            for (const auto& kv : attr.cast<ASTObject>()
+                                        ->object().cast<PycDict>()->values())
+                                fn->addKWDefault(new ASTObject(std::get<1>(kv)));
+                        } else if (attr != nullptr) {
+                            fn->addKWDefault(attr);
+                        }
+                    }
+                    /* annotations (4) and closure (8) are not represented */
+                }
             }
             break;
         case Pyc::NOP:
@@ -1790,11 +4006,23 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTCompare(left, right, ASTCompare::CMP_EXCEPTION));
             }
             break;
+        case Pyc::CHECK_EG_MATCH:
+            {
+                /* Python 3.11+: compares exception group against handler
+                   type (except*). */
+                PycRef<ASTNode> right = stack.top();
+                stack.pop();
+                PycRef<ASTNode> left = stack.top();
+                stack.pop();
+                stack.push(new ASTCompare(left, right, ASTCompare::CMP_EXCEPTION));
+            }
+            break;
         case Pyc::END_FOR:
             {
                 stack.pop();
 
-                if ((opcode == Pyc::END_FOR) && (mod->majorVer() == 3) && (mod->minorVer() == 12)) {
+                if ((opcode == Pyc::END_FOR) && (mod->majorVer() == 3) && (mod->minorVer() == 12)
+                        && comp_saved == 0) {
                     // one additional pop for python 3.12
                     stack.pop();
                 }
@@ -1808,8 +4036,47 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     PycRef<ASTBlock> prev = blocks.top();
                     blocks.pop();
 
-                    curblock = blocks.top();
-                    curblock->append(prev.cast<ASTNode>());
+                    if (prev.cast<ASTIterBlock>()->isComprehension() && comp_saved > 0) {
+                        /* PEP 709: fold this loop into the comprehension node
+                           that is still on the stack instead of emitting a
+                           for statement.  Scan a few slots for it; the top of
+                           stack may hold other active iterators. */
+                        for (int depth = 1; depth <= 5; depth++) {
+                            PycRef<ASTNode> probe = stack.top(depth);
+                            if (probe.type() == ASTNode::NODE_COMPREHENSION) {
+                                probe.cast<ASTComprehension>()->addGenerator(
+                                        prev.cast<ASTIterBlock>());
+                                break;
+                            }
+                        }
+                        curblock = blocks.top();
+                        /* Epilogue follows: SWAP + STORE_FAST restore the
+                           cleared locals; mark that for the STORE handlers. */
+                        comp_restoring = true;
+                    } else {
+                        curblock = blocks.top();
+                        curblock->append(prev.cast<ASTNode>());
+
+                        /* A recorded break target beyond the loop end
+                           delimits a for-else arm: [end, elseEnd).  Open a
+                           block for it so the arm renders attached to the
+                           loop instead of running unconditionally after
+                           it.  The block closes when decoding reaches
+                           elseEnd. */
+                        int eend = prev.cast<ASTIterBlock>()->elseEnd();
+                        if (eend > pos) {
+                            PycRef<ASTBlock> blkelse = new ASTBlock(ASTBlock::BLK_ELSE, eend);
+                            blkelse->init();
+                            blocks.push(blkelse.cast<ASTBlock>());
+                            curblock = blocks.top();
+                        }
+                    }
+                }
+                else if (comp_saved > 0) {
+                    /* PEP 709 inline comprehension: the loop block was
+                       already closed at its JUMP_BACKWARD, or this is an
+                       inner `for` clause's iterator being discarded. */
+                    comp_restoring = true;
                 }
                 else {
                     fprintf(stderr, "Wrong block type %i for END_FOR\n", curblock->blktype());
@@ -1818,8 +4085,114 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::POP_TOP:
             {
+                if (comp_saved > 0) {
+                    /* Python 3.13 inline-comprehension epilogue: END_FOR
+                       already discarded the iterator; this POP_TOP is the
+                       iterator-slot cleanup and must not eat the result. */
+                    break;
+                }
+
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
+
+                if (value != nullptr) {
+                    /* Python 3.12+: FOR_ITER keeps the loop iterator on
+                       the stack until END_FOR.  A POP_TOP inside the loop
+                       body that surfaces it (e.g. the dead stack-balance
+                       cleanup after a raise that closes an if block and
+                       restores an older stack snapshot) must not emit the
+                       iterator expression again. */
+                    bool isIterator = false;
+                    std::stack<PycRef<ASTBlock>> scan = blocks;
+                    while (!scan.empty()) {
+                        PycRef<ASTBlock> b = scan.top();
+                        scan.pop();
+                        if (b->blktype() != ASTBlock::BLK_FOR
+                                && b->blktype() != ASTBlock::BLK_ASYNCFOR)
+                            continue;
+                        PycRef<ASTIterBlock> fb = b.try_cast<ASTIterBlock>();
+                        if (fb != nullptr && fb->iter() == value) {
+                            isIterator = true;
+                            break;
+                        }
+                    }
+                    if (isIterator)
+                        break;
+                }
+
+                if (value.type() == ASTNode::NODE_BINARY
+                        && value.cast<ASTBinary>()->op() == ASTBinary::BIN_ATTR
+                        && value.cast<ASTBinary>()->right().type() == ASTNode::NODE_NAME) {
+                    /* A plain POP_TOP consumed the exit marker of a `with`
+                       epilogue (e.g. the loop-iterator unwinding POP of a
+                       break path).  Drop the marker and the NULL that was
+                       pushed below it. */
+                    PycRef<PycString> mn = value.cast<ASTBinary>()->right()
+                            .cast<ASTName>()->name();
+                    if (mn->isEqual("__exit__") || mn->isEqual("__aexit__")) {
+                        break;
+                    }
+                }
+
+                /* Python 3.11+: end of a `with` body.  The value popped is
+                   the marker call for the implicit __exit__ epilogue, which
+                   was left by the CALL handler.  The epilogue has no source
+                   representation, so it is dropped. */
+                if (value.type() == ASTNode::NODE_CALL
+                        && value.cast<ASTCall>()->func().type() == ASTNode::NODE_BINARY) {
+                    PycRef<ASTBinary> fn = value.cast<ASTCall>()->func().cast<ASTBinary>();
+                    if (fn->op() == ASTBinary::BIN_ATTR
+                            && fn->right().type() == ASTNode::NODE_NAME) {
+                        PycRef<PycString> nm = fn->right().cast<ASTName>()->name();
+                        if (nm->isEqual("__exit__") || nm->isEqual("__aexit__")) {
+                            /* Close the innermost open `with` block, closing
+                               any conditional blocks still open above it (the
+                               epilogue belongs to a break/return/continue
+                               path, so those inner blocks have ended). */
+                            PycRef<ASTBlock> with;
+                            {
+                                std::stack<PycRef<ASTBlock>> scan = blocks;
+                                while (!scan.empty()) {
+                                    PycRef<ASTBlock> blk = scan.top();
+                                    if (blk->blktype() == ASTBlock::BLK_WITH
+                                            && blk->inited()) {
+                                        with = blk;
+                                        break;
+                                    }
+                                    scan.pop();
+                                }
+                            }
+                            if (with != nullptr) {
+                                while (blocks.top() != with) {
+                                    PycRef<ASTBlock> inner = blocks.top();
+                                    blocks.pop();
+                                    blocks.top()->append(inner.cast<ASTNode>());
+                                }
+                                blocks.pop();
+                                curblock = blocks.top();
+                                curblock->append(with.cast<ASTNode>());
+                            } else {
+                                /* Duplicate exit site of an already-closed
+                                   `with`: discard the (NULL, exit-mark) pair
+                                   it left on the stack. */
+                                PycRef<ASTNode> below = stack.top(1);
+                                if (below != nullptr
+                                        && below.type() == ASTNode::NODE_BINARY
+                                        && below.cast<ASTBinary>()->op() == ASTBinary::BIN_ATTR
+                                        && below.cast<ASTBinary>()->right().type() == ASTNode::NODE_NAME) {
+                                    PycRef<PycString> mn = below.cast<ASTBinary>()
+                                            ->right().cast<ASTName>()->name();
+                                    if (mn->isEqual("__exit__") || mn->isEqual("__aexit__")) {
+                                        if (stack.top(2) == nullptr)
+                                            stack.pop();
+                                        stack.pop();
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
 
                 if (!curblock->inited()) {
                     if (curblock->blktype() == ASTBlock::BLK_WITH) {
@@ -1934,10 +4307,69 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::RERAISE:
         case Pyc::RERAISE_A:
             /* Python 3.11 cleanup opcode. */
+            if (operand == 0 && blocks.size() > 1) {
+                /* RERAISE 0 ends an except chain - no handler matched, so
+                   the exception propagates.  Close the finished handler
+                   (and its container when no finally follows). */
+                if (curblock->blktype() == ASTBlock::BLK_FINALLY) {
+                    /* The finally-propagation arm ends in RERAISE; the
+                       finally arm is the container's last arm, so close
+                       the container as well. */
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    if (!stack_hist.empty())
+                        stack_hist.pop();
+                    if (prev->size() != 0)
+                        curblock->append(prev.cast<ASTNode>());
+                    if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                            && blocks.size() > 1) {
+                        PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
+                        blocks.pop();
+                        curblock = blocks.top();
+                        if (!stack_hist.empty())
+                            stack_hist.pop();
+                        if (!cont->mounted())
+                            curblock->append(cont.cast<ASTNode>());
+                    }
+                }
+                if (curblock->blktype() == ASTBlock::BLK_EXCEPT) {
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    if (!stack_hist.empty())
+                        stack_hist.pop();
+                    if (prev->size() != 0)
+                        curblock->append(prev.cast<ASTNode>());
+                }
+                if (curblock->blktype() == ASTBlock::BLK_CONTAINER
+                        && blocks.size() > 1) {
+                    PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();
+                    /* A finally-bearing container stays open for its
+                       finally arm - unless the arm's propagation region
+                       was already swallowed by the handler skip that ends
+                       here, in which case the container is finished. */
+                    if (!cont->hasFinally() || pos >= cont->finally()) {
+                        blocks.pop();
+                        curblock = blocks.top();
+                        if (!stack_hist.empty())
+                            stack_hist.pop();
+                        /* Mounted (deferred in-loop) containers already sit
+                           in their parent; appending again would duplicate
+                           them. */
+                        if (!cont->mounted())
+                            curblock->append(cont.cast<ASTNode>());
+                    }
+                }
+            }
             break;
         case Pyc::RETURN_VALUE:
         case Pyc::INSTRUMENTED_RETURN_VALUE_A:
             {
+                /* Safety reset: any inline-comprehension bookkeeping must
+                   not leak past the end of the code object. */
+                comp_saved = 0;
+                comp_restoring = false;
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
                 curblock->append(new ASTReturn(value));
@@ -1954,15 +4386,73 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
 
-                    bc_next(source, mod, opcode, operand, pos);
+                    /* Old bytecode emits a (dead) jump after a return that
+                       ends an if/else block; skip it.  When the following
+                       instruction is real code (e.g. 3.14 compiles a
+                       constant return as LOAD + RETURN_VALUE), keep it. */
+                    PycBuffer saved_src = source;
+                    int saved_pos = pos;
+                    if (!source.atEof()) {
+                        bc_next(source, mod, opcode, operand, pos);
+                        if (opcode != Pyc::JUMP_FORWARD_A
+                                && opcode != Pyc::JUMP_ABSOLUTE_A) {
+                            source = saved_src;
+                            pos = saved_pos;
+                        }
+                    }
+
+                    /* A `while True:` whose structural exit was decoded as
+                       the trailing if's else arm ends with that arm's
+                       terminator; close the loop block here. */
+                    if (while_else_exit
+                            && curblock->blktype() == ASTBlock::BLK_WHILE
+                            && curblock->end() == 0) {
+                        PycRef<ASTBlock> tmp = curblock;
+                        blocks.pop();
+                        curblock = blocks.top();
+                        curblock->append(tmp.cast<ASTNode>());
+                        while_else_exit = false;
+                    }
                 }
             }
             break;
         case Pyc::RETURN_CONST_A:
         case Pyc::INSTRUMENTED_RETURN_CONST_A:
             {
+                /* Safety reset: any inline-comprehension bookkeeping must
+                   not leak past the end of the code object. */
+                comp_saved = 0;
+                comp_restoring = false;
                 PycRef<ASTObject> value = new ASTObject(code->getConst(operand));
                 curblock->append(new ASTReturn(value.cast<ASTNode>()));
+
+                if ((curblock->blktype() == ASTBlock::BLK_IF
+                        || curblock->blktype() == ASTBlock::BLK_ELSE)
+                        && stack_hist.size()
+                        && (mod->verCompare(2, 6) >= 0)) {
+                    stack = stack_hist.top();
+                    stack_hist.pop();
+
+                    PycRef<ASTBlock> prev = curblock;
+                    blocks.pop();
+                    curblock = blocks.top();
+                    curblock->append(prev.cast<ASTNode>());
+
+                    /* Old bytecode emits a (dead) jump after a return that
+                       ends an if/else block; skip it.  When the following
+                       instruction is real code (e.g. the fallthrough
+                       return of an if/else in 3.12+), keep it. */
+                    PycBuffer saved_src = source;
+                    int saved_pos = pos;
+                    if (!source.atEof()) {
+                        bc_next(source, mod, opcode, operand, pos);
+                        if (opcode != Pyc::JUMP_FORWARD_A
+                                && opcode != Pyc::JUMP_ABSOLUTE_A) {
+                            source = saved_src;
+                            pos = saved_pos;
+                        }
+                    }
+                }
             }
             break;
         case Pyc::ROT_TWO:
@@ -2026,7 +4516,99 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::BEFORE_WITH:
-            /* Python 3.11: setup for with block; ignore. */
+            /* Python 3.11 - 3.13: performs __exit__/__enter__ on the context
+               manager on TOS.  Model it by opening a with block, leaving a
+               bound-__exit__ marker for the epilogue call, and re-pushing
+               the context manager for the following STORE/POP_TOP (the
+               __enter__ result in the bytecode is the manager object used
+               by the STORE). */
+            if (mod->verCompare(3, 11) >= 0 && mod->verCompare(3, 14) < 0) {
+                PycRef<ASTNode> mgr = stack.top();
+                stack.pop();
+
+                PycRef<ASTBlock> withblock = new ASTWithBlock(0);
+                blocks.push(withblock.cast<ASTBlock>());
+                curblock = blocks.top();
+
+                stack.push(nullptr);
+                stack.push(new ASTBinary(mgr, make_name("__exit__"),
+                        ASTBinary::BIN_ATTR));
+                stack.push(mgr);
+            }
+            break;
+        case Pyc::BEFORE_ASYNC_WITH:
+            /* Python 3.11 - 3.13: same as BEFORE_WITH but async: TOS is an
+               awaitable of (exit, result) which is immediately awaited. */
+            if (mod->verCompare(3, 11) >= 0 && mod->verCompare(3, 14) < 0) {
+                PycRef<ASTNode> mgr = stack.top();
+                stack.pop();
+
+                PycRef<ASTBlock> withblock = new ASTWithBlock(0);
+                blocks.push(withblock.cast<ASTBlock>());
+                curblock = blocks.top();
+
+                stack.push(nullptr);
+                PycRef<ASTNode> exitmark = new ASTBinary(mgr,
+                        make_name("__aexit__"), ASTBinary::BIN_ATTR);
+                stack.push(exitmark);
+
+                /* Skip the await loop: GET_AWAITABLE; LOAD_CONST None; SEND;
+                   YIELD; RESUME; JUMP_BACKWARD_NO_INTERRUPT; END_SEND. */
+                do {
+                    bc_next(source, mod, opcode, operand, pos);
+                } while (opcode != Pyc::END_SEND && !source.atEof());
+
+                stack.push(mgr);
+            }
+            break;
+        case Pyc::LOAD_SPECIAL_A:
+            {
+                /* Python 3.14: with-statements no longer use BEFORE_WITH.
+                   Entry sequence on [mgr, mgr]:
+                     COPY 1; LOAD_SPECIAL 1 (__exit__); SWAP 2; SWAP 3;
+                     LOAD_SPECIAL 0/2 (__enter__/__aenter__); CALL 0
+                   (async entries are followed by an await loop through
+                   END_SEND). */
+                if (mod->verCompare(3, 14) >= 0) {
+                    if (operand == 1 || operand == 3) {
+                        bool async_with = (operand == 3);
+                        const char* exitname = async_with ? "__aexit__" : "__exit__";
+
+                        /* The COPY 1 duplicate of the manager is on TOS;
+                           discard it and open the with block. */
+                        stack.pop();
+                        PycRef<ASTNode> mgr = stack.top();
+                        stack.pop();
+
+                        PycRef<ASTBlock> withblock = new ASTWithBlock(0);
+                        blocks.push(withblock.cast<ASTBlock>());
+                        curblock = blocks.top();
+
+                        stack.push(nullptr);
+                        stack.push(new ASTBinary(mgr, make_name(exitname),
+                                ASTBinary::BIN_ATTR));
+
+                        /* Skip: SWAP 2; SWAP 3; LOAD_SPECIAL __enter__;
+                           CALL 0 (plus CACHE entries). */
+                        for (int i = 0; i < 4 && !source.atEof(); i++)
+                            bc_next(source, mod, opcode, operand, pos);
+                        if (async_with) {
+                            /* Skip the await loop through END_SEND. */
+                            while (opcode != Pyc::END_SEND && !source.atEof())
+                                bc_next(source, mod, opcode, operand, pos);
+                        }
+
+                        stack.push(mgr);
+                    } else {
+                        /* __enter__/__aenter__ used outside a with entry. */
+                        PycRef<ASTNode> mgr = stack.top();
+                        stack.pop();
+                        const char* entername = (operand == 2) ? "__aenter__" : "__enter__";
+                        stack.push(new ASTBinary(mgr, make_name(entername),
+                                ASTBinary::BIN_ATTR));
+                    }
+                }
+            }
             break;
         case Pyc::WITH_CLEANUP:
         case Pyc::WITH_CLEANUP_START:
@@ -2254,6 +4836,16 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                         break;
                     }
 
+                    if (comp_restoring && comp_saved > 0 && value == nullptr) {
+                        /* PEP 709 inline-comprehension epilogue: silently
+                           discard the saved local's NULL placeholder. */
+                        if (--comp_saved <= 0) {
+                            comp_saved = 0;
+                            comp_restoring = false;
+                        }
+                        break;
+                    }
+
                     if (curblock->blktype() == ASTBlock::BLK_FOR
                             && !curblock->inited()) {
                         curblock.cast<ASTIterBlock>()->setIndex(name);
@@ -2261,8 +4853,56 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                                    && !curblock->inited()) {
                         curblock.cast<ASTWithBlock>()->setExpr(value);
                         curblock.cast<ASTWithBlock>()->setVar(name);
+                    } else if (mod->verCompare(3, 11) >= 0
+                            && value == nullptr
+                            && last_op == Pyc::LOAD_CONST_A) {
+                        /* Python 3.11+ except-var cleanup: `LOAD_CONST None;
+                           STORE_FAST x; DELETE_FAST x` unbinds the exception
+                           variable when the handler exits.  Only that exact
+                           pair is consumed; a plain `x = None` assignment
+                           (no matching delete) keeps its store. */
+                        PycBuffer probe = source;
+                        int npos = pos, nop, noper;
+                        bc_next(probe, mod, nop, noper, npos);
+                        if (nop == Pyc::DELETE_FAST_A && noper == operand) {
+                            source = probe;
+                            pos = npos;
+                        } else {
+                            curblock->append(new ASTStore(value, name));
+                        }
+                        break;
+                    } else if (curblock->blktype() == ASTBlock::BLK_EXCEPT
+                            && curblock->size() == 0 && !unpack
+                            && mod->verCompare(3, 11) >= 0
+                            && curblock.cast<ASTCondBlock>()->var() == NULL) {
+                        /* Python 3.11+ `except ... as e:` - the first store
+                           after the handler entry binds the variable. */
+                        curblock.cast<ASTCondBlock>()->setVar(name);
                     } else if (value.type() == ASTNode::NODE_CHAINSTORE) {
                         append_to_chain_store(value, name, stack, curblock);
+                    } else if (comp_saved > 0
+                            && curblock->blktype() == ASTBlock::BLK_FOR
+                            && curblock.cast<ASTIterBlock>()->isComprehension()) {
+                        /* Assignment (walrus) inside an inline
+                           comprehension: the stored value was duplicated by
+                           COPY and this STORE consumes the duplicate.  Drop
+                           the original too and keep the walrus expression on
+                           the stack so the append consumes it. */
+                        stack.pop();
+                        auto store = new ASTStore(value, name);
+                        store->setWalrus(true);
+                        stack.push(store);
+                    } else if (mod->verCompare(3, 12) >= 0
+                            && last_op == Pyc::COPY_A && last_operand == 1) {
+                        /* Named expression (PEP 572) outside an inlined
+                           comprehension: `COPY 1; STORE x` stores the
+                           duplicate while the original remains on the
+                           stack as the value of `(x := ...)`.  Replace
+                           that original with the walrus node. */
+                        stack.pop();
+                        auto store = new ASTStore(value, name);
+                        store->setWalrus(true);
+                        stack.push(store);
                     } else {
                         curblock->append(new ASTStore(value, name));
                     }
@@ -2574,11 +5214,24 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             }
             break;
         case Pyc::YIELD_VALUE:
+        case Pyc::YIELD_VALUE_A:
         case Pyc::INSTRUMENTED_YIELD_VALUE_A:
             {
                 PycRef<ASTNode> value = stack.top();
                 stack.pop();
+                if (value == nullptr) {
+                    /* None sent by a SEND loop inside await machinery;
+                       keep it for the following END_SEND. */
+                    stack.push(nullptr);
+                    break;
+                }
                 curblock->append(new ASTReturn(value, ASTReturn::YIELD));
+                /* Python 3.11+ generators: the sent value (None on entry)
+                   is pushed by the interpreter for the RESUME/POP_TOP that
+                   follows; the POP_TOP discards it without a source
+                   representation.  Older versions have no such pair. */
+                if (mod->verCompare(3, 11) >= 0)
+                    stack.push(nullptr);
             }
             break;
         case Pyc::SETUP_ANNOTATIONS:
@@ -2588,6 +5241,57 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::RESUME_A:
         case Pyc::INSTRUMENTED_RESUME_A:
             /* We just entirely ignore this / no-op */
+            break;
+        case Pyc::MAKE_CELL_A:
+            /* Python 3.11+: initialises a cell variable before execution;
+               no stack effect and no source representation. */
+            break;
+        case Pyc::COPY_FREE_VARS_A:
+            /* Python 3.11+: copies closure variables into the frame; no
+               stack effect and no source representation. */
+            break;
+        case Pyc::RETURN_GENERATOR:
+            /* Python 3.11+: generator/async prologue.  Pops the None
+               argument and pushes the generator/coroutine object, which
+               the immediately following POP_TOP discards; leaving the
+               stack untouched has the same net effect. */
+            break;
+        case Pyc::CALL_INTRINSIC_1_A:
+            /* Python 3.12+: runtime helper intrinsics.  Most are only
+               reachable from interpreter tails that are never rendered
+               (e.g. INTRINSIC_STOPITERATION_ERROR); treat as a value-
+               preserving no-op so those tails decompile cleanly. */
+            break;
+        case Pyc::CLEANUP_THROW:
+            /* Python 3.13+: await-machinery handler that unwinds a
+               coroutine suspended at a YIELD inside a SEND loop; it is
+               always followed by a backward jump merging back into the
+               (already emitted) END_SEND.  Dead at the source level. */
+            {
+                PycBuffer peek = source;
+                int peekpos = pos;
+                int nop, nopc;
+                bc_next(peek, mod, nop, nopc, peekpos);
+                if (nop == Pyc::JUMP_BACKWARD_NO_INTERRUPT_A)
+                    bc_next(source, mod, opcode, operand, pos);
+            }
+            break;
+        case Pyc::TO_BOOL:
+            /* Python 3.13+: coerce TOS to bool for a conditional jump;
+               the expression itself is unchanged. */
+            break;
+        case Pyc::NOT_TAKEN:
+            /* Python 3.14+: marker for a not-taken specialized branch. */
+            break;
+        case Pyc::POP_ITER:
+            /* Python 3.14+: discard the iterator after a comprehension or
+               for loop. */
+            if (comp_saved > 0) {
+                /* PEP 709 inline comprehension: END_FOR already discarded
+                   the iterator; keep the accumulator on the stack. */
+                break;
+            }
+            stack.pop();
             break;
         case Pyc::CACHE:
             /* These "fake" opcodes are used as placeholders for optimizing
@@ -2603,6 +5307,85 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::SWAP_A:
             {
+                if (comp_saved > 0) {                    /* PEP 709 inline comprehension: SWAP exchanges TOS with
+                       the operand-th item below it (SWAP 2 swaps the top
+                       two stack entries).  This juggles the saved locals,
+                       the accumulator and the iterator slots in place. */
+                    PycRef<ASTNode> tos = stack.top();
+                    stack.pop();
+                    std::vector<PycRef<ASTNode>> middle;
+                    for (int i = 0; i < operand - 2; i++) {
+                        middle.push_back(stack.top());
+                        stack.pop();
+                    }
+                    PycRef<ASTNode> other = stack.top();
+                    stack.pop();
+                    stack.push(tos);
+                    for (int i = (int)middle.size() - 1; i >= 0; i--)
+                        stack.push(middle[i]);
+                    stack.push(other);
+                    break;
+                }
+                if (operand == 2) {
+                    /* Python 3.12+ chained comparison: "SWAP 2; COPY 2"
+                       reorders the first two operands and duplicates the
+                       midpoint so each segment compares against it.  The
+                       stack ends up as [mid, lhs, mid], ready for the
+                       first COMPARE_OP.  Consuming both instructions here
+                       avoids misreading them as tuple unpacking. */
+                    {
+                        PycBuffer probe = source;
+                        int npos = pos, nop, noper;
+                        bc_next(probe, mod, nop, noper, npos);
+                        while (nop == Pyc::CACHE && !probe.atEof())
+                            bc_next(probe, mod, nop, noper, npos);
+                        if (mod->verCompare(3, 12) >= 0 && nop == Pyc::COPY_A
+                                && noper == 2) {
+                            PycRef<ASTNode> rhs = stack.top();
+                            stack.pop();
+                            PycRef<ASTNode> lhs = stack.top();
+                            stack.pop();
+                            /* SWAP 2 yields [mid, lhs]; COPY 2 duplicates the
+                               midpoint below the top, giving [mid, lhs, mid] */
+                            stack.push(rhs);
+                            stack.push(lhs);
+                            stack.push(rhs);
+                            source = probe;
+                            pos = npos;
+                            break;
+                        }
+                    }
+                    /* Python 3.12+ loop-exit idiom: "SWAP 2; POP_TOP"
+                       before a RETURN keeps the value being returned while
+                       dropping the iterator underneath it.  Consuming both
+                       instructions here avoids misreading them as tuple
+                       unpacking. */
+                    PycBuffer probe = source;
+                    int npos = pos, nop, noper;
+                    bc_next(probe, mod, nop, noper, npos);
+                    if (nop == Pyc::POP_TOP) {
+                        PycRef<ASTNode> tos = stack.top();
+                        stack.pop();
+                        stack.pop();
+                        stack.push(tos);
+                        source = probe;
+                        pos = npos;
+                        break;
+                    }
+                    /* Python 3.11+ except-handler exit: "SWAP 2; POP_EXCEPT"
+                       moves the handler body's result above the exception
+                       entry and drops the latter.  Consuming both keeps the
+                       result for the trailing RETURN_VALUE. */
+                    if (mod->verCompare(3, 11) >= 0 && nop == Pyc::POP_EXCEPT) {
+                        PycRef<ASTNode> tos = stack.top();
+                        stack.pop();
+                        stack.pop();
+                        stack.push(tos);
+                        source = probe;
+                        pos = npos;
+                        break;
+                    }
+                }
                 unpack = operand;
                 ASTTuple::value_t values;
                 ASTTuple::value_t next_tuple;
@@ -2712,12 +5495,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         }
     }
 
-    if (blocks.size() > 1) {
+    if (blocks.size() > 1 && !while_else_exit) {
         fputs("Warning: block stack is not empty!\n", stderr);
 
         while (blocks.size() > 1) {
             PycRef<ASTBlock> tmp = blocks.top();
             blocks.pop();
+
+            /* A mounted container (deferred in-loop handler) is already
+               present in its parent block; appending it again would
+               duplicate its statements at the function level. */
+            if (tmp->blktype() == ASTBlock::BLK_CONTAINER
+                    && tmp.cast<ASTContainerBlock>()->mounted())
+                continue;
 
             blocks.top()->append(tmp.cast<ASTNode>());
         }
@@ -2853,7 +5643,15 @@ static void print_block(PycRef<ASTBlock> blk, PycModule* mod,
     }
 
     for (auto ln = lines.cbegin(); ln != lines.cend();) {
-        if ((*ln).cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
+        bool isContainer = (*ln).cast<ASTNode>().type() == ASTNode::NODE_BLOCK
+                && (*ln).cast<ASTBlock>()->blktype() == ASTBlock::BLK_CONTAINER;
+        /* Separate a try statement from the preceding statement with a
+           blank line, but avoid a leading blank line when it opens the
+           block.  The container prints its own line starts. */
+        if (isContainer) {
+            if (ln != lines.cbegin())
+                pyc_output << "\n";
+        } else if ((*ln).cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
             start_line(cur_indent, pyc_output);
         }
         print_src(*ln, mod, pyc_output);
@@ -3052,8 +5850,22 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
         {
             PycRef<ASTComprehension> comp = node.cast<ASTComprehension>();
 
-            pyc_output << "[ ";
-            print_src(comp->result(), mod, pyc_output);
+            switch (comp->compKind()) {
+                case ASTComprehension::COMP_SET:
+                    pyc_output << "{ ";
+                    print_src(comp->result(), mod, pyc_output);
+                    break;
+                case ASTComprehension::COMP_MAP:
+                    pyc_output << "{ ";
+                    print_src(comp->key(), mod, pyc_output);
+                    pyc_output << ": ";
+                    print_src(comp->result(), mod, pyc_output);
+                    break;
+                default:
+                    pyc_output << "[ ";
+                    print_src(comp->result(), mod, pyc_output);
+                    break;
+            }
 
             for (const auto& gen : comp->generators()) {
                 pyc_output << " for ";
@@ -3065,7 +5877,15 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     print_src(gen->condition(), mod, pyc_output);
                 }
             }
-            pyc_output << " ]";
+            switch (comp->compKind()) {
+                case ASTComprehension::COMP_SET:
+                case ASTComprehension::COMP_MAP:
+                    pyc_output << " }";
+                    break;
+                default:
+                    pyc_output << " ]";
+                    break;
+            }
         }
         break;
     case ASTNode::NODE_MAP:
@@ -3079,8 +5899,13 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 else
                     pyc_output << ",\n";
                 start_line(cur_indent, pyc_output);
-                print_src(val.first, mod, pyc_output);
-                pyc_output << ": ";
+                if (val.first != nullptr) {
+                    print_src(val.first, mod, pyc_output);
+                    pyc_output << ": ";
+                } else {
+                    /* null key: dict unpacking (`**expr`) from DICT_MERGE */
+                    pyc_output << "**";
+                }
                 print_src(val.second, mod, pyc_output);
                 first = false;
             }
@@ -3112,12 +5937,23 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
     case ASTNode::NODE_NODELIST:
         {
             cur_indent++;
+            bool firstNl = true;
             for (const auto& ln : node.cast<ASTNodeList>()->nodes()) {
-                if (ln.cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
+                bool isContainer = ln.cast<ASTNode>().type() == ASTNode::NODE_BLOCK
+                        && ln.cast<ASTBlock>()->blktype() == ASTBlock::BLK_CONTAINER;
+                /* Separate a try statement from the preceding statement
+                   with a blank line, but avoid a leading blank line when
+                   it opens the block.  The container prints its own line
+                   starts. */
+                if (isContainer) {
+                    if (!firstNl)
+                        pyc_output << "\n";
+                } else if (ln.cast<ASTNode>().type() != ASTNode::NODE_NODELIST) {
                     start_line(cur_indent, pyc_output);
                 }
                 print_src(ln, mod, pyc_output);
                 end_line(pyc_output);
+                firstNl = false;
             }
             cur_indent--;
         }
@@ -3129,7 +5965,6 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 break;
 
             if (blk->blktype() == ASTBlock::BLK_CONTAINER) {
-                end_line(pyc_output);
                 print_block(blk, mod, pyc_output);
                 end_line(pyc_output);
                 break;
@@ -3139,12 +5974,17 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
             if (blk->blktype() == ASTBlock::BLK_IF
                     || blk->blktype() == ASTBlock::BLK_ELIF
                     || blk->blktype() == ASTBlock::BLK_WHILE) {
-                if (blk.cast<ASTCondBlock>()->negative())
-                    pyc_output << " not ";
-                else
-                    pyc_output << " ";
-
-                print_src(blk.cast<ASTCondBlock>()->cond(), mod, pyc_output);
+                PycRef<ASTNode> cond = blk.cast<ASTCondBlock>()->cond();
+                if (blk->blktype() == ASTBlock::BLK_WHILE && cond == NULL) {
+                    /* Pre-scanned unconditional loop (`while True:`). */
+                    pyc_output << " True";
+                } else {
+                    if (blk.cast<ASTCondBlock>()->negative())
+                        pyc_output << " not ";
+                    else
+                        pyc_output << " ";
+                    print_src(cond, mod, pyc_output);
+                }
             } else if (blk->blktype() == ASTBlock::BLK_FOR || blk->blktype() == ASTBlock::BLK_ASYNCFOR) {
                 pyc_output << " ";
                 print_src(blk.cast<ASTIterBlock>()->index(), mod, pyc_output);
@@ -3154,6 +5994,11 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                     blk.cast<ASTCondBlock>()->cond() != NULL) {
                 pyc_output << " ";
                 print_src(blk.cast<ASTCondBlock>()->cond(), mod, pyc_output);
+                PycRef<ASTNode> var = blk.try_cast<ASTCondBlock>()->var();
+                if (var != NULL) {
+                    pyc_output << " as ";
+                    print_src(var, mod, pyc_output);
+                }
             } else if (blk->blktype() == ASTBlock::BLK_WITH) {
                 pyc_output << " ";
                 print_src(blk.cast<ASTWithBlock>()->expr(), mod, pyc_output);
@@ -3471,6 +6316,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
             } else if (src.type() == ASTNode::NODE_BINARY
                     && src.cast<ASTBinary>()->is_inplace()) {
                 print_src(src, mod, pyc_output);
+            } else if (node.cast<ASTStore>()->isWalrus()) {
+                pyc_output << "(";
+                print_src(dest, mod, pyc_output);
+                pyc_output << " := ";
+                print_src(src, mod, pyc_output);
+                pyc_output << ")";
             } else {
                 print_src(dest, mod, pyc_output);
                 pyc_output << " = ";
@@ -3555,6 +6406,19 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
             //pyc_output << ")";
         }
         break;
+    case ASTNode::NODE_LOCALS:
+        pyc_output << "locals()";
+        break;
+    case ASTNode::NODE_AWAITABLE:
+        {
+            /* Python 3.11+ await expressions: the SEND/END_SEND machinery
+               leaves the awaitable on the stack; print it as an expression
+               so stores and returns both render as `await <expr>`. */
+            PycRef<ASTAwaitable> awaitable = node.cast<ASTAwaitable>();
+            pyc_output << "await ";
+            print_src(awaitable->expression(), mod, pyc_output);
+        }
+        break;
     default:
         pyc_output << "<NODE:" << node->type() << ">";
         fprintf(stderr, "Unsupported Node type: %d\n", node->type());
@@ -3582,6 +6446,35 @@ bool print_docstring(PycRef<PycObject> obj, int indent, PycModule* mod,
 }
 
 static std::unordered_set<PycCode *> code_seen;
+
+/* A real docstring is only referenced through the co_consts[0] convention
+   (3.0+ emits no bytecode for it).  If any instruction loads the first
+   constant, it is ordinary code data and must not be printed as a
+   docstring. */
+static bool isFirstConstDocstring(PycRef<PycCode> code, PycModule* mod)
+{
+    if (code->consts()->size() == 0)
+        return false;
+    if (code->getConst(0).try_cast<PycString>() == nullptr)
+        return false;
+
+    PycBuffer source(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    while (!source.atEof()) {
+        bc_next(source, mod, opcode, operand, pos);
+        switch (opcode) {
+        case Pyc::LOAD_CONST_A:
+        case Pyc::KW_NAMES_A:
+        case Pyc::RETURN_CONST_A:
+            if (operand == 0)
+                return false;
+            break;
+        default:
+            break;
+        }
+    }
+    return true;
+}
 
 void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
 {
@@ -3639,6 +6532,31 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
                     clean->removeFirst();
             }
         }
+
+        /* Python 3.13+: the compiler synthesizes class bookkeeping
+           attributes (__firstlineno__, __static_attributes__) and, in
+           3.14, the __classdict__/__classdictcell__ cell plumbing for
+           closures over the class namespace.  None have a source-level
+           representation, and re-emitting __classdictcell__ would not
+           even compile. */
+        clean->removeIf([](PycRef<ASTNode> node) -> bool {
+            if (node->type() != ASTNode::NODE_STORE)
+                return false;
+            PycRef<ASTStore> store = node.cast<ASTStore>();
+            if (store->dest().type() != ASTNode::NODE_NAME)
+                return false;
+            PycRef<PycString> dest = store->dest().cast<ASTName>()->name();
+            if (dest->isEqual("__firstlineno__")
+                    || dest->isEqual("__static_attributes__"))
+                return store->src().type() == ASTNode::NODE_OBJECT;
+            if (dest->isEqual("__classdict__"))
+                return store->src().type() == ASTNode::NODE_LOCALS;
+            if (dest->isEqual("__classdictcell__")) {
+                return store->src().type() == ASTNode::NODE_NAME
+                        && store->src().cast<ASTName>()->name()->isEqual("__classdict__");
+            }
+            return false;
+        });
         if (clean->nodes().back().type() == ASTNode::NODE_RETURN) {
             PycRef<ASTReturn> ret = clean->nodes().back().cast<ASTReturn>();
 
@@ -3646,6 +6564,23 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
             if (ret->value() == NULL || ret->value().type() == ASTNode::NODE_LOCALS ||
                     (retObj && retObj->object().type() == PycObject::TYPE_NONE)) {
                 clean->removeLast();  // Always an extraneous return statement
+            }
+        }
+        if (clean->nodes().back().type() == ASTNode::NODE_BLOCK
+                && clean->nodes().back().cast<ASTBlock>()->blktype() == ASTBlock::BLK_IF) {
+            /* Python 3.14 module tail: when the last statement is an
+               `if __name__ == '__main__':`-style block, the compiler ends
+               the then-part with the implicit module return (LOAD_CONST
+               None; RETURN_VALUE) instead of a JUMP_FORWARD, so the
+               extraneous `return None` lands inside the if block. */
+            PycRef<ASTBlock> ifblk = clean->nodes().back().cast<ASTBlock>();
+            if (ifblk->size() > 0 && ifblk->nodes().back().type() == ASTNode::NODE_RETURN) {
+                PycRef<ASTReturn> ret = ifblk->nodes().back().cast<ASTReturn>();
+                PycRef<ASTObject> retObj = ret->value().try_cast<ASTObject>();
+                if (ret->value() == NULL
+                        || (retObj && retObj->object().type() == PycObject::TYPE_NONE)) {
+                    ifblk->removeLast();
+                }
             }
         }
     }
@@ -3659,7 +6594,7 @@ void decompyle(PycRef<PycCode> code, PycModule* mod, std::ostream& pyc_output)
     bool part1clean = cleanBuild;
 
     if (printDocstringAndGlobals) {
-        if (code->consts()->size())
+        if (isFirstConstDocstring(code, mod))
             print_docstring(code->getConst(0), cur_indent + 1, mod, pyc_output);
 
         PycCode::globals_t globs = code->getGlobals();

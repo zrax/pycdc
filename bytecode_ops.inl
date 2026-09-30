@@ -123,6 +123,10 @@ OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
 OPCODE(MAKE_FUNCTION)                   // Python 3.13 ->
 OPCODE(TO_BOOL)                         // Python 3.13 ->
+OPCODE(NOT_TAKEN)                       // Python 3.14 ->
+OPCODE(POP_ITER)                        // Python 3.14 ->
+OPCODE(BUILD_TEMPLATE)                  // Python 3.14 ->
+OPCODE(CALL_FUNCTION_EX)                // Python 3.14 ->               (no flags operand; see CALL_FUNCTION_EX_A for 3.6-3.13)
 
 /* Has parameter word */
 OPCODE_A_FIRST(STORE_NAME)              // Python 1.0 ->                names[A]
@@ -179,7 +183,8 @@ OPCODE_A(CALL_FUNCTION_VAR)             // Python 1.6 - 3.5             A=(#args
 OPCODE_A(CALL_FUNCTION_KW)              // Python 1.6 - 3.5             A=(#args)+(#kwargs<<8)
                                         // Python 3.6 - 3.10            A=#args
 OPCODE_A(CALL_FUNCTION_VAR_KW)          // Python 1.6 - 3.5             A=(#args)+(#kwargs<<8)
-OPCODE_A(CALL_FUNCTION_EX)              // Python 3.6 ->                A=flags
+OPCODE_A(CALL_FUNCTION_EX)              // Python 3.6 - 3.13            A=flags
+                                        // Python 3.14 ->               no flags operand (opcode 4)
 OPCODE_A(UNPACK_SEQUENCE)               // Python 2.0 ->                A=count
 OPCODE_A(FOR_ITER)                      // Python 2.0 ->                rel jmp +A
 OPCODE_A(DUP_TOPX)                      // Python 2.0 - 3.1             A=count
@@ -269,6 +274,13 @@ OPCODE_A(LOAD_FAST_LOAD_FAST)           // Python 3.13 ->               A=locals
 OPCODE_A(SET_FUNCTION_ATTRIBUTE)        // Python 3.13 ->               A=attribute_type
 OPCODE_A(STORE_FAST_LOAD_FAST)          // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
 OPCODE_A(STORE_FAST_STORE_FAST)         // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
+OPCODE_A(END_ASYNC_FOR)                 // Python 3.14 ->               rel jmp +A (handler for exception)
+OPCODE_A(BUILD_INTERPOLATION)           // Python 3.14 ->               A=#expressions (t-strings)
+OPCODE_A(LOAD_COMMON_CONSTANT)          // Python 3.14 ->               A=0 (AssertionError), 1 (NotImplementedError)
+OPCODE_A(LOAD_SMALL_INT)                // Python 3.14 ->               A=int value (0..255)
+OPCODE_A(LOAD_SPECIAL)                  // Python 3.14 ->               A=0 (__enter__), 1 (__exit__), 2 (__aenter__), 3 (__aexit__)
+OPCODE_A(LOAD_FAST_BORROW)              // Python 3.14 ->               locals[A]
+OPCODE_A(LOAD_FAST_BORROW_LOAD_FAST_BORROW) // Python 3.14 ->          A=locals[A>>4]+locals[A&0xf]
 
 /* Instrumented opcodes */
 OPCODE_A(INSTRUMENTED_LOAD_SUPER_ATTR)      // Python 3.12 ->           (see LOAD_SUPER_ATTR)
@@ -290,3 +302,6 @@ OPCODE_A(INSTRUMENTED_END_SEND)             // Python 3.12 ->           (see END
 OPCODE_A(INSTRUMENTED_INSTRUCTION)          // Python 3.12 ->           A=(unused)
 OPCODE_A(INSTRUMENTED_LINE)                 // Python 3.12 ->           ???
 OPCODE_A(INSTRUMENTED_CALL_KW)              // Python 3.13 ->           (see CALL_KW)
+OPCODE_A(INSTRUMENTED_END_ASYNC_FOR)         // Python 3.14 ->           (see END_ASYNC_FOR)
+OPCODE_A(INSTRUMENTED_NOT_TAKEN)             // Python 3.14 ->           (see NOT_TAKEN)
+OPCODE_A(INSTRUMENTED_POP_ITER)              // Python 3.14 ->           (see POP_ITER)
