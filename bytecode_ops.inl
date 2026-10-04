@@ -123,6 +123,10 @@ OPCODE(FORMAT_SIMPLE)                   // Python 3.13 ->
 OPCODE(FORMAT_WITH_SPEC)                // Python 3.13 ->
 OPCODE(MAKE_FUNCTION)                   // Python 3.13 ->
 OPCODE(TO_BOOL)                         // Python 3.13 ->
+OPCODE(BUILD_TEMPLATE)                  // Python 3.14 ->
+OPCODE(CALL_FUNCTION_EX)                // Python 3.14 ->
+OPCODE(NOT_TAKEN)                       // Python 3.14 ->
+OPCODE(POP_ITER)                        // Python 3.14 ->
 
 /* Has parameter word */
 OPCODE_A_FIRST(STORE_NAME)              // Python 1.0 ->                names[A]
@@ -263,6 +267,11 @@ OPCODE_A(CALL_INTRINSIC_2)              // Python 3.12 ->               intrinsi
 OPCODE_A(LOAD_FROM_DICT_OR_GLOBALS)     // Python 3.12 ->               names[A]
 OPCODE_A(LOAD_FROM_DICT_OR_DEREF)       // Python 3.12 ->               localsplusnames[A]
 OPCODE_A(CALL_KW)                       // Python 3.13 ->               A=#args
+OPCODE_A(BUILD_INTERPOLATION)            // Python 3.14 ->
+OPCODE_A(END_ASYNC_FOR)                  // Python 3.14 ->
+OPCODE_A(LOAD_COMMON_CONSTANT)           // Python 3.14 ->
+OPCODE_A(LOAD_SMALL_INT)                 // Python 3.14 ->               A=integer
+OPCODE_A(LOAD_SPECIAL)                   // Python 3.14 ->
 OPCODE_A(CONVERT_VALUE)                 // Python 3.13 ->               A=conversion_type
 OPCODE_A(ENTER_EXECUTOR)                // Python 3.13 ->               executors[A&0xff]
 OPCODE_A(LOAD_FAST_LOAD_FAST)           // Python 3.13 ->               A=locals[A<<4]+locals[A&0xf]
