@@ -4,6 +4,9 @@
 #include "pyc_module.h"
 #include <list>
 #include <deque>
+#include <map>
+#include <string>
+#include <stdexcept>
 
 /* Similar interface to PycObject, so PycRef can work on it... *
  * However, this does *NOT* mean the two are interchangeable!  */
@@ -256,11 +259,19 @@ public:
     PycRef<ASTNode> code() const { return m_code; }
     const defarg_t& defargs() const { return m_defargs; }
     const defarg_t& kwdefargs() const { return m_kwdefargs; }
+    typedef std::map<std::string, PycRef<ASTNode>> namedarg_t;
+    const namedarg_t& kwdefaults() const { return m_kwdefaults; }
+    const namedarg_t& annotations() const { return m_annotations; }
+    void setDefaults(defarg_t values) { m_defargs = std::move(values); }
+    void setKwDefault(const std::string& name, PycRef<ASTNode> value) { m_kwdefaults[name] = std::move(value); }
+    void setAnnotation(const std::string& name, PycRef<ASTNode> value) { m_annotations[name] = std::move(value); }
 
 private:
     PycRef<ASTNode> m_code;
     defarg_t m_defargs;
     defarg_t m_kwdefargs;
+    namedarg_t m_kwdefaults;
+    namedarg_t m_annotations;
 };
 
 
@@ -546,7 +557,11 @@ public:
     list_t::size_type size() const { return m_nodes.size(); }
     void removeFirst();
     void removeLast();
-    void append(PycRef<ASTNode> node) { m_nodes.emplace_back(std::move(node)); }
+    void append(PycRef<ASTNode> node) {
+        if ((ASTNode*)node == this)
+            throw std::runtime_error("Cannot append an AST block to itself");
+        m_nodes.emplace_back(std::move(node));
+    }
     const char* type_str() const;
 
     virtual int inited() const { return m_inited; }
