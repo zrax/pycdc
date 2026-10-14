@@ -45,6 +45,15 @@ void PycTuple::load(PycData* stream, PycModule* mod)
 }
 
 
+/* PycSlice */
+void PycSlice::load(PycData* stream, PycModule* mod)
+{
+    m_start = LoadObject(stream, mod);
+    m_stop = LoadObject(stream, mod);
+    m_step = LoadObject(stream, mod);
+}
+
+
 /* PycDict */
 void PycDict::load(PycData* stream, PycModule* mod)
 {

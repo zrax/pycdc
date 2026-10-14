@@ -62,6 +62,8 @@ PycRef<PycObject> CreateObject(int type)
     case PycObject::TYPE_SET:
     case PycObject::TYPE_FROZENSET:
         return new PycSet(type);
+    case PycObject::TYPE_SLICE:
+        return new PycSlice(type);
     default:
         fprintf(stderr, "CreateObject: Got unsupported type 0x%X\n", type);
         return NULL;
