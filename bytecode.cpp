@@ -39,6 +39,7 @@ DECLARE_PYTHON(3, 10)
 DECLARE_PYTHON(3, 11)
 DECLARE_PYTHON(3, 12)
 DECLARE_PYTHON(3, 13)
+DECLARE_PYTHON(3, 14)
 
 const char* Pyc::OpcodeName(int opcode)
 {
@@ -109,6 +110,7 @@ int Pyc::ByteToOpcode(int maj, int min, int opcode)
         case 11: return python_3_11_map(opcode);
         case 12: return python_3_12_map(opcode);
         case 13: return python_3_13_map(opcode);
+        case 14: return python_3_14_map(opcode);
         }
         break;
     }
@@ -132,6 +134,23 @@ void print_const(std::ostream& pyc_output, PycRef<PycObject> obj, PycModule* mod
     case PycObject::TYPE_SHORT_ASCII:
     case PycObject::TYPE_SHORT_ASCII_INTERNED:
         obj.cast<PycString>()->print(pyc_output, mod, false, parent_f_string_quote);
+        break;
+    case PycObject::TYPE_SLICE:
+        {
+            /* Render as a subscript slice literal: [start:stop:step] */
+            auto sl = obj.cast<PycSlice>();
+            pyc_output << "[";
+            if (sl->start() != NULL && sl->start()->type() != PycObject::TYPE_NONE)
+                print_const(pyc_output, sl->start(), mod);
+            pyc_output << ":";
+            if (sl->stop() != NULL && sl->stop()->type() != PycObject::TYPE_NONE)
+                print_const(pyc_output, sl->stop(), mod);
+            if (sl->step() != NULL && sl->step()->type() != PycObject::TYPE_NONE) {
+                pyc_output << ":";
+                print_const(pyc_output, sl->step(), mod);
+            }
+            pyc_output << "]";
+        }
         break;
     case PycObject::TYPE_TUPLE:
     case PycObject::TYPE_SMALL_TUPLE:

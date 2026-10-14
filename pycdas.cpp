@@ -212,6 +212,15 @@ void output_object(PycRef<PycObject> obj, PycModule* mod, int indent,
             iputs(pyc_output, indent, "}\n");
         }
         break;
+    case PycObject::TYPE_SLICE:
+        {
+            iputs(pyc_output, indent, "slice(\n");
+            output_object(obj.cast<PycSlice>()->start(), mod, indent + 1, flags, pyc_output);
+            output_object(obj.cast<PycSlice>()->stop(), mod, indent + 1, flags, pyc_output);
+            output_object(obj.cast<PycSlice>()->step(), mod, indent + 1, flags, pyc_output);
+            iputs(pyc_output, indent, ")\n");
+        }
+        break;
     case PycObject::TYPE_FROZENSET:
         {
             iputs(pyc_output, indent, "frozenset({\n");
