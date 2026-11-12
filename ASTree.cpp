@@ -336,6 +336,57 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 stack.push(new ASTList(values));
             }
             break;
+        case Pyc::BUILD_LIST_UNPACK_A:
+            {
+                ASTList::value_t values;
+                for (int i=0; i<operand; i++) {
+                    values.push_front(new ASTStarred(stack.top()));
+                    stack.pop();
+                }
+                stack.push(new ASTList(values));
+            }
+            break;
+        case Pyc::BUILD_SET_UNPACK_A:
+            {
+                ASTSet::value_t values;
+                for (int i=0; i<operand; i++) {
+                    values.push_front(new ASTStarred(stack.top()));
+                    stack.pop();
+                }
+                stack.push(new ASTSet(values));
+            }
+            break;
+        case Pyc::BUILD_TUPLE_UNPACK_A:
+        case Pyc::BUILD_TUPLE_UNPACK_WITH_CALL_A:
+            {
+                ASTTuple::value_t values;
+                values.resize(operand);
+                for (int i=0; i<operand; i++) {
+                    values[operand-i-1] = new ASTStarred(stack.top());
+                    stack.pop();
+                }
+                stack.push(new ASTTuple(values));
+            }
+            break;
+        case Pyc::BUILD_MAP_UNPACK_A:
+        case Pyc::BUILD_MAP_UNPACK_WITH_CALL_A:
+            {
+                int count = operand;
+                if (opcode == Pyc::BUILD_MAP_UNPACK_WITH_CALL_A && mod->verCompare(3, 6) < 0) {
+                    /* Python 3.5 stores the function location in the high byte. */
+                    count = operand & 0xFF;
+                }
+                std::vector<PycRef<ASTNode>> unpacked(count);
+                for (int i=0; i<count; i++) {
+                    unpacked[count-i-1] = stack.top();
+                    stack.pop();
+                }
+                auto map = new ASTMap;
+                for (const auto& value : unpacked)
+                    map->addUnpack(value);
+                stack.push(map);
+            }
+            break;
         case Pyc::BUILD_SET_A:
             {
                 ASTSet::value_t values;
@@ -718,6 +769,57 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
                 stack.push(new ASTCall(func, pparamList, ASTCall::kwparam_t()));
+            }
+            break;
+        case Pyc::CALL_FUNCTION_EX_A:
+            {
+                PycRef<ASTNode> kwargs;
+                if (operand & 0x01) {
+                    kwargs = stack.top();
+                    stack.pop();
+                }
+                PycRef<ASTNode> args = stack.top();
+                stack.pop();
+                PycRef<ASTNode> func = stack.top();
+                stack.pop();
+
+                auto call = new ASTCall(func, ASTCall::pparam_t(), ASTCall::kwparam_t());
+
+                if (args != NULL) {
+                    bool starred_tuple = (args.type() == ASTNode::NODE_TUPLE);
+                    ASTTuple::value_t tuple_values;
+                    if (starred_tuple) {
+                        tuple_values = args.cast<ASTTuple>()->values();
+                        for (const auto& value : tuple_values) {
+                            if (value.type() != ASTNode::NODE_STARRED) {
+                                starred_tuple = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (starred_tuple) {
+                        for (const auto& value : tuple_values)
+                            call->addParam(value);
+                    } else {
+                        call->addParam(new ASTStarred(args));
+                    }
+                }
+
+                if (kwargs != NULL) {
+                    if (kwargs.type() == ASTNode::NODE_MAP) {
+                        for (const auto& val : kwargs.cast<ASTMap>()->values()) {
+                            if (val.first != NULL)
+                                call->addKwparam(val.first, val.second);
+                            else
+                                call->addKWUnpack(val.second);
+                        }
+                    } else {
+                        call->setKW(kwargs);
+                    }
+                }
+
+                stack.push(call);
             }
             break;
         case Pyc::CONTINUE_LOOP_A:
@@ -2945,6 +3047,13 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 print_src(param.second, mod, pyc_output);
                 first = false;
             }
+            for (const auto& param : call->kwunpacks()) {
+                if (!first)
+                    pyc_output << ", ";
+                pyc_output << "**";
+                print_src(param, mod, pyc_output);
+                first = false;
+            }
             if (call->hasVar()) {
                 if (!first)
                     pyc_output << ", ";
@@ -3079,8 +3188,12 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
                 else
                     pyc_output << ",\n";
                 start_line(cur_indent, pyc_output);
-                print_src(val.first, mod, pyc_output);
-                pyc_output << ": ";
+                if (val.first != NULL) {
+                    print_src(val.first, mod, pyc_output);
+                    pyc_output << ": ";
+                } else {
+                    pyc_output << "**";
+                }
                 print_src(val.second, mod, pyc_output);
                 first = false;
             }
@@ -3501,6 +3614,10 @@ void print_src(PycRef<ASTNode> node, PycModule* mod, std::ostream& pyc_output)
             print_src(node.cast<ASTConvert>()->name(), mod, pyc_output);
             pyc_output << "`";
         }
+        break;
+    case ASTNode::NODE_STARRED:
+        pyc_output << "*";
+        print_src(node.cast<ASTStarred>()->value(), mod, pyc_output);
         break;
     case ASTNode::NODE_TUPLE:
         {
