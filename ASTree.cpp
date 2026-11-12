@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -38,6 +40,107 @@ static PycRef<ASTNode> StackPopTop(FastStack& stack)
     const auto node(stack.top());
     stack.pop();
     return node;
+}
+
+/* Does 'target' point at the cleanup handler generated for a with statement?
+ * Python 3.11+ emits PUSH_EXC_INFO; WITH_EXCEPT_START as the prologue of that
+ * handler (3.13 adds a TO_BOOL after WITH_EXCEPT_START, but the order of the
+ * first two instructions is unchanged). */
+static bool isWithCleanupTarget(PycRef<PycCode> code, PycModule* mod, int target)
+{
+    if (target < 0 || target >= code->code()->length())
+        return false;
+
+    PycBuffer source(code->code()->value(), code->code()->length());
+    int opcode, operand, pos = 0;
+    while (!source.atEof() && pos < target)
+        bc_next(source, mod, opcode, operand, pos);
+
+    if (pos != target || source.atEof())
+        return false;
+
+    bc_next(source, mod, opcode, operand, pos);
+    if (opcode != Pyc::PUSH_EXC_INFO)
+        return false;
+
+    bc_next(source, mod, opcode, operand, pos);
+    return opcode == Pyc::WITH_EXCEPT_START;
+}
+
+/* Determine where the compiler-generated cleanup code for a with statement
+ * ends.  The normal exit either jumps over the exception handler (3.11) or
+ * falls through to the code after the with statement, with the handler placed
+ * after it (3.12+). */
+static int withCleanupEnd(PycRef<PycCode> code, PycModule* mod,
+                          int body_end, int handler, int& jump_pos)
+{
+    int opcode, operand, pos = 0;
+    jump_pos = -1;
+    PycBuffer before(code->code()->value(), code->code()->length());
+
+    /* A forward jump between the body end and the handler skips the handler
+     * on the normal (non-exceptional) path, so its destination is where the
+     * generated cleanup code stops. */
+    while (!before.atEof() && pos < handler) {
+        int start = pos;
+        bc_next(before, mod, opcode, operand, pos);
+        if (start >= body_end && opcode == Pyc::JUMP_FORWARD_A) {
+            int offs = operand;
+            if (mod->verCompare(3, 10) >= 0)
+                offs *= sizeof(uint16_t); // BPO-27129
+            jump_pos = start;
+            return pos + offs;
+        }
+    }
+
+    /* In 3.12+ the generated code continues with the code after the with (or
+     * the function epilogue), followed by the next cleanup handler.  Skip up
+     * to that next handler, or to the end of the code object. */
+    int next_handler = -1;
+    pos = 0;
+    PycBuffer after(code->code()->value(), code->code()->length());
+    while (!after.atEof()) {
+        int start = pos;
+        bc_next(after, mod, opcode, operand, pos);
+        if (start > handler && opcode == Pyc::PUSH_EXC_INFO) {
+            next_handler = start;
+            break;
+        }
+    }
+
+    return (next_handler >= 0) ? next_handler : code->code()->length();
+}
+
+/* Does the instruction stream at 'pos' start the implicit
+ * __exit__(None, None, None) call emitted at the end of a with statement? */
+static bool isWithCleanupCallAt(PycRef<PycCode> code, PycModule* mod, int pos)
+{
+    if (pos < 0 || pos >= code->code()->length())
+        return false;
+
+    PycBuffer source(code->code()->value(), code->code()->length());
+    int opcode, operand, p = 0;
+    while (!source.atEof() && p < pos)
+        bc_next(source, mod, opcode, operand, p);
+    if (p != pos || source.atEof())
+        return false;
+
+    int none_count = 0;
+    while (!source.atEof()) {
+        bc_next(source, mod, opcode, operand, p);
+        if (opcode == Pyc::CACHE || opcode == Pyc::PRECALL_A || opcode == Pyc::NOP)
+            continue;
+        if (opcode == Pyc::LOAD_CONST_A && none_count < 3) {
+            if (code->getConst(operand).type() != PycObject::TYPE_NONE)
+                return false;
+            ++none_count;
+            continue;
+        }
+        return opcode == Pyc::CALL_A && none_count == 3
+                && (operand & 0xFF) == 2;
+    }
+
+    return false;
 }
 
 /* compiler generates very, VERY similar byte code for if/else statement block and if-expression
@@ -95,6 +198,7 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     bool variable_annotations = false;
     std::vector<PycExceptionTableEntry> exception_entries;
     size_t next_exception_entry = 0;
+    std::vector<std::pair<int, int>> with_cleanup_ranges;
 
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
@@ -113,6 +217,22 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     #endif
         fprintf(stderr, "\n");
 #endif
+
+        /* Compiler-generated with cleanup (implicit __exit__ call and its
+         * exception handler) is already represented by the ASTWithBlock, so
+         * skip over it without generating any source. */
+        bool in_with_cleanup = false;
+        for (const auto& range : with_cleanup_ranges) {
+            if (pos >= range.first && pos < range.second) {
+                in_with_cleanup = true;
+                break;
+            }
+        }
+        if (in_with_cleanup) {
+            curpos = pos;
+            bc_next(source, mod, opcode, operand, pos);
+            continue;
+        }
 
         while (next_exception_entry < exception_entries.size()
                 && exception_entries[next_exception_entry].start_offset < pos) {
@@ -600,9 +720,45 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 }
                 PycRef<ASTNode> func = stack.top();
                 stack.pop();
-                if ((opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) &&
-                        stack.top() == nullptr) {
-                    stack.pop();
+                if (opcode == Pyc::CALL_A || opcode == Pyc::INSTRUMENTED_CALL_A) {
+                    bool cleanup = (pparams == 2 && func == nullptr
+                            && kwparamList.empty());
+                    for (const auto& param : pparamList) {
+                        if (param != nullptr) {
+                            cleanup = false;
+                            break;
+                        }
+                    }
+
+                    if (cleanup) {
+                        bool with_open = false;
+                        for (std::stack<PycRef<ASTBlock>> tmp = blocks;
+                                !tmp.empty(); tmp.pop()) {
+                            if (tmp.top()->blktype() == ASTBlock::BLK_WITH) {
+                                with_open = true;
+                                break;
+                            }
+                        }
+
+                        if (with_open) {
+                            /* Implicit __exit__(None, None, None) call.  It is
+                             * represented by the ASTWithBlock itself, so
+                             * suppress it and close the block on the normal
+                             * path.  On a break/continue path the block stays
+                             * open for the code that follows linearly. */
+                            if (curblock->blktype() == ASTBlock::BLK_WITH) {
+                                PycRef<ASTBlock> with = curblock;
+                                blocks.pop();
+                                curblock = blocks.top();
+                                curblock->append(with.cast<ASTNode>());
+                            }
+                            stack.push(nullptr);
+                            break;
+                        }
+                    }
+
+                    if (stack.top() == nullptr)
+                        stack.pop();
                 }
 
                 stack.push(new ASTCall(func, pparamList, kwparamList));
@@ -2018,15 +2174,70 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             // Ignore
             break;
         case Pyc::SETUP_WITH_A:
-        case Pyc::WITH_EXCEPT_START:
             {
                 PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
                 blocks.push(withblock);
                 curblock = blocks.top();
             }
             break;
+        case Pyc::WITH_EXCEPT_START:
+            /* Python 3.9/3.10 exception cleanup for SETUP_WITH.  For 3.11+
+             * the block was already opened at BEFORE_WITH and this opcode
+             * only appears in generated cleanup code, which is skipped. */
+            if (mod->verCompare(3, 11) < 0) {
+                PycRef<ASTBlock> withblock = new ASTWithBlock(pos+operand);
+                blocks.push(withblock);
+                curblock = blocks.top();
+            }
+            break;
         case Pyc::BEFORE_WITH:
-            /* Python 3.11: setup for with block; ignore. */
+            {
+                /* Python 3.11+ with statement.  There is no SETUP_WITH or
+                 * POP_BLOCK; the protected body and its cleanup handler are
+                 * described by the exception table.  The context manager is
+                 * still on the stack and is turned into the with expression
+                 * (and optional target) by the following STORE/POP_TOP. */
+                int handler = -1;
+                int body_start = -1;
+                for (const auto& entry : exception_entries) {
+                    if (entry.start_offset < pos)
+                        continue;
+                    if (body_start >= 0 && entry.start_offset >= body_start)
+                        continue;
+                    if (!isWithCleanupTarget(code, mod, entry.target))
+                        continue;
+                    handler = entry.target;
+                    body_start = entry.start_offset;
+                }
+
+                int body_end = pos;
+                if (handler >= 0) {
+                    body_end = body_start;
+                    for (const auto& entry : exception_entries) {
+                        if (entry.target == handler && entry.end_offset > body_end)
+                            body_end = entry.end_offset;
+                    }
+
+                    int jump_pos = -1;
+                    int cleanup_end = withCleanupEnd(code, mod, body_end, handler,
+                                                     jump_pos);
+                    if (cleanup_end > handler) {
+                        /* Also skip the forward jump over the handler; it is
+                         * part of the generated cleanup and would otherwise
+                         * disturb the enclosing block state. */
+                        int start = (jump_pos >= 0) ? jump_pos : handler;
+                        with_cleanup_ranges.emplace_back(start, cleanup_end);
+                    }
+                }
+
+                /* Keep the block open until its implicit __exit__ call is
+                 * reached; using the handler as the end also avoids the generic
+                 * else/if block-closing logic from ending it prematurely. */
+                PycRef<ASTBlock> withblock = new ASTWithBlock(
+                        (handler >= 0) ? handler : body_end);
+                blocks.push(withblock);
+                curblock = blocks.top();
+            }
             break;
         case Pyc::WITH_CLEANUP:
         case Pyc::WITH_CLEANUP_START:
@@ -2603,6 +2814,14 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::SWAP_A:
             {
+                if (operand == 2 && isWithCleanupCallAt(code, mod, pos)) {
+                    /* A return inside a with statement swaps the return value
+                     * below the implicit __exit__ callable.  The cleanup call
+                     * itself is handled (and suppressed) when CALL is reached,
+                     * so leave the return value where it is. */
+                    break;
+                }
+
                 unpack = operand;
                 ASTTuple::value_t values;
                 ASTTuple::value_t next_tuple;
