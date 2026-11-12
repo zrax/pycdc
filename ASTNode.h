@@ -18,7 +18,7 @@ public:
         NODE_COMPREHENSION, NODE_LOADBUILDCLASS, NODE_AWAITABLE,
         NODE_FORMATTEDVALUE, NODE_JOINEDSTR, NODE_CONST_MAP,
         NODE_ANNOTATED_VAR, NODE_CHAINSTORE, NODE_TERNARY,
-        NODE_KW_NAMES_MAP,
+        NODE_KW_NAMES_MAP, NODE_STARRED,
 
         // Empty node types
         NODE_LOCALS,
@@ -285,6 +285,7 @@ class ASTCall : public ASTNode {
 public:
     typedef std::list<PycRef<ASTNode>> pparam_t;
     typedef std::list<std::pair<PycRef<ASTNode>, PycRef<ASTNode>>> kwparam_t;
+    typedef std::list<PycRef<ASTNode>> kwunpack_t;
 
     ASTCall(PycRef<ASTNode> func, pparam_t pparams, kwparam_t kwparams)
         : ASTNode(NODE_CALL), m_func(std::move(func)), m_pparams(std::move(pparams)),
@@ -293,11 +294,19 @@ public:
     PycRef<ASTNode> func() const { return m_func; }
     const pparam_t& pparams() const { return m_pparams; }
     const kwparam_t& kwparams() const { return m_kwparams; }
+    const kwunpack_t& kwunpacks() const { return m_kwunpacks; }
     PycRef<ASTNode> var() const { return m_var; }
     PycRef<ASTNode> kw() const { return m_kw; }
 
     bool hasVar() const { return m_var != nullptr; }
     bool hasKW() const { return m_kw != nullptr; }
+
+    void addParam(PycRef<ASTNode> param) { m_pparams.emplace_back(std::move(param)); }
+    void addKwparam(PycRef<ASTNode> key, PycRef<ASTNode> value)
+    {
+        m_kwparams.emplace_back(std::move(key), std::move(value));
+    }
+    void addKWUnpack(PycRef<ASTNode> kwunpack) { m_kwunpacks.emplace_back(std::move(kwunpack)); }
 
     void setVar(PycRef<ASTNode> var) { m_var = std::move(var); }
     void setKW(PycRef<ASTNode> kw) { m_kw = std::move(kw); }
@@ -306,6 +315,7 @@ private:
     PycRef<ASTNode> m_func;
     pparam_t m_pparams;
     kwparam_t m_kwparams;
+    kwunpack_t m_kwunpacks;
     PycRef<ASTNode> m_var;
     PycRef<ASTNode> m_kw;
 };
@@ -389,10 +399,26 @@ public:
         m_values.emplace_back(std::move(key), std::move(value));
     }
 
+    void addUnpack(PycRef<ASTNode> value)
+    {
+        m_values.emplace_back(PycRef<ASTNode>(), std::move(value));
+    }
+
     const map_t& values() const { return m_values; }
 
 private:
     map_t m_values;
+};
+
+class ASTStarred : public ASTNode {
+public:
+    ASTStarred(PycRef<ASTNode> value)
+        : ASTNode(NODE_STARRED), m_value(std::move(value)) { }
+
+    PycRef<ASTNode> value() const { return m_value; }
+
+private:
+    PycRef<ASTNode> m_value;
 };
 
 class ASTKwNamesMap : public ASTNode {

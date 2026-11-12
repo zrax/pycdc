@@ -1,0 +1,13 @@
+def call_unpack ( func , a , b , d1 , d2 ) : <EOL>
+<INDENT>
+func ( * a , * b ) <EOL>
+func ( ** d1 , ** d2 ) <EOL>
+func ( * a , ** d2 ) <EOL>
+<OUTDENT>
+def display_unpack ( a , b , d1 , d2 ) : <EOL>
+<INDENT>
+t = ( * a , * b ) <EOL>
+l = [ * a , * b ] <EOL>
+s = { * a , * b } <EOL>
+d = { ** d1 , ** d2 } <EOL>
+return ( t , l , s , d ) <EOL>
