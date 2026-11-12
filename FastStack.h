@@ -31,7 +31,7 @@ public:
         if (m_ptr > -1)
             m_stack[m_ptr--] = nullptr;
         else {
-            #ifdef BLOCK_DEBUG
+            #ifdef STACK_DEBUG
                 fprintf(stderr, "pop from empty stack\n");
             #endif
         }
@@ -44,7 +44,7 @@ public:
             if ((m_ptr > -1) && (idx >= 0))
                 return m_stack[idx];
             else {
-                #ifdef BLOCK_DEBUG
+                #ifdef STACK_DEBUG
                     fprintf(stderr, "insufficient values on stack\n");
                 #endif
                 return nullptr;
