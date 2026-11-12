@@ -1,0 +1,38 @@
+with open ( __file__ ) : <EOL>
+<INDENT>
+result = True <EOL>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+result = f . read ( ) <EOL>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+if f : <EOL>
+<INDENT>
+result = True <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+result = False <EOL>
+<OUTDENT>
+<OUTDENT>
+with open ( __file__ ) as a : <EOL>
+<INDENT>
+with open ( __file__ ) as b : <EOL>
+<INDENT>
+result = a . read ( ) + b . read ( ) <EOL>
+<OUTDENT>
+<OUTDENT>
+with open ( __file__ ) as f : <EOL>
+<INDENT>
+result = f . read ( ) <EOL>
+<OUTDENT>
+result = len ( result ) <EOL>
+def read_file ( ) : <EOL>
+<INDENT>
+with open ( __file__ ) as fh : <EOL>
+<INDENT>
+data = fh . read ( ) <EOL>
+<OUTDENT>
+return data <EOL>
