@@ -1,0 +1,21 @@
+while x : <EOL>
+<INDENT>
+pass <EOL>
+<OUTDENT>
+def f ( t ) : <EOL>
+<INDENT>
+while t > 10 : <EOL>
+<INDENT>
+t = 1 <EOL>
+<OUTDENT>
+print ( t ) <EOL>
+<OUTDENT>
+def g ( n ) : <EOL>
+<INDENT>
+while n : <EOL>
+<INDENT>
+if n & 1 : <EOL>
+<INDENT>
+n -= 1 <EOL>
+<OUTDENT>
+n //= 2 <EOL>

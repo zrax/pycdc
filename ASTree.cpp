@@ -1,7 +1,9 @@
 #include <cstring>
 #include <cstdint>
+#include <map>
 #include <stdexcept>
 #include <unordered_set>
+#include <vector>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -73,6 +75,72 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
 
+/* Python 3.10 compiles a while loop with a duplicated condition test:
+       <eval cond>; POP_JUMP_IF_FALSE end
+   body:
+       <body>
+       <eval cond>; POP_JUMP_IF_TRUE/IF_FALSE body
+   end:
+   The back-edge is an absolute conditional jump (3.10 only; 3.11+ use the
+   dedicated POP_JUMP_BACKWARD_IF_* opcodes).  Find the matching forward
+   guard so the loop can be built as a real while block instead of two
+   independent if blocks. */
+static void ScanWhileLoops310(PycRef<PycCode> code, PycModule* mod,
+                              std::map<int, int>& guardEnd,
+                              std::map<int, int>& backedgeEnd,
+                              std::map<int, int>& opcodeAt,
+                              std::map<int, int>& nextAt)
+{
+    std::map<int, int> operandAt;
+    std::vector<int> order;
+
+    PycBuffer source(code->code()->value(), code->code()->length());
+    int opcode, operand;
+    int pos = 0;
+    while (!source.atEof()) {
+        int instr = pos;
+        bc_next(source, mod, opcode, operand, pos);
+
+        order.push_back(instr);
+        opcodeAt[instr] = opcode;
+        operandAt[instr] = operand;
+        nextAt[instr] = pos;
+    }
+
+    std::map<int, int> prevAt;
+    for (int instr : order)
+        prevAt[nextAt[instr]] = instr;
+
+    auto isCondJump = [](int op) {
+        return op == Pyc::POP_JUMP_IF_FALSE_A
+                || op == Pyc::POP_JUMP_IF_TRUE_A;
+    };
+
+    for (int backedge : order) {
+        if (!isCondJump(opcodeAt[backedge]))
+            continue;
+
+        int target = operandAt[backedge] * sizeof(uint16_t); // BPO-27129
+        if (target >= backedge)
+            continue;
+
+        auto prev = prevAt.find(target);
+        if (prev == prevAt.end())
+            continue;
+
+        int guard = prev->second;
+        if (!isCondJump(opcodeAt[guard]))
+            continue;
+
+        int end = operandAt[guard] * sizeof(uint16_t);
+        if (end <= backedge)
+            continue;
+
+        guardEnd[guard] = end;
+        backedgeEnd[backedge] = end;
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -95,9 +163,19 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     bool variable_annotations = false;
     std::vector<PycExceptionTableEntry> exception_entries;
     size_t next_exception_entry = 0;
+    int skip_until = 0;
+
+    std::map<int, int> while_guard_end;
+    std::map<int, int> while_backedge_end;
+    std::map<int, int> while_opcode_at;
+    std::map<int, int> while_next_at;
 
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
+    }
+    else if (mod->verCompare(3, 10) == 0) {
+        ScanWhileLoops310(code, mod, while_guard_end, while_backedge_end,
+                          while_opcode_at, while_next_at);
     }
 
     while (!source.atEof()) {
@@ -113,6 +191,15 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     #endif
         fprintf(stderr, "\n");
 #endif
+
+        if (skip_until > 0) {
+            if (pos < skip_until) {
+                curpos = pos;
+                bc_next(source, mod, opcode, operand, pos);
+                continue;
+            }
+            skip_until = 0;
+        }
 
         while (next_exception_entry < exception_entries.size()
                 && exception_entries[next_exception_entry].start_offset < pos) {
@@ -1131,6 +1218,105 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
         case Pyc::INSTRUMENTED_POP_JUMP_IF_FALSE_A:
         case Pyc::INSTRUMENTED_POP_JUMP_IF_TRUE_A:
             {
+                auto guard = while_guard_end.find(curpos);
+                if (guard != while_guard_end.end()) {
+                    /* Python 3.10 while-loop entry guard. */
+                    PycRef<ASTNode> wcond = stack.top();
+                    stack.pop();
+
+                    bool wneg = opcode == Pyc::POP_JUMP_IF_TRUE_A;
+                    PycRef<ASTCondBlock> whileblk =
+                        new ASTCondBlock(ASTBlock::BLK_WHILE, guard->second, wcond, wneg);
+                    whileblk->init(ASTCondBlock::PRE_POPPED);
+
+                    blocks.push(whileblk.cast<ASTBlock>());
+                    curblock = blocks.top();
+                    break;
+                }
+
+                auto backedge = while_backedge_end.find(curpos);
+                if (backedge != while_backedge_end.end()) {
+                    bool has_while = false;
+                    {
+                        std::stack<PycRef<ASTBlock> > tmp = blocks;
+                        while (!tmp.empty()) {
+                            if (tmp.top()->blktype() == ASTBlock::BLK_WHILE
+                                    && tmp.top()->end() == backedge->second) {
+                                has_while = true;
+                                break;
+                            }
+                            tmp.pop();
+                        }
+                    }
+
+                    if (has_while) {
+                        /* Python 3.10 while-loop back-edge: discard the
+                           duplicated condition and close the loop. */
+                        if (!stack.empty())
+                            stack.pop();
+
+                        while (blocks.size() > 1
+                               && !(curblock->blktype() == ASTBlock::BLK_WHILE
+                                    && curblock->end() == backedge->second)) {
+                            PycRef<ASTBlock> inner = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+
+                            int inner_type = inner->blktype();
+                            if (!stack_hist.empty()
+                                    && (inner_type == ASTBlock::BLK_IF
+                                        || inner_type == ASTBlock::BLK_ELIF
+                                        || inner_type == ASTBlock::BLK_ELSE
+                                        || inner_type == ASTBlock::BLK_TRY
+                                        || inner_type == ASTBlock::BLK_EXCEPT
+                                        || inner_type == ASTBlock::BLK_FINALLY)) {
+                                stack = stack_hist.top();
+                                stack_hist.pop();
+                            }
+
+                            curblock->append(inner.cast<ASTNode>());
+                            CheckIfExpr(stack, curblock);
+                        }
+
+                        if (curblock->blktype() == ASTBlock::BLK_WHILE
+                                && curblock->end() == backedge->second
+                                && blocks.size() > 1) {
+                            PycRef<ASTBlock> whileblk = curblock;
+                            blocks.pop();
+                            curblock = blocks.top();
+                            curblock->append(whileblk.cast<ASTNode>());
+
+                            /* The compiler may place a return stub between
+                               the back-edge and the loop exit; skip it. */
+                            auto next_instr = while_next_at.find(curpos);
+                            int next = (next_instr == while_next_at.end()) ? backedge->second : next_instr->second;
+                            bool stub = next < backedge->second;
+                            for (int p = next; stub && p < backedge->second; ) {
+                                auto op = while_opcode_at.find(p);
+                                if (op == while_opcode_at.end()
+                                        || (op->second != Pyc::LOAD_CONST_A
+                                            && op->second != Pyc::RETURN_VALUE
+                                            && op->second != Pyc::RETURN_CONST_A
+                                            && op->second != Pyc::NOP)) {
+                                    stub = false;
+                                    break;
+                                }
+
+                                auto next_it = while_next_at.find(p);
+                                if (next_it == while_next_at.end()) {
+                                    stub = false;
+                                    break;
+                                }
+                                p = next_it->second;
+                            }
+                            if (stub)
+                                skip_until = backedge->second;
+
+                            break;
+                        }
+                    }
+                }
+
                 PycRef<ASTNode> cond = stack.top();
                 PycRef<ASTCondBlock> ifblk;
                 int popped = ASTCondBlock::UNINITED;
@@ -1953,8 +2139,6 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     blocks.pop();
                     curblock = blocks.top();
                     curblock->append(prev.cast<ASTNode>());
-
-                    bc_next(source, mod, opcode, operand, pos);
                 }
             }
             break;
