@@ -1,0 +1,7 @@
+def anu ( * args , ** kwargs ) : <EOL>
+<INDENT>
+print ( args , kwargs ) <EOL>
+<OUTDENT>
+anu ( 1 , title = 'sip' , style = 'bold' ) <EOL>
+anu ( 10 , 20 , first = 'a' , second = 'b' ) <EOL>
+anu ( label = 'only' ) <EOL>
