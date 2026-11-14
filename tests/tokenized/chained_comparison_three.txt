@@ -1,0 +1,11 @@
+def test ( a , b , c ) : <EOL>
+<INDENT>
+if 1 < a and a < b and b < c : <EOL>
+<INDENT>
+a = 1 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+a = 2 <EOL>
+<OUTDENT>
+return a <EOL>

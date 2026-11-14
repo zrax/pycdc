@@ -1,7 +1,10 @@
 #include <cstring>
 #include <cstdint>
+#include <map>
+#include <set>
 #include <stdexcept>
 #include <unordered_set>
+#include <vector>
 #include "ASTree.h"
 #include "FastStack.h"
 #include "pyc_numeric.h"
@@ -73,6 +76,118 @@ static void CheckIfExpr(FastStack& stack, PycRef<ASTBlock> curblock)
     stack.push(new ASTTernary(std::move(if_block), std::move(if_expr), std::move(else_expr)));
 }
 
+/* Python < 3.11 compiles a chained comparison (a < b <= c) to
+ *     <left>
+ *     DUP_TOP
+ *     ROT_THREE
+ *     COMPARE_OP first
+ *     POP_JUMP_IF_FALSE trampoline
+ *     <middle>
+ *     COMPARE_OP second
+ *     POP_JUMP_IF_FALSE exit
+ *     JUMP_FORWARD body
+ *   trampoline:
+ *     POP_TOP
+ *     JUMP_FORWARD exit
+ *   body:
+ * The second comparison reuses the duplicated middle operand.  DUP_TOP also
+ * starts a chained-assignment node, which corrupts the stack here, and the
+ * different conditional targets make the merge logic join the halves with
+ * "or".  Record the three positions involved so the interpreter can duplicate
+ * the operand plainly, resolve the first target to the real exit, and skip the
+ * trailer/trampoline. */
+static int legacy_conditional_target(PycModule* mod, int opcode, int operand, int nextPos)
+{
+    int offs = operand;
+    if (mod->verCompare(3, 10) >= 0)
+        offs *= sizeof(uint16_t);
+    if (opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+            || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A)
+        offs += nextPos;
+    return offs;
+}
+
+static int legacy_forward_target(PycModule* mod, int operand, int nextPos)
+{
+    int offs = operand;
+    if (mod->verCompare(3, 10) >= 0)
+        offs *= sizeof(uint16_t);
+    return nextPos + offs;
+}
+
+static bool is_pop_conditional(int opcode)
+{
+    return opcode == Pyc::POP_JUMP_IF_FALSE_A
+            || opcode == Pyc::POP_JUMP_IF_TRUE_A
+            || opcode == Pyc::POP_JUMP_FORWARD_IF_FALSE_A
+            || opcode == Pyc::POP_JUMP_FORWARD_IF_TRUE_A;
+}
+
+static void ScanLegacyChainedCompare(PycRef<PycCode> code, PycModule* mod,
+                                     std::set<int>& chainDupTop,
+                                     std::map<int,int>& chainSkipJumps,
+                                     std::map<int,int>& trampolineExit)
+{
+    if (mod->majorVer() != 3 || mod->verCompare(3, 10) >= 0)
+        return;
+
+    PycBuffer src(code->code()->value(), code->code()->length());
+    std::vector<int> order;
+    std::map<int,int> opAt, operAt, nextAt;
+    int opcode, operand, pos = 0;
+    while (!src.atEof()) {
+        int p = pos;
+        bc_next(src, mod, opcode, operand, pos);
+        order.push_back(p);
+        opAt[p] = opcode;
+        operAt[p] = operand;
+        nextAt[p] = pos;
+    }
+
+    /* Every chained comparison duplicates its middle operand before a
+     * COMPARE_OP; treat those DUP_TOPs as plain duplicates. */
+    for (size_t i = 0; i + 2 < order.size(); i++) {
+        int dup = order[i];
+        if (opAt[dup] == Pyc::DUP_TOP
+                && opAt[order[i + 1]] == Pyc::ROT_THREE
+                && opAt[order[i + 2]] == Pyc::COMPARE_OP_A)
+            chainDupTop.insert(dup);
+    }
+
+    /* A false intermediate comparison discards the duplicated operand at the
+     * trampoline and then jumps to the shared exit. */
+    for (size_t i = 0; i + 1 < order.size(); i++) {
+        int pop = order[i];
+        int jump = order[i + 1];
+        if (opAt[pop] == Pyc::POP_TOP && opAt[jump] == Pyc::JUMP_FORWARD_A)
+            trampolineExit[pop] = legacy_forward_target(mod, operAt[jump],
+                                                        nextAt[jump]);
+    }
+
+    /* The final true path skips over the trampoline with JUMP_FORWARD.  The
+     * conditional just before it must target the same exit as the trampoline,
+     * which keeps this pattern specific to chained comparisons. */
+    for (size_t i = 1; i + 2 < order.size(); i++) {
+        int trailer = order[i];
+        int pop = order[i + 1];
+        int cleanup = order[i + 2];
+        if (opAt[trailer] != Pyc::JUMP_FORWARD_A
+                || opAt[pop] != Pyc::POP_TOP
+                || opAt[cleanup] != Pyc::JUMP_FORWARD_A
+                || !is_pop_conditional(opAt[order[i - 1]]))
+            continue;
+        int exit = legacy_forward_target(mod, operAt[cleanup], nextAt[cleanup]);
+        int condTarget = legacy_conditional_target(mod, opAt[order[i - 1]],
+                                                   operAt[order[i - 1]],
+                                                   nextAt[order[i - 1]]);
+        int body = nextAt[cleanup];
+        if (condTarget == exit
+                && legacy_forward_target(mod, operAt[trailer],
+                                         nextAt[trailer]) == body)
+            chainSkipJumps[trailer] = body;
+    }
+}
+
 PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
 {
     PycBuffer source(code->code()->value(), code->code()->length());
@@ -95,6 +210,11 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
     bool variable_annotations = false;
     std::vector<PycExceptionTableEntry> exception_entries;
     size_t next_exception_entry = 0;
+
+    std::set<int> chainDupTop;
+    std::map<int, int> chainSkipJumps;
+    std::map<int, int> trampolineExit;
+    ScanLegacyChainedCompare(code, mod, chainDupTop, chainSkipJumps, trampolineExit);
 
     if (mod->verCompare(3, 11) >= 0) {
         exception_entries = code->exceptionTableEntries();
@@ -841,6 +961,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
             break;
         case Pyc::DUP_TOP:
             {
+                if (chainDupTop.count(curpos)) {
+                    stack.push(stack.top());
+                    break;
+                }
                 if (stack.top().type() == PycObject::TYPE_NULL) {
                     stack.push(stack.top());
                 } else if (stack.top().type() == ASTNode::NODE_CHAINSTORE) {
@@ -1175,6 +1299,10 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                     offs += pos;
                 }
 
+                auto tit = trampolineExit.find(offs);
+                if (tit != trampolineExit.end())
+                    offs = tit->second;
+
                 if (cond.type() == ASTNode::NODE_COMPARE
                         && cond.cast<ASTCompare>()->op() == ASTCompare::CMP_EXCEPTION) {
                     int except_end = offs;
@@ -1378,6 +1506,18 @@ PycRef<ASTNode> BuildFromCode(PycRef<PycCode> code, PycModule* mod)
                 int offs = operand;
                 if (mod->verCompare(3, 10) >= 0)
                     offs *= sizeof(uint16_t); // // BPO-27129
+
+                auto sit = chainSkipJumps.find(curpos);
+                if (sit != chainSkipJumps.end()) {
+                    /* Skip the chained-comparison trailer and its trampoline;
+                     * the real body starts at the recorded target. */
+                    int target = sit->second;
+                    while (pos < target && !source.atEof()) {
+                        curpos = pos;
+                        bc_next(source, mod, opcode, operand, pos);
+                    }
+                    continue;
+                }
 
                 if (curblock->blktype() == ASTBlock::BLK_CONTAINER) {
                     PycRef<ASTContainerBlock> cont = curblock.cast<ASTContainerBlock>();

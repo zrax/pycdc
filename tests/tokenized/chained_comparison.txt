@@ -1,0 +1,15 @@
+def test ( msgtype , num ) : <EOL>
+<INDENT>
+if num <= 1 : <EOL>
+<INDENT>
+msgtype = 1 <EOL>
+<OUTDENT>
+elif 2 < num and num <= 3 : <EOL>
+<INDENT>
+msgtype = 3 <EOL>
+<OUTDENT>
+else : <EOL>
+<INDENT>
+msgtype = 4 <EOL>
+<OUTDENT>
+return msgtype <EOL>
